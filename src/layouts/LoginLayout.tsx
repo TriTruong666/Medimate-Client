@@ -1,19 +1,33 @@
 import { Outlet } from "react-router-dom";
+import FloatingLines from "../components/FloatingLine";
 
 export default function LoginLayout() {
   return (
-    <div className="min-h-screen w-full relative overflow-hidden">
-      {/* Background */}
-      <div
-        className="absolute inset-0 z-0"
+    <div className="relative min-h-screen w-full overflow-hidden bg-black">
+      {/* <div
+        className="absolute inset-0 opacity-30"
         style={{
-          background:
-            "radial-gradient(125% 125% at 50% 90%, #000000 40%, #2b092b 100%)",
+          backgroundImage: `
+          linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px)
+        `,
+          backgroundSize: "60px 60px",
         }}
-      />
+      /> */}
+      <div className="absolute inset-0">
+        <FloatingLines
+          enabledWaves={["middle", "top", "bottom"]}
+          lineCount={3}
+          lineDistance={5}
+          bendRadius={5}
+          bendStrength={-0.5}
+          interactive={true}
+          parallax={true}
+        />
+      </div>
 
       {/* Content */}
-      <div className="relative z-10 flex justify-center items-center min-h-screen">
+      <div className="relative z-10 flex min-h-screen items-center justify-center">
         <Outlet />
       </div>
     </div>
