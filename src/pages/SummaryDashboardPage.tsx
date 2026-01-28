@@ -168,7 +168,7 @@ export default function SummaryDashboardPage() {
           </h1>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* <div className="flex items-center gap-3">
           <button className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
             Export <PiExport />
           </button>
@@ -177,7 +177,7 @@ export default function SummaryDashboardPage() {
             <MdOutlineDriveFolderUpload />
             New Document
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="my-6 grid grid-cols-1 gap-6 md:grid-cols-3">

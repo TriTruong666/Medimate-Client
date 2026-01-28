@@ -56,7 +56,7 @@ export default function Toast({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -20, scale: 0.95 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className={`flex items-center gap-4 rounded-xl border bg-[#1a1a1c]/95 p-4 backdrop-blur-md ${styles.border} shadow-xl`}
+      className={`flex items-center gap-4 rounded-xl border bg-black/95 p-4 backdrop-blur-md ${styles.border} shadow-xl`}
     >
       {/* Icon */}
       <div
@@ -68,7 +68,10 @@ export default function Toast({
       {/* Content */}
       <div className="min-w-0 flex-1">
         <h4 className="text-sm font-semibold text-white">{title}</h4>
-        <p className="text-xs wrap-break-word whitespace-normal text-gray-400">
+        <p
+          title={message}
+          className="max-h-20 overflow-y-auto text-xs wrap-break-word whitespace-normal text-gray-400"
+        >
           {message}
         </p>
       </div>

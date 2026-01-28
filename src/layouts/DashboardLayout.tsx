@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
 import { useClickOutside, useEscapeKey } from "../hooks/useDropdown";
 import { ToastContainer } from "../components/ToastContainer";
-import { Outlet } from "react-router-dom";
+import { NavLink, Outlet, useMatch } from "react-router-dom";
 
 export default function DashboardLayout() {
   return (
@@ -83,10 +83,19 @@ function Sidebar() {
       {/* Nav */}
       <nav className="mt-4 flex-1 space-y-2 overflow-y-auto px-3">
         {/* Overview */}
-        <SidebarItem icon={<HiOutlineViewGrid />} label="Tổng quan" />
+        <SidebarItem
+          to="/dashboard"
+          icon={<HiOutlineViewGrid />}
+          label="Tổng quan"
+          exact
+        />
 
         {/* Active */}
-        <SidebarItem icon={<HiOutlineUsers />} label="Tài khoản" active />
+        <SidebarItem
+          to="/dashboard/accounts"
+          icon={<HiOutlineUsers />}
+          label="Tài khoản"
+        />
 
         {/* Documents */}
         <div className="">
@@ -125,71 +134,96 @@ function Sidebar() {
                   transition={{ duration: 0.2 }}
                   className="mt-2 ml-6 space-y-1"
                 >
-                  <SubItem label="Upload" />
-                  <SubItem label="Indexed" />
-                  <SubItem label="Success" active />
-                  <SubItem label="Failed" />
+                  <SubItem to="/dashboard/documents/upload" label="Upload" />
+                  <SubItem to="/dashboard/documents/indexed" label="Indexed" />
+                  <SubItem to="/dashboard/documents/success" label="Success" />
+                  <SubItem to="/dashboard/documents/failed" label="Failed" />
                 </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        <SidebarItem icon={<HiOutlineChatAlt2 />} label="Chatbot" />
-        <SidebarItem icon={<HiOutlinePhotograph />} label="Images" />
+        <SidebarItem
+          to="/dashboard/chatbot"
+          icon={<HiOutlineChatAlt2 />}
+          label="Chatbot"
+        />
+        <SidebarItem
+          to="/dashboard/images"
+          icon={<HiOutlinePhotograph />}
+          label="Images"
+        />
       </nav>
 
       {/* Bottom */}
       <div className="space-y-1 border-t border-white/5 px-3 py-4">
-        <SidebarItem icon={<HiOutlineCog />} label="Cài đặt" />
-        <SidebarItem icon={<HiOutlineQuestionMarkCircle />} label="Trợ giúp" />
+        <SidebarItem
+          to="/dashboard/settings"
+          icon={<HiOutlineCog />}
+          label="Cài đặt"
+        />
+        <SidebarItem
+          to="/dashboard/help"
+          icon={<HiOutlineQuestionMarkCircle />}
+          label="Trợ giúp"
+        />
       </div>
     </aside>
   );
 }
 
-function SidebarItem({
-  icon,
-  label,
-  active = false,
-}: {
+type SidebarItemProps = {
   icon: React.ReactNode;
   label: string;
-  active?: boolean;
-}) {
+  to: string;
+  exact?: boolean;
+};
+
+export function SidebarItem({
+  icon,
+  label,
+  to,
+  exact = false,
+}: SidebarItemProps) {
   return (
-    <a
-      href="#"
-      className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-        active
-          ? "bg-white/10 text-white shadow-inner"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
-      } `}
+    <NavLink
+      to={to}
+      end={exact}
+      className={({ isActive }) =>
+        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+          isActive
+            ? "bg-white/10 text-white shadow-inner"
+            : "text-gray-400 hover:bg-white/5 hover:text-white"
+        }`
+      }
     >
       <span className="text-lg">{icon}</span>
       {label}
-    </a>
+    </NavLink>
   );
 }
 
-function SubItem({
-  label,
-  active = false,
-}: {
+type SubItemProps = {
   label: string;
-  active?: boolean;
-}) {
+  to: string;
+};
+
+export function SubItem({ label, to }: SubItemProps) {
   return (
-    <a
-      href="#"
-      className={`block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-        active
-          ? "bg-white/10 text-white"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
-      } `}
+    <NavLink
+      to={to}
+      end
+      className={({ isActive }) =>
+        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+          isActive
+            ? "bg-white/10 text-white"
+            : "text-gray-400 hover:bg-white/5 hover:text-white"
+        }`
+      }
     >
       {label}
-    </a>
+    </NavLink>
   );
 }
 
