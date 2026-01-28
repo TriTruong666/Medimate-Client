@@ -8,6 +8,7 @@ import {
   LinearScale,
   BarElement,
   LineElement,
+  PointElement,
 } from "chart.js";
 import { Doughnut, Bar, Line } from "react-chartjs-2";
 import { PiExport } from "react-icons/pi";
@@ -21,6 +22,8 @@ import {
 } from "react-icons/hi2";
 import { HiChevronDown } from "react-icons/hi";
 import { MdOutlineShowChart } from "react-icons/md";
+import { useEffect } from "react";
+import { toast } from "../hooks/useToast";
 
 ChartJS.register(
   ArcElement,
@@ -30,8 +33,21 @@ ChartJS.register(
   LinearScale,
   BarElement,
   LineElement,
+  PointElement,
 );
 export default function SummaryDashboardPage() {
+  // Tắt khi team đã biết
+  useEffect(() => {
+    toast.warn(
+      "Trang này chỉ là DEMO",
+      "Team góp ý giúp trí cái cần bỏ vô cái trang này để view mấy cái thông số",
+      {
+        actionLabel: "Close",
+        duration: 20000,
+      },
+    );
+  }, []);
+
   const donutData = {
     labels: ["Pending", "Indexed", "Success"],
     datasets: [

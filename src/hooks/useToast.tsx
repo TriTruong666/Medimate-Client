@@ -9,4 +9,12 @@ export const toast = {
       ...options,
     });
   },
+  warn(title: string, message: string, options = {}) {
+    toastStore.push({
+      title,
+      message,
+      type: "warning",
+      ...options,
+    });
+  },
 };

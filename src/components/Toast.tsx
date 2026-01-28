@@ -68,7 +68,9 @@ export default function Toast({
       {/* Content */}
       <div className="min-w-0 flex-1">
         <h4 className="text-sm font-semibold text-white">{title}</h4>
-        <p className="truncate text-xs text-gray-400">{message}</p>
+        <p className="text-xs wrap-break-word whitespace-normal text-gray-400">
+          {message}
+        </p>
       </div>
 
       {/* Action */}
