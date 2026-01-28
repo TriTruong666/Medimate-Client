@@ -17,9 +17,9 @@ export default function LoginLayout() {
       <div className="absolute inset-0">
         <FloatingLines
           enabledWaves={["middle", "top", "bottom"]}
-          lineCount={3}
-          lineDistance={5}
-          bendRadius={5}
+          lineCount={4}
+          lineDistance={10}
+          bendRadius={10}
           bendStrength={-0.5}
           interactive={true}
           parallax={true}

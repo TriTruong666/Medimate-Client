@@ -10,13 +10,20 @@ import {
   HiOutlineQuestionMarkCircle,
   HiChevronDown,
   HiSearch,
+  HiBell,
+  HiUserCircle,
 } from "react-icons/hi";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { useClickOutside, useEscapeKey } from "../hooks/useDropdown";
+import { ToastContainer } from "../components/ToastContainer";
+import { Outlet } from "react-router-dom";
+
 export default function DashboardLayout() {
   return (
-    <div className="bg-[#0e0e11] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
+    <div className="bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
+      <ToastContainer />
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">
@@ -35,7 +42,23 @@ export default function DashboardLayout() {
                 />
               </div>
             </div>
+            <div className="flex items-center gap-3">
+              {/* Notification */}
+              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10">
+                <HiBell className="text-lg text-gray-300" />
+
+                {/* Badge */}
+                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                  3
+                </span>
+              </button>
+
+              <AvatarDropdown />
+            </div>
           </header>
+          <div className="flex-1 overflow-y-auto scroll-smooth p-4 md:p-8">
+            <Outlet />
+          </div>
         </div>
       </div>
     </div>
@@ -46,7 +69,7 @@ function Sidebar() {
   const [openDocs, setOpenDocs] = useState(true);
 
   return (
-    <aside className="fixed z-20 hidden h-full w-64 flex-col border-r border-white/5 bg-[#0e0e11] md:relative md:flex">
+    <aside className="fixed z-20 hidden h-full w-64 flex-col border-r border-white/5 bg-[#050505] md:relative md:flex">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5">
         <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
@@ -167,5 +190,67 @@ function SubItem({
     >
       {label}
     </a>
+  );
+}
+
+function AvatarDropdown() {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useClickOutside(ref, () => setOpen(false));
+  useEscapeKey(() => setOpen(false));
+
+  return (
+    <div ref={ref} className="relative">
+      {/* Trigger */}
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md transition-all hover:bg-white/10"
+      >
+        <HiUserCircle className="text-2xl text-gray-300" />
+        <span className="hidden text-sm text-gray-200 md:block">Admin</span>
+        <HiChevronDown
+          className={`text-sm transition-transform ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {/* Dropdown */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#050505] shadow-xl backdrop-blur-xl"
+          >
+            <DropdownItem label="Tài khoản" />
+            <DropdownItem label="Cài đặt" />
+            <div className="h-px bg-white/10" />
+            <DropdownItem label="Đăng xuất" danger />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function DropdownItem({
+  label,
+  danger = false,
+}: {
+  label: string;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      className={`w-full px-4 py-2 text-left text-sm transition-colors ${
+        danger
+          ? "text-red-400 hover:bg-red-500/10"
+          : "text-gray-300 hover:bg-white/5 hover:text-white"
+      } `}
+    >
+      {label}
+    </button>
   );
 }
