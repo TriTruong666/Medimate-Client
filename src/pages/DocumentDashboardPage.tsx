@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { motion } from "framer-motion";
 import { PiExport } from "react-icons/pi";
 import Breadcrumb from "../components/Breadcrumb";
 import { MdOutlineDriveFolderUpload } from "react-icons/md";
@@ -12,6 +14,9 @@ import {
   HiOutlineChevronRight,
 } from "react-icons/hi";
 import { BsFiletypeJson, BsFiletypeDocx, BsFiletypeTxt } from "react-icons/bs";
+import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
+import { useState } from "react";
+import { cardContainer, cardItem } from "../motions/cardMotion";
 
 type DocumentRow = {
   name: string;
@@ -23,6 +28,7 @@ type DocumentRow = {
 };
 
 export default function DocumentDashboardPage() {
+  const [tableLayout, setTableLayout] = useState("table");
   const breadcrumbItems = [
     {
       label: "Dashboard",
@@ -40,7 +46,7 @@ export default function DocumentDashboardPage() {
   const demoData: DocumentRow[] = [
     {
       name: "Project_Specs_v2.pdf",
-      updated: "Updated 2 hours ago",
+      updated: "Thêm vào 2 tiếng trước",
       fileType: "pdf",
       typeLabel: "PDF",
       size: "4.2 MB",
@@ -48,13 +54,97 @@ export default function DocumentDashboardPage() {
     },
     {
       name: "SEP409.json",
-      updated: "Updated yesterday",
+      updated: "Cập nhật hôm qua",
       fileType: "json",
       typeLabel: "JSON",
       size: "156 MB",
       status: "uploaded",
     },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
+    {
+      name: "Medimate.docx",
+      updated: "Cập nhật hôm qua",
+      fileType: "docx",
+      typeLabel: "DOCX",
+      size: "1.2 MB",
+      status: "failed",
+    },
   ];
+
+  const handleChangeTableLayout = (key: string) => {
+    setTableLayout(key);
+  };
   return (
     <div className="mx-auto max-w-384 space-y-6">
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -65,20 +155,51 @@ export default function DocumentDashboardPage() {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
+          <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+            <button
+              onClick={() => handleChangeTableLayout("table")}
+              className={`${tableLayout === "table" ? "bg-primary text-white shadow-sm" : "text-gray-400 hover:bg-white/5 hover:text-white"} flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+            >
+              <LuTable2 className="text-sm" />
+              Bảng
+            </button>
+            <button
+              onClick={() => handleChangeTableLayout("card")}
+              className={`${tableLayout === "card" ? "bg-primary text-white shadow-sm" : "text-gray-400 hover:bg-white/5 hover:text-white"} flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+            >
+              <LuGrid3X3 className="text-sm" />
+              Thẻ
+            </button>
+          </div>
+          <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
             Xuất <PiExport />
           </button>
 
-          <button className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-xl bg-linear-to-br px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:scale-[1.03]">
+          <button className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white shadow-lg transition-all hover:scale-[1.03]">
             <MdOutlineDriveFolderUpload />
             Thêm tài liệu
           </button>
         </div>
       </div>
-      <div className="my-8">
-        <DocumentTable data={demoData} />
-        <Pagination page={1} pageSize={20} total={500} />
-      </div>
+      {tableLayout === "table" && (
+        <div className="my-8">
+          <DocumentTable data={demoData} />
+
+          <Pagination page={1} pageSize={20} total={500} />
+        </div>
+      )}
+
+      {tableLayout === "card" && (
+        <div className="my-8 space-y-8">
+          <DocumentCardGrid data={demoData} />
+          <div className="flex justify-center">
+            {" "}
+            <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
+              Tải thêm tài liệu <LuPlus />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -122,6 +243,78 @@ const columns: TableColumn[] = [
     align: "center",
   },
 ];
+type DocumentCardGridProps = {
+  data: DocumentRow[];
+};
+
+function DocumentCardGrid({ data }: DocumentCardGridProps) {
+  return (
+    <motion.div
+      variants={cardContainer}
+      initial="hidden"
+      animate="show"
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    >
+      {data.map((doc) => (
+        <DocumentCard key={doc.name} data={doc} />
+      ))}
+    </motion.div>
+  );
+}
+
+type DocumentCardProps = {
+  data: DocumentRow;
+};
+
+export function DocumentCard({ data }: DocumentCardProps) {
+  return (
+    <motion.div
+      variants={cardItem}
+      whileHover={{ y: -4 }}
+      className="group dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-100 bg-white/80 p-4 backdrop-blur transition-shadow hover:shadow-lg dark:bg-white/5"
+    >
+      {/* Header */}
+      <div className="flex items-start gap-3">
+        <FileIcon type={data.fileType} />
+
+        <div className="min-w-0 flex-1">
+          <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+            {data.name}
+          </h4>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            {data.updated}
+          </p>
+        </div>
+      </div>
+
+      <div className="my-4 h-px bg-gray-100 dark:bg-white/10" />
+
+      {/* Meta */}
+      <div className="flex items-center justify-between text-xs">
+        <span className="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 font-medium text-gray-600 dark:border-white/10 dark:bg-white/10 dark:text-gray-300">
+          {data.typeLabel}
+        </span>
+
+        <span className="font-mono text-gray-500 dark:text-gray-400">
+          {data.size}
+        </span>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-4 flex items-center justify-between">
+        <StatusBadge status={data.status} />
+
+        <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
+          <IconAction icon={<HiOutlineDownload />} />
+          {data.status === "failed" && (
+            <IconAction icon={<HiOutlineRefresh />} />
+          )}
+          <IconAction icon={<HiOutlineTrash />} danger />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
 
 type DocumentTableProps = {
   data: DocumentRow[];
@@ -129,7 +322,7 @@ type DocumentTableProps = {
 
 export function DocumentTable({ data }: DocumentTableProps) {
   return (
-    <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border border-gray-100 text-left">
+    <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
       <thead>
         <tr className="dark:bg-border-dark/30 bg-gray-50/50">
           {columns.map((col, i) => (
@@ -208,9 +401,11 @@ export function DocumentTable({ data }: DocumentTableProps) {
 function IconAction({
   icon,
   danger = false,
+  className = "",
 }: {
   icon: React.ReactNode;
   danger?: boolean;
+  className?: string;
 }) {
   return (
     <button
@@ -218,7 +413,7 @@ function IconAction({
         danger
           ? "hover:text-red-500 dark:hover:text-red-400"
           : "hover:text-primary dark:hover:text-white"
-      }`}
+      } ${className}`}
     >
       {icon}
     </button>
@@ -302,7 +497,7 @@ export function Pagination({
   const totalPages = Math.ceil(total / pageSize);
 
   return (
-    <div className="dark:border-border-dark flex items-center justify-between border-x border-b border-gray-100 px-4 py-3">
+    <div className="dark:border-border-dark flex items-center justify-between border border-gray-100 px-4 py-3">
       {/* Info */}
       <span className="text-xs text-gray-500 dark:text-gray-400">
         Page <span className="font-medium">{page}</span> of{" "}
