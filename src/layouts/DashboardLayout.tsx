@@ -14,15 +14,18 @@ import {
   HiUserCircle,
 } from "react-icons/hi";
 
+import medimateLogo from "../assets/medimate-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
 import { useClickOutside, useEscapeKey } from "../hooks/useDropdown";
 import { ToastContainer } from "../components/ToastContainer";
-import { NavLink, Outlet, useMatch } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
+import ModalContainer from "../components/ModalContainer";
 
 export default function DashboardLayout() {
   return (
     <div className="bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
+      <ModalContainer />
       <ToastContainer />
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
@@ -72,11 +75,12 @@ function Sidebar() {
     <aside className="fixed z-20 hidden h-full w-64 flex-col border-r border-white/5 bg-[#050505] md:relative md:flex">
       {/* Logo */}
       <div className="flex items-center gap-3 px-6 py-5">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
-          <HiOutlineViewGrid className="text-xl text-white" />
-        </div>
+        <img
+          src={medimateLogo}
+          className="flex h-9 w-9 items-center justify-center rounded-lg"
+        ></img>
         <span className="text-lg font-semibold tracking-tight text-white">
-          AdminUI
+          Medimate
         </span>
       </div>
 

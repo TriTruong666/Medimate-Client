@@ -17,6 +17,8 @@ import { BsFiletypeJson, BsFiletypeDocx, BsFiletypeTxt } from "react-icons/bs";
 import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
 import { useState } from "react";
 import { cardContainer, cardItem } from "../motions/cardMotion";
+import { useAtom } from "jotai";
+import { openModalAtom } from "../stores/modalStore";
 
 type DocumentRow = {
   name: string;
@@ -28,6 +30,7 @@ type DocumentRow = {
 };
 
 export default function DocumentDashboardPage() {
+  const [, openModal] = useAtom(openModalAtom);
   const [tableLayout, setTableLayout] = useState("table");
   const breadcrumbItems = [
     {
@@ -175,7 +178,10 @@ export default function DocumentDashboardPage() {
             Xuất <PiExport />
           </button>
 
-          <button className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white shadow-lg transition-all hover:scale-[1.03]">
+          <button
+            onClick={() => openModal("upload")}
+            className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white shadow-lg transition-all hover:scale-[1.03]"
+          >
             <MdOutlineDriveFolderUpload />
             Thêm tài liệu
           </button>
