@@ -14,7 +14,7 @@ export function UploadDocumentModal() {
   return (
     <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 shadow-[0_24px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-shadow hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/[0.02] p-6 backdrop-blur-md">
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
         <h2 className="text-base font-semibold tracking-tight text-white">
           Tải lên tài liệu
         </h2>
@@ -30,7 +30,7 @@ export function UploadDocumentModal() {
       {/* Content */}
       <div className="space-y-6 p-6">
         {/* Dropzone */}
-        <div className="group flex h-40 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/15 bg-white/[0.02] transition hover:bg-white/[0.05]">
+        <div className="group flex h-40 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/15 bg-white/2 transition hover:bg-white/5">
           <div className="flex flex-col items-center">
             <div className="bg-primary/15 text-primary mb-3 rounded-full p-3 transition-transform group-hover:scale-110">
               <HiOutlineCloudUpload className="text-3xl" />
@@ -67,7 +67,7 @@ export function UploadDocumentModal() {
           />
 
           {/* Queued */}
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3">
+          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 p-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/15 text-blue-400">
               <FiFileText className="text-xl" />
             </div>
@@ -91,7 +91,7 @@ export function UploadDocumentModal() {
       </div>
 
       {/* Footer */}
-      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/[0.02] p-6 backdrop-blur-md">
+      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md">
         <button
           onClick={closeModal}
           className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
@@ -121,7 +121,7 @@ function UploadItem({ icon, name, percent, color }: UploadItemProps) {
   };
 
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] p-3 transition hover:bg-white/[0.06]">
+    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 p-3 transition hover:bg-white/6">
       <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-gray-300">
         {icon}
       </div>

@@ -13,7 +13,7 @@ import {
   HiBell,
   HiUserCircle,
 } from "react-icons/hi";
-
+import { IoSync } from "react-icons/io5";
 import medimateLogo from "../assets/medimate-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
@@ -150,7 +150,7 @@ function Sidebar() {
             )}
           </AnimatePresence>
         </div>
-
+        <SidebarItem to="/dashboard/rag" icon={<IoSync />} label="RAG Core" />
         <SidebarItem
           to="/dashboard/chatbot"
           icon={<HiOutlineChatAlt2 />}
@@ -249,7 +249,9 @@ function AvatarDropdown() {
         className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md transition-all hover:bg-white/10"
       >
         <HiUserCircle className="text-2xl text-gray-300" />
-        <span className="hidden text-sm text-gray-200 md:block">Admin</span>
+        <span className="hidden text-sm text-gray-200 md:block">
+          Trí Trương
+        </span>
         <HiChevronDown
           className={`text-sm transition-transform ${open ? "rotate-180" : ""}`}
         />

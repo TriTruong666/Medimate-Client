@@ -13,23 +13,44 @@ import {
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
 } from "react-icons/hi";
-import { BsFiletypeJson, BsFiletypeDocx, BsFiletypeTxt } from "react-icons/bs";
+import {
+  BsFiletypeJson,
+  BsFiletypeDocx,
+  BsFiletypeTxt,
+  BsFiletypeCsv,
+  BsFiletypeXlsx,
+  BsFiletypeHtml,
+} from "react-icons/bs";
 import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
 import { useState } from "react";
 import { cardContainer, cardItem } from "../motions/cardMotion";
 import { useAtom } from "jotai";
 import { openModalAtom } from "../stores/modalStore";
+import { AiOutlineFileMarkdown } from "react-icons/ai";
+import GlassSelect from "../components/Select";
 
 type DocumentRow = {
   name: string;
   updated: string;
   typeLabel: string;
-  fileType: "pdf" | "json" | "text" | "docx" | "doc" | "txt";
+  fileType:
+    | "pdf"
+    | "json"
+    | "text"
+    | "docx"
+    | "doc"
+    | "txt"
+    | "csv"
+    | "xls"
+    | "xlsx"
+    | "html"
+    | "md";
   size: string;
   status: "uploaded" | "indexed" | "failed";
 };
 
 export default function DocumentDashboardPage() {
+  const [type, setType] = useState("");
   const [, openModal] = useAtom(openModalAtom);
   const [tableLayout, setTableLayout] = useState("table");
   const breadcrumbItems = [
@@ -173,6 +194,17 @@ export default function DocumentDashboardPage() {
               <LuGrid3X3 className="text-sm" />
               Thẻ
             </button>
+          </div>
+          <div className="ml-2">
+            <GlassSelect
+              value={type}
+              onChange={setType}
+              placeholder="Sắp xếp theo"
+              options={[
+                { label: "Ngày", value: "by_date" },
+                { label: "Trạng thái", value: "by_status" },
+              ]}
+            />
           </div>
           <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
             Xuất <PiExport />
@@ -457,6 +489,31 @@ function FileIcon({ type }: { type: DocumentRow["fileType"] }) {
     },
     txt: {
       icon: <BsFiletypeTxt />,
+      className:
+        "bg-purple-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+    },
+    csv: {
+      icon: <BsFiletypeCsv />,
+      className:
+        "bg-purple-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+    },
+    html: {
+      icon: <BsFiletypeHtml />,
+      className:
+        "bg-purple-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+    },
+    xls: {
+      icon: <BsFiletypeXlsx />,
+      className:
+        "bg-purple-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+    },
+    xlsx: {
+      icon: <BsFiletypeXlsx />,
+      className:
+        "bg-purple-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
+    },
+    md: {
+      icon: <AiOutlineFileMarkdown />,
       className:
         "bg-purple-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400",
     },

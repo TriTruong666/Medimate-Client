@@ -11,8 +11,7 @@ import {
   PointElement,
 } from "chart.js";
 import { Doughnut, Bar, Line } from "react-chartjs-2";
-import { PiExport } from "react-icons/pi";
-import { MdOutlineDriveFolderUpload } from "react-icons/md";
+import { motion } from "framer-motion";
 import {
   HiOutlineDocumentText,
   HiOutlineUsers,
@@ -24,6 +23,8 @@ import { HiChevronDown } from "react-icons/hi";
 import { MdOutlineShowChart } from "react-icons/md";
 import { useEffect } from "react";
 import { toast } from "../hooks/useToast";
+import { cardContainer, cardItem } from "../motions/cardMotion";
+import { dashboardContainer, dashboardItem } from "../motions/dashboardMotion";
 
 ChartJS.register(
   ArcElement,
@@ -167,21 +168,18 @@ export default function SummaryDashboardPage() {
             Tổng quan hệ thống
           </h1>
         </div>
-
-        {/* <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
-            Export <PiExport />
-          </button>
-
-          <button className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-xl bg-linear-to-br px-4 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:scale-[1.03]">
-            <MdOutlineDriveFolderUpload />
-            New Document
-          </button>
-        </div> */}
       </div>
 
-      <div className="my-6 grid grid-cols-1 gap-6 md:grid-cols-3">
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10">
+      <motion.div
+        variants={dashboardContainer}
+        initial="hidden"
+        animate="show"
+        className="my-6 grid grid-cols-1 gap-6 md:grid-cols-3"
+      >
+        <motion.div
+          variants={dashboardItem}
+          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10"
+        >
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <HiOutlineDocumentText className="text-lg" />
@@ -203,9 +201,12 @@ export default function SummaryDashboardPage() {
               Cập nhật cuối <span className="text-gray-400">2 tiếng trước</span>
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10">
+        <motion.div
+          variants={dashboardItem}
+          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10"
+        >
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <HiOutlineUsers className="text-lg" />
@@ -224,9 +225,12 @@ export default function SummaryDashboardPage() {
             </p>
             <p>Giờ cao điểm: 1,204 người dùng</p>
           </div>
-        </div>
+        </motion.div>
 
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10">
+        <motion.div
+          variants={dashboardItem}
+          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10"
+        >
           <div className="mb-3 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <HiOutlineStar className="text-lg" />
@@ -248,10 +252,18 @@ export default function SummaryDashboardPage() {
               Dựa trên <span className="text-gray-400">1,248</span> phản hồi
             </p>
           </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-1">
+        </motion.div>
+      </motion.div>
+      <motion.div
+        variants={dashboardContainer}
+        initial="hidden"
+        animate="show"
+        className="grid grid-cols-1 gap-6 lg:grid-cols-3"
+      >
+        <motion.div
+          variants={dashboardItem}
+          className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-1"
+        >
           <div className="mb-6 flex items-center justify-between">
             <h3 className="text-sm font-medium text-gray-400">Nạp tài liệu</h3>
 
@@ -290,8 +302,11 @@ export default function SummaryDashboardPage() {
               </div>
             </div>
           </div>
-        </div>
-        <div className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-2">
+        </motion.div>
+        <motion.div
+          variants={dashboardItem}
+          className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-2"
+        >
           <div className="mb-4 flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">Lưu lượng nhúng</p>
@@ -307,81 +322,94 @@ export default function SummaryDashboardPage() {
           <div className="h-44">
             <Bar data={barData} options={barOptions} />
           </div>
-        </div>
-      </div>
-      <div className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-          <div className="flex gap-16">
-            <div>
-              <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                Lưu lượng hoạt động
-              </p>
-              <h3 className="text-3xl font-bold tracking-tight text-white">
-                1.2 TB
-                <span className="ml-1 text-base font-normal text-gray-400">
-                  /mo
-                </span>
-              </h3>
+        </motion.div>
+      </motion.div>
+      <motion.div
+        variants={dashboardContainer}
+        initial="hidden"
+        animate="show"
+        className=""
+      >
+        <motion.div
+          variants={dashboardItem}
+          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors"
+        >
+          {/* Header */}
+          <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="flex gap-16">
+              <div>
+                <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Lưu lượng hoạt động
+                </p>
+                <h3 className="text-3xl font-bold tracking-tight text-white">
+                  1.2 TB
+                  <span className="ml-1 text-base font-normal text-gray-400">
+                    /mo
+                  </span>
+                </h3>
+              </div>
+
+              <div>
+                <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Số lượng hành động
+                </p>
+                <h3 className="text-3xl font-bold tracking-tight text-white">
+                  24.5k
+                </h3>
+              </div>
             </div>
 
-            <div>
-              <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                Số lượng hành động
-              </p>
-              <h3 className="text-3xl font-bold tracking-tight text-white">
-                24.5k
-              </h3>
+            {/* Chart type switch */}
+            <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+              <button className="bg-primary flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-white shadow-sm">
+                <MdOutlineShowChart className="text-sm" />
+                Line
+              </button>
+              <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-gray-400 transition hover:bg-white/5 hover:text-white">
+                <HiOutlineChartBar className="text-sm" />
+                Bar
+              </button>
             </div>
           </div>
 
-          {/* Chart type switch */}
-          <div className="flex gap-1 rounded-lg bg-white/5 p-1">
-            <button className="bg-primary flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-white shadow-sm">
-              <MdOutlineShowChart className="text-sm" />
-              Line
-            </button>
-            <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-gray-400 transition hover:bg-white/5 hover:text-white">
-              <HiOutlineChartBar className="text-sm" />
-              Bar
-            </button>
-          </div>
-        </div>
-
-        {/* Metrics */}
-        <div className="mb-6 flex flex-wrap items-center gap-x-8 gap-y-4">
-          <span className="text-xs font-medium tracking-widest text-gray-500 uppercase">
+          {/* Metrics */}
+          <motion.div
+            variants={dashboardItem}
+            className="mb-6 flex flex-wrap items-center gap-x-8 gap-y-4"
+          >
+            {/* <span className="text-xs font-medium tracking-widest text-gray-500 uppercase">
             Metrics
-          </span>
+          </span> */}
 
-          <div className="flex flex-wrap gap-6">
-            <button className="relative pb-1 text-xs font-semibold text-white">
-              Tất cả
-              <span className="bg-primary absolute bottom-0 left-0 h-0.5 w-full" />
-            </button>
+            <div className="flex flex-wrap gap-6">
+              <button className="relative pb-1 text-xs font-semibold text-white">
+                Tất cả
+                <span className="bg-primary absolute bottom-0 left-0 h-0.5 w-full" />
+              </button>
 
-            <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
-              <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-              Indexed
-            </button>
+              <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
+                Indexed
+              </button>
 
-            <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Uploaded
-            </button>
+              <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Uploaded
+              </button>
 
-            <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
-              <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-              Failed
-            </button>
+              <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
+                Failed
+              </button>
+            </div>
+          </motion.div>
+
+          {/* Chart */}
+          <div className="relative h-64 w-full">
+            <Line data={lineData} options={lineOptions} />
           </div>
-        </div>
-
-        {/* Chart */}
-        <div className="relative h-64 w-full">
-          <Line data={lineData} options={lineOptions} />
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
