@@ -1,12 +1,13 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useAtom } from "jotai";
-import { UploadDocumentModal } from "./Modal";
+import { IndexDocumentModal, UploadDocumentModal } from "./Modal";
 import { closeModalAtom, modalAtom } from "../stores/modalStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useState } from "react";
 
 const MODAL_MAP = {
   upload: UploadDocumentModal,
+  index: IndexDocumentModal,
 };
 
 export default function ModalContainer() {

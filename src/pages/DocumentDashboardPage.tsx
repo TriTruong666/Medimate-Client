@@ -26,7 +26,7 @@ import { useState } from "react";
 import { cardContainer, cardItem } from "../motions/cardMotion";
 import { useAtom } from "jotai";
 import { openModalAtom } from "../stores/modalStore";
-import { AiOutlineFileMarkdown } from "react-icons/ai";
+import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
 import GlassSelect from "../components/Select";
 
 type DocumentRow = {
@@ -49,6 +49,31 @@ type DocumentRow = {
   status: "uploaded" | "indexed" | "failed";
 };
 
+type ColumnKey = "name" | "type" | "size" | "status" | "actions";
+
+type TableColumn = {
+  key: ColumnKey;
+  label: string;
+  width?: string;
+  align?: "left" | "center" | "right";
+};
+type DocumentCardGridProps = {
+  data: DocumentRow[];
+};
+
+type DocumentCardProps = {
+  data: DocumentRow;
+};
+
+type DocumentTableProps = {
+  data: DocumentRow[];
+};
+type PaginationProps = {
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange?: (page: number) => void;
+};
 export default function DocumentDashboardPage() {
   const [type, setType] = useState("");
   const [, openModal] = useAtom(openModalAtom);
@@ -242,15 +267,6 @@ export default function DocumentDashboardPage() {
   );
 }
 
-type ColumnKey = "name" | "type" | "size" | "status" | "actions";
-
-type TableColumn = {
-  key: ColumnKey;
-  label: string;
-  width?: string;
-  align?: "left" | "center" | "right";
-};
-
 const columns: TableColumn[] = [
   {
     key: "name",
@@ -281,9 +297,6 @@ const columns: TableColumn[] = [
     align: "center",
   },
 ];
-type DocumentCardGridProps = {
-  data: DocumentRow[];
-};
 
 function DocumentCardGrid({ data }: DocumentCardGridProps) {
   return (
@@ -299,10 +312,6 @@ function DocumentCardGrid({ data }: DocumentCardGridProps) {
     </motion.div>
   );
 }
-
-type DocumentCardProps = {
-  data: DocumentRow;
-};
 
 export function DocumentCard({ data }: DocumentCardProps) {
   return (
@@ -353,10 +362,6 @@ export function DocumentCard({ data }: DocumentCardProps) {
     </motion.div>
   );
 }
-
-type DocumentTableProps = {
-  data: DocumentRow[];
-};
 
 export function DocumentTable({ data }: DocumentTableProps) {
   return (
@@ -464,7 +469,7 @@ function FileIcon({ type }: { type: DocumentRow["fileType"] }) {
     { icon: React.ReactNode; className: string }
   > = {
     pdf: {
-      icon: <HiOutlineDocumentText />,
+      icon: <AiOutlineFilePdf />,
       className: "bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400",
     },
     docx: {
@@ -543,13 +548,6 @@ function StatusBadge({
 
   return map[status];
 }
-
-type PaginationProps = {
-  page: number;
-  pageSize: number;
-  total: number;
-  onPageChange?: (page: number) => void;
-};
 
 export function Pagination({
   page,

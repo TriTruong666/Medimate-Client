@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 
-export type ModalKey = "upload" | null;
+export type ModalKey = "upload" | "index" | null;
 
 export const modalAtom = atom<ModalKey>(null);
 

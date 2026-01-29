@@ -1,7 +1,14 @@
-import { HiOutlinePlus } from "react-icons/hi";
+import {
+  HiOutlineDatabase,
+  HiOutlinePlus,
+  HiOutlineSparkles,
+} from "react-icons/hi";
 import Breadcrumb from "../components/Breadcrumb";
 import { useState } from "react";
 import GlassSelect from "../components/Select";
+import { openModalAtom } from "../stores/modalStore";
+import { useAtom } from "jotai";
+import { FiFileText } from "react-icons/fi";
 
 export default function KnowledgeAddCollectionPage() {
   const breadcrumbItems = [
@@ -19,19 +26,24 @@ export default function KnowledgeAddCollectionPage() {
   ];
   return (
     <div className="mx-auto max-w-384 space-y-6">
-      <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Thêm Collection
-          </h1>
-        </div>
-      </div>
-      <div className="my-10 w-full">
-        <AddCollectionForm />
-      </div>
+      <IndexingCollectionUI currentStep={"chunk"} />
     </div>
   );
+  //   return (
+  //     <div className="mx-auto max-w-384 space-y-6">
+  //       <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+  //         <div>
+  //           <Breadcrumb items={breadcrumbItems} />
+  //           <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+  //             Thêm Collection
+  //           </h1>
+  //         </div>
+  //       </div>
+  //       <div className="my-10 w-full">
+  //         <AddCollectionForm />
+  //       </div>
+  //     </div>
+  //   );
 }
 
 type SelectedDoc = {
@@ -41,6 +53,8 @@ type SelectedDoc = {
 };
 
 function AddCollectionForm() {
+  const [, openModal] = useAtom(openModalAtom);
+
   const [type, setType] = useState("");
   const [documents, setDocuments] = useState<SelectedDoc[]>([]);
   const [name, setName] = useState("");
@@ -107,14 +121,7 @@ function AddCollectionForm() {
             <button
               type="button"
               onClick={() => {
-                setDocuments((prev) => [
-                  ...prev,
-                  {
-                    id: crypto.randomUUID(),
-                    name: `Document_${prev.length + 1}.pdf`,
-                    size: `${(Math.random() * 10 + 1).toFixed(1)} MB`,
-                  },
-                ]);
+                openModal("index");
               }}
               className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
             >
@@ -161,6 +168,109 @@ function AddCollectionForm() {
         <button className="bg-primary rounded-lg px-6 py-2 text-sm font-medium text-white shadow transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
           Tạo collection
         </button>
+      </div>
+    </div>
+  );
+}
+
+type IndexingStep = "parse" | "chunk" | "embedding" | "finalizing";
+
+const steps: {
+  key: IndexingStep;
+  label: string;
+  description: string;
+  percent: number;
+}[] = [
+  {
+    key: "parse",
+    label: "Reading documents",
+    description: "Đọc và chuẩn hoá nội dung",
+    percent: 25,
+  },
+  {
+    key: "chunk",
+    label: "Chunking data",
+    description: "Phân đoạn dữ liệu",
+    percent: 50,
+  },
+  {
+    key: "embedding",
+    label: "Creating embeddings",
+    description: "Tạo vector embedding",
+    percent: 80,
+  },
+  {
+    key: "finalizing",
+    label: "Finalizing",
+    description: "Hoàn tất và lưu trữ",
+    percent: 100,
+  },
+];
+
+function IndexingCollectionUI({
+  currentStep = "chunk",
+}: {
+  currentStep: IndexingStep;
+}) {
+  const currentIndex = steps.findIndex((s) => s.key === currentStep);
+  const progress = steps[currentIndex]?.percent ?? 0;
+
+  return (
+    <div className="flex min-h-[60vh] flex-col text-white">
+      {/* Title */}
+      <h2 className="text-2xl font-semibold tracking-tight">
+        Indexing collection
+      </h2>
+      <p className="mt-2 max-w-xl text-sm text-white/60">
+        Hệ thống đang xử lý tài liệu và xây dựng dữ liệu tìm kiếm.
+      </p>
+
+      {/* Progress bar */}
+      <div className="mt-8 h-1 w-full max-w-xl rounded-full bg-white/10">
+        <div
+          className="h-1 rounded-full bg-white transition-all duration-500"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* Percent */}
+      <div className="mt-2 text-xs text-white/40">{progress}% hoàn thành</div>
+
+      {/* Steps */}
+      <div className="mt-8 space-y-3 text-sm">
+        {steps.map((step, index) => {
+          const isActive = index === currentIndex;
+          const isDone = index < currentIndex;
+
+          return (
+            <div
+              key={step.key}
+              className={`flex items-start gap-3 transition ${
+                isActive
+                  ? "text-white"
+                  : isDone
+                    ? "text-white/70"
+                    : "text-white/40"
+              }`}
+            >
+              <span className="mt-1 text-xs">
+                {isDone ? "✓" : isActive ? "●" : "○"}
+              </span>
+
+              <div>
+                <div className={`font-medium ${isActive ? "" : "font-normal"}`}>
+                  {step.label}
+                </div>
+                <div className="text-xs opacity-70">{step.description}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer note */}
+      <div className="mt-10 text-xs text-white/40">
+        Vui lòng không đóng trang trong quá trình xử lý
       </div>
     </div>
   );
