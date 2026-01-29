@@ -43,7 +43,7 @@ export default function SummaryDashboardPage() {
       "Team góp ý giúp trí cái cần bỏ vô cái trang này để view mấy cái thông số",
       {
         actionLabel: "Close",
-        duration: 20000,
+        duration: 10000,
       },
     );
   }, []);
@@ -110,7 +110,7 @@ export default function SummaryDashboardPage() {
         pointRadius: 0,
       },
       {
-        label: "Validated",
+        label: "Uploaded",
         data: [80, 140, 130, 200, 190, 220, 210],
         borderColor: "#22c55e", // green
         tension: 0.4,
@@ -253,9 +253,7 @@ export default function SummaryDashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-1">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-gray-400">
-              Trạng thái RAG
-            </h3>
+            <h3 className="text-sm font-medium text-gray-400">Nạp tài liệu</h3>
 
             <button className="flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs text-gray-400 hover:bg-white/5">
               This Week
@@ -296,12 +294,12 @@ export default function SummaryDashboardPage() {
         <div className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Indexing Volume</p>
+              <p className="text-sm text-gray-400">Lưu lượng nhúng</p>
               <h3 className="text-3xl font-semibold text-white">2.4k Docs</h3>
             </div>
 
             <button className="flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs text-gray-400 hover:bg-white/5">
-              This Week
+              Tuần này
               <HiChevronDown className="text-sm" />
             </button>
           </div>
@@ -317,7 +315,7 @@ export default function SummaryDashboardPage() {
           <div className="flex gap-16">
             <div>
               <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                Processed Traffic
+                Lưu lượng hoạt động
               </p>
               <h3 className="text-3xl font-bold tracking-tight text-white">
                 1.2 TB
@@ -329,7 +327,7 @@ export default function SummaryDashboardPage() {
 
             <div>
               <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                Total Actions
+                Số lượng hành động
               </p>
               <h3 className="text-3xl font-bold tracking-tight text-white">
                 24.5k
@@ -358,7 +356,7 @@ export default function SummaryDashboardPage() {
 
           <div className="flex flex-wrap gap-6">
             <button className="relative pb-1 text-xs font-semibold text-white">
-              All
+              Tất cả
               <span className="bg-primary absolute bottom-0 left-0 h-0.5 w-full" />
             </button>
 
@@ -369,7 +367,7 @@ export default function SummaryDashboardPage() {
 
             <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Validated
+              Uploaded
             </button>
 
             <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">

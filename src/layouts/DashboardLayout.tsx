@@ -134,10 +134,13 @@ function Sidebar() {
                   transition={{ duration: 0.2 }}
                   className="mt-2 ml-6 space-y-1"
                 >
-                  <SubItem to="/dashboard/documents/upload" label="Upload" />
-                  <SubItem to="/dashboard/documents/indexed" label="Indexed" />
-                  <SubItem to="/dashboard/documents/success" label="Success" />
-                  <SubItem to="/dashboard/documents/failed" label="Failed" />
+                  <SubItem to="/dashboard/documents" label="Tất cả" />
+                  <SubItem
+                    to="/dashboard/documents/uploaded"
+                    label="Vừa tải lên"
+                  />
+                  <SubItem to="/dashboard/documents/indexed" label="Đã nạp" />
+                  <SubItem to="/dashboard/documents/failed" label="Thất bại" />
                 </motion.div>
               </motion.div>
             )}

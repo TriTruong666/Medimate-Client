@@ -2,6 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import SummaryDashboardPage from "../pages/SummaryDashboardPage";
 import AccountDashboardPage from "../pages/AccountDashboardPage";
+import DocumentDashboardPage from "../pages/DocumentDashboardPage";
 
 export default function PrivateRoute() {
   return (
@@ -9,6 +10,10 @@ export default function PrivateRoute() {
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<SummaryDashboardPage />} />
         <Route path="/dashboard/accounts" element={<AccountDashboardPage />} />
+        <Route
+          path="/dashboard/documents"
+          element={<DocumentDashboardPage />}
+        />
       </Route>
     </Routes>
   );
