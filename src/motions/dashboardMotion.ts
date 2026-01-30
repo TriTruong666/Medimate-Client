@@ -4,7 +4,7 @@ export const dashboardContainer: Variants = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.18, // ❗ chậm hơn bình thường
+      staggerChildren: 0.18,
       delayChildren: 0.25,
       ease: "easeOut",
     },
@@ -23,8 +23,8 @@ export const dashboardItem: Variants = {
     scale: 1,
     filter: "blur(0px)",
     transition: {
-      duration: 0.55, // ❗ lâu hơn
-      ease: [0.22, 1, 0.36, 1], // easeOutQuint vibe
+      duration: 0.55,
+      ease: [0.22, 1, 0.36, 1],
     },
   },
 };

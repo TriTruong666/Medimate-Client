@@ -9,7 +9,7 @@ export default function LoginPage() {
           Vui lòng đăng nhập để truy cập vào dashboard của bạn.
         </p>
       </div>
-      <div className="relative rounded-2xl border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-8 shadow-[0_0_60px_-15px_rgba(168,85,247,0.45)] backdrop-blur-xl">
+      <div className="relative rounded-2xl border border-white/10 p-8">
         <form action="" className="space-y-5">
           {/* Email */}
           <div className="flex flex-col gap-2">

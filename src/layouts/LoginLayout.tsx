@@ -5,7 +5,7 @@ import ColorBends from "../components/ColorBend";
 export default function LoginLayout() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black">
-      {/* <div
+      <div
         className="absolute inset-0 opacity-30"
         style={{
           backgroundImage: `
@@ -14,8 +14,8 @@ export default function LoginLayout() {
         `,
           backgroundSize: "60px 60px",
         }}
-      /> */}
-      <div className="absolute inset-0">
+      />
+      {/* <div className="absolute inset-0">
         <FloatingLines
           enabledWaves={["middle", "top", "bottom"]}
           lineCount={4}
@@ -25,7 +25,7 @@ export default function LoginLayout() {
           interactive={true}
           parallax={true}
         />
-        {/* <ColorBends
+        <ColorBends
           colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
           rotation={0}
           speed={0.2}
@@ -37,8 +37,8 @@ export default function LoginLayout() {
           noise={0.1}
           transparent
           autoRotate={0}
-        /> */}
-      </div>
+        />
+      </div> */}
 
       {/* Content */}
       <div className="relative z-10 flex min-h-screen items-center justify-center">
