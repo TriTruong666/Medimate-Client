@@ -46,6 +46,10 @@ export default function DashboardLayout() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              {/* Light & Dark Mode */}
+              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10">
+                <HiBell className="text-lg text-gray-300" />
+              </button>
               {/* Notification */}
               <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10">
                 <HiBell className="text-lg text-gray-300" />
@@ -159,7 +163,7 @@ function Sidebar() {
         <SidebarItem
           to="/dashboard/images"
           icon={<HiOutlinePhotograph />}
-          label="Images"
+          label="CDN"
         />
       </nav>
 

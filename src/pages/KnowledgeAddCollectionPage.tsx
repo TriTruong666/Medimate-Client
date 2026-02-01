@@ -24,26 +24,28 @@ export default function KnowledgeAddCollectionPage() {
       label: "Thêm Collection",
     },
   ];
+  // return (
+  //   <div className="grid min-h-screen place-items-center">
+  //     <div className="w-full max-w-384 px-4">
+  //       <IndexingCollectionUI currentStep="parse" />
+  //     </div>
+  //   </div>
+  // );
   return (
     <div className="mx-auto max-w-384 space-y-6">
-      <IndexingCollectionUI currentStep={"chunk"} />
+      <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <Breadcrumb items={breadcrumbItems} />
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+            Thêm Collection
+          </h1>
+        </div>
+      </div>
+      <div className="my-10 w-full">
+        <AddCollectionForm />
+      </div>
     </div>
   );
-  //   return (
-  //     <div className="mx-auto max-w-384 space-y-6">
-  //       <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-  //         <div>
-  //           <Breadcrumb items={breadcrumbItems} />
-  //           <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-  //             Thêm Collection
-  //           </h1>
-  //         </div>
-  //       </div>
-  //       <div className="my-10 w-full">
-  //         <AddCollectionForm />
-  //       </div>
-  //     </div>
-  //   );
 }
 
 type SelectedDoc = {
@@ -87,7 +89,7 @@ function AddCollectionForm() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             placeholder="Mô tả ngắn gọn mục đích collection..."
-            className="focus:border-primary focus:ring-primary w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white placeholder-gray-500 transition outline-none focus:ring-1"
+            className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 pr-4 text-sm text-gray-200 placeholder-gray-500 backdrop-blur-md outline-none hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none"
           />
         </div>
         {/* Loại collection */}
@@ -216,59 +218,59 @@ function IndexingCollectionUI({
   const progress = steps[currentIndex]?.percent ?? 0;
 
   return (
-    <div className="flex min-h-[60vh] flex-col text-white">
+    <div className="flex min-h-[60vh] flex-col items-center text-white">
       {/* Title */}
       <h2 className="text-2xl font-semibold tracking-tight">
         Indexing collection
       </h2>
-      <p className="mt-2 max-w-xl text-sm text-white/60">
+      <p className="mt-2 max-w-xl text-center text-sm text-white/60">
         Hệ thống đang xử lý tài liệu và xây dựng dữ liệu tìm kiếm.
       </p>
 
-      {/* Progress bar */}
+      {/* Progress */}
       <div className="mt-8 h-1 w-full max-w-xl rounded-full bg-white/10">
         <div
-          className="h-1 rounded-full bg-white transition-all duration-500"
+          className="h-1 rounded-full bg-white/80 transition-[width] duration-700 ease-out"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* Percent */}
       <div className="mt-2 text-xs text-white/40">{progress}% hoàn thành</div>
 
-      {/* Steps */}
-      <div className="mt-8 space-y-3 text-sm">
+      {/* Steps – LEFT ALIGNED */}
+      <div className="mt-8 w-full max-w-xl space-y-3 text-sm">
         {steps.map((step, index) => {
           const isActive = index === currentIndex;
           const isDone = index < currentIndex;
 
           return (
-            <div
-              key={step.key}
-              className={`flex items-start gap-3 transition ${
-                isActive
-                  ? "text-white"
-                  : isDone
-                    ? "text-white/70"
-                    : "text-white/40"
-              }`}
-            >
-              <span className="mt-1 text-xs">
-                {isDone ? "✓" : isActive ? "●" : "○"}
-              </span>
+            <div className="flex items-center justify-between">
+              <div
+                key={step.key}
+                className={`flex items-start gap-3 transition ${
+                  isActive
+                    ? "text-white"
+                    : isDone
+                      ? "text-white/70"
+                      : "text-white/40"
+                }`}
+              >
+                <span className="mt-1 shrink-0 text-xs">
+                  {isDone ? "✓" : isActive ? "●" : "○"}
+                </span>
 
-              <div>
-                <div className={`font-medium ${isActive ? "" : "font-normal"}`}>
-                  {step.label}
+                <div>
+                  <div className="font-medium">{step.label}</div>
+                  <div className="text-xs opacity-70">{step.description}</div>
                 </div>
-                <div className="text-xs opacity-70">{step.description}</div>
               </div>
+              <span className="text-xs text-white/40">10s</span>
             </div>
           );
         })}
       </div>
 
-      {/* Footer note */}
+      {/* Footer */}
       <div className="mt-10 text-xs text-white/40">
         Vui lòng không đóng trang trong quá trình xử lý
       </div>

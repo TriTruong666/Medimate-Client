@@ -209,7 +209,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm tài liệu..."
-            className="focus:border-primary w-full rounded-xl border border-white/10 bg-white/5 py-2 pr-3 pl-9 text-sm text-white placeholder-gray-500 outline-none"
+            className="h-9 w-full rounded-xl border border-white/10 bg-white/5 pr-4 pl-11 text-sm text-gray-200 backdrop-blur-md transition-all placeholder:text-gray-500 hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-2 focus:ring-white/10 focus:outline-none"
           />
         </div>
 

@@ -5,6 +5,7 @@ import AccountDashboardPage from "../pages/AccountDashboardPage";
 import DocumentDashboardPage from "../pages/DocumentDashboardPage";
 import KnowledgeBasePage from "../pages/KnowledgeBasePage";
 import KnowledgeAddCollectionPage from "../pages/KnowledgeAddCollectionPage";
+import ChatbotPage from "../pages/ChatbotPage";
 
 export default function PrivateRoute() {
   return (
@@ -22,6 +23,7 @@ export default function PrivateRoute() {
           path="/dashboard/rag/new-collection"
           element={<KnowledgeAddCollectionPage />}
         />
+        <Route path="/dashboard/chatbot" element={<ChatbotPage />} />
       </Route>
     </Routes>
   );
