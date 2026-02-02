@@ -25,12 +25,14 @@ import {
   NotificationDropdown,
 } from "../components/Dropdown";
 import { DarkModeIconSwitch } from "../components/Theme";
+import { ChatContainer } from "../components/Popup";
 
 export default function DashboardLayout() {
   return (
     <div className="bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
       <ModalContainer />
       <ToastContainer />
+      <ChatContainer />
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">

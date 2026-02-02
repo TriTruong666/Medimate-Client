@@ -1,14 +1,9 @@
-import {
-  HiOutlineDatabase,
-  HiOutlinePlus,
-  HiOutlineSparkles,
-} from "react-icons/hi";
+import { HiOutlinePlus } from "react-icons/hi";
 import Breadcrumb from "../components/Breadcrumb";
 import { useState } from "react";
 import GlassSelect from "../components/Select";
 import { openModalAtom } from "../stores/modalStore";
 import { useAtom } from "jotai";
-import { FiFileText } from "react-icons/fi";
 
 export default function KnowledgeAddCollectionPage() {
   const breadcrumbItems = [

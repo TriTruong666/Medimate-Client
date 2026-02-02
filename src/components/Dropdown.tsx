@@ -1,14 +1,12 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  HiBell,
-  HiChevronDown,
-  HiUserCircle,
-  HiUserGroup,
-} from "react-icons/hi";
+import { HiBell, HiChevronDown, HiUserCircle } from "react-icons/hi";
 import { formatRelativeTime } from "../utils/format";
 import { useClickOutside, useEscapeKey } from "../hooks/useDropdown";
 import { AiFillMessage } from "react-icons/ai";
+import { useAtom } from "jotai";
+import { openPopupAtom } from "../stores/chatPopupStore";
+import type { ChatUserItemProps } from "../types/Popup";
 
 export function ChatUserDropdown() {
   const [open, setOpen] = useState(false);
@@ -50,18 +48,21 @@ export function ChatUserDropdown() {
             {/* User list */}
             <div className="max-h-105 overflow-y-auto">
               <ChatUserItem
+                id="chat1"
                 name="Medimate"
                 message="You can ask me anything about your health"
                 online
               />
 
               <ChatUserItem
+                id="chat2"
                 name="Support Team"
                 message="Your request has been reviewed."
                 online
               />
 
               <ChatUserItem
+                id="chat3"
                 name="AI Assistant"
                 message="Search index completed successfully."
               />
@@ -75,21 +76,16 @@ export function ChatUserDropdown() {
   );
 }
 
-type ChatUserItemProps = {
-  name: string;
-  message: string;
-  online?: boolean;
-  active?: boolean;
-};
-
-function ChatUserItem({ name, message, online, active }: ChatUserItemProps) {
+function ChatUserItem({ name, message, online, id }: ChatUserItemProps) {
+  const [, openPopup] = useAtom(openPopupAtom);
   return (
     <div
-      className={`group relative flex gap-3 px-4 py-3 transition hover:bg-white/5 ${active ? "bg-white/10" : ""} `}
+      onClick={() => openPopup(id)}
+      className={`group relative flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-white/5`}
     >
       {/* Avatar */}
       <div className="relative h-10 w-10 shrink-0">
-        <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
+        <div className="flex h-full w-full items-center justify-center rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
           {name.charAt(0)}
         </div>
 
@@ -103,7 +99,6 @@ function ChatUserItem({ name, message, online, active }: ChatUserItemProps) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="flex items-center justify-between">
           <p className="text-sm font-medium text-white/90">{name}</p>
-          {active && <span className="text-[10px] text-blue-400"></span>}
         </div>
 
         <p className="mt-0.5 line-clamp-1 text-xs text-white/40 group-hover:text-white/60">
