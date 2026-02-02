@@ -23,7 +23,6 @@ import { HiChevronDown } from "react-icons/hi";
 import { MdOutlineShowChart } from "react-icons/md";
 import { useEffect } from "react";
 import { toast } from "../hooks/useToast";
-import { cardContainer, cardItem } from "../motions/cardMotion";
 import { dashboardContainer, dashboardItem } from "../motions/dashboardMotion";
 
 ChartJS.register(
@@ -37,7 +36,6 @@ ChartJS.register(
   PointElement,
 );
 export default function SummaryDashboardPage() {
-  // Tắt khi team đã biết
   useEffect(() => {
     toast.warn(
       "Trang này chỉ là DEMO",
@@ -72,7 +70,7 @@ export default function SummaryDashboardPage() {
     datasets: [
       {
         data: [65, 45, 30, 80, 55, 75],
-        backgroundColor: "#6366f1",
+        backgroundColor: "#EC4899",
         borderRadius: 6,
         maxBarThickness: 36,
       },

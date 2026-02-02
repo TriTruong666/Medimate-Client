@@ -50,7 +50,7 @@
             }
         }
 
-
+@custom-variant dark (&:where(.dark, .dark *));
         
 body {
   margin: 0;

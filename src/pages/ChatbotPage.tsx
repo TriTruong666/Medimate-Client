@@ -9,12 +9,12 @@ import ChatResponseMarkdown from "../components/ChatMarkdown";
 export default function ChatbotPage() {
   return (
     <div className="mx-auto max-w-384">
-      {/* <div className="flex min-h-[80vh] max-w-384 items-center justify-center">
+      <div className="flex min-h-[80vh] max-w-384 items-center justify-center">
         <WelcomeChatbot />
-      </div> */}
-      <div className="flex h-[80vh] max-w-384 items-center justify-center">
-        <MainChat />
       </div>
+      {/* <div className="flex h-[80vh] max-w-384 items-center justify-center">
+        <MainChat />
+      </div> */}
     </div>
   );
 }
@@ -54,8 +54,8 @@ function WelcomeChatbot() {
           className="font-sans text-[32px]"
           delay={50}
           duration={1.25}
-          ease="bounce.out"
-          splitType="chars"
+          ease="power3.out"
+          splitType="words, chars"
           from={{ opacity: 0, y: 40 }}
           to={{ opacity: 1, y: 0 }}
           threshold={0.1}

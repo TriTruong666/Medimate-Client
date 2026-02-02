@@ -10,17 +10,21 @@ import {
   HiOutlineQuestionMarkCircle,
   HiChevronDown,
   HiSearch,
-  HiBell,
-  HiUserCircle,
 } from "react-icons/hi";
 import { IoSync } from "react-icons/io5";
 import medimateLogo from "../assets/medimate-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
-import { useClickOutside, useEscapeKey } from "../hooks/useDropdown";
+import { useEffect, useMemo, useState } from "react";
+
 import { ToastContainer } from "../components/ToastContainer";
 import { NavLink, Outlet } from "react-router-dom";
 import ModalContainer from "../components/ModalContainer";
+import {
+  AvatarDropdown,
+  ChatUserDropdown,
+  NotificationDropdown,
+} from "../components/Dropdown";
+import { DarkModeIconSwitch } from "../components/Theme";
 
 export default function DashboardLayout() {
   return (
@@ -30,45 +34,77 @@ export default function DashboardLayout() {
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">
-          <header className="dark:border-border-dark sticky top-0 z-10 flex items-center justify-between border-b border-transparent p-4 md:p-6">
-            <div className="flex flex-1 items-center gap-4">
-              <div className="group relative hidden w-full max-w-md md:block">
-                <HiSearch
-                  size={18}
-                  className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-white"
-                />
-
-                <input
-                  type="text"
-                  placeholder="Search documents..."
-                  className="h-11 w-full rounded-xl border border-white/10 bg-white/5 pr-4 pl-11 text-sm text-gray-200 backdrop-blur-md transition-all placeholder:text-gray-500 hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-2 focus:ring-white/10 focus:outline-none"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              {/* Light & Dark Mode */}
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10">
-                <HiBell className="text-lg text-gray-300" />
-              </button>
-              {/* Notification */}
-              <button className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition-all hover:bg-white/10">
-                <HiBell className="text-lg text-gray-300" />
-
-                {/* Badge */}
-                <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-                  3
-                </span>
-              </button>
-
-              <AvatarDropdown />
-            </div>
-          </header>
-          <div className="flex-1 overflow-y-auto scroll-smooth p-4 md:p-8">
+          <Navbar />
+          <div className="flex-1 overflow-y-auto scroll-smooth py-4 md:py-8">
             <Outlet />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function Navbar() {
+  const [placeholder, setPlaceholder] = useState("");
+  const [index, setIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const placeholderTexts = useMemo(
+    () => [
+      "Tìm collection đang index...",
+      "Tôi muốn chat với AI...",
+      "Tổng quan hệ thống...",
+    ],
+    [],
+  );
+  useEffect(() => {
+    if (placeholderTexts.length === 0) return;
+
+    const currentText = placeholderTexts[index];
+    const typingSpeed = isDeleting ? 80 : 70;
+    const delayBeforeDeleting = 4000;
+
+    const timeout = setTimeout(() => {
+      if (!isDeleting && charIndex < currentText.length) {
+        setPlaceholder((prev) => prev + currentText[charIndex]);
+        setCharIndex((prev) => prev + 1);
+      } else if (isDeleting && charIndex > 0) {
+        setPlaceholder((prev) => prev.slice(0, -1));
+        setCharIndex((prev) => prev - 1);
+      } else if (!isDeleting && charIndex === currentText.length) {
+        setTimeout(() => setIsDeleting(true), delayBeforeDeleting);
+      } else if (isDeleting && charIndex === 0) {
+        setIsDeleting(false);
+        setIndex((prev) => (prev + 1) % placeholderTexts.length);
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timeout);
+  }, [charIndex, isDeleting, index, placeholderTexts]);
+  return (
+    <header className="dark:border-border-dark sticky top-0 z-10 flex items-center justify-between border-b border-transparent p-4 md:p-6">
+      <div className="flex flex-1 items-center gap-4">
+        <div className="group relative hidden w-full max-w-md md:block">
+          <HiSearch
+            size={18}
+            className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-white"
+          />
+
+          <input
+            type="text"
+            placeholder={placeholder}
+            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 pr-4 pl-11 text-sm text-gray-200 backdrop-blur-md transition-all placeholder:text-gray-500 hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-2 focus:ring-white/10 focus:outline-none"
+          />
+        </div>
+      </div>
+      <div className="flex items-center gap-3">
+        <DarkModeIconSwitch />
+        <ChatUserDropdown />
+        <NotificationDropdown />
+        <AvatarDropdown />
+      </div>
+    </header>
   );
 }
 
@@ -235,69 +271,5 @@ export function SubItem({ label, to }: SubItemProps) {
     >
       {label}
     </NavLink>
-  );
-}
-
-function AvatarDropdown() {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useClickOutside(ref, () => setOpen(false));
-  useEscapeKey(() => setOpen(false));
-
-  return (
-    <div ref={ref} className="relative">
-      {/* Trigger */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 backdrop-blur-md transition-all hover:bg-white/10"
-      >
-        <HiUserCircle className="text-2xl text-gray-300" />
-        <span className="hidden text-sm text-gray-200 md:block">
-          Trí Trương
-        </span>
-        <HiChevronDown
-          className={`text-sm transition-transform ${open ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {/* Dropdown */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#050505] shadow-xl backdrop-blur-xl"
-          >
-            <DropdownItem label="Tài khoản" />
-            <DropdownItem label="Cài đặt" />
-            <div className="h-px bg-white/10" />
-            <DropdownItem label="Đăng xuất" danger />
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
-function DropdownItem({
-  label,
-  danger = false,
-}: {
-  label: string;
-  danger?: boolean;
-}) {
-  return (
-    <button
-      className={`w-full px-4 py-2 text-left text-sm transition-colors ${
-        danger
-          ? "text-red-400 hover:bg-red-500/10"
-          : "text-gray-300 hover:bg-white/5 hover:text-white"
-      } `}
-    >
-      {label}
-    </button>
   );
 }
