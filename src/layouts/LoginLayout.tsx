@@ -25,6 +25,9 @@ export default function LoginLayout() {
           interactive={true}
           parallax={true}
         />
+
+      </div> */}
+      {/* <div className="absolute inset-0">
         <ColorBends
           colors={["#ff5c7a", "#8a5cff", "#00ffd1"]}
           rotation={0}

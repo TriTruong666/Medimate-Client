@@ -4,13 +4,13 @@ import {
   HiOutlineViewGrid,
   HiOutlineUsers,
   HiOutlineFolder,
-  HiOutlineChatAlt2,
   HiOutlinePhotograph,
   HiOutlineCog,
   HiOutlineQuestionMarkCircle,
   HiChevronDown,
   HiSearch,
 } from "react-icons/hi";
+import { GrTransaction } from "react-icons/gr";
 import { IoSync } from "react-icons/io5";
 import medimateLogo from "../assets/medimate-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,6 +26,8 @@ import {
 } from "../components/Dropdown";
 import { DarkModeIconSwitch } from "../components/Theme";
 import { ChatContainer } from "../components/Popup";
+import { AiOutlineRobot } from "react-icons/ai";
+import { RiVipDiamondLine } from "react-icons/ri";
 
 export default function DashboardLayout() {
   return (
@@ -142,6 +144,16 @@ function Sidebar() {
           icon={<HiOutlineUsers />}
           label="Tài khoản"
         />
+        <SidebarItem
+          to="/dashboard/transaction"
+          icon={<GrTransaction />}
+          label="Giao dịch"
+        />
+        <SidebarItem
+          to="/dashboard/packages"
+          icon={<RiVipDiamondLine />}
+          label="Hội viên"
+        />
 
         {/* Documents */}
         <div className="">
@@ -195,7 +207,7 @@ function Sidebar() {
         <SidebarItem to="/dashboard/rag" icon={<IoSync />} label="RAG Core" />
         <SidebarItem
           to="/dashboard/chatbot"
-          icon={<HiOutlineChatAlt2 />}
+          icon={<AiOutlineRobot />}
           label="Chatbot"
         />
         <SidebarItem
