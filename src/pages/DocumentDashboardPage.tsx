@@ -308,7 +308,7 @@ function DocumentCard({ data }: DocumentCardProps) {
     <motion.div
       variants={cardItem}
       whileHover={{ y: -4 }}
-      className="group dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-100 bg-white/80 p-4 backdrop-blur transition-shadow hover:shadow-lg dark:bg-white/5"
+      className="group dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-100 bg-white/80 p-4 backdrop-blur transition-colors duration-300 hover:border-white/20 hover:bg-white/10 dark:bg-white/5"
     >
       {/* Header */}
       <div className="flex items-start gap-3">

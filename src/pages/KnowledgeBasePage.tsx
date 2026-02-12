@@ -144,7 +144,7 @@ function DataSourceCard({
   return (
     <motion.div
       variants={cardItem}
-      className="group dark:border-border-dark relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white/80 backdrop-blur transition-all hover:shadow-xl dark:bg-white/5"
+      className="group dark:border-border-dark relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white/80 backdrop-blur transition-all hover:border-white/20 hover:bg-white/10 dark:bg-white/5"
     >
       {/* Body */}
       <div className="relative space-y-5 p-6">
