@@ -46,7 +46,7 @@ export default function KnowledgeBasePage() {
               ]}
             />
           </div>
-          <a href="/dashboard/rag/new-collection" className="btn-primary">
+          <a href="/dashboard/rag/new" className="btn-primary">
             <FiPlus />
             Thêm Collection
           </a>
@@ -94,7 +94,7 @@ export default function KnowledgeBasePage() {
 
         {/* Create New */}
         <a
-          href="/dashboard/rag/new-collection"
+          href="/dashboard/rag/new"
           className="group hover:border-primary/50 hover:bg-primary/5 dark:border-border-dark flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 p-8 transition"
         >
           <div className="group-hover:bg-primary/10 group-hover:text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition dark:bg-white/5">

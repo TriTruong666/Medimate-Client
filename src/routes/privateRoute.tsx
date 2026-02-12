@@ -8,6 +8,8 @@ import KnowledgeAddCollectionPage from "../pages/KnowledgeAddCollectionPage";
 import ChatbotPage from "../pages/ChatbotPage";
 import TransactionDashboardPage from "../pages/TransactionDashboardPage";
 import AssetsDashboardPage from "../pages/AssetsDashboardPage";
+import { PackageDashboardPage } from "../pages/PackageDashboardPage";
+import PackageAddPage from "../pages/PackageAddPage";
 
 export default function PrivateRoute() {
   return (
@@ -22,7 +24,7 @@ export default function PrivateRoute() {
 
         <Route path="/dashboard/rag" element={<KnowledgeBasePage />} />
         <Route
-          path="/dashboard/rag/new-collection"
+          path="/dashboard/rag/new"
           element={<KnowledgeAddCollectionPage />}
         />
         <Route path="/dashboard/chatbot" element={<ChatbotPage />} />
@@ -31,6 +33,8 @@ export default function PrivateRoute() {
           element={<TransactionDashboardPage />}
         />
         <Route path="/dashboard/assets" element={<AssetsDashboardPage />} />
+        <Route path="/dashboard/packages" element={<PackageDashboardPage />} />
+        <Route path="/dashboard/packages/new" element={<PackageAddPage />} />
       </Route>
     </Routes>
   );

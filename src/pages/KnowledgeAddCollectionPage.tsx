@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import GlassSelect from "../components/Select";
 import { openModalAtom } from "../stores/modalStore";
 import { useAtom } from "jotai";
+import { IoArrowBack } from "react-icons/io5";
 const breadcrumbItems = [
   {
     label: "Dashboard",
@@ -349,7 +350,16 @@ function IndexingCollectionUI({
 
       {/* Footer */}
       <div className="mt-10 text-xs text-white/40">
-        Vui lòng không đóng trang trong quá trình xử lý
+        Bạn có thể đóng cửa sổ này, tiến trình này có thể mất rất nhiều thời
+        gian
+      </div>
+      <div className="mt-5">
+        <a
+          href="/dashboard/rag"
+          className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10"
+        >
+          Quay lại <IoArrowBack />
+        </a>
       </div>
     </div>
   );

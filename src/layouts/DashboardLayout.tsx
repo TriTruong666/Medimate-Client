@@ -4,7 +4,6 @@ import {
   HiOutlineViewGrid,
   HiOutlineUsers,
   HiOutlineFolder,
-  HiOutlinePhotograph,
   HiOutlineCog,
   HiOutlineQuestionMarkCircle,
   HiChevronDown,
@@ -27,7 +26,7 @@ import {
 import { DarkModeIconSwitch } from "../components/Theme";
 import { ChatContainer } from "../components/Popup";
 import { AiOutlineRobot } from "react-icons/ai";
-import { RiVipDiamondLine } from "react-icons/ri";
+import { RiImageAiLine, RiVipDiamondLine } from "react-icons/ri";
 
 export default function DashboardLayout() {
   return (
@@ -113,7 +112,9 @@ function Navbar() {
 }
 
 function Sidebar() {
-  const [openDocs, setOpenDocs] = useState(true);
+  const [openDocs, setOpenDocs] = useState(false);
+  const [openPackages, setOpenPackages] = useState(false);
+  const [openAssets, setOpenAssets] = useState(false);
 
   return (
     <aside className="fixed z-20 hidden h-full w-64 flex-col border-r border-white/5 bg-[#050505] md:relative md:flex">
@@ -148,11 +149,6 @@ function Sidebar() {
           to="/dashboard/transaction"
           icon={<GrTransaction />}
           label="Giao dịch"
-        />
-        <SidebarItem
-          to="/dashboard/packages"
-          icon={<RiVipDiamondLine />}
-          label="Hội viên"
         />
 
         {/* Documents */}
@@ -210,11 +206,104 @@ function Sidebar() {
           icon={<AiOutlineRobot />}
           label="Chatbot"
         />
-        <SidebarItem
-          to="/dashboard/assets"
-          icon={<HiOutlinePhotograph />}
-          label="Tài nguyên"
-        />
+        {/* Packages */}
+        <div className="">
+          {/* Parent */}
+          <button
+            onClick={() => setOpenPackages((v: any) => !v)}
+            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <div className="flex items-center gap-3">
+              <RiVipDiamondLine className="text-lg" />
+              Gói
+            </div>
+
+            <motion.span
+              animate={{ rotate: openPackages ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <HiChevronDown className="text-lg" />
+            </motion.span>
+          </button>
+
+          {/* Sub menu */}
+          <AnimatePresence initial={false}>
+            {openPackages && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <motion.div
+                  initial={{ y: -4 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-2 ml-6 space-y-1"
+                >
+                  <SubItem to="/dashboard/packages" label="Quản lý gói" />
+                  <SubItem
+                    to="/dashboard/packages/owner"
+                    label="Danh sách hội viên"
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+        {/* Assets */}
+        <div className="">
+          {/* Parent */}
+          <button
+            onClick={() => setOpenAssets((v: any) => !v)}
+            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+          >
+            <div className="flex items-center gap-3">
+              <RiImageAiLine className="text-lg" />
+              Lưu trữ
+            </div>
+
+            <motion.span
+              animate={{ rotate: openAssets ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <HiChevronDown className="text-lg" />
+            </motion.span>
+          </button>
+
+          {/* Sub menu */}
+          <AnimatePresence initial={false}>
+            {openAssets && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeOut" }}
+                className="overflow-hidden"
+              >
+                <motion.div
+                  initial={{ y: -4 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: -4 }}
+                  transition={{ duration: 0.2 }}
+                  className="mt-2 ml-6 space-y-1"
+                >
+                  <SubItem to="/dashboard/assets" label="Tất cả" />
+                  <SubItem
+                    to="/dashboard/assets/prescription"
+                    label="Toa thuốc"
+                  />
+                  <SubItem
+                    to="/dashboard/packages/certificate"
+                    label="Chứng chỉ bác sĩ"
+                  />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </nav>
 
       {/* Bottom */}
