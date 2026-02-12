@@ -8,7 +8,7 @@ import ChatResponseMarkdown from "../components/ChatMarkdown";
 
 export default function ChatbotPage() {
   return (
-    <div className="mx-auto max-w-384">
+    <div className="page-layout">
       <div className="flex min-h-[80vh] max-w-384 items-center justify-center">
         <WelcomeChatbot />
       </div>

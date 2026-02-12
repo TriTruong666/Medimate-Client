@@ -26,7 +26,7 @@ export default function KnowledgeBasePage() {
     },
   ];
   return (
-    <div className="mx-auto max-w-384 space-y-6">
+    <div className="page-layout">
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />

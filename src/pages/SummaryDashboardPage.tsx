@@ -156,7 +156,7 @@ export default function SummaryDashboardPage() {
   };
 
   return (
-    <div className="mx-auto max-w-384 space-y-6">
+    <div className="page-layout">
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <p className="mb-1 text-xs tracking-wider text-gray-500 uppercase dark:text-gray-400">

@@ -22,7 +22,7 @@ export default function KnowledgeAddCollectionPage() {
   const [currentStep, setCurrentStep] = useState<IndexingStep>("parse");
 
   return (
-    <div className="mx-auto max-w-384 space-y-6">
+    <div className="page-layout">
       {!isIndexing ? (
         <>
           <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">

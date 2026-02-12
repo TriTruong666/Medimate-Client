@@ -31,6 +31,9 @@
   .btn-primary {
     @apply from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white transition-all hover:scale-[1.03]
   }
+  .page-layout {
+    @apply mx-auto w-full max-w-350 space-y-6 px-4 sm:px-6 lg:px-8;
+  }
 }
 
  @layer utilities {
