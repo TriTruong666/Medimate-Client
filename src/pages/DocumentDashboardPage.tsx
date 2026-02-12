@@ -238,7 +238,7 @@ export default function DocumentDashboardPage() {
         <div className="my-8">
           <DocumentTable data={demoData} />
 
-          <Pagination page={1} pageSize={20} total={500} />
+          <Pagination page={1} pageSize={20} total={demoData.length} />
         </div>
       )}
 
@@ -267,18 +267,19 @@ const columns: TableColumn[] = [
     key: "type",
     label: "Loại",
     width: "w-[15%]",
+    align: "center",
   },
   {
     key: "size",
     label: "Kích thước",
     width: "w-[15%]",
-    align: "left",
+    align: "center",
   },
   {
     key: "status",
     label: "Trạng thái",
     width: "w-[20%]",
-    align: "left",
+    align: "center",
   },
   {
     key: "actions",
@@ -361,7 +362,7 @@ function DocumentTable({ data }: DocumentTableProps) {
           {columns.map((col, i) => (
             <th
               key={col.key}
-              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left!"} ${
+              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
                 i < columns.length - 1
                   ? "dark:border-border-dark border-r border-gray-100"
                   : ""
@@ -395,7 +396,7 @@ function DocumentTable({ data }: DocumentTableProps) {
             </td>
 
             {/* Type */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
               <span className="text-sm text-gray-600 dark:text-gray-300">
                 {row.typeLabel}
               </span>

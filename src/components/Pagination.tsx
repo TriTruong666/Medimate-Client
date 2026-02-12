@@ -17,10 +17,15 @@ export function Pagination({
   return (
     <div className="dark:border-border-dark flex items-center justify-between border border-gray-100 px-4 py-3">
       {/* Info */}
-      <span className="text-xs text-gray-500 dark:text-gray-400">
-        Page <span className="font-medium">{page}</span> of{" "}
-        <span className="font-medium">{totalPages}</span>
-      </span>
+      <div className="flex items-center space-x-4">
+        <span className="text-xs text-gray-500 dark:text-white">
+          Tổng {total} bản ghi
+        </span>
+        <span className="text-xs text-gray-500 dark:text-gray-400">
+          Trang <span className="font-medium">{page}</span> trên{" "}
+          <span className="font-medium">{totalPages}</span>
+        </span>
+      </div>
 
       {/* Controls */}
       <div className="flex items-center gap-2">

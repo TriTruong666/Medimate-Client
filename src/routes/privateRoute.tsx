@@ -6,6 +6,7 @@ import DocumentDashboardPage from "../pages/DocumentDashboardPage";
 import KnowledgeBasePage from "../pages/KnowledgeBasePage";
 import KnowledgeAddCollectionPage from "../pages/KnowledgeAddCollectionPage";
 import ChatbotPage from "../pages/ChatbotPage";
+import TransactionDashboardPage from "../pages/TransactionDashboardPage";
 
 export default function PrivateRoute() {
   return (
@@ -24,6 +25,10 @@ export default function PrivateRoute() {
           element={<KnowledgeAddCollectionPage />}
         />
         <Route path="/dashboard/chatbot" element={<ChatbotPage />} />
+        <Route
+          path="/dashboard/transaction"
+          element={<TransactionDashboardPage />}
+        />
       </Route>
     </Routes>
   );

@@ -49,7 +49,7 @@ const columns: TableColumn[] = [
   {
     key: "info",
     label: "Thông tin cá nhân",
-    width: "w-[30%]",
+    width: "w-[35%]",
   },
   {
     key: "phone",
@@ -59,14 +59,14 @@ const columns: TableColumn[] = [
   {
     key: "role",
     label: "Chức vụ",
-    width: "w-[20%]",
-    align: "left",
+    width: "w-[15%]",
+    align: "center",
   },
   {
     key: "status",
     label: "Trạng thái",
     width: "w-[15%]",
-    align: "left",
+    align: "center",
   },
   {
     key: "actions",
@@ -115,6 +115,7 @@ export default function AccountDashboardPage() {
 
   return (
     <div className="page-layout">
+      {/* Header */}
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
@@ -147,10 +148,10 @@ export default function AccountDashboardPage() {
           </button>
         </div>
       </div>
+      {/* Content */}
       <div className="my-8">
         <AccountTable data={demoData} />
-
-        <Pagination page={1} pageSize={20} total={4} />
+        <Pagination page={1} pageSize={20} total={demoData.length} />
       </div>
     </div>
   );
@@ -164,7 +165,7 @@ function AccountTable({ data }: AccountTableProps) {
           {columns.map((col, i) => (
             <th
               key={col.key}
-              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left!"} ${
+              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
                 i < columns.length - 1
                   ? "dark:border-border-dark border-r border-gray-100"
                   : ""
