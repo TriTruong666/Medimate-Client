@@ -20,7 +20,7 @@ export function ChatPopup({ chatId }: ChatPopupProps) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 40, scale: 0.95 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="flex h-105 w-85 flex-col rounded-xl border border-white/10 bg-[#0b0b0b] shadow-2xl backdrop-blur-xl"
+      className="flex h-105 w-85 flex-col rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl"
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">

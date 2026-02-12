@@ -30,7 +30,7 @@ export function UploadDocumentModal() {
   const [, closeModal] = useAtom(closeModalAtom);
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 shadow-[0_24px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl transition-shadow hover:shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
         <h2 className="text-base font-semibold tracking-tight text-white">
@@ -185,7 +185,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
   };
 
   return (
-    <div className="flex w-130 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 shadow-[0_24px_60px_rgba(0,0,0,0.6)] backdrop-blur-xl">
+    <div className="flex w-130 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6">
         <h2 className="text-base font-semibold text-white">

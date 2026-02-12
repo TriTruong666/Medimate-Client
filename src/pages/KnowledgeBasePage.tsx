@@ -46,10 +46,13 @@ export default function KnowledgeBasePage() {
               ]}
             />
           </div>
-          <button className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white shadow-lg transition-all hover:scale-[1.03]">
+          <a
+            href="/dashboard/rag/new-collection"
+            className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white transition-all hover:scale-[1.03]"
+          >
             <FiPlus />
             Thêm Collection
-          </button>
+          </a>
         </div>
       </div>
       <motion.div
@@ -62,16 +65,16 @@ export default function KnowledgeBasePage() {
           icon={<RiSave2Line className="text-xl" />}
           title="Tài liệu luật"
           description="Kho lưu trữ tuân thủ và hợp đồng"
-          status={{ label: "Indexed", color: "green" }}
-          documents="452 files"
+          status={{ label: "Hoạt động", color: "green" }}
+          documents="452 tài liệu"
         />
 
         <DataSourceCard
           icon={<FiBook className="text-xl" />}
           title="Technical Manuals"
           description="Sơ đồ mạch và hướng dẫn phần cứng"
-          status={{ label: "Indexing 75%", color: "blue", progress: 75 }}
-          documents="1,204 files"
+          status={{ label: "Đang nạp 75%", color: "blue", progress: 75 }}
+          documents="1,204 tài liệu"
           footerLeft={
             <span className="text-xs text-gray-500 italic dark:text-gray-400">
               Đang nạp...
@@ -83,8 +86,8 @@ export default function KnowledgeBasePage() {
           icon={<FiMessageCircle className="text-xl" />}
           title="Hỗ trợ"
           description="Nhật ký trò chuyện và phiếu yêu cầu trước đây"
-          status={{ label: "Inactive", color: "gray" }}
-          documents="8,421 files"
+          status={{ label: "Ngưng hoạt động", color: "gray" }}
+          documents="8,421 tài liệu"
           footerLeft={
             <span className="text-xs text-gray-500 dark:text-gray-400">
               Paused 2 days ago
@@ -208,7 +211,7 @@ function DataSourceCard({
         </div>
 
         <button className="text-primary flex items-center gap-1 text-sm font-medium transition hover:gap-2">
-          View details
+          Chi tiết
           <HiOutlineArrowRight className="text-base" />
         </button>
       </div>

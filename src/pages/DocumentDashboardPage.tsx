@@ -5,13 +5,10 @@ import Breadcrumb from "../components/Breadcrumb";
 import { MdOutlineDriveFolderUpload } from "react-icons/md";
 import { Badge } from "../components/Badge";
 import {
-  HiOutlineDocumentText,
   HiOutlineDownload,
   HiOutlinePencil,
   HiOutlineTrash,
   HiOutlineRefresh,
-  HiOutlineChevronLeft,
-  HiOutlineChevronRight,
 } from "react-icons/hi";
 import {
   BsFiletypeJson,
@@ -28,6 +25,7 @@ import { useAtom } from "jotai";
 import { openModalAtom } from "../stores/modalStore";
 import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
 import GlassSelect from "../components/Select";
+import { Pagination } from "../components/Pagination";
 
 type DocumentRow = {
   name: string;
@@ -46,7 +44,7 @@ type DocumentRow = {
     | "html"
     | "md";
   size: string;
-  status: "uploaded" | "indexed" | "failed";
+  status: "uploaded" | "indexed" | "failed" | "indexing";
 };
 
 type ColumnKey = "name" | "type" | "size" | "status" | "actions";
@@ -68,12 +66,7 @@ type DocumentCardProps = {
 type DocumentTableProps = {
   data: DocumentRow[];
 };
-type PaginationProps = {
-  page: number;
-  pageSize: number;
-  total: number;
-  onPageChange?: (page: number) => void;
-};
+
 export default function DocumentDashboardPage() {
   const [type, setType] = useState("");
   const [, openModal] = useAtom(openModalAtom);
@@ -115,7 +108,7 @@ export default function DocumentDashboardPage() {
       fileType: "docx",
       typeLabel: "DOCX",
       size: "1.2 MB",
-      status: "failed",
+      status: "indexing",
     },
     {
       name: "Medimate.docx",
@@ -237,7 +230,7 @@ export default function DocumentDashboardPage() {
 
           <button
             onClick={() => openModal("upload")}
-            className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white shadow-lg transition-all hover:scale-[1.03]"
+            className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white transition-all hover:scale-[1.03]"
           >
             <MdOutlineDriveFolderUpload />
             Thêm tài liệu
@@ -313,7 +306,7 @@ function DocumentCardGrid({ data }: DocumentCardGridProps) {
   );
 }
 
-export function DocumentCard({ data }: DocumentCardProps) {
+function DocumentCard({ data }: DocumentCardProps) {
   return (
     <motion.div
       variants={cardItem}
@@ -363,7 +356,7 @@ export function DocumentCard({ data }: DocumentCardProps) {
   );
 }
 
-export function DocumentTable({ data }: DocumentTableProps) {
+function DocumentTable({ data }: DocumentTableProps) {
   return (
     <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
       <thead>
@@ -538,63 +531,16 @@ function FileIcon({ type }: { type: DocumentRow["fileType"] }) {
 function StatusBadge({
   status,
 }: {
-  status: "uploaded" | "indexed" | "failed";
+  status: "uploaded" | "indexed" | "failed" | "indexing";
 }) {
   const map = {
-    indexed: <Badge type="success" value="Indexed" />,
-    uploaded: <Badge type="info" value="Uploaded" />,
-    failed: <Badge type="error" value="Failed" />,
+    indexed: <Badge type="success" value="Đã nạp" />,
+    indexing: <Badge type="warning" value="Đang nạp" />,
+    uploaded: <Badge type="info" value="Đã đăng tải" />,
+    failed: <Badge type="error" value="Thất bại" />,
   };
 
   return map[status];
-}
-
-export function Pagination({
-  page,
-  pageSize,
-  total,
-  onPageChange,
-}: PaginationProps) {
-  const totalPages = Math.ceil(total / pageSize);
-
-  return (
-    <div className="dark:border-border-dark flex items-center justify-between border border-gray-100 px-4 py-3">
-      {/* Info */}
-      <span className="text-xs text-gray-500 dark:text-gray-400">
-        Page <span className="font-medium">{page}</span> of{" "}
-        <span className="font-medium">{totalPages}</span>
-      </span>
-
-      {/* Controls */}
-      <div className="flex items-center gap-2">
-        <button
-          disabled={page === 1}
-          onClick={() => onPageChange?.(page - 1)}
-          className={`inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium transition ${
-            page === 1
-              ? "dark:border-border-dark/40 cursor-not-allowed border-gray-200 text-gray-400"
-              : "dark:border-border-dark border-gray-200 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-          } `}
-        >
-          <HiOutlineChevronLeft className="text-sm" />
-          Prev
-        </button>
-
-        <button
-          disabled={page === totalPages}
-          onClick={() => onPageChange?.(page + 1)}
-          className={`inline-flex items-center gap-1 rounded-md border px-3 py-1.5 text-xs font-medium transition ${
-            page === totalPages
-              ? "dark:border-border-dark/40 cursor-not-allowed border-gray-200 text-gray-400"
-              : "dark:border-border-dark border-gray-200 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-          } `}
-        >
-          Next
-          <HiOutlineChevronRight className="text-sm" />
-        </button>
-      </div>
-    </div>
-  );
 }
 
 // const PAGE_SIZE = 5;

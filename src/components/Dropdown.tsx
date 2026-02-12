@@ -36,7 +36,7 @@ export function ChatUserDropdown() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 z-50 mt-3 w-95 overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl backdrop-blur-xl"
+            className="absolute right-0 z-50 mt-3 w-95 overflow-hidden rounded-2xl border border-white/10 bg-black/90 backdrop-blur-xl"
           >
             {/* Header */}
             <div className="px-4 py-3">
@@ -138,7 +138,7 @@ export function NotificationDropdown() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.15, ease: "easeOut" }}
-            className="absolute right-0 z-50 mt-3 w-90 overflow-hidden rounded-2xl border border-white/10 bg-black/90 shadow-2xl backdrop-blur-xl"
+            className="absolute right-0 z-50 mt-3 w-90 overflow-hidden rounded-2xl border border-white/10 bg-black/90 backdrop-blur-xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3">
@@ -254,7 +254,7 @@ export function AvatarDropdown() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
-            className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#050505] shadow-xl backdrop-blur-xl"
+            className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#050505] backdrop-blur-xl"
           >
             <AvatarDropdownItem label="Tài khoản" />
             <AvatarDropdownItem label="Cài đặt" />
