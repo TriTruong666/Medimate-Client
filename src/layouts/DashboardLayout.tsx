@@ -118,7 +118,7 @@ function Sidebar() {
   return (
     <aside className="fixed z-20 hidden h-full w-64 flex-col border-r border-white/5 bg-[#050505] md:relative md:flex">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5">
+      <div className="flex items-center gap-3 px-6 py-5 select-none">
         <img
           src={medimateLogo}
           className="flex h-9 w-9 items-center justify-center rounded-lg"
