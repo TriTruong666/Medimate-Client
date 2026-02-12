@@ -211,9 +211,9 @@ function Sidebar() {
           label="Chatbot"
         />
         <SidebarItem
-          to="/dashboard/images"
+          to="/dashboard/assets"
           icon={<HiOutlinePhotograph />}
-          label="CDN"
+          label="Tài nguyên"
         />
       </nav>
 
