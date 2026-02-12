@@ -1,44 +1,51 @@
 import { HiOutlinePlus } from "react-icons/hi";
 import Breadcrumb from "../components/Breadcrumb";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import GlassSelect from "../components/Select";
 import { openModalAtom } from "../stores/modalStore";
 import { useAtom } from "jotai";
-
+const breadcrumbItems = [
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+  },
+  {
+    label: "Kho dữ liệu",
+    path: "/dashboard/rag",
+  },
+  {
+    label: "Thêm Collection",
+  },
+];
 export default function KnowledgeAddCollectionPage() {
-  const breadcrumbItems = [
-    {
-      label: "Dashboard",
-      path: "/dashboard",
-    },
-    {
-      label: "Kho dữ liệu",
-      path: "/dashboard/rag",
-    },
-    {
-      label: "Thêm Collection",
-    },
-  ];
-  // return (
-  //   <div className="grid min-h-screen place-items-center">
-  //     <div className="w-full max-w-384 px-4">
-  //       <IndexingCollectionUI currentStep="parse" />
-  //     </div>
-  //   </div>
-  // );
+  const [isIndexing, setIsIndexing] = useState(false);
+  const [currentStep, setCurrentStep] = useState<IndexingStep>("parse");
+
   return (
     <div className="mx-auto max-w-384 space-y-6">
-      <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Thêm Collection
-          </h1>
+      {!isIndexing ? (
+        <>
+          <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+            <div>
+              <Breadcrumb items={breadcrumbItems} />
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+                Thêm Collection
+              </h1>
+            </div>
+          </div>
+
+          <div className="my-10 w-full">
+            <AddCollectionForm
+              onStartIndexing={() => setIsIndexing(true)}
+              setCurrentStep={setCurrentStep}
+            />
+          </div>
+        </>
+      ) : (
+        <div className="min-h-screen place-content-center">
+          <IndexingCollectionUI currentStep={currentStep} />
         </div>
-      </div>
-      <div className="my-10 w-full">
-        <AddCollectionForm />
-      </div>
+      )}
     </div>
   );
 }
@@ -49,13 +56,42 @@ type SelectedDoc = {
   size: string; // "4.2 MB"
 };
 
-function AddCollectionForm() {
+function AddCollectionForm({
+  onStartIndexing,
+  setCurrentStep,
+}: {
+  onStartIndexing: () => void;
+  setCurrentStep: React.Dispatch<React.SetStateAction<IndexingStep>>;
+}) {
   const [, openModal] = useAtom(openModalAtom);
 
   const [type, setType] = useState("");
   const [documents, setDocuments] = useState<SelectedDoc[]>([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+
+  const handleSubmit = () => {
+    onStartIndexing();
+
+    const stepOrder: IndexingStep[] = [
+      "parse",
+      "chunk",
+      "embedding",
+      "finalizing",
+    ];
+
+    let index = 0;
+
+    const interval = setInterval(() => {
+      setCurrentStep(stepOrder[index]);
+
+      index++;
+
+      if (index >= stepOrder.length) {
+        clearInterval(interval);
+      }
+    }, 2000); // mỗi 2s chuyển step
+  };
 
   return (
     <div className="flex w-full flex-col items-center space-y-10">
@@ -70,7 +106,7 @@ function AddCollectionForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ví dụ: Tài liệu pháp lý 2024"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 pr-4 text-sm text-gray-200 placeholder-gray-500 backdrop-blur-md outline-none hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none"
+            className="input-primary w-full"
           />
         </div>
 
@@ -84,7 +120,7 @@ function AddCollectionForm() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             placeholder="Mô tả ngắn gọn mục đích collection..."
-            className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 pr-4 text-sm text-gray-200 placeholder-gray-500 backdrop-blur-md outline-none hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none"
+            className="input-primary w-full resize-none"
           />
         </div>
         {/* Loại collection */}
@@ -162,8 +198,12 @@ function AddCollectionForm() {
 
       {/* Actions */}
       <div className="flex w-full justify-end gap-3">
-        <button className="bg-primary rounded-lg px-6 py-2 text-sm font-medium text-white shadow transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40">
-          Tạo collection
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="bg-primary rounded-lg px-6 py-2 text-sm font-medium text-white shadow transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Tạo & Nạp dữ liệu
         </button>
       </div>
     </div>
@@ -209,14 +249,50 @@ function IndexingCollectionUI({
 }: {
   currentStep: IndexingStep;
 }) {
-  const currentIndex = steps.findIndex((s) => s.key === currentStep);
-  const progress = steps[currentIndex]?.percent ?? 0;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+
+  useEffect(() => {
+    if (currentIndex >= steps.length) return;
+
+    const stepTarget = steps[currentIndex].percent;
+
+    // random duration 2s → 4s
+    const duration = 2000 + Math.random() * 2000;
+    const startTime = Date.now();
+
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const ratio = Math.min(elapsed / duration, 1);
+
+      const newProgress =
+        (currentIndex === 0 ? 0 : steps[currentIndex - 1].percent) +
+        ratio *
+          (stepTarget -
+            (currentIndex === 0 ? 0 : steps[currentIndex - 1].percent));
+
+      setProgress(Math.floor(newProgress));
+
+      if (ratio === 1) {
+        clearInterval(interval);
+
+        setCompletedSteps((prev) => [...prev, currentIndex]);
+
+        setTimeout(() => {
+          setCurrentIndex((prev) => prev + 1);
+        }, 2000); // delay chút cho đẹp
+      }
+    }, 16);
+
+    return () => clearInterval(interval);
+  }, [currentIndex]);
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center text-white">
       {/* Title */}
       <h2 className="text-2xl font-semibold tracking-tight">
-        Indexing collection
+        Đang nạp dữ liệu
       </h2>
       <p className="mt-2 max-w-xl text-center text-sm text-white/60">
         Hệ thống đang xử lý tài liệu và xây dựng dữ liệu tìm kiếm.
@@ -236,13 +312,12 @@ function IndexingCollectionUI({
       <div className="mt-8 w-full max-w-xl space-y-3 text-sm">
         {steps.map((step, index) => {
           const isActive = index === currentIndex;
-          const isDone = index < currentIndex;
+          const isDone = completedSteps.includes(index);
 
           return (
-            <div className="flex items-center justify-between">
+            <div key={step.key} className="flex items-center justify-between">
               <div
-                key={step.key}
-                className={`flex items-start gap-3 transition ${
+                className={`flex items-start gap-3 transition-all duration-500 ${
                   isActive
                     ? "text-white"
                     : isDone
@@ -250,7 +325,11 @@ function IndexingCollectionUI({
                       : "text-white/40"
                 }`}
               >
-                <span className="mt-1 shrink-0 text-xs">
+                <span
+                  className={`mt-1 shrink-0 text-xs transition-all duration-300 ${
+                    isDone ? "scale-125 text-green-400" : ""
+                  }`}
+                >
                   {isDone ? "✓" : isActive ? "●" : "○"}
                 </span>
 
@@ -259,7 +338,10 @@ function IndexingCollectionUI({
                   <div className="text-xs opacity-70">{step.description}</div>
                 </div>
               </div>
-              <span className="text-xs text-white/40">10s</span>
+
+              <span className="text-xs text-white/40">
+                {isDone ? "Hoàn tất" : isActive ? "Đang xử lý..." : ""}
+              </span>
             </div>
           );
         })}

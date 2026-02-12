@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   HiOutlineX,
   HiOutlineCloudUpload,
@@ -5,11 +6,14 @@ import {
   HiOutlineSearch,
   HiOutlineCheck,
 } from "react-icons/hi";
+import { FaUserDoctor } from "react-icons/fa6";
 import { FiFileText } from "react-icons/fi";
 import { AiOutlineFilePdf, AiOutlineFileZip } from "react-icons/ai";
 import { useAtom } from "jotai";
 import { closeModalAtom } from "../stores/modalStore";
 import { useMemo, useState } from "react";
+import clsx from "clsx";
+import { PiHandEyeLight } from "react-icons/pi";
 type LibraryDoc = {
   id: string;
   name: string;
@@ -30,7 +34,7 @@ export function UploadDocumentModal() {
   const [, closeModal] = useAtom(closeModalAtom);
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
         <h2 className="text-base font-semibold tracking-tight text-white">
@@ -185,7 +189,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
   };
 
   return (
-    <div className="flex w-130 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6">
         <h2 className="text-base font-semibold text-white">
@@ -280,6 +284,183 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function AddAccountModal() {
+  const [phase, setPhase] = useState<"role" | "info">("role");
+  const [role, setRole] = useState<"doctor" | "supervisor" | null>(null);
+  const [, closeModal] = useAtom(closeModalAtom);
+
+  return (
+    <div className="flex w-[600px] flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6">
+        <h2 className="text-base font-semibold text-white">
+          Tạo tài khoản mới
+        </h2>
+
+        <button
+          onClick={closeModal}
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+        >
+          <HiOutlineX className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="p-6">
+        {phase === "role" && <RolePhase selected={role} onSelect={setRole} />}
+        {phase === "info" && <InfoPhase />}
+      </div>
+
+      {/* Footer */}
+      {phase === "role" && (
+        <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+          <button
+            onClick={closeModal}
+            className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+          >
+            Thoát
+          </button>
+
+          <button
+            disabled={!role}
+            onClick={() => setPhase("info")}
+            className={clsx(
+              "rounded-lg px-4 py-2 text-sm font-medium transition",
+              role
+                ? "bg-primary text-white hover:opacity-90"
+                : "bg-white/10 text-white/40",
+            )}
+          >
+            Tiếp theo
+          </button>
+        </div>
+      )}
+
+      {phase === "info" && (
+        <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+          <button
+            onClick={() => setPhase("role")}
+            className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+          >
+            Quay lại
+          </button>
+
+          <button
+            onClick={closeModal}
+            className={clsx(
+              "rounded-lg px-4 py-2 text-sm font-medium transition",
+              role
+                ? "bg-primary text-white hover:opacity-90"
+                : "bg-white/10 text-white/40",
+            )}
+          >
+            Tạo mới
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RolePhase({
+  selected,
+  onSelect,
+}: {
+  selected: string | null;
+  onSelect: (role: "doctor" | "supervisor") => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <RoleCard
+        icon={<FaUserDoctor size={28} />}
+        title="Bác sĩ"
+        description="Tạo tài khoản dành cho bác sĩ điều trị"
+        active={selected === "doctor"}
+        onClick={() => onSelect("doctor")}
+      />
+
+      <RoleCard
+        icon={<PiHandEyeLight size={28} />}
+        title="Kiểm định viên"
+        description="Quản lý & duyệt hồ sơ bác sĩ"
+        active={selected === "supervisor"}
+        onClick={() => onSelect("supervisor")}
+      />
+    </div>
+  );
+}
+
+function RoleCard({ icon, title, description, active, onClick }: any) {
+  return (
+    <div
+      onClick={onClick}
+      className={clsx(
+        "group cursor-pointer rounded-xl border p-5 transition-all duration-200",
+        active
+          ? "border-primary bg-primary/10 shadow-primary/20 shadow-lg"
+          : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10",
+      )}
+    >
+      <div
+        className={clsx(
+          "mb-4 flex h-12 w-12 items-center justify-center rounded-xl transition",
+          active
+            ? "bg-primary text-white"
+            : "bg-white/10 text-gray-300 group-hover:bg-white/20",
+        )}
+      >
+        {icon}
+      </div>
+
+      <h3 className="mb-1 text-sm font-semibold text-white">{title}</h3>
+
+      <p className="text-xs text-gray-400">{description}</p>
+    </div>
+  );
+}
+
+function InfoPhase() {
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <Input label="Email" placeholder="example123@gmail.com" type="email" />
+      <Input label="Họ và tên" placeholder="Nhập tên của bạn" />
+
+      <Input label="Số điện thoại" placeholder="Nhập SĐT của bạn" />
+      <Input label="Mật khẩu" type="password" placeholder="Nhập mật khẩu" />
+
+      <Input
+        label="Nhập lại mật khẩu"
+        type="password"
+        className="col-span-2"
+        placeholder="Nhập lại mật khẩu"
+      />
+    </div>
+  );
+}
+
+function Input({
+  label,
+  type = "text",
+  className,
+  placeholder = "Input here",
+}: {
+  label: string;
+  type?: string;
+  className?: string;
+  placeholder?: string;
+}) {
+  return (
+    <div className={clsx("flex flex-col gap-1", className)}>
+      <label className="text-xs text-gray-400">{label}</label>
+      <input
+        type={type}
+        placeholder={placeholder}
+        className="input-primary text-[13px]!"
+      />
     </div>
   );
 }

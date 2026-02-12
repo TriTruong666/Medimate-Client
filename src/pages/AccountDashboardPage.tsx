@@ -140,7 +140,7 @@ export default function AccountDashboardPage() {
 
           <button
             onClick={() => openModal("add_account")}
-            className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white transition-all hover:scale-[1.03]"
+            className="btn-primary"
           >
             <FiUserPlus />
             Thêm tài khoản

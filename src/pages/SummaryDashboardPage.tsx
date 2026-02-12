@@ -48,7 +48,7 @@ export default function SummaryDashboardPage() {
   }, []);
 
   const donutData = {
-    labels: ["Pending", "Indexed", "Success"],
+    labels: ["Chờ nạp", "Đang nạp", "Đã nạp"],
     datasets: [
       {
         data: [12, 84, 156],
@@ -97,10 +97,10 @@ export default function SummaryDashboardPage() {
   };
 
   const lineData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
     datasets: [
       {
-        label: "Indexed",
+        label: "Đang nạp",
         data: [120, 190, 170, 260, 240, 300, 280],
         borderColor: "#a855f7", // purple
         backgroundColor: "rgba(168,85,247,0.15)",
@@ -109,14 +109,14 @@ export default function SummaryDashboardPage() {
         pointRadius: 0,
       },
       {
-        label: "Uploaded",
+        label: "Đã nạp",
         data: [80, 140, 130, 200, 190, 220, 210],
         borderColor: "#22c55e", // green
         tension: 0.4,
         pointRadius: 0,
       },
       {
-        label: "Failed",
+        label: "Thất bại",
         data: [20, 40, 35, 60, 50, 70, 65],
         borderColor: "#f97316", // orange
         tension: 0.4,
@@ -286,17 +286,17 @@ export default function SummaryDashboardPage() {
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 rounded-full bg-orange-500" />
                 <span className="font-medium text-white">12</span>
-                <span className="text-gray-400">Pending</span>
+                <span className="text-gray-400">Chờ nạp</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 rounded-full bg-purple-500" />
                 <span className="font-medium text-white">84</span>
-                <span className="text-gray-400">Indexed</span>
+                <span className="text-gray-400">Đang nạp</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
                 <span className="font-medium text-white">156</span>
-                <span className="text-gray-400">Success</span>
+                <span className="text-gray-400">Đã nạp</span>
               </div>
             </div>
           </div>
@@ -387,17 +387,17 @@ export default function SummaryDashboardPage() {
 
               <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                Indexed
+                Chờ nạp
               </button>
 
               <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Uploaded
+                Đã nạp
               </button>
 
               <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                Failed
+                Thất bại
               </button>
             </div>
           </motion.div>

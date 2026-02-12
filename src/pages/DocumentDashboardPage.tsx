@@ -228,10 +228,7 @@ export default function DocumentDashboardPage() {
             Xuất <PiExport />
           </button>
 
-          <button
-            onClick={() => openModal("upload")}
-            className="from-primary to-primary/80 shadow-primary/30 flex items-center gap-2 rounded-lg bg-linear-to-br px-4 py-2 text-[13px] font-semibold text-white transition-all hover:scale-[1.03]"
-          >
+          <button onClick={() => openModal("upload")} className="btn-primary">
             <MdOutlineDriveFolderUpload />
             Thêm tài liệu
           </button>
