@@ -9,7 +9,6 @@ import ChatbotPage from "../pages/ChatbotPage";
 import TransactionDashboardPage from "../pages/TransactionDashboardPage";
 import AssetsDashboardPage from "../pages/AssetsDashboardPage";
 import { PackageDashboardPage } from "../pages/PackageDashboardPage";
-import PackageAddPage from "../pages/PackageAddPage";
 
 export default function PrivateRoute() {
   return (
@@ -34,7 +33,6 @@ export default function PrivateRoute() {
         />
         <Route path="/dashboard/assets" element={<AssetsDashboardPage />} />
         <Route path="/dashboard/packages" element={<PackageDashboardPage />} />
-        <Route path="/dashboard/packages/new" element={<PackageAddPage />} />
       </Route>
     </Routes>
   );

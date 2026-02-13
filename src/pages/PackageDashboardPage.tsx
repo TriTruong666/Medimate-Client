@@ -1,4 +1,4 @@
-import { IoAdd } from "react-icons/io5";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Breadcrumb from "../components/Breadcrumb";
 import { FiMoreVertical, FiUsers } from "react-icons/fi";
 import { formatPrice } from "../utils/format";
@@ -132,8 +132,8 @@ const packages = [
   },
   {
     name: "Premium",
-    price: 299000,
-    users: 23,
+    price: 199000,
+    users: 43,
     gradient: "from-purple-600 via-pink-600 to-rose-600",
   },
 ];
@@ -147,12 +147,6 @@ export function PackageDashboardPage() {
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
             Quản lý gói
           </h1>
-        </div>
-        <div className="flex items-center gap-3">
-          <a href="/dashboard/packages/new" className="btn-primary">
-            <IoAdd />
-            Thêm gói mới
-          </a>
         </div>
       </div>
       {/* Content */}

@@ -2,14 +2,14 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import { TbCancel } from "react-icons/tb";
 import { Badge } from "../components/Badge";
 import Breadcrumb from "../components/Breadcrumb";
-import { HiOutlinePrinter } from "react-icons/hi";
+import { HiOutlineCreditCard, HiOutlinePrinter } from "react-icons/hi";
 import { Pagination } from "../components/Pagination";
 import { formatPrice } from "../utils/format";
 
 type TransactionRow = {
   id: string;
-  expiredAt: string;
   createdAt: string;
+  transaction_type: "revenue" | "expenses";
   totalPrice: number;
   status: "pending" | "paid" | "cancelled";
 };
@@ -17,7 +17,7 @@ type TransactionRow = {
 type ColumnKey =
   | "id"
   | "createdAt"
-  | "expiredAt"
+  | "transaction_type"
   | "totalPrice"
   | "status"
   | "actions";
@@ -51,7 +51,7 @@ const columns: TableColumn[] = [
   {
     key: "id",
     label: "Số giao dịch",
-    width: "w-[15%]",
+    width: "w-[20%]",
   },
   {
     key: "createdAt",
@@ -59,9 +59,10 @@ const columns: TableColumn[] = [
     width: "w-[20%]",
   },
   {
-    key: "expiredAt",
-    label: "Hạn thanh toán",
-    width: "w-[20%]",
+    key: "transaction_type",
+    label: "Loại giao dịch",
+    width: "w-[15%]",
+    align: "center",
   },
   {
     key: "totalPrice",
@@ -73,7 +74,7 @@ const columns: TableColumn[] = [
     key: "status",
     label: "Trạng thái",
     width: "w-[15%]",
-    align: "left",
+    align: "center",
   },
   {
     key: "actions",
@@ -85,51 +86,58 @@ const columns: TableColumn[] = [
 const demoData: TransactionRow[] = [
   {
     id: "PKG0001",
-    createdAt: "10 tiếng trước",
-    expiredAt: "12/08/2026",
+    createdAt: "12/08/2026",
+    transaction_type: "revenue",
     status: "pending",
     totalPrice: 259000,
   },
   {
     id: "PKG0002",
-    createdAt: "10 tiếng trước",
-    expiredAt: "12/08/2026",
+    transaction_type: "revenue",
+    createdAt: "12/08/2026",
     status: "paid",
     totalPrice: 259000,
   },
   {
     id: "PKG0003",
-    createdAt: "10 tiếng trước",
-    expiredAt: "12/08/2026",
+    transaction_type: "revenue",
+    createdAt: "12/08/2026",
     status: "cancelled",
     totalPrice: 259000,
   },
   {
     id: "PKG0004",
-    createdAt: "10 tiếng trước",
-    expiredAt: "12/08/2026",
+    transaction_type: "revenue",
+    createdAt: "12/08/2026",
     status: "pending",
     totalPrice: 100000,
   },
   {
     id: "PKG0005",
-    createdAt: "10 tiếng trước",
-    expiredAt: "12/08/2026",
+    transaction_type: "revenue",
+    createdAt: "12/08/2026",
     status: "cancelled",
     totalPrice: 259000,
   },
   {
     id: "PKG0006",
-    createdAt: "10 tiếng trước",
-    expiredAt: "12/08/2026",
+    transaction_type: "revenue",
+    createdAt: "12/08/2026",
     status: "pending",
     totalPrice: 2259000,
   },
   {
-    id: "PKG0007",
-    createdAt: "10 tiếng trước",
-    expiredAt: "12/08/2026",
+    id: "EPX0001",
+    transaction_type: "expenses",
+    createdAt: "12/08/2026",
     status: "paid",
+    totalPrice: 1259000,
+  },
+  {
+    id: "EPX0002",
+    transaction_type: "expenses",
+    createdAt: "12/08/2026",
+    status: "pending",
     totalPrice: 1259000,
   },
 ];
@@ -194,11 +202,9 @@ function TransactionTable({ data }: TransactionTableProps) {
               </span>
             </td>
 
-            {/* Expired At */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
-              <span className="text-sm text-gray-600 uppercase dark:text-gray-300">
-                {row.expiredAt}
-              </span>
+            {/* Transaction Type */}
+            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+              <TransactionTypeBadge transaction_type={row.transaction_type} />
             </td>
 
             <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
@@ -214,13 +220,23 @@ function TransactionTable({ data }: TransactionTableProps) {
 
             {/* Actions */}
             <td className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <IconAction icon={<HiOutlinePrinter />} />
-                <IconAction icon={<IoIosInformationCircleOutline />} />
-                {row.status === "pending" && (
-                  <IconAction icon={<TbCancel />} danger />
-                )}
-              </div>
+              {row.transaction_type === "expenses" &&
+              row.status === "pending" ? (
+                <div className="flex items-center justify-center gap-2">
+                  <button className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-all duration-200 hover:border-white/20 hover:bg-white/10 active:scale-95">
+                    <HiOutlineCreditCard size={14} />
+                    Thanh toán
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center gap-2">
+                  <IconAction icon={<HiOutlinePrinter />} />
+                  <IconAction icon={<IoIosInformationCircleOutline />} />
+                  {row.status === "pending" && (
+                    <IconAction icon={<TbCancel />} danger />
+                  )}
+                </div>
+              )}
             </td>
           </tr>
         ))}
@@ -259,4 +275,17 @@ function StatusBadge({ status }: { status: "pending" | "paid" | "cancelled" }) {
   };
 
   return map[status];
+}
+
+function TransactionTypeBadge({
+  transaction_type,
+}: {
+  transaction_type: "revenue" | "expenses";
+}) {
+  const map = {
+    revenue: <Badge type="success" value="Tiền nhận vào" />,
+    expenses: <Badge type="warning" value="Tiền chi ra" />,
+  };
+
+  return map[transaction_type];
 }
