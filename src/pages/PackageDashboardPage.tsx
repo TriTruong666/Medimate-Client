@@ -5,6 +5,16 @@ import { formatPrice } from "../utils/format";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { useClickOutside } from "../hooks/useDropdown";
+import { HiCheck } from "react-icons/hi";
+import { HiXMark } from "react-icons/hi2";
+
+type TableColumn = {
+  key: ColumnKey;
+  label: string;
+};
+
+type ColumnKey = string;
+
 type PackageType = {
   name: string;
   price: number;
@@ -16,6 +26,81 @@ type DropdownItemProps = {
   label: string;
   danger?: boolean;
 };
+
+const columns: TableColumn[] = [
+  {
+    key: "basic",
+    label: "Basic",
+  },
+  {
+    key: "medimate",
+    label: "Medimate",
+  },
+  {
+    key: "premium",
+    label: "Premium",
+  },
+];
+
+type ComparisionRow = {
+  max_person: number | "unlimited"; // số lượng người có thể quản lý
+  sms_notification: boolean; // nhắc sms nếu quá hạn uống thuốc cho người quản lý
+  health_index: "non_auto" | "auto"; // nhập tay chỉ số sức khoẻ hoặc tự động đồng bộ từ các app Apple Health/Google Fit
+  storage_health_document: number | "unlimited"; // số lượng file bệnh án được lưu trữ
+  export_to_doctor: boolean; // Xuất báo cáo sức khỏe (PDF) để gửi bác sĩ
+  ocr: boolean;
+  chatbot: boolean; // AI Chatbot tư vấn sức khỏe cơ bản
+  drug_interaction: boolean; // tương tác thuốc
+  chat_to_doctor: boolean;
+  advertisement: boolean; // quảng cáo
+  find_hospital: boolean;
+  anomaly_detection: boolean; // dự báo bất thường của AI
+};
+
+const demoData: ComparisionRow[] = [
+  {
+    max_person: 5,
+    sms_notification: false,
+    health_index: "non_auto",
+    storage_health_document: 5,
+    export_to_doctor: false,
+    ocr: true,
+    chat_to_doctor: false,
+    chatbot: false,
+    drug_interaction: false,
+    advertisement: true,
+    anomaly_detection: false,
+    find_hospital: true,
+  },
+  {
+    max_person: 30,
+    sms_notification: true,
+    health_index: "non_auto",
+    storage_health_document: 25,
+    export_to_doctor: true,
+    ocr: true,
+    chat_to_doctor: true,
+    chatbot: true,
+    drug_interaction: false,
+    advertisement: false,
+    anomaly_detection: false,
+    find_hospital: true,
+  },
+  {
+    max_person: "unlimited",
+    sms_notification: true,
+    health_index: "auto",
+    storage_health_document: "unlimited",
+    export_to_doctor: true,
+    ocr: true,
+    chat_to_doctor: true,
+    chatbot: true,
+    drug_interaction: true,
+    advertisement: false,
+    anomaly_detection: true,
+    find_hospital: true,
+  },
+];
 
 const breadcrumbItems = [
   {
@@ -34,21 +119,21 @@ const breadcrumbItems = [
 const packages = [
   {
     name: "Basic",
-    price: 199000,
-    users: 124,
+    price: 0,
+    users: 1124,
     gradient: "from-slate-600 to-slate-800",
   },
   {
     name: "Medimate",
-    price: 399000,
-    users: 482,
+    price: 99000,
+    users: 102,
     gradient: "from-cyan-500 via-blue-600 to-indigo-700",
     highlight: true,
   },
   {
     name: "Premium",
-    price: 899000,
-    users: 73,
+    price: 299000,
+    users: 23,
     gradient: "from-purple-600 via-pink-600 to-rose-600",
   },
 ];
@@ -74,8 +159,131 @@ export function PackageDashboardPage() {
       <div className="my-8 space-y-8">
         <PackageGrid />
       </div>
+      <div className="my-12 space-y-8">
+        <PackageComparisonTable />
+      </div>
     </div>
   );
+}
+
+function PackageComparisonTable() {
+  const featureRows = [
+    {
+      label: "Số lượng người được quản lý tối đa",
+      render: (row: ComparisionRow) =>
+        typeof row.max_person === "number" ? row.max_person : "Không giới hạn",
+    },
+    {
+      label: "Thông báo SMS",
+      render: (row: ComparisionRow) => row.sms_notification,
+    },
+    {
+      label: "Chỉ số sức khỏe",
+      render: (row: ComparisionRow) =>
+        row.health_index === "auto" ? "Tự động đồng bộ" : "Nhập thủ công",
+    },
+    {
+      label: "Lưu trữ hồ sơ bệnh án",
+      render: (row: ComparisionRow) =>
+        typeof row.storage_health_document === "number"
+          ? `${row.storage_health_document} files`
+          : "Không giới hạn",
+    },
+    {
+      label: "Xuất PDF gửi bác sĩ",
+      render: (row: ComparisionRow) => row.export_to_doctor,
+    },
+    {
+      label: "Scan OCR đơn thuốc",
+      render: (row: ComparisionRow) => row.ocr,
+    },
+    {
+      label: "Chat với bác sĩ",
+      render: (row: ComparisionRow) => row.chat_to_doctor,
+    },
+    {
+      label: "Trợ lý MedimateAI",
+      render: (row: ComparisionRow) => row.chatbot,
+    },
+    {
+      label: "Tương tác thuốc",
+      render: (row: ComparisionRow) => row.drug_interaction,
+    },
+    {
+      label: "AI phân tích xu hướng sức khỏe",
+      render: (row: ComparisionRow) => row.anomaly_detection,
+    },
+    {
+      label: "Quảng cáo",
+      render: (row: ComparisionRow) => row.advertisement,
+    },
+    {
+      label: "Tìm nhà thuốc / bệnh viện gần nhất",
+      render: (row: ComparisionRow) => row.find_hospital,
+    },
+  ];
+
+  return (
+    <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
+      <table className="min-w-full text-sm">
+        {/* Header */}
+        <thead className="bg-gray-50 dark:bg-white/10">
+          <tr>
+            <th className="px-6 py-4 text-left font-semibold text-gray-600 dark:text-gray-300">
+              So sánh gói
+            </th>
+
+            {columns.map((col) => (
+              <th
+                key={col.key}
+                className={`px-6 py-4 text-center font-semibold text-gray-700 dark:text-white`}
+              >
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+
+        {/* Body */}
+        <tbody className="divide-y divide-gray-100 dark:divide-white/10">
+          {featureRows.map((feature, rowIndex) => (
+            <tr
+              key={rowIndex}
+              className="hover:bg-gray-50 dark:hover:bg-white/5"
+            >
+              {/* Feature label */}
+              <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                {feature.label}
+              </td>
+
+              {/* Plans */}
+              {demoData.map((pkg, colIndex) => (
+                <td key={colIndex} className={`px-6 py-4 text-center`}>
+                  <TableCell value={feature.render(pkg)} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function TableCell({ value }: { value: any }) {
+  if (typeof value === "boolean") {
+    return value ? (
+      <HiCheck className="mx-auto text-lg text-emerald-500" />
+    ) : (
+      <HiXMark className="mx-auto text-lg text-gray-300 dark:text-red-600" />
+    );
+  }
+
+  if (value === "Không giới hạn") {
+    return <span className="text-primary dark:text-primary">{value}</span>;
+  }
+
+  return <span className="text-gray-700 dark:text-gray-200">{value}</span>;
 }
 
 function PackageGrid() {
@@ -146,10 +354,12 @@ function PackageCard({ pkg }: { pkg: PackageType }) {
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xl font-semibold text-gray-900 dark:text-white">
-            {formatPrice(pkg.price)}
-            <span className="ml-1 text-xs font-normal text-gray-500 dark:text-gray-400">
-              / tháng
-            </span>
+            {pkg.price === 0 ? "Miễn phí" : formatPrice(pkg.price)}
+            {pkg.price !== 0 && (
+              <span className="ml-1 text-xs font-normal text-gray-500 dark:text-gray-400">
+                / tháng
+              </span>
+            )}
           </p>
 
           <div className="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
