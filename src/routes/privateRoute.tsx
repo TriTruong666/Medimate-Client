@@ -9,6 +9,7 @@ import ChatbotPage from "../pages/ChatbotPage";
 import TransactionDashboardPage from "../pages/TransactionDashboardPage";
 import AssetsDashboardPage from "../pages/AssetsDashboardPage";
 import { PackageDashboardPage } from "../pages/PackageDashboardPage";
+import PackageOwnerDashboardPage from "../pages/PackageOwnerDashboardPage";
 
 export default function PrivateRoute() {
   return (
@@ -33,6 +34,10 @@ export default function PrivateRoute() {
         />
         <Route path="/dashboard/assets" element={<AssetsDashboardPage />} />
         <Route path="/dashboard/packages" element={<PackageDashboardPage />} />
+        <Route
+          path="/dashboard/packages/owner"
+          element={<PackageOwnerDashboardPage />}
+        />
       </Route>
     </Routes>
   );
