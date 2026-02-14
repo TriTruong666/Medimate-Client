@@ -4,6 +4,28 @@ import Breadcrumb from "../components/Breadcrumb";
 import { Pagination } from "../components/Pagination";
 import { HiOutlineX } from "react-icons/hi";
 
+type Status = "active" | "blocked" | "cancelled";
+
+const ACTIONS_BY_STATUS: Record<
+  Status,
+  {
+    icon: React.ReactNode;
+    danger?: boolean;
+  }[]
+> = {
+  active: [
+    { icon: <IoLockClosedOutline />, danger: true },
+    { icon: <HiOutlineX />, danger: true },
+  ],
+
+  blocked: [
+    { icon: <IoLockOpenOutline /> },
+    { icon: <HiOutlineX />, danger: true },
+  ],
+
+  cancelled: [],
+};
+
 type PackageOwnerRow = {
   name: string;
   email: string;
@@ -101,7 +123,7 @@ const demoData: PackageOwnerRow[] = [
     name: "Trí Trương",
     createdAt: "Hôm nay",
     expiredAt: "14/05/2026",
-    duration: "3 months",
+    duration: "yearly",
     packageName: "Premium",
     status: "blocked",
   },
@@ -109,8 +131,8 @@ const demoData: PackageOwnerRow[] = [
     email: "tritruonghoang3@gmail.com",
     name: "Trí Trương",
     createdAt: "Hôm nay",
-    expiredAt: "14/05/2026",
-    duration: "3 months",
+    expiredAt: "14/02/2027",
+    duration: "yearly",
     packageName: "Premium",
     status: "cancelled",
   },
@@ -146,6 +168,13 @@ export default function PackageOwnerDashboardPage() {
 }
 
 function PackageOwnerTable({ data }: PackageOwnerTableProps) {
+  const duration = {
+    monthly: "Hằng tháng",
+    "3 months": "3 tháng",
+    "6 months": "6 tháng",
+    "12 months": "12 tháng",
+    yearly: "Hằng năm",
+  };
   return (
     <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
       <thead>
@@ -216,7 +245,9 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
                 </span>
 
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {row.packageName === "Basic" ? "Miễn phí" : row.duration}
+                  {row.packageName === "Basic"
+                    ? "Miễn phí"
+                    : duration[row.duration]}
                 </span>
               </div>
             </td>
@@ -229,14 +260,14 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
             {/* Actions */}
             <td className="p-4 text-center">
               <div className="flex items-center justify-center gap-2">
-                {row.status !== "cancelled" && row.status !== "blocked" && (
-                  <IconAction icon={<IoLockClosedOutline />} danger />
-                )}
-                {row.status === "blocked" && (
-                  <IconAction icon={<IoLockOpenOutline />} />
-                )}
-                {row.status !== "cancelled" && (
-                  <IconAction icon={<HiOutlineX />} danger />
+                {ACTIONS_BY_STATUS[row.status as Status]?.map(
+                  (action, index) => (
+                    <IconAction
+                      key={index}
+                      icon={action.icon}
+                      danger={action.danger}
+                    />
+                  ),
                 )}
               </div>
             </td>
