@@ -7,9 +7,12 @@ import KnowledgeBasePage from "../pages/KnowledgeBasePage";
 import KnowledgeAddCollectionPage from "../pages/KnowledgeAddCollectionPage";
 import ChatbotPage from "../pages/ChatbotPage";
 import TransactionDashboardPage from "../pages/TransactionDashboardPage";
-import AssetsDashboardPage from "../pages/AssetsDashboardPage";
 import { PackageDashboardPage } from "../pages/PackageDashboardPage";
 import PackageOwnerDashboardPage from "../pages/PackageOwnerDashboardPage";
+import {
+  AssetsCertificateDashboardPage,
+  AssetsPrescriptionDashboardPage,
+} from "../pages/AssetsDashboardPage";
 
 export default function PrivateRoute() {
   return (
@@ -32,7 +35,14 @@ export default function PrivateRoute() {
           path="/dashboard/transaction"
           element={<TransactionDashboardPage />}
         />
-        <Route path="/dashboard/assets" element={<AssetsDashboardPage />} />
+        <Route
+          path="/dashboard/assets/prescription"
+          element={<AssetsPrescriptionDashboardPage />}
+        />
+        <Route
+          path="/dashboard/assets/certificate"
+          element={<AssetsCertificateDashboardPage />}
+        />
         <Route path="/dashboard/packages" element={<PackageDashboardPage />} />
         <Route
           path="/dashboard/packages/owner"

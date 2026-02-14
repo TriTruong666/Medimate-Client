@@ -3,81 +3,76 @@ import { motion } from "framer-motion";
 import Breadcrumb from "../components/Breadcrumb";
 import { cardContainer, cardItem } from "../motions/cardMotion";
 import { RiImageAddLine } from "react-icons/ri";
-type Asset = {
+import { useState } from "react";
+
+type AssetType = "image" | "pdf";
+
+type BaseAsset = {
   id: number;
   name: string;
   size: string;
   date: string;
-  image: string;
+  preview: string; // image thumbnail
+  fileUrl: string;
+  type: AssetType;
 };
 
-const breadcrumbItems = [
-  {
-    label: "Dashboard",
-    path: "/dashboard",
-  },
-  {
-    label: "Tài nguyên",
-    path: "/dashboard/assets",
-  },
-  {
-    label: "Tất cả",
-  },
-];
-
-const mockAssets = [
+const mockPrescription: BaseAsset[] = [
   {
     id: 1,
     name: "medical-report.png",
     size: "2.4 MB",
     date: "12 Feb 2026",
-    image:
+    preview:
       "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?q=80&w=600",
-  },
-  {
-    id: 2,
-    name: "xray-image.jpg",
-    size: "5.1 MB",
-    date: "10 Feb 2026",
-    image:
-      "https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=600",
-  },
-  {
-    id: 3,
-    name: "brain-scan.png",
-    size: "3.8 MB",
-    date: "08 Feb 2026",
-    image:
-      "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=600",
+    fileUrl:
+      "https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?q=80&w=600",
+    type: "image",
   },
 ];
-export default function AssetsDashboardPage() {
-  return (
-    <div className="page-layout">
-      {/* Header */}
-      <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Quản lý tài nguyên
-          </h1>
-        </div>
-      </div>
-      {/* Content */}
-      <div className="my-8 space-y-8">
-        <AssetGrid />
-        <div className="flex justify-center">
-          {" "}
-          <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
-            Tải thêm ảnh <RiImageAddLine />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function AssetGrid() {
+const mockCertificates: BaseAsset[] = [
+  {
+    id: 2,
+    name: "medical-license.pdf",
+    size: "1.8 MB",
+    date: "05 Feb 2026",
+    preview:
+      "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=600",
+    fileUrl: "#",
+    type: "pdf",
+  },
+];
+
+const breadcrumbPrescriptionItems = [
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+  },
+  {
+    label: "Thư viện",
+    path: "/dashboard/assets",
+  },
+  {
+    label: "Đơn thuốc",
+  },
+];
+
+const breadcrumbCertificateItems = [
+  {
+    label: "Dashboard",
+    path: "/dashboard",
+  },
+  {
+    label: "Thư viện",
+    path: "/dashboard/assets",
+  },
+  {
+    label: "Chứng chỉ hành nghề",
+  },
+];
+
+function AssetGrid({ assets }: { assets: BaseAsset[] }) {
   return (
     <motion.div
       variants={cardContainer}
@@ -85,38 +80,77 @@ function AssetGrid() {
       animate="show"
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
     >
-      {mockAssets.map((asset) => (
+      {assets.map((asset) => (
         <AssetCard key={asset.id} asset={asset} />
       ))}
     </motion.div>
   );
 }
 
-function AssetCard({ asset }: { asset: Asset }) {
+function AssetCard({ asset }: { asset: BaseAsset }) {
+  const [previewFile, setPreviewFile] = useState<string | null>(null);
+
+  const ASSET_UI = {
+    image: {
+      badge: "IMG",
+      overlay: false,
+    },
+    pdf: {
+      badge: "PDF",
+      overlay: true,
+    },
+  };
+
+  const ui = ASSET_UI[asset.type];
+
   return (
     <motion.div
       variants={cardItem}
       className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md transition hover:border-white/20 hover:bg-white/10"
     >
-      {/* Image */}
-      <div className="aspect-square overflow-hidden">
+      {/* Preview */}
+      <div className="relative aspect-square overflow-hidden">
         <img
-          src={asset.image}
+          src={asset.preview}
           alt={asset.name}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
         />
+
+        {ui.overlay && (
+          <>
+            <div className="absolute inset-0 bg-black/40 opacity-0 transition group-hover:opacity-100" />
+
+            {ui.badge && (
+              <div className="absolute top-3 left-3 rounded-md bg-red-500/90 px-2 py-1 text-[10px] font-semibold text-white shadow">
+                {ui.badge}
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Info */}
       <div className="space-y-2 p-4">
         <div className="flex items-start justify-between">
-          <a
-            href={asset.image}
-            target="_blank"
-            className="max-w-[80%] truncate text-sm font-medium text-white"
-          >
-            {asset.name}
-          </a>
+          {asset.type === "pdf" && (
+            <button
+              onClick={() =>
+                asset.type === "pdf" && setPreviewFile(asset.fileUrl)
+              }
+              className="max-w-[80%] cursor-pointer truncate text-sm font-medium text-white"
+            >
+              {asset.name}
+            </button>
+          )}
+          {asset.type === "image" && (
+            <a
+              href={asset.fileUrl}
+              target="_blank"
+              className="max-w-[80%] cursor-pointer truncate text-sm font-medium text-white"
+            >
+              {asset.name}
+            </a>
+          )}
 
           <button className="opacity-0 transition group-hover:opacity-100">
             <HiOutlineDotsVertical className="text-lg text-white/60 hover:text-white" />
@@ -129,5 +163,60 @@ function AssetCard({ asset }: { asset: Asset }) {
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function AssetLibrary({
+  title,
+  breadcrumbItems,
+  assets,
+}: {
+  title: string;
+  breadcrumbItems: { label: string; path?: string }[];
+  assets: BaseAsset[];
+}) {
+  return (
+    <div className="page-layout">
+      {/* Header */}
+      <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <Breadcrumb items={breadcrumbItems} />
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+            {title}
+          </h1>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="my-8 space-y-8">
+        <AssetGrid assets={assets} />
+
+        <div className="flex justify-center">
+          <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
+            Tải thêm <RiImageAddLine />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function AssetsPrescriptionDashboardPage() {
+  return (
+    <AssetLibrary
+      title="Thư viện đơn thuốc"
+      breadcrumbItems={breadcrumbPrescriptionItems}
+      assets={mockPrescription}
+    />
+  );
+}
+
+export function AssetsCertificateDashboardPage() {
+  return (
+    <AssetLibrary
+      title="Thư viện chứng chỉ bác sĩ"
+      breadcrumbItems={breadcrumbCertificateItems}
+      assets={mockCertificates}
+    />
   );
 }

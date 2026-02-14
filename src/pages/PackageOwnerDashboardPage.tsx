@@ -4,10 +4,10 @@ import Breadcrumb from "../components/Breadcrumb";
 import { Pagination } from "../components/Pagination";
 import { HiOutlineX } from "react-icons/hi";
 
-type Status = "active" | "blocked" | "cancelled";
+type ActionStatus = "active" | "blocked" | "cancelled";
 
 const ACTIONS_BY_STATUS: Record<
-  Status,
+  ActionStatus,
   {
     icon: React.ReactNode;
     danger?: boolean;
@@ -260,7 +260,7 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
             {/* Actions */}
             <td className="p-4 text-center">
               <div className="flex items-center justify-center gap-2">
-                {ACTIONS_BY_STATUS[row.status as Status]?.map(
+                {ACTIONS_BY_STATUS[row.status as ActionStatus]?.map(
                   (action, index) => (
                     <IconAction
                       key={index}

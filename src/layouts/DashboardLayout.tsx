@@ -130,7 +130,7 @@ function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="mt-4 flex-1 space-y-2 overflow-y-auto px-3">
+      <nav className="mt-4 flex-1 space-y-2 overflow-y-auto px-3 pb-6">
         {/* Overview */}
         <SidebarItem
           to="/dashboard"
@@ -262,7 +262,7 @@ function Sidebar() {
           >
             <div className="flex items-center gap-3">
               <RiImageAiLine className="text-lg" />
-              Lưu trữ
+              Thư viện
             </div>
 
             <motion.span
@@ -290,13 +290,16 @@ function Sidebar() {
                   transition={{ duration: 0.2 }}
                   className="mt-2 ml-6 space-y-1"
                 >
-                  <SubItem to="/dashboard/assets" label="Tất cả" />
                   <SubItem
                     to="/dashboard/assets/prescription"
                     label="Toa thuốc"
                   />
                   <SubItem
-                    to="/dashboard/packages/certificate"
+                    to="/dashboard/assets/medical-profile"
+                    label="Hồ sơ bệnh án"
+                  />
+                  <SubItem
+                    to="/dashboard/assets/certificate"
                     label="Chứng chỉ bác sĩ"
                   />
                 </motion.div>
