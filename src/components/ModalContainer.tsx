@@ -3,6 +3,7 @@ import { useAtom } from "jotai";
 import {
   AddAccountModal,
   IndexDocumentModal,
+  PreviewPdfModal,
   UploadDocumentModal,
 } from "./Modal";
 import { closeModalAtom, modalAtom } from "../stores/modalStore";
@@ -13,6 +14,7 @@ const MODAL_MAP = {
   upload: UploadDocumentModal,
   index: IndexDocumentModal,
   add_account: AddAccountModal,
+  preview_pdf: PreviewPdfModal,
 };
 
 export default function ModalContainer() {

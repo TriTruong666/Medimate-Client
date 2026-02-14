@@ -302,6 +302,7 @@ function Sidebar() {
                     to="/dashboard/assets/certificate"
                     label="Chứng chỉ bác sĩ"
                   />
+                  <SubItem to="/dashboard/assets/contract" label="Hợp đồng" />
                 </motion.div>
               </motion.div>
             )}

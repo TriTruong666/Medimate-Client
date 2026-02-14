@@ -3,7 +3,8 @@ import { motion } from "framer-motion";
 import Breadcrumb from "../components/Breadcrumb";
 import { cardContainer, cardItem } from "../motions/cardMotion";
 import { RiImageAddLine } from "react-icons/ri";
-import { useState } from "react";
+import { openPdfModalAtom } from "../stores/modalStore";
+import { useAtom } from "jotai";
 
 type AssetType = "image" | "pdf";
 
@@ -34,12 +35,13 @@ const mockPrescription: BaseAsset[] = [
 const mockCertificates: BaseAsset[] = [
   {
     id: 2,
-    name: "medical-license.pdf",
+    name: "mac-lenin.pdf",
     size: "1.8 MB",
     date: "05 Feb 2026",
     preview:
       "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?q=80&w=600",
-    fileUrl: "#",
+    fileUrl:
+      "https://kmacle.duytan.edu.vn/uploads/75770b9b-cdbf-4038-90e2-f25e1f4426fe_triethocmaclenin.pdf",
     type: "pdf",
   },
 ];
@@ -88,7 +90,7 @@ function AssetGrid({ assets }: { assets: BaseAsset[] }) {
 }
 
 function AssetCard({ asset }: { asset: BaseAsset }) {
-  const [previewFile, setPreviewFile] = useState<string | null>(null);
+  const [, openModal] = useAtom(openPdfModalAtom);
 
   const ASSET_UI = {
     image: {
@@ -134,9 +136,7 @@ function AssetCard({ asset }: { asset: BaseAsset }) {
         <div className="flex items-start justify-between">
           {asset.type === "pdf" && (
             <button
-              onClick={() =>
-                asset.type === "pdf" && setPreviewFile(asset.fileUrl)
-              }
+              onClick={() => openModal(asset.fileUrl)}
               className="max-w-[80%] cursor-pointer truncate text-sm font-medium text-white"
             >
               {asset.name}
