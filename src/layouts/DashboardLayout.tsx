@@ -38,7 +38,7 @@ export default function DashboardLayout() {
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">
           <Navbar />
-          <div className="flex-1 overflow-y-auto scroll-smooth py-4 md:py-8">
+          <div className="flex-1 overflow-y-auto scroll-smooth">
             <Outlet />
           </div>
         </div>

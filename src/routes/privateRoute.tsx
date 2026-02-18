@@ -13,6 +13,11 @@ import {
   AssetsCertificateDashboardPage,
   AssetsPrescriptionDashboardPage,
 } from "../pages/AssetsDashboardPage";
+import SettingDashboardLayout from "../layouts/SettingDashboardLayout";
+import {
+  ProfileSettingDashboardPage,
+  SecuritySettingDashboardPage,
+} from "../pages/SettingDashboardPage";
 
 export default function PrivateRoute() {
   return (
@@ -48,6 +53,16 @@ export default function PrivateRoute() {
           path="/dashboard/packages/owner"
           element={<PackageOwnerDashboardPage />}
         />
+        <Route element={<SettingDashboardLayout />}>
+          <Route
+            path="/dashboard/settings"
+            element={<ProfileSettingDashboardPage />}
+          />
+          <Route
+            path="/dashboard/settings/security"
+            element={<SecuritySettingDashboardPage />}
+          />
+        </Route>
       </Route>
     </Routes>
   );
