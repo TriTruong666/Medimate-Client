@@ -1,10 +1,11 @@
 import { IoIosInformationCircleOutline } from "react-icons/io";
-import { TbCancel } from "react-icons/tb";
 import { Badge } from "../components/Badge";
 import Breadcrumb from "../components/Breadcrumb";
 import { HiOutlineCreditCard, HiOutlinePrinter } from "react-icons/hi";
 import { Pagination } from "../components/Pagination";
 import { formatPrice } from "../utils/format";
+import IconAction from "../components/IconAction";
+import { Tooltip } from "../components/Tooltip";
 
 type TransactionRow = {
   id: string;
@@ -230,11 +231,12 @@ function TransactionTable({ data }: TransactionTableProps) {
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <IconAction icon={<HiOutlinePrinter />} />
-                  <IconAction icon={<IoIosInformationCircleOutline />} />
-                  {row.status === "pending" && (
-                    <IconAction icon={<TbCancel />} danger />
-                  )}
+                  <Tooltip content="In hoá đơn">
+                    <IconAction icon={<HiOutlinePrinter />} />
+                  </Tooltip>
+                  <Tooltip content="Chi tiết">
+                    <IconAction icon={<IoIosInformationCircleOutline />} />
+                  </Tooltip>
                 </div>
               )}
             </td>
@@ -242,28 +244,6 @@ function TransactionTable({ data }: TransactionTableProps) {
         ))}
       </tbody>
     </table>
-  );
-}
-
-function IconAction({
-  icon,
-  danger = false,
-  className = "",
-}: {
-  icon: React.ReactNode;
-  danger?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      className={`rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-white/10 ${
-        danger
-          ? "hover:text-red-500 dark:hover:text-red-400"
-          : "hover:text-primary dark:hover:text-white"
-      } ${className}`}
-    >
-      {icon}
-    </button>
   );
 }
 

@@ -5,12 +5,21 @@ import {
   HiOutlineTrash,
   HiOutlineSearch,
   HiOutlineCheck,
+  HiOutlineInformationCircle,
+  HiOutlineCheckCircle,
 } from "react-icons/hi";
 import { FaUserDoctor } from "react-icons/fa6";
 import { FiFileText } from "react-icons/fi";
 import { AiOutlineFilePdf, AiOutlineFileZip } from "react-icons/ai";
 import { useAtom } from "jotai";
-import { closeModalAtom, pdfPreviewAtom } from "../stores/modalStore";
+import {
+  cancelTypeAtom,
+  closeModalAtom,
+  deleteTypeAtom,
+  lockTypeAtom,
+  pdfPreviewAtom,
+  unlockTypeAtom,
+} from "../stores/modalStore";
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { PiHandEyeLight } from "react-icons/pi";
@@ -495,6 +504,315 @@ function Input({
         placeholder={placeholder}
         className="input-primary text-[13px]!"
       />
+    </div>
+  );
+}
+
+export function LockModal() {
+  const [lockType] = useAtom(lockTypeAtom);
+  const [, closeModal] = useAtom(closeModalAtom);
+
+  // Header & description dựa vào type
+  const title =
+    lockType === "account"
+      ? "Khoá tài khoản"
+      : lockType === "owner_package"
+        ? "Khoá gói chủ sở hữu"
+        : "Khoá";
+
+  const description =
+    lockType === "account"
+      ? "Khoá tài khoản sẽ ngăn người dùng truy cập vào hệ thống. Người dùng sẽ không thể đăng nhập cho đến khi mở khoá."
+      : lockType === "owner_package"
+        ? "Khoá gói chủ sở hữu sẽ ngăn mọi thao tác trên gói này. Người dùng liên quan sẽ không thể sử dụng gói cho đến khi mở khoá."
+        : "";
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <h2 className="text-base font-semibold tracking-tight text-white">
+          {title}
+        </h2>
+
+        <button
+          onClick={closeModal}
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+        >
+          <HiOutlineX className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="space-y-6 p-6">
+        <p className="text-sm text-gray-300">{description}</p>
+
+        {/* Warning / Details */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+            <HiOutlineInformationCircle className="mt-0.5 text-yellow-400" />
+            <p className="text-sm text-yellow-400">
+              Hành động này sẽ tạm thời khoá{" "}
+              {lockType === "account" ? "tài khoản" : "gói chủ sở hữu"}. Hãy
+              chắc chắn rằng bạn muốn thực hiện thao tác này.
+            </p>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-lg border border-white/20 bg-white/5 p-4">
+            <HiOutlineInformationCircle className="mt-0.5 text-white" />
+            <p className="text-sm text-white/80">
+              Bạn có thể mở khoá lại bất cứ lúc nào từ trang quản lý.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <button
+          onClick={closeModal}
+          className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+        >
+          Huỷ
+        </button>
+
+        <button
+          className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400"
+          onClick={() => {
+            console.log("Khoá:", lockType);
+            closeModal();
+          }}
+        >
+          Khoá
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function UnlockModal() {
+  const [unlockType] = useAtom(unlockTypeAtom);
+  const [, closeModal] = useAtom(closeModalAtom);
+
+  // Header & description
+  const title =
+    unlockType === "account"
+      ? "Mở khoá tài khoản"
+      : unlockType === "owner_package"
+        ? "Mở khoá gói chủ sở hữu"
+        : "Mở khoá";
+
+  const description =
+    unlockType === "account"
+      ? "Mở khoá tài khoản sẽ cho phép người dùng truy cập lại vào hệ thống ngay lập tức."
+      : unlockType === "owner_package"
+        ? "Mở khoá gói chủ sở hữu sẽ cho phép người dùng liên quan sử dụng lại gói này."
+        : "";
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <h2 className="text-base font-semibold tracking-tight text-white">
+          {title}
+        </h2>
+
+        <button
+          onClick={closeModal}
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+        >
+          <HiOutlineX className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="space-y-6 p-6">
+        <p className="text-sm text-gray-300">{description}</p>
+
+        {/* Info / Success */}
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4">
+            <HiOutlineCheckCircle className="mt-0.5 text-emerald-400" />
+            <p className="text-sm text-emerald-400">
+              Hành động này sẽ mở khoá{" "}
+              {unlockType === "account" ? "tài khoản" : "gói chủ sở hữu"} ngay
+              lập tức.
+            </p>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-lg border border-white/20 bg-white/5 p-4">
+            <HiOutlineInformationCircle className="mt-0.5 text-white" />
+            <p className="text-sm text-white/80">
+              Hãy chắc chắn rằng bạn muốn thực hiện thao tác này.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <button
+          onClick={closeModal}
+          className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+        >
+          Huỷ
+        </button>
+
+        <button
+          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-400"
+          onClick={() => {
+            console.log("Mở khoá:", unlockType);
+            closeModal();
+          }}
+        >
+          Mở khoá
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function CancelModal() {
+  const [cancelType] = useAtom(cancelTypeAtom);
+  const [, closeModal] = useAtom(closeModalAtom);
+
+  // Header & description
+  const title = cancelType === "owner_package" ? "Huỷ gói chủ sở hữu" : "Huỷ";
+
+  const description =
+    cancelType === "owner_package"
+      ? "Huỷ gói chủ sở hữu sẽ ngưng mọi hoạt động và quyền sử dụng của người dùng liên quan. Hành động này không thể hoàn tác."
+      : "";
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <h2 className="text-base font-semibold tracking-tight text-white">
+          {title}
+        </h2>
+        <button
+          onClick={closeModal}
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+        >
+          <HiOutlineX className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="space-y-6 p-6">
+        <p className="text-sm text-gray-300">{description}</p>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+            <HiOutlineInformationCircle className="mt-0.5 text-red-400" />
+            <p className="text-sm text-red-400">
+              Hành động này sẽ huỷ{" "}
+              {cancelType === "owner_package" ? "gói chủ sở hữu" : ""} ngay lập
+              tức. Không thể hoàn tác.
+            </p>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-lg border border-white/20 bg-white/5 p-4">
+            <HiOutlineInformationCircle className="mt-0.5 text-white" />
+            <p className="text-sm text-white/80">
+              Hãy chắc chắn rằng bạn muốn thực hiện thao tác này.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <button
+          onClick={closeModal}
+          className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+        >
+          Huỷ
+        </button>
+
+        <button
+          className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400"
+          onClick={() => {
+            console.log("Huỷ:", cancelType);
+            closeModal();
+          }}
+        >
+          Huỷ gói
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export function DeleteModal() {
+  const [deleteType] = useAtom(deleteTypeAtom);
+  const [, closeModal] = useAtom(closeModalAtom);
+
+  // Header & description
+  const title = deleteType === "document" ? "Xoá tài liệu" : "Xoá";
+
+  const description =
+    deleteType === "document"
+      ? "Xoá tài liệu sẽ vĩnh viễn loại bỏ tệp này khỏi hệ thống. Hành động này không thể hoàn tác."
+      : "";
+
+  return (
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
+      {/* Header */}
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <h2 className="text-base font-semibold tracking-tight text-white">
+          {title}
+        </h2>
+        <button
+          onClick={closeModal}
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+        >
+          <HiOutlineX className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Content */}
+      <div className="space-y-6 p-6">
+        <p className="text-sm text-gray-300">{description}</p>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-4">
+            <HiOutlineInformationCircle className="mt-0.5 text-red-400" />
+            <p className="text-sm text-red-400">
+              Hành động này sẽ xoá {deleteType === "document" ? "tài liệu" : ""}{" "}
+              vĩnh viễn. Không thể hoàn tác.
+            </p>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-lg border border-white/20 bg-white/5 p-4">
+            <HiOutlineInformationCircle className="mt-0.5 text-white" />
+            <p className="text-sm text-white/80">
+              Hãy chắc chắn rằng bạn muốn thực hiện thao tác này.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md">
+        <button
+          onClick={closeModal}
+          className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+        >
+          Huỷ
+        </button>
+
+        <button
+          className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400"
+          onClick={() => {
+            console.log("Xoá:", deleteType);
+            closeModal();
+          }}
+        >
+          Xoá
+        </button>
+      </div>
     </div>
   );
 }

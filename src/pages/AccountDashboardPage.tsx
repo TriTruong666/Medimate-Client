@@ -1,13 +1,20 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { IoLockClosedOutline, IoLockOpenOutline } from "react-icons/io5";
 import { Badge } from "../components/Badge";
 import Breadcrumb from "../components/Breadcrumb";
 import GlassSelect from "../components/Select";
 import { useState } from "react";
 import { PiExport } from "react-icons/pi";
-import { openModalAtom } from "../stores/modalStore";
+import {
+  openLockModalAtom,
+  openModalAtom,
+  openUnlockModalAtom,
+} from "../stores/modalStore";
 import { useAtom } from "jotai";
 import { FiUserPlus } from "react-icons/fi";
 import { Pagination } from "../components/Pagination";
+import IconAction from "../components/IconAction";
+import { Tooltip } from "../components/Tooltip";
 
 type AccountRow = {
   name: string;
@@ -158,6 +165,9 @@ export default function AccountDashboardPage() {
 }
 
 function AccountTable({ data }: AccountTableProps) {
+  const [, openLockModal] = useAtom(openLockModalAtom);
+  const [, openUnlockModal] = useAtom(openUnlockModalAtom);
+
   return (
     <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
       <thead>
@@ -224,10 +234,21 @@ function AccountTable({ data }: AccountTableProps) {
             <td className="p-4 text-center">
               <div className="flex items-center justify-center gap-2">
                 {row.status === "locked" && (
-                  <IconAction icon={<IoLockOpenOutline />} />
+                  <Tooltip content="Mở khoá">
+                    <IconAction
+                      onClick={() => openUnlockModal("account")}
+                      icon={<IoLockOpenOutline />}
+                    />
+                  </Tooltip>
                 )}
                 {row.status !== "locked" && (
-                  <IconAction icon={<IoLockClosedOutline />} danger />
+                  <Tooltip content="Khoá tài khoản">
+                    <IconAction
+                      onClick={() => openLockModal("account")}
+                      icon={<IoLockClosedOutline />}
+                      danger
+                    />
+                  </Tooltip>
                 )}
               </div>
             </td>
@@ -235,28 +256,6 @@ function AccountTable({ data }: AccountTableProps) {
         ))}
       </tbody>
     </table>
-  );
-}
-
-function IconAction({
-  icon,
-  danger = false,
-  className = "",
-}: {
-  icon: React.ReactNode;
-  danger?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      className={`rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-white/10 ${
-        danger
-          ? "hover:text-red-500 dark:hover:text-red-400"
-          : "hover:text-primary dark:hover:text-white"
-      } ${className}`}
-    >
-      {icon}
-    </button>
   );
 }
 

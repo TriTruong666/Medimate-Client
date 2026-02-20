@@ -2,8 +2,12 @@
 import { useAtom } from "jotai";
 import {
   AddAccountModal,
+  CancelModal,
+  DeleteModal,
   IndexDocumentModal,
+  LockModal,
   PreviewPdfModal,
+  UnlockModal,
   UploadDocumentModal,
 } from "./Modal";
 import { closeModalAtom, modalAtom } from "../stores/modalStore";
@@ -15,6 +19,10 @@ const MODAL_MAP = {
   index: IndexDocumentModal,
   add_account: AddAccountModal,
   preview_pdf: PreviewPdfModal,
+  lock: LockModal,
+  unlock: UnlockModal,
+  cancel: CancelModal,
+  delete: DeleteModal,
 };
 
 export default function ModalContainer() {

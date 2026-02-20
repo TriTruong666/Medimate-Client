@@ -6,7 +6,6 @@ import { MdOutlineDriveFolderUpload } from "react-icons/md";
 import { Badge } from "../components/Badge";
 import {
   HiOutlineDownload,
-  HiOutlinePencil,
   HiOutlineTrash,
   HiOutlineRefresh,
 } from "react-icons/hi";
@@ -22,10 +21,12 @@ import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
 import { useState } from "react";
 import { cardContainer, cardItem } from "../motions/cardMotion";
 import { useAtom } from "jotai";
-import { openModalAtom } from "../stores/modalStore";
+import { openDeleteModalAtom, openModalAtom } from "../stores/modalStore";
 import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
 import GlassSelect from "../components/Select";
 import { Pagination } from "../components/Pagination";
+import { Tooltip } from "../components/Tooltip";
+import IconAction from "../components/IconAction";
 
 type DocumentRow = {
   name: string;
@@ -305,6 +306,8 @@ function DocumentCardGrid({ data }: DocumentCardGridProps) {
 }
 
 function DocumentCard({ data }: DocumentCardProps) {
+  const [, openDeleteModal] = useAtom(openDeleteModalAtom);
+
   return (
     <motion.div
       variants={cardItem}
@@ -343,11 +346,16 @@ function DocumentCard({ data }: DocumentCardProps) {
         <StatusBadge status={data.status} />
 
         <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
-          <IconAction icon={<HiOutlineDownload />} />
-          {data.status === "failed" && (
-            <IconAction icon={<HiOutlineRefresh />} />
-          )}
-          <IconAction icon={<HiOutlineTrash />} danger />
+          <Tooltip content="Tải xuống">
+            <IconAction icon={<HiOutlineDownload />} />
+          </Tooltip>
+          <Tooltip content="Xoá tài liệu">
+            <IconAction
+              onClick={() => openDeleteModal("document")}
+              icon={<HiOutlineTrash />}
+              danger
+            />
+          </Tooltip>
         </div>
       </div>
     </motion.div>
@@ -355,6 +363,7 @@ function DocumentCard({ data }: DocumentCardProps) {
 }
 
 function DocumentTable({ data }: DocumentTableProps) {
+  const [, openDeleteModal] = useAtom(openDeleteModalAtom);
   return (
     <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
       <thead>
@@ -417,40 +426,22 @@ function DocumentTable({ data }: DocumentTableProps) {
             {/* Actions */}
             <td className="p-4 text-center">
               <div className="flex items-center justify-center gap-2">
-                <IconAction icon={<HiOutlineDownload />} />
-                <IconAction icon={<HiOutlinePencil />} />
-                {row.status === "failed" && (
-                  <IconAction icon={<HiOutlineRefresh />} />
-                )}
-                <IconAction icon={<HiOutlineTrash />} danger />
+                <Tooltip content="Tải xuống">
+                  <IconAction icon={<HiOutlineDownload />} />
+                </Tooltip>
+                <Tooltip content="Xoá tài liệu">
+                  <IconAction
+                    onClick={() => openDeleteModal("document")}
+                    icon={<HiOutlineTrash />}
+                    danger
+                  />
+                </Tooltip>
               </div>
             </td>
           </tr>
         ))}
       </tbody>
     </table>
-  );
-}
-
-function IconAction({
-  icon,
-  danger = false,
-  className = "",
-}: {
-  icon: React.ReactNode;
-  danger?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      className={`rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-white/10 ${
-        danger
-          ? "hover:text-red-500 dark:hover:text-red-400"
-          : "hover:text-primary dark:hover:text-white"
-      } ${className}`}
-    >
-      {icon}
-    </button>
   );
 }
 

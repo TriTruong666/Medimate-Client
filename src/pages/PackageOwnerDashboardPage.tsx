@@ -3,27 +3,40 @@ import { Badge } from "../components/Badge";
 import Breadcrumb from "../components/Breadcrumb";
 import { Pagination } from "../components/Pagination";
 import { HiOutlineX } from "react-icons/hi";
+import IconAction from "../components/IconAction";
+import { Tooltip } from "../components/Tooltip";
+import {
+  openCancelModalAtom,
+  openLockModalAtom,
+  openUnlockModalAtom,
+} from "../stores/modalStore";
+import { useAtom } from "jotai";
 
-type ActionStatus = "active" | "blocked" | "cancelled";
+type ActionStatus = "active" | "blocked";
 
 const ACTIONS_BY_STATUS: Record<
   ActionStatus,
   {
     icon: React.ReactNode;
     danger?: boolean;
+    description: string;
+    type?: "unlock" | "lock";
   }[]
 > = {
   active: [
-    { icon: <IoLockClosedOutline />, danger: true },
-    { icon: <HiOutlineX />, danger: true },
+    {
+      icon: <IoLockClosedOutline />,
+      danger: true,
+      description: "Khoá tạm thời",
+      type: "lock",
+    },
+    { icon: <HiOutlineX />, danger: true, description: "Huỷ gói" },
   ],
 
   blocked: [
-    { icon: <IoLockOpenOutline /> },
-    { icon: <HiOutlineX />, danger: true },
+    { icon: <IoLockOpenOutline />, description: "Mở khoá", type: "unlock" },
+    { icon: <HiOutlineX />, danger: true, description: "Huỷ gói" },
   ],
-
-  cancelled: [],
 };
 
 type PackageOwnerRow = {
@@ -131,6 +144,15 @@ const demoData: PackageOwnerRow[] = [
     email: "tritruonghoang3@gmail.com",
     name: "Trí Trương",
     createdAt: "Hôm nay",
+    expiredAt: "14/05/2026",
+    duration: "yearly",
+    packageName: "Premium",
+    status: "pending",
+  },
+  {
+    email: "tritruonghoang3@gmail.com",
+    name: "Trí Trương",
+    createdAt: "Hôm nay",
     expiredAt: "14/02/2027",
     duration: "yearly",
     packageName: "Premium",
@@ -168,6 +190,9 @@ export default function PackageOwnerDashboardPage() {
 }
 
 function PackageOwnerTable({ data }: PackageOwnerTableProps) {
+  const [, openLockModal] = useAtom(openLockModalAtom);
+  const [, openUnlockModal] = useAtom(openUnlockModalAtom);
+  const [, openCancelModal] = useAtom(openCancelModalAtom);
   const duration = {
     monthly: "Hằng tháng",
     "3 months": "3 tháng",
@@ -260,14 +285,66 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
             {/* Actions */}
             <td className="p-4 text-center">
               <div className="flex items-center justify-center gap-2">
-                {ACTIONS_BY_STATUS[row.status as ActionStatus]?.map(
-                  (action, index) => (
-                    <IconAction
-                      key={index}
-                      icon={action.icon}
-                      danger={action.danger}
-                    />
-                  ),
+                {row.status === "active" && (
+                  <>
+                    <Tooltip content="Khoá tạm thời">
+                      <IconAction
+                        onClick={() => openLockModal("owner_package")}
+                        danger
+                        icon={<IoLockClosedOutline />}
+                      />
+                    </Tooltip>
+
+                    <Tooltip content="Huỷ gói">
+                      <IconAction
+                        onClick={() => openCancelModal("owner_package")}
+                        danger
+                        icon={<HiOutlineX />}
+                      />
+                    </Tooltip>
+                  </>
+                )}
+
+                {row.status === "blocked" && (
+                  <>
+                    <Tooltip content="Mở khoá">
+                      <IconAction
+                        onClick={() => openUnlockModal("owner_package")}
+                        icon={<IoLockOpenOutline />}
+                      />
+                    </Tooltip>
+
+                    <Tooltip content="Huỷ gói">
+                      <IconAction
+                        onClick={() => openCancelModal("owner_package")}
+                        danger
+                        icon={<HiOutlineX />}
+                      />
+                    </Tooltip>
+                  </>
+                )}
+
+                {row.status === "overdue" && (
+                  <>
+                    <Tooltip content="Huỷ gói">
+                      <IconAction
+                        onClick={() => openCancelModal("owner_package")}
+                        danger
+                        icon={<HiOutlineX />}
+                      />
+                    </Tooltip>
+                  </>
+                )}
+                {row.status === "pending" && (
+                  <>
+                    <Tooltip content="Huỷ gói">
+                      <IconAction
+                        onClick={() => openCancelModal("owner_package")}
+                        danger
+                        icon={<HiOutlineX />}
+                      />
+                    </Tooltip>
+                  </>
                 )}
               </div>
             </td>
@@ -275,28 +352,6 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
         ))}
       </tbody>
     </table>
-  );
-}
-
-function IconAction({
-  icon,
-  danger = false,
-  className = "",
-}: {
-  icon: React.ReactNode;
-  danger?: boolean;
-  className?: string;
-}) {
-  return (
-    <button
-      className={`rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 dark:hover:bg-white/10 ${
-        danger
-          ? "hover:text-red-500 dark:hover:text-red-400"
-          : "hover:text-primary dark:hover:text-white"
-      } ${className}`}
-    >
-      {icon}
-    </button>
   );
 }
 
