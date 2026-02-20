@@ -15,8 +15,12 @@ import {
 } from "../pages/AssetsDashboardPage";
 import SettingDashboardLayout from "../layouts/SettingDashboardLayout";
 import {
+  APIKeysSettingDashboardPage,
+  MessageSettingDashboardPage,
+  NotificationSettingDashboardPage,
   ProfileSettingDashboardPage,
   SecuritySettingDashboardPage,
+  SystemSettingDashboardPage,
 } from "../pages/SettingDashboardPage";
 
 export default function PrivateRoute() {
@@ -61,6 +65,22 @@ export default function PrivateRoute() {
           <Route
             path="/dashboard/settings/security"
             element={<SecuritySettingDashboardPage />}
+          />
+          <Route
+            path="/dashboard/settings/notification"
+            element={<NotificationSettingDashboardPage />}
+          />
+          <Route
+            path="/dashboard/settings/message"
+            element={<MessageSettingDashboardPage />}
+          />
+          <Route
+            path="/dashboard/settings/system"
+            element={<SystemSettingDashboardPage />}
+          />
+          <Route
+            path="/dashboard/settings/keys"
+            element={<APIKeysSettingDashboardPage />}
           />
         </Route>
       </Route>

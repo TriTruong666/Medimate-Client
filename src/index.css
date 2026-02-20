@@ -48,6 +48,9 @@
   .setting-card-main{
     @apply dark:border-border-dark space-y-4 border-b border-gray-100 bg-white/80 px-6 py-4 dark:bg-neutral-950
   }
+  .helper-setting-card{
+    @apply text-[13px] text-white/40
+  }
 }
 
  @layer utilities {
