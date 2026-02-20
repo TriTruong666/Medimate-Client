@@ -7,6 +7,7 @@ import Toggle from "../components/Toggle";
 import { Badge, IconBadge } from "../components/Badge";
 import { HiOutlineCog, HiOutlineServer } from "react-icons/hi";
 import { useState } from "react";
+import { Button } from "../components/Button";
 
 type SettingCardProps = {
   label: string;
@@ -212,9 +213,9 @@ export function SecuritySettingDashboardPage() {
             </div>
 
             {/* Toggle button style */}
-            <button className="rounded-xl bg-white/10 px-5 py-2 text-[13px] text-white transition hover:bg-white/20">
+            <Button color="green" onClick={() => alert("Đã bật 2FA")}>
               Bật 2FA
-            </button>
+            </Button>
           </div>
         </SettingCard>
         <SettingCard
@@ -269,9 +270,9 @@ export function SecuritySettingDashboardPage() {
                 </div>
               </div>
 
-              <button className="rounded-xl bg-red-500/10 px-4 py-2 text-xs text-red-400 opacity-0 transition group-hover:opacity-100 hover:bg-red-500/20">
+              <Button color="red" onClick={() => alert("Đăng xuất")}>
                 Đăng xuất
-              </button>
+              </Button>
             </div>
           </div>
         </SettingCard>
@@ -568,46 +569,36 @@ function ApiKeyItem({ service, value }: ApiKeyItemProps) {
         )}
       </div>
 
-      {/* Hover / Action buttons */}
       <div className="absolute top-1/2 right-6 flex -translate-y-1/2 items-center gap-2 opacity-0 transition group-hover:opacity-100">
         {!editing ? (
           <>
-            <button
-              className="rounded-md bg-white/10 px-3 py-1 text-xs text-white transition hover:bg-white/20"
+            <Button
+              color="white"
               onClick={() => navigator.clipboard.writeText(keyValue)}
             >
               Sao chép
-            </button>
-            <button
-              className="rounded-md bg-yellow-500/10 px-3 py-1 text-xs text-yellow-400 transition hover:bg-yellow-500/20"
-              onClick={() => setMasked(!masked)}
-            >
+            </Button>
+            <Button onClick={() => setMasked(!masked)}>
               {masked ? "Hiển thị" : "Ẩn"}
-            </button>
-            <button
-              className="rounded-md bg-green-500/10 px-3 py-1 text-xs text-green-400 transition hover:bg-green-500/20"
-              onClick={() => setEditing(true)}
-            >
+            </Button>
+            <Button color="green" onClick={() => setEditing(true)}>
               Thay đổi
-            </button>
+            </Button>
           </>
         ) : (
           <>
-            <button
-              className="rounded-md bg-emerald-500/10 px-3 py-1 text-xs text-emerald-400 transition hover:bg-emerald-500/20"
-              onClick={() => setEditing(false)}
-            >
+            <Button color="green" onClick={() => setEditing(false)}>
               Lưu
-            </button>
-            <button
-              className="rounded-md bg-red-500/10 px-3 py-1 text-xs text-red-400 transition hover:bg-red-500/20"
+            </Button>
+            <Button
+              color="red"
               onClick={() => {
                 setKeyValue(value);
                 setEditing(false);
               }}
             >
               Hủy
-            </button>
+            </Button>
           </>
         )}
       </div>
