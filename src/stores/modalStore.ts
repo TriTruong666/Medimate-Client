@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import type { PaymentQRModalProps } from "../components/Modal";
 
 type LockType = "account" | "owner_package" | null;
 
@@ -17,11 +18,14 @@ export type ModalKey =
   | "lock"
   | "cancel"
   | "delete"
+  | "transaction"
   | null;
 
 export const modalAtom = atom<ModalKey>(null);
 
 export const pdfPreviewAtom = atom<string | null>(null);
+
+export const paymentAtom = atom<PaymentQRModalProps | null>(null);
 
 export const lockTypeAtom = atom<LockType>(null);
 
@@ -35,12 +39,15 @@ export const openModalAtom = atom(null, (_, set, key: ModalKey) => {
   set(modalAtom, key);
 });
 
-// close modal
 export const closeModalAtom = atom(null, (_, set) => {
   set(modalAtom, null);
   set(pdfPreviewAtom, null);
   set(lockTypeAtom, null);
   set(unlockTypeAtom, null);
+  set(unlockTypeAtom, null);
+  set(cancelTypeAtom, null);
+  set(deleteTypeAtom, null);
+  set(paymentAtom, null);
 });
 
 export const openPdfModalAtom = atom(null, (_, set, fileUrl: string) => {
@@ -67,3 +74,11 @@ export const openDeleteModalAtom = atom(null, (_, set, type: DeleteType) => {
   set(deleteTypeAtom, type);
   set(modalAtom, "delete");
 });
+
+export const openTransactionModalAtom = atom(
+  null,
+  (_, set, data: PaymentQRModalProps) => {
+    set(paymentAtom, data);
+    set(modalAtom, "transaction");
+  },
+);

@@ -6,35 +6,27 @@ import {
   DeleteModal,
   IndexDocumentModal,
   LockModal,
+  PaymentQRModal,
   PreviewPdfModal,
   UnlockModal,
   UploadDocumentModal,
 } from "./Modal";
-import { closeModalAtom, modalAtom } from "../stores/modalStore";
+import { closeModalAtom, modalAtom, paymentAtom } from "../stores/modalStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useState } from "react";
 
-const MODAL_MAP = {
-  upload: UploadDocumentModal,
-  index: IndexDocumentModal,
-  add_account: AddAccountModal,
-  preview_pdf: PreviewPdfModal,
-  lock: LockModal,
-  unlock: UnlockModal,
-  cancel: CancelModal,
-  delete: DeleteModal,
-};
-
 export default function ModalContainer() {
   const [modalKey] = useAtom(modalAtom);
+  const [paymentData] = useAtom(paymentAtom);
   const [, closeModal] = useAtom(closeModalAtom);
   const [mounted, setMounted] = useState(false);
 
   useLayoutEffect(() => {
     setMounted(true);
   }, []);
-  const ModalComponent = modalKey ? MODAL_MAP[modalKey] : null;
+
   if (!mounted) return null;
+
   return (
     <AnimatePresence>
       {modalKey && (
@@ -53,7 +45,17 @@ export default function ModalContainer() {
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             className="w-full max-w-2xl"
           >
-            {ModalComponent && <ModalComponent />}
+            {modalKey === "upload" && <UploadDocumentModal />}
+            {modalKey === "index" && <IndexDocumentModal />}
+            {modalKey === "add_account" && <AddAccountModal />}
+            {modalKey === "preview_pdf" && <PreviewPdfModal />}
+            {modalKey === "lock" && <LockModal />}
+            {modalKey === "unlock" && <UnlockModal />}
+            {modalKey === "cancel" && <CancelModal />}
+            {modalKey === "delete" && <DeleteModal />}
+            {modalKey === "transaction" && paymentData && (
+              <PaymentQRModal {...paymentData} />
+            )}
           </motion.div>
         </motion.div>
       )}

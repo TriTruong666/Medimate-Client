@@ -6,6 +6,8 @@ import { Pagination } from "../components/Pagination";
 import { formatPrice } from "../utils/format";
 import IconAction from "../components/IconAction";
 import { Tooltip } from "../components/Tooltip";
+import { openTransactionModalAtom } from "../stores/modalStore";
+import { useAtom } from "jotai";
 
 type TransactionRow = {
   id: string;
@@ -164,6 +166,18 @@ export default function TransactionDashboardPage() {
 }
 
 function TransactionTable({ data }: TransactionTableProps) {
+  const [, openPaymentModal] = useAtom(openTransactionModalAtom);
+  const demoPaymentData = {
+    doctorName: "BS. Nguyễn Minh Hoàng",
+    bankName: "Vietcombank",
+    bankAccount: "0123456789",
+    accountName: "NGUYEN MINH HOANG",
+    amount: 13750000,
+    period: "02/2026",
+    transferContent: "PAY-2026-02 DOC-8841",
+    qrImageUrl:
+      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_DEMO",
+  };
   return (
     <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
       <thead>
@@ -224,7 +238,10 @@ function TransactionTable({ data }: TransactionTableProps) {
               {row.transaction_type === "expenses" &&
               row.status === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
-                  <button className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-all duration-200 hover:border-white/20 hover:bg-white/10 active:scale-95">
+                  <button
+                    onClick={() => openPaymentModal(demoPaymentData)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-all duration-200 hover:border-white/20 hover:bg-white/10 active:scale-95"
+                  >
                     <HiOutlineCreditCard size={14} />
                     Thanh toán
                   </button>

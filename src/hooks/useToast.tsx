@@ -17,4 +17,12 @@ export const toast = {
       ...options,
     });
   },
+  success(title: string, message: string, options = {}) {
+    toastStore.push({
+      title,
+      message,
+      type: "success",
+      ...options,
+    });
+  },
 };
