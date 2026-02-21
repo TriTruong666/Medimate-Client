@@ -128,3 +128,65 @@ body {
 .glass-card:hover::after {
   opacity: 1;
 }
+
+/* Loading logo */
+
+.medimate-drawing-loader {
+  position: fixed; /* Đảm bảo phủ kín màn hình khi loading */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #050505; /* Nền đen SaaS */
+  z-index: 9999;
+}
+
+.medimate-svg {
+  width: 150px; /* Kích thước logo */
+  height: auto;
+  /* Hiệu ứng bóng sáng nhẹ kiểu neon */
+  filter: drop-shadow(0 0 20px rgba(226, 172, 245, 0.3));
+}
+
+/* Cấu hình chung cho các đường vẽ */
+.medimate-path {
+  fill: transparent;             /* Ban đầu không tô màu */
+  stroke-dasharray: 2000;        /* Tổng chiều dài path */
+  stroke-dashoffset: 2000;       /* Ẩn path lúc đầu */
+  stroke-width: 3;
+  animation: drawStroke 10s ease forwards; /* Chỉ vẽ đường */
+}
+
+.path-purple {
+  stroke: #E2ACF5;
+  animation-delay: 0s;
+}
+
+.path-white {
+  stroke: #FFFFFF;
+  animation-delay: 0.5s; /* delay để stagger */
+}
+
+/* --- Stroke animation --- */
+@keyframes drawStroke {
+  to {
+    stroke-dashoffset: 0;       /* Vẽ xong đường */
+  }
+}
+
+/* --- Fill animation riêng --- */
+.fillAnimation {
+  fill: transparent;
+  animation: fillFade 2s ease forwards;
+  animation-delay: 2s; /* chỉ bắt đầu khi stroke xong */
+}
+
+@keyframes fillFade {
+  to {
+    fill: currentColor;         /* Tô màu từ từ */
+  }
+}
