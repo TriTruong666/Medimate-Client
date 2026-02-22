@@ -28,6 +28,7 @@ import { ChatContainer } from "../components/Popup";
 import { AiOutlineRobot } from "react-icons/ai";
 import { RiImageAiLine, RiVipDiamondLine } from "react-icons/ri";
 import { WelcomeLoading } from "../components/Loading";
+import DrawerContainer from "../components/DrawerContainer";
 
 export default function DashboardLayout() {
   return (
@@ -35,6 +36,7 @@ export default function DashboardLayout() {
       <WelcomeLoading />
       <ModalContainer />
       <ToastContainer />
+      <DrawerContainer />
       <ChatContainer />
       <div className="flex h-screen overflow-hidden">
         <Sidebar />

@@ -7,7 +7,8 @@ import { formatPrice } from "../utils/format";
 import IconAction from "../components/IconAction";
 import { Tooltip } from "../components/Tooltip";
 import { openTransactionModalAtom } from "../stores/modalStore";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
+import { openDrawerAtom, transactionDetailDataAtom } from "../stores/drawerStore";
 
 type TransactionRow = {
   id: string;
@@ -167,6 +168,13 @@ export default function TransactionDashboardPage() {
 
 function TransactionTable({ data }: TransactionTableProps) {
   const [, openPaymentModal] = useAtom(openTransactionModalAtom);
+  const openDrawer = useSetAtom(openDrawerAtom);
+  const setTransactionDetailData = useSetAtom(transactionDetailDataAtom);
+
+  const handleOpenDetailModal = (row: TransactionRow) => {
+    setTransactionDetailData(row);
+    openDrawer("transaction_details");
+  };
   const demoPaymentData = {
     doctorName: "BS. Nguyễn Minh Hoàng",
     bankName: "Vietcombank",
@@ -185,11 +193,10 @@ function TransactionTable({ data }: TransactionTableProps) {
           {columns.map((col, i) => (
             <th
               key={col.key}
-              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
-                i < columns.length - 1
+              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${i < columns.length - 1
                   ? "dark:border-border-dark border-r border-gray-100"
                   : ""
-              } `}
+                } `}
             >
               {col.label}
             </th>
@@ -236,7 +243,7 @@ function TransactionTable({ data }: TransactionTableProps) {
             {/* Actions */}
             <td className="p-4 text-center">
               {row.transaction_type === "expenses" &&
-              row.status === "pending" ? (
+                row.status === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => openPaymentModal(demoPaymentData)}
@@ -252,7 +259,7 @@ function TransactionTable({ data }: TransactionTableProps) {
                     <IconAction icon={<HiOutlinePrinter />} />
                   </Tooltip>
                   <Tooltip content="Chi tiết">
-                    <IconAction icon={<IoIosInformationCircleOutline />} />
+                    <IconAction icon={<IoIosInformationCircleOutline />} onClick={() => handleOpenDetailModal(row)} />
                   </Tooltip>
                 </div>
               )}
