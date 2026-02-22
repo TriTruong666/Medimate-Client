@@ -3,22 +3,21 @@ version: "3.8"
 services:
   frontend:
     build: .
-    container_name: medimate-frontend-demo
     restart: always
     expose:
       - "80"
 
   nginx:
     image: nginx:alpine
-    container_name: nginx
+    container_name: nginx-proxy
     restart: always
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf:/etc/nginx/conf.d
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      - ./nginx/conf:/etc/nginx/conf.d:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
     depends_on:
       - frontend
 
@@ -26,5 +25,6 @@ services:
     image: certbot/certbot
     container_name: certbot
     volumes:
-      - ./certbot/conf:/etc/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
