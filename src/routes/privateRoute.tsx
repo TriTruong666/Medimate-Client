@@ -22,68 +22,55 @@ import {
   SecuritySettingDashboardPage,
   SystemSettingDashboardPage,
 } from "../pages/SettingDashboardPage";
+import { NotFoundPrivatePage } from "../pages/NotFoundPage";
 
 export default function PrivateRoute() {
   return (
     <Routes>
       <Route element={<DashboardLayout />}>
-        <Route path="/dashboard" element={<SummaryDashboardPage />} />
-        <Route path="/dashboard/accounts" element={<AccountDashboardPage />} />
-        <Route
-          path="/dashboard/documents"
-          element={<DocumentDashboardPage />}
-        />
+        <Route index element={<SummaryDashboardPage />} />
+        <Route path="accounts" element={<AccountDashboardPage />} />
+        <Route path="documents" element={<DocumentDashboardPage />} />
 
-        <Route path="/dashboard/rag" element={<KnowledgeBasePage />} />
+        <Route path="rag" element={<KnowledgeBasePage />} />
+        <Route path="rag/new" element={<KnowledgeAddCollectionPage />} />
+        <Route path="chatbot" element={<ChatbotPage />} />
+        <Route path="transaction" element={<TransactionDashboardPage />} />
         <Route
-          path="/dashboard/rag/new"
-          element={<KnowledgeAddCollectionPage />}
-        />
-        <Route path="/dashboard/chatbot" element={<ChatbotPage />} />
-        <Route
-          path="/dashboard/transaction"
-          element={<TransactionDashboardPage />}
-        />
-        <Route
-          path="/dashboard/assets/prescription"
+          path="assets/prescription"
           element={<AssetsPrescriptionDashboardPage />}
         />
         <Route
-          path="/dashboard/assets/certificate"
+          path="assets/certificate"
           element={<AssetsCertificateDashboardPage />}
         />
-        <Route path="/dashboard/packages" element={<PackageDashboardPage />} />
-        <Route
-          path="/dashboard/packages/owner"
-          element={<PackageOwnerDashboardPage />}
-        />
+        <Route path="packages" element={<PackageDashboardPage />} />
+        <Route path="packages/owner" element={<PackageOwnerDashboardPage />} />
         <Route element={<SettingDashboardLayout />}>
+          <Route path="settings" element={<ProfileSettingDashboardPage />} />
           <Route
-            path="/dashboard/settings"
-            element={<ProfileSettingDashboardPage />}
-          />
-          <Route
-            path="/dashboard/settings/security"
+            path="settings/security"
             element={<SecuritySettingDashboardPage />}
           />
           <Route
-            path="/dashboard/settings/notification"
+            path="settings/notification"
             element={<NotificationSettingDashboardPage />}
           />
           <Route
-            path="/dashboard/settings/message"
+            path="settings/message"
             element={<MessageSettingDashboardPage />}
           />
           <Route
-            path="/dashboard/settings/system"
+            path="settings/system"
             element={<SystemSettingDashboardPage />}
           />
           <Route
-            path="/dashboard/settings/keys"
+            path="settings/keys"
             element={<APIKeysSettingDashboardPage />}
           />
         </Route>
       </Route>
+      <Route path="*" element={<NotFoundPrivatePage />} />
     </Routes>
   );
 }
