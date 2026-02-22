@@ -7,6 +7,7 @@ import { AiFillMessage } from "react-icons/ai";
 import { useAtom } from "jotai";
 import { openPopupAtom } from "../stores/chatPopupStore";
 import type { ChatUserItemProps } from "../types/Popup";
+import { Link } from "react-router-dom";
 
 export function ChatUserDropdown() {
   const [open, setOpen] = useState(false);
@@ -256,8 +257,8 @@ export function AvatarDropdown() {
             transition={{ duration: 0.18, ease: "easeOut" }}
             className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#050505] backdrop-blur-xl"
           >
-            <AvatarDropdownItem label="Tài khoản" />
-            <AvatarDropdownItem label="Cài đặt" />
+            <AvatarDropdownItem label="Tài khoản" url="/dashboard/settings" />
+            <AvatarDropdownItem label="Cài đặt" url="/dashboard/settings" />
             <div className="h-px bg-white/10" />
             <AvatarDropdownItem label="Đăng xuất" danger />
           </motion.div>
@@ -270,21 +271,26 @@ export function AvatarDropdown() {
 type AvatarDropdownItemProps = {
   label: string;
   danger?: boolean;
+  url?: string;
 };
 
 function AvatarDropdownItem({
   label,
   danger = false,
+  url,
 }: AvatarDropdownItemProps) {
-  return (
-    <button
-      className={`w-full px-4 py-2 text-left text-sm transition-colors ${
-        danger
-          ? "text-red-400 hover:bg-red-500/10"
-          : "text-gray-300 hover:bg-white/5 hover:text-white"
-      } `}
-    >
-      {label}
-    </button>
-  );
+  const className = `block w-full px-4 py-2 text-left text-sm transition-colors ${danger
+      ? "text-red-400 hover:bg-red-500/10"
+      : "text-gray-300 hover:bg-white/5 hover:text-white"
+    } `;
+
+  if (url) {
+    return (
+      <Link to={url} className={className}>
+        {label}
+      </Link>
+    );
+  }
+
+  return <button className={className}>{label}</button>;
 }
