@@ -16,7 +16,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/git/medimate_dashboard
+            cd ~/git/Medimate-Client
             git pull origin demo
             docker compose down
             docker compose up -d --build
