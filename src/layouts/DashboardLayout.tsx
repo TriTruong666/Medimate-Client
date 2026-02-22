@@ -27,10 +27,12 @@ import { DarkModeIconSwitch } from "../components/Theme";
 import { ChatContainer } from "../components/Popup";
 import { AiOutlineRobot } from "react-icons/ai";
 import { RiImageAiLine, RiVipDiamondLine } from "react-icons/ri";
+import { WelcomeLoading } from "../components/Loading";
 
 export default function DashboardLayout() {
   return (
-    <div className="bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
+    <div className="relative bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
+      <WelcomeLoading />
       <ModalContainer />
       <ToastContainer />
       <ChatContainer />
