@@ -19,10 +19,19 @@
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-logo: "Zen Tokyo Zoo", system-ui;
+  --font-over: "OverusedGrotesk", system-ui, sans-serif;
 
   --radius-default: 0.5rem;
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
+}
+
+@font-face {
+  font-family: 'OverusedGrotesk';
+  /* Chỉ cần 1 file duy nhất này là cân hết mọi weight */
+  src: url('./assets/fonts/OverusedGrotesk-VF.woff2') format('woff2-variations');
+  font-weight: 100 900; 
+  font-style: normal;
 }
 
 @layer components {

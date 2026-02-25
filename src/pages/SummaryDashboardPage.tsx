@@ -36,6 +36,7 @@ ChartJS.register(
   PointElement,
 );
 export default function SummaryDashboardPage() {
+
   useEffect(() => {
     toast.warn(
       "Trang này chỉ là DEMO",

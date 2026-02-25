@@ -11,9 +11,10 @@ export default function PublicRoute() {
       <Route element={<LoginLayout />}>
         <Route index element={<LoginPage />} />
         <Route path="forget-password" element={<ForgetPassPage />} />
-        <Route path="test" element={<TestPage />} />
+
         <Route path="*" element={<NotFoundPublicPage />} />
       </Route>
+      <Route path="test" element={<TestPage />} />
     </Routes>
   );
 }

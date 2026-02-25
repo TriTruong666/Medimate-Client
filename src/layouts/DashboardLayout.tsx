@@ -13,7 +13,8 @@ import { GrTransaction } from "react-icons/gr";
 import { IoSync } from "react-icons/io5";
 import medimateLogo from "../assets/medimate-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import Lenis from "lenis";
 
 import { ToastContainer } from "../components/ToastContainer";
 import { NavLink, Outlet } from "react-router-dom";
@@ -31,6 +32,23 @@ import { WelcomeLoading } from "../components/Loading";
 import DrawerContainer from "../components/DrawerContainer";
 
 export default function DashboardLayout() {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!scrollRef.current) return;
+
+    const lenis = new Lenis({
+      wrapper: scrollRef.current,
+      autoRaf: true,
+      duration: 1.2,
+      smoothWheel: true,
+    });
+
+    return () => {
+      lenis.destroy();
+    };
+  }, []);
+
   return (
     <div className="relative bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
       <WelcomeLoading />
@@ -42,7 +60,7 @@ export default function DashboardLayout() {
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">
           <Navbar />
-          <div className="flex-1 overflow-y-auto scroll-smooth">
+          <div ref={scrollRef} className="flex-1 overflow-y-auto">
             <Outlet />
           </div>
         </div>
@@ -349,10 +367,9 @@ export function SidebarItem({
       to={to}
       end={exact}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-          isActive
-            ? "bg-white/10 text-white shadow-inner"
-            : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${isActive
+          ? "bg-white/10 text-white shadow-inner"
+          : "text-gray-400 hover:bg-white/5 hover:text-white"
         }`
       }
     >
@@ -373,10 +390,9 @@ export function SubItem({ label, to }: SubItemProps) {
       to={to}
       end
       className={({ isActive }) =>
-        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-          isActive
-            ? "bg-white/10 text-white"
-            : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${isActive
+          ? "bg-white/10 text-white"
+          : "text-gray-400 hover:bg-white/5 hover:text-white"
         }`
       }
     >
