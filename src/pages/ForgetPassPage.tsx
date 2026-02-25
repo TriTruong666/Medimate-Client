@@ -43,6 +43,11 @@ export default function ForgetPassPage() {
       <p className="mt-8 text-center text-sm text-gray-500">
         Copyright © 2025 Medimate. All rights reserved.
       </p>
+      <div className="mt-2 flex justify-center">
+        <a href="/" className="text-sm text-gray-100 underline">
+          Quay lại đăng nhập
+        </a>
+      </div>
     </div>
   );
 }

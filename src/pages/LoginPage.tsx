@@ -54,12 +54,12 @@ export default function LoginPage() {
             </a>
           </div>
           {/* Signin button */}
-          <button
+          <a
+            href="/dashboard"
             className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#050505] py-3.5 font-semibold text-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] transition-all hover:bg-[#141418]"
-            type="submit"
           >
             <span>Đăng nhập</span>
-          </button>
+          </a>
         </form>
       </div>
       <p className="mt-8 text-center text-sm text-gray-500">

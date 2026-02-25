@@ -7,12 +7,12 @@ export default function SettingDashboardLayout() {
       {/* Tabs */}
       <div className="relative border-b border-white/10">
         <div className="flex">
-          <TabLink to="dashboard/settings" label="Tổng quan" exact />
-          <TabLink to="dashboard/settings/security" label="Bảo mật" />
-          <TabLink to="dashboard/settings/notification" label="Thông báo" />
-          <TabLink to="dashboard/settings/message" label="Tin nhắn" />
-          <TabLink to="dashboard/settings/system" label="Hệ thống" />
-          <TabLink to="dashboard/settings/keys" label="API Keys" />
+          <TabLink to="/dashboard/settings" label="Tổng quan" exact />
+          <TabLink to="/dashboard/settings/security" label="Bảo mật" />
+          <TabLink to="/dashboard/settings/notification" label="Thông báo" />
+          <TabLink to="/dashboard/settings/message" label="Tin nhắn" />
+          <TabLink to="/dashboard/settings/system" label="Hệ thống" />
+          <TabLink to="/dashboard/settings/keys" label="API Keys" />
         </div>
       </div>
 
