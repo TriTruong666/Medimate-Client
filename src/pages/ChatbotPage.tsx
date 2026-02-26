@@ -84,6 +84,7 @@ function WelcomeChatbot({ onStart }: { onStart?(val: string): void }) {
         <div className="relative h-40 max-h-40 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-4 transition duration-300 focus-within:border-white/20 focus-within:bg-white/10 focus-within:ring-1 focus-within:ring-white/10 focus-within:outline-none">
           <textarea
             value={text}
+            rows={4}
             onChange={(e) => setText(e.target.value)}
             placeholder="Hỏi gì đó cho Medimate..."
             className="w-full resize-none pr-4 text-sm text-white outline-none placeholder:text-gray-400"

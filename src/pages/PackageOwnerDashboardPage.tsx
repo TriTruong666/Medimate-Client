@@ -12,33 +12,6 @@ import {
 } from "../stores/modalStore";
 import { useAtom } from "jotai";
 
-type ActionStatus = "active" | "blocked";
-
-const ACTIONS_BY_STATUS: Record<
-  ActionStatus,
-  {
-    icon: React.ReactNode;
-    danger?: boolean;
-    description: string;
-    type?: "unlock" | "lock";
-  }[]
-> = {
-  active: [
-    {
-      icon: <IoLockClosedOutline />,
-      danger: true,
-      description: "Khoá tạm thời",
-      type: "lock",
-    },
-    { icon: <HiOutlineX />, danger: true, description: "Huỷ gói" },
-  ],
-
-  blocked: [
-    { icon: <IoLockOpenOutline />, description: "Mở khoá", type: "unlock" },
-    { icon: <HiOutlineX />, danger: true, description: "Huỷ gói" },
-  ],
-};
-
 type PackageOwnerRow = {
   name: string;
   email: string;
