@@ -3,7 +3,7 @@ import {
   closeDrawerAtom,
   transactionDetailDataAtom,
 } from "../stores/drawerStore";
-import { formatPrice } from "../utils/format";
+import { formatPrice } from "../common/format";
 import { Badge } from "./Badge";
 import { IoCloseOutline } from "react-icons/io5";
 import {

@@ -2,8 +2,8 @@ import { Route, Routes } from "react-router-dom";
 import LoginLayout from "../layouts/LoginLayout";
 import LoginPage from "../pages/LoginPage";
 import ForgetPassPage from "../pages/ForgetPassPage";
-import TestPage from "../pages/TestPage";
 import { NotFoundPublicPage } from "../pages/NotFoundPage";
+import DoctorWelcomePage from "@/pages/demo/doctor/DoctorWelcomePage";
 
 export default function PublicRoute() {
   return (
@@ -14,7 +14,7 @@ export default function PublicRoute() {
 
         <Route path="*" element={<NotFoundPublicPage />} />
       </Route>
-      <Route path="test" element={<TestPage />} />
+      <Route path="doctor/welcome" element={<DoctorWelcomePage />} />
     </Routes>
   );
 }

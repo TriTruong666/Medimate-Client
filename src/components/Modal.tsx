@@ -24,7 +24,7 @@ import {
 import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { PiHandEyeLight } from "react-icons/pi";
-import { formatPrice } from "../utils/format";
+import { formatPrice } from "../common/format";
 import { toast } from "../hooks/useToast";
 import { IoMdCheckmark } from "react-icons/io";
 type LibraryDoc = {

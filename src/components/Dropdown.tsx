@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HiBell, HiChevronDown, HiUserCircle } from "react-icons/hi";
-import { formatRelativeTime } from "../utils/format";
+import { formatRelativeTime } from "../common/format";
 import { useClickOutside, useEscapeKey } from "../hooks/useDropdown";
 import { AiFillMessage } from "react-icons/ai";
 import { useAtom } from "jotai";
@@ -279,10 +279,11 @@ function AvatarDropdownItem({
   danger = false,
   url,
 }: AvatarDropdownItemProps) {
-  const className = `block w-full px-4 py-2 text-left text-sm transition-colors ${danger
+  const className = `block w-full px-4 py-2 text-left text-sm transition-colors ${
+    danger
       ? "text-red-400 hover:bg-red-500/10"
       : "text-gray-300 hover:bg-white/5 hover:text-white"
-    } `;
+  } `;
 
   if (url) {
     return (

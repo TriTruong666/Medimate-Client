@@ -3,12 +3,15 @@ import { Badge } from "../components/Badge";
 import Breadcrumb from "../components/Breadcrumb";
 import { HiOutlineCreditCard, HiOutlinePrinter } from "react-icons/hi";
 import { Pagination } from "../components/Pagination";
-import { formatPrice } from "../utils/format";
+import { formatPrice } from "../common/format";
 import IconAction from "../components/IconAction";
 import { Tooltip } from "../components/Tooltip";
 import { openTransactionModalAtom } from "../stores/modalStore";
 import { useAtom, useSetAtom } from "jotai";
-import { openDrawerAtom, transactionDetailDataAtom } from "../stores/drawerStore";
+import {
+  openDrawerAtom,
+  transactionDetailDataAtom,
+} from "../stores/drawerStore";
 
 type TransactionRow = {
   id: string;
@@ -193,10 +196,11 @@ function TransactionTable({ data }: TransactionTableProps) {
           {columns.map((col, i) => (
             <th
               key={col.key}
-              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${i < columns.length - 1
+              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
+                i < columns.length - 1
                   ? "dark:border-border-dark border-r border-gray-100"
                   : ""
-                } `}
+              } `}
             >
               {col.label}
             </th>
@@ -243,7 +247,7 @@ function TransactionTable({ data }: TransactionTableProps) {
             {/* Actions */}
             <td className="p-4 text-center">
               {row.transaction_type === "expenses" &&
-                row.status === "pending" ? (
+              row.status === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => openPaymentModal(demoPaymentData)}
@@ -259,7 +263,10 @@ function TransactionTable({ data }: TransactionTableProps) {
                     <IconAction icon={<HiOutlinePrinter />} />
                   </Tooltip>
                   <Tooltip content="Chi tiết">
-                    <IconAction icon={<IoIosInformationCircleOutline />} onClick={() => handleOpenDetailModal(row)} />
+                    <IconAction
+                      icon={<IoIosInformationCircleOutline />}
+                      onClick={() => handleOpenDetailModal(row)}
+                    />
                   </Tooltip>
                 </div>
               )}

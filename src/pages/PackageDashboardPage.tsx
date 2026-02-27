@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Breadcrumb from "../components/Breadcrumb";
 import { FiMoreVertical, FiUsers } from "react-icons/fi";
-import { formatPrice } from "../utils/format";
+import { formatPrice } from "../common/format";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { useClickOutside } from "../hooks/useDropdown";
