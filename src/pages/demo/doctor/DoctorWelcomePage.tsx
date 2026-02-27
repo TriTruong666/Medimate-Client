@@ -10,7 +10,7 @@ import SplitText from "@/components/SplitText";
 export default function DoctorWelcomePage() {
   const [currentStep, setCurrentStep] = useState<
     "welcome" | "introduce" | "setup" | "complete"
-  >("setup");
+  >("welcome");
 
   useEffect(() => {
     if (currentStep === "introduce") {

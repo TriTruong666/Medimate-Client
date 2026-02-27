@@ -23,23 +23,41 @@ import {
   SystemSettingDashboardPage,
 } from "../pages/SettingDashboardPage";
 import { NotFoundPrivatePage } from "../pages/NotFoundPage";
+import { RoleBasedGuard } from "@/components/RoleBasedGuard";
 
 export default function PrivateRoute() {
   return (
     <Routes>
       <Route element={<DashboardLayout />}>
         <Route index element={<SummaryDashboardPage />} />
-        <Route path="accounts" element={<AccountDashboardPage />} />
+
+        {/* Only Admin can manage accounts */}
+        <Route
+          path="accounts"
+          element={
+            <RoleBasedGuard allowedRoles={["admin"]} isFullPage>
+              <AccountDashboardPage />
+            </RoleBasedGuard>
+          }
+        />
+
         <Route path="documents" element={<DocumentDashboardPage />} />
 
         <Route path="rag" element={<KnowledgeBasePage />} />
         <Route path="rag/new" element={<KnowledgeAddCollectionPage />} />
         <Route path="chatbot" element={<ChatbotPage />} />
         <Route path="transaction" element={<TransactionDashboardPage />} />
+
+        {/* Example: Prescription is for Admin and Doctor */}
         <Route
           path="assets/prescription"
-          element={<AssetsPrescriptionDashboardPage />}
+          element={
+            <RoleBasedGuard allowedRoles={["admin", "doctor"]} isFullPage>
+              <AssetsPrescriptionDashboardPage />
+            </RoleBasedGuard>
+          }
         />
+
         <Route
           path="assets/certificate"
           element={<AssetsCertificateDashboardPage />}
@@ -69,7 +87,12 @@ export default function PrivateRoute() {
             element={<APIKeysSettingDashboardPage />}
           />
         </Route>
+
+        {/* Explicit 404 route for RBAC redirection */}
+        <Route path="404" element={<NotFoundPrivatePage />} />
       </Route>
+
+      {/* Catch-all for any other dashboard sub-routes */}
       <Route path="*" element={<NotFoundPrivatePage />} />
     </Routes>
   );

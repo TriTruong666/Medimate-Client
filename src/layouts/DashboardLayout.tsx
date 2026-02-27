@@ -31,8 +31,12 @@ import { RiImageAiLine, RiVipDiamondLine } from "react-icons/ri";
 import { WelcomeLoading } from "../components/Loading";
 import DrawerContainer from "../components/DrawerContainer";
 
+import { useAuth } from "../hooks/useAuth";
+import { RoleBasedGuard } from "@/components/RoleBasedGuard";
+
 export default function DashboardLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { loginAs, logout } = useAuth(); // Destructure for demo access
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -62,6 +66,28 @@ export default function DashboardLayout() {
           <Navbar />
           <div ref={scrollRef} className="flex-1 overflow-y-auto">
             <Outlet />
+          </div>
+
+          {/* Demo Role Switcher - Can be removed later */}
+          <div className="fixed right-4 bottom-4 z-50 flex gap-2">
+            <button
+              onClick={() => loginAs("admin")}
+              className="rounded bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
+            >
+              Admin
+            </button>
+            <button
+              onClick={() => loginAs("doctor")}
+              className="rounded bg-green-600 px-3 py-1 text-xs text-white hover:bg-green-700"
+            >
+              Doctor
+            </button>
+            <button
+              onClick={() => logout()}
+              className="rounded bg-red-600 px-3 py-1 text-xs text-white hover:bg-red-700"
+            >
+              Logout
+            </button>
           </div>
         </div>
       </div>
@@ -161,12 +187,15 @@ function Sidebar() {
           exact
         />
 
-        {/* Active */}
-        <SidebarItem
-          to="/dashboard/accounts"
-          icon={<HiOutlineUsers />}
-          label="Tài khoản"
-        />
+        {/* Roles: Admin only */}
+        <RoleBasedGuard allowedRoles={["admin"]}>
+          <SidebarItem
+            to="/dashboard/accounts"
+            icon={<HiOutlineUsers />}
+            label="Tài khoản"
+          />
+        </RoleBasedGuard>
+
         <SidebarItem
           to="/dashboard/transaction"
           icon={<GrTransaction />}
@@ -312,18 +341,22 @@ function Sidebar() {
                   transition={{ duration: 0.2 }}
                   className="mt-2 ml-6 space-y-1"
                 >
-                  <SubItem
-                    to="/dashboard/assets/prescription"
-                    label="Toa thuốc"
-                  />
+                  <RoleBasedGuard allowedRoles={["admin", "doctor"]}>
+                    <SubItem
+                      to="/dashboard/assets/prescription"
+                      label="Toa thuốc"
+                    />
+                  </RoleBasedGuard>
                   <SubItem
                     to="/dashboard/assets/medical-profile"
                     label="Hồ sơ bệnh án"
                   />
-                  <SubItem
-                    to="/dashboard/assets/certificate"
-                    label="Chứng chỉ bác sĩ"
-                  />
+                  <RoleBasedGuard allowedRoles={["admin"]}>
+                    <SubItem
+                      to="/dashboard/assets/certificate"
+                      label="Chứng chỉ bác sĩ"
+                    />
+                  </RoleBasedGuard>
                   <SubItem to="/dashboard/assets/contract" label="Hợp đồng" />
                 </motion.div>
               </motion.div>
@@ -367,9 +400,10 @@ export function SidebarItem({
       to={to}
       end={exact}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${isActive
-          ? "bg-white/10 text-white shadow-inner"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+          isActive
+            ? "bg-white/10 text-white shadow-inner"
+            : "text-gray-400 hover:bg-white/5 hover:text-white"
         }`
       }
     >
@@ -390,9 +424,10 @@ export function SubItem({ label, to }: SubItemProps) {
       to={to}
       end
       className={({ isActive }) =>
-        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${isActive
-          ? "bg-white/10 text-white"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+          isActive
+            ? "bg-white/10 text-white"
+            : "text-gray-400 hover:bg-white/5 hover:text-white"
         }`
       }
     >
