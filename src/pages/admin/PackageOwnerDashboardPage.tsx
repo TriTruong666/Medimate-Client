@@ -1,17 +1,16 @@
 import { IoLockClosedOutline, IoLockOpenOutline } from "react-icons/io5";
-import { Badge } from "../components/Badge";
-import Breadcrumb from "../components/Breadcrumb";
-import { Pagination } from "../components/Pagination";
 import { HiOutlineX } from "react-icons/hi";
-import IconAction from "../components/IconAction";
-import { Tooltip } from "../components/Tooltip";
+import { useAtom } from "jotai";
+import Breadcrumb from "@/components/Breadcrumb";
+import { Pagination } from "@/components/Pagination";
 import {
   openCancelModalAtom,
   openLockModalAtom,
   openUnlockModalAtom,
-} from "../stores/modalStore";
-import { useAtom } from "jotai";
-
+} from "@/stores/modalStore";
+import { Tooltip } from "@/components/Tooltip";
+import IconAction from "@/components/IconAction";
+import { Badge } from "@/components/Badge";
 type PackageOwnerRow = {
   name: string;
   email: string;

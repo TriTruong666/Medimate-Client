@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { IoLockClosedOutline, IoLockOpenOutline } from "react-icons/io5";
-import { Badge } from "../components/Badge";
-import Breadcrumb from "../components/Breadcrumb";
-import GlassSelect from "../components/Select";
+import { Badge } from "../../components/Badge";
+import Breadcrumb from "../../components/Breadcrumb";
+import GlassSelect from "../../components/Select";
 import { useState } from "react";
 import { PiExport } from "react-icons/pi";
 import {
   openLockModalAtom,
   openModalAtom,
   openUnlockModalAtom,
-} from "../stores/modalStore";
+} from "../../stores/modalStore";
 import { useAtom } from "jotai";
 import { FiUserPlus } from "react-icons/fi";
-import { Pagination } from "../components/Pagination";
-import IconAction from "../components/IconAction";
-import { Tooltip } from "../components/Tooltip";
+import { Pagination } from "../../components/Pagination";
+import IconAction from "../../components/IconAction";
+import { Tooltip } from "../../components/Tooltip";
 
 type AccountRow = {
   name: string;

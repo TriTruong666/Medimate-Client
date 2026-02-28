@@ -1,18 +1,17 @@
 import { Route, Routes } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import SummaryDashboardPage from "../pages/SummaryDashboardPage";
-import AccountDashboardPage from "../pages/AccountDashboardPage";
-import DocumentDashboardPage from "../pages/DocumentDashboardPage";
-import KnowledgeBasePage from "../pages/KnowledgeBasePage";
-import KnowledgeAddCollectionPage from "../pages/KnowledgeAddCollectionPage";
+import AccountDashboardPage from "../pages/admin/AccountDashboardPage";
+
+import KnowledgeBasePage from "../pages/admin/KnowledgeBasePage";
+
 import ChatbotPage from "../pages/ChatbotPage";
 import TransactionDashboardPage from "../pages/TransactionDashboardPage";
-import { PackageDashboardPage } from "../pages/PackageDashboardPage";
-import PackageOwnerDashboardPage from "../pages/PackageOwnerDashboardPage";
+
 import {
   AssetsCertificateDashboardPage,
   AssetsPrescriptionDashboardPage,
-} from "../pages/AssetsDashboardPage";
+} from "../pages/admin/AssetsDashboardPage";
 import SettingDashboardLayout from "../layouts/SettingDashboardLayout";
 import {
   APIKeysSettingDashboardPage,
@@ -24,6 +23,10 @@ import {
 } from "../pages/SettingDashboardPage";
 import { NotFoundPrivatePage } from "../pages/NotFoundPage";
 import { RoleBasedGuard } from "@/components/RoleBasedGuard";
+import { PackageDashboardPage } from "@/pages/admin/PackageDashboardPage";
+import PackageOwnerDashboardPage from "@/pages/admin/PackageOwnerDashboardPage";
+import KnowledgeAddCollectionPage from "@/pages/admin/KnowledgeAddCollectionPage";
+import DocumentDashboardPage from "@/pages/admin/DocumentDashboardPage";
 
 export default function PrivateRoute() {
   return (
@@ -31,7 +34,6 @@ export default function PrivateRoute() {
       <Route element={<DashboardLayout />}>
         <Route index element={<SummaryDashboardPage />} />
 
-        {/* Only Admin can manage accounts */}
         <Route
           path="accounts"
           element={
@@ -52,7 +54,7 @@ export default function PrivateRoute() {
         <Route
           path="assets/prescription"
           element={
-            <RoleBasedGuard allowedRoles={["admin", "doctor"]} isFullPage>
+            <RoleBasedGuard allowedRoles={["admin"]} isFullPage>
               <AssetsPrescriptionDashboardPage />
             </RoleBasedGuard>
           }
@@ -87,9 +89,6 @@ export default function PrivateRoute() {
             element={<APIKeysSettingDashboardPage />}
           />
         </Route>
-
-        {/* Explicit 404 route for RBAC redirection */}
-        <Route path="404" element={<NotFoundPrivatePage />} />
       </Route>
 
       {/* Catch-all for any other dashboard sub-routes */}

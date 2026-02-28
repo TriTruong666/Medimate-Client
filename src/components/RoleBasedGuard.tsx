@@ -31,17 +31,14 @@ export function RoleBasedGuard({
 
   // Wait for auth to load
   if (loading) {
-    return null; // Or a loading spinner
+    return null;
   }
 
-  // Check if user is logged in and has one of the allowed roles
   const hasPermission = user && allowedRoles.includes(user.role);
 
   if (!hasPermission) {
     if (isFullPage) {
-      // Redirect to the "not found" or "unauthorized" page for private routes
-      // Assuming /dashboard/404 is the route for NotFoundPrivatePage
-      return <Navigate to="/dashboard/404" replace />;
+      return <Navigate to="*" replace />;
     }
     return <>{fallback}</>;
   }

@@ -11,6 +11,9 @@ import {
 } from "react-icons/hi";
 import { GrTransaction } from "react-icons/gr";
 import { IoSync } from "react-icons/io5";
+import { AiOutlineRobot } from "react-icons/ai";
+import { TbMessageCircle } from "react-icons/tb";
+import { RiImageAiLine, RiVipDiamondLine } from "react-icons/ri";
 import medimateLogo from "../assets/medimate-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState, useRef } from "react";
@@ -26,17 +29,18 @@ import {
 } from "../components/Dropdown";
 import { DarkModeIconSwitch } from "../components/Theme";
 import { ChatContainer } from "../components/Popup";
-import { AiOutlineRobot } from "react-icons/ai";
-import { RiImageAiLine, RiVipDiamondLine } from "react-icons/ri";
+
 import { WelcomeLoading } from "../components/Loading";
 import DrawerContainer from "../components/DrawerContainer";
 
 import { useAuth } from "../hooks/useAuth";
 import { RoleBasedGuard } from "@/components/RoleBasedGuard";
+import { GoBell } from "react-icons/go";
+import { MdOutlineAttachMoney } from "react-icons/md";
 
 export default function DashboardLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const { loginAs, logout } = useAuth(); // Destructure for demo access
+  const { loginAs, logout } = useAuth();
 
   useEffect(() => {
     if (!scrollRef.current) return;
@@ -69,7 +73,7 @@ export default function DashboardLayout() {
           </div>
 
           {/* Demo Role Switcher - Can be removed later */}
-          <div className="fixed right-4 bottom-4 z-50 flex gap-2">
+          {/* <div className="fixed right-4 bottom-4 z-50 flex gap-2">
             <button
               onClick={() => loginAs("admin")}
               className="rounded bg-blue-600 px-3 py-1 text-xs text-white hover:bg-blue-700"
@@ -88,7 +92,7 @@ export default function DashboardLayout() {
             >
               Logout
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
@@ -160,210 +164,30 @@ function Navbar() {
 }
 
 function Sidebar() {
-  const [openDocs, setOpenDocs] = useState(false);
-  const [openPackages, setOpenPackages] = useState(false);
-  const [openAssets, setOpenAssets] = useState(false);
-
   return (
-    <aside className="fixed z-20 hidden h-full w-64 flex-col border-r border-white/5 bg-[#050505] md:relative md:flex">
-      {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 select-none">
-        <img
-          src={medimateLogo}
-          className="flex h-9 w-9 items-center justify-center rounded-lg"
-        ></img>
-        <span className="text-lg font-semibold tracking-tight text-white">
-          Medimate
-        </span>
+    <aside className="fixed z-20 hidden max-h-screen w-64 flex-col justify-between overflow-y-hidden border-r border-white/5 bg-[#050505] md:relative md:flex">
+      <div className="flex flex-col overflow-auto [&::-webkit-scrollbar]:w-1!">
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-6 py-5 select-none">
+          <img
+            src={medimateLogo}
+            className="flex h-9 w-9 items-center justify-center rounded-lg"
+          ></img>
+          <span className="text-lg font-semibold tracking-tight text-white">
+            Medimate
+          </span>
+        </div>
+        {/* Nav */}
+
+        <div className="">
+          <RoleBasedGuard allowedRoles={["admin"]}>
+            <AdminSidebar />
+          </RoleBasedGuard>
+          <RoleBasedGuard allowedRoles={["doctor"]}>
+            <DoctorSidebar />
+          </RoleBasedGuard>
+        </div>
       </div>
-
-      {/* Nav */}
-      <nav className="mt-4 flex-1 space-y-2 overflow-y-auto px-3 pb-6">
-        {/* Overview */}
-        <SidebarItem
-          to="/dashboard"
-          icon={<HiOutlineViewGrid />}
-          label="Tổng quan"
-          exact
-        />
-
-        {/* Roles: Admin only */}
-        <RoleBasedGuard allowedRoles={["admin"]}>
-          <SidebarItem
-            to="/dashboard/accounts"
-            icon={<HiOutlineUsers />}
-            label="Tài khoản"
-          />
-        </RoleBasedGuard>
-
-        <SidebarItem
-          to="/dashboard/transaction"
-          icon={<GrTransaction />}
-          label="Giao dịch"
-        />
-
-        {/* Documents */}
-        <div className="">
-          {/* Parent */}
-          <button
-            onClick={() => setOpenDocs((v: any) => !v)}
-            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <div className="flex items-center gap-3">
-              <HiOutlineFolder className="text-lg" />
-              Tài liệu
-            </div>
-
-            <motion.span
-              animate={{ rotate: openDocs ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <HiChevronDown className="text-lg" />
-            </motion.span>
-          </button>
-
-          {/* Sub menu */}
-          <AnimatePresence initial={false}>
-            {openDocs && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="overflow-hidden"
-              >
-                <motion.div
-                  initial={{ y: -4 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="mt-2 ml-6 space-y-1"
-                >
-                  <SubItem to="/dashboard/documents" label="Tất cả" />
-                  <SubItem
-                    to="/dashboard/documents/uploaded"
-                    label="Vừa tải lên"
-                  />
-                  <SubItem to="/dashboard/documents/indexed" label="Đã nạp" />
-                  <SubItem to="/dashboard/documents/failed" label="Thất bại" />
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        <SidebarItem to="/dashboard/rag" icon={<IoSync />} label="RAG Core" />
-        <SidebarItem
-          to="/dashboard/chatbot"
-          icon={<AiOutlineRobot />}
-          label="Chatbot"
-        />
-        {/* Packages */}
-        <div className="">
-          {/* Parent */}
-          <button
-            onClick={() => setOpenPackages((v: any) => !v)}
-            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <div className="flex items-center gap-3">
-              <RiVipDiamondLine className="text-lg" />
-              Gói
-            </div>
-
-            <motion.span
-              animate={{ rotate: openPackages ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <HiChevronDown className="text-lg" />
-            </motion.span>
-          </button>
-
-          {/* Sub menu */}
-          <AnimatePresence initial={false}>
-            {openPackages && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="overflow-hidden"
-              >
-                <motion.div
-                  initial={{ y: -4 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="mt-2 ml-6 space-y-1"
-                >
-                  <SubItem to="/dashboard/packages" label="Quản lý gói" />
-                  <SubItem
-                    to="/dashboard/packages/owner"
-                    label="Danh sách hội viên"
-                  />
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-        {/* Assets */}
-        <div className="">
-          {/* Parent */}
-          <button
-            onClick={() => setOpenAssets((v: any) => !v)}
-            className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <div className="flex items-center gap-3">
-              <RiImageAiLine className="text-lg" />
-              Thư viện
-            </div>
-
-            <motion.span
-              animate={{ rotate: openAssets ? 180 : 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <HiChevronDown className="text-lg" />
-            </motion.span>
-          </button>
-
-          {/* Sub menu */}
-          <AnimatePresence initial={false}>
-            {openAssets && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="overflow-hidden"
-              >
-                <motion.div
-                  initial={{ y: -4 }}
-                  animate={{ y: 0 }}
-                  exit={{ y: -4 }}
-                  transition={{ duration: 0.2 }}
-                  className="mt-2 ml-6 space-y-1"
-                >
-                  <RoleBasedGuard allowedRoles={["admin", "doctor"]}>
-                    <SubItem
-                      to="/dashboard/assets/prescription"
-                      label="Toa thuốc"
-                    />
-                  </RoleBasedGuard>
-                  <SubItem
-                    to="/dashboard/assets/medical-profile"
-                    label="Hồ sơ bệnh án"
-                  />
-                  <RoleBasedGuard allowedRoles={["admin"]}>
-                    <SubItem
-                      to="/dashboard/assets/certificate"
-                      label="Chứng chỉ bác sĩ"
-                    />
-                  </RoleBasedGuard>
-                  <SubItem to="/dashboard/assets/contract" label="Hợp đồng" />
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </nav>
 
       {/* Bottom */}
       <div className="space-y-1 border-t border-white/5 px-3 py-4">
@@ -433,5 +257,240 @@ export function SubItem({ label, to }: SubItemProps) {
     >
       {label}
     </NavLink>
+  );
+}
+
+function AdminSidebar() {
+  const [openDocs, setOpenDocs] = useState(false);
+  const [openPackages, setOpenPackages] = useState(false);
+  const [openAssets, setOpenAssets] = useState(false);
+  return (
+    <nav className="mt-4 flex-1 space-y-2 overflow-y-auto px-3 pb-6">
+      {/* Overview */}
+      <SidebarItem
+        to="/dashboard"
+        icon={<HiOutlineViewGrid />}
+        label="Tổng quan"
+        exact
+      />
+
+      <SidebarItem
+        to="/dashboard/accounts"
+        icon={<HiOutlineUsers />}
+        label="Tài khoản"
+      />
+
+      <SidebarItem
+        to="/dashboard/transaction"
+        icon={<GrTransaction />}
+        label="Giao dịch"
+      />
+
+      {/* Documents */}
+      <div className="">
+        {/* Parent */}
+        <button
+          onClick={() => setOpenDocs((v: any) => !v)}
+          className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+        >
+          <div className="flex items-center gap-3">
+            <HiOutlineFolder className="text-lg" />
+            Tài liệu
+          </div>
+
+          <motion.span
+            animate={{ rotate: openDocs ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <HiChevronDown className="text-lg" />
+          </motion.span>
+        </button>
+
+        {/* Sub menu */}
+        <AnimatePresence initial={false}>
+          {openDocs && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <motion.div
+                initial={{ y: -4 }}
+                animate={{ y: 0 }}
+                exit={{ y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="mt-2 ml-6 space-y-1"
+              >
+                <SubItem to="/dashboard/documents" label="Tất cả" />
+                <SubItem
+                  to="/dashboard/documents/uploaded"
+                  label="Vừa tải lên"
+                />
+                <SubItem to="/dashboard/documents/indexed" label="Đã nạp" />
+                <SubItem to="/dashboard/documents/failed" label="Thất bại" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Packages */}
+      <div className="">
+        {/* Parent */}
+        <button
+          onClick={() => setOpenPackages((v: any) => !v)}
+          className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+        >
+          <div className="flex items-center gap-3">
+            <RiVipDiamondLine className="text-lg" />
+            Gói
+          </div>
+
+          <motion.span
+            animate={{ rotate: openPackages ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <HiChevronDown className="text-lg" />
+          </motion.span>
+        </button>
+
+        {/* Sub menu */}
+        <AnimatePresence initial={false}>
+          {openPackages && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <motion.div
+                initial={{ y: -4 }}
+                animate={{ y: 0 }}
+                exit={{ y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="mt-2 ml-6 space-y-1"
+              >
+                <SubItem to="/dashboard/packages" label="Quản lý gói" />
+                <SubItem
+                  to="/dashboard/packages/owner"
+                  label="Danh sách hội viên"
+                />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      {/* Assets */}
+      <div className="">
+        {/* Parent */}
+        <button
+          onClick={() => setOpenAssets((v: any) => !v)}
+          className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+        >
+          <div className="flex items-center gap-3">
+            <RiImageAiLine className="text-lg" />
+            Thư viện
+          </div>
+
+          <motion.span
+            animate={{ rotate: openAssets ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <HiChevronDown className="text-lg" />
+          </motion.span>
+        </button>
+
+        {/* Sub menu */}
+        <AnimatePresence initial={false}>
+          {openAssets && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="overflow-hidden"
+            >
+              <motion.div
+                initial={{ y: -4 }}
+                animate={{ y: 0 }}
+                exit={{ y: -4 }}
+                transition={{ duration: 0.2 }}
+                className="mt-2 ml-6 space-y-1"
+              >
+                <SubItem
+                  to="/dashboard/assets/prescription"
+                  label="Toa thuốc"
+                />
+
+                <SubItem
+                  to="/dashboard/assets/medical-profile"
+                  label="Hồ sơ bệnh án"
+                />
+
+                <SubItem
+                  to="/dashboard/assets/certificate"
+                  label="Chứng chỉ bác sĩ"
+                />
+                <SubItem to="/dashboard/assets/contract" label="Hợp đồng" />
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <SidebarItem to="/dashboard/rag" icon={<IoSync />} label="RAG Core" />
+      <SidebarItem
+        to="/dashboard/chatbot"
+        icon={<AiOutlineRobot />}
+        label="Chatbot"
+      />
+      <SidebarItem
+        to="/dashboard/message"
+        icon={<TbMessageCircle />}
+        label="Chatbot"
+      />
+      <SidebarItem
+        to="/dashboard/notification"
+        icon={<GoBell />}
+        label="Chatbot"
+      />
+    </nav>
+  );
+}
+
+function DoctorSidebar() {
+  return (
+    <nav className="mt-4 flex-1 space-y-2 overflow-y-auto px-3 pb-6">
+      {/* Overview */}
+      <SidebarItem
+        to="/dashboard"
+        icon={<HiOutlineViewGrid />}
+        label="Tổng quan"
+        exact
+      />
+
+      <SidebarItem
+        to="/dashboard/transaction"
+        icon={<MdOutlineAttachMoney />}
+        label="Thu nhập"
+      />
+      <SidebarItem
+        to="/dashboard/chatbot"
+        icon={<AiOutlineRobot />}
+        label="Chatbot"
+      />
+      <SidebarItem
+        to="/dashboard/message"
+        icon={<TbMessageCircle />}
+        label="Tin nhắn"
+      />
+      <SidebarItem
+        to="/dashboard/notification"
+        icon={<GoBell />}
+        label="Thông báo"
+      />
+    </nav>
   );
 }

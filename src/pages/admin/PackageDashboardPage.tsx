@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import Breadcrumb from "../components/Breadcrumb";
 import { FiMoreVertical, FiUsers } from "react-icons/fi";
-import { formatPrice } from "../common/format";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
-import { useClickOutside } from "../hooks/useDropdown";
 import { HiCheck } from "react-icons/hi";
 import { HiXMark } from "react-icons/hi2";
+import Breadcrumb from "@/components/Breadcrumb";
+import { useClickOutside } from "@/hooks/useDropdown";
+import { formatPrice } from "@/common/format";
 
 type TableColumn = {
   key: ColumnKey;

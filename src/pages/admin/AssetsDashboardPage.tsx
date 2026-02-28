@@ -1,9 +1,9 @@
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { motion } from "framer-motion";
-import Breadcrumb from "../components/Breadcrumb";
-import { cardContainer, cardItem } from "../motions/cardMotion";
+import Breadcrumb from "../../components/Breadcrumb";
+import { cardContainer, cardItem } from "../../motions/cardMotion";
 import { RiImageAddLine } from "react-icons/ri";
-import { openPdfModalAtom } from "../stores/modalStore";
+import { openPdfModalAtom } from "../../stores/modalStore";
 import { useAtom } from "jotai";
 
 type AssetType = "image" | "pdf";

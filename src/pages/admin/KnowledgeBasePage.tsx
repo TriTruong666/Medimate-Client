@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import Breadcrumb from "../components/Breadcrumb";
+import Breadcrumb from "../../components/Breadcrumb";
 import { HiOutlineArrowRight, HiOutlinePlus } from "react-icons/hi";
 import { FiBook, FiMessageCircle } from "react-icons/fi";
 import { RiSave2Line } from "react-icons/ri";
 import { motion } from "framer-motion";
-import { cardContainer, cardItem } from "../motions/cardMotion";
-import GlassSelect from "../components/Select";
+import { cardContainer, cardItem } from "../../motions/cardMotion";
+import GlassSelect from "../../components/Select";
 import { useState } from "react";
 import { FiPlus } from "react-icons/fi";
-import Toggle from "../components/Toggle";
+import Toggle from "../../components/Toggle";
 
 export default function KnowledgeBasePage() {
   const [type, setType] = useState("");

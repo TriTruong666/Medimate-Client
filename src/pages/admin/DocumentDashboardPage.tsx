@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { motion } from "framer-motion";
 import { PiExport } from "react-icons/pi";
-import Breadcrumb from "../components/Breadcrumb";
 import { MdOutlineDriveFolderUpload } from "react-icons/md";
-import { Badge } from "../components/Badge";
 import {
   HiOutlineDownload,
   HiOutlineTrash,
@@ -19,14 +17,18 @@ import {
 } from "react-icons/bs";
 import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
 import { useState } from "react";
-import { cardContainer, cardItem } from "../motions/cardMotion";
+
 import { useAtom } from "jotai";
-import { openDeleteModalAtom, openModalAtom } from "../stores/modalStore";
+
 import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
-import GlassSelect from "../components/Select";
-import { Pagination } from "../components/Pagination";
-import { Tooltip } from "../components/Tooltip";
-import IconAction from "../components/IconAction";
+import { openDeleteModalAtom, openModalAtom } from "@/stores/modalStore";
+import Breadcrumb from "@/components/Breadcrumb";
+import GlassSelect from "@/components/Select";
+import { Pagination } from "@/components/Pagination";
+import { cardContainer, cardItem } from "@/motions/cardMotion";
+import { Tooltip } from "@/components/Tooltip";
+import IconAction from "@/components/IconAction";
+import { Badge } from "@/components/Badge";
 
 type DocumentRow = {
   name: string;
