@@ -1,37 +1,9 @@
+import type { DemoUser } from "@/types/APIResponse";
 import { useFetch } from "../useFetch";
+import * as DemoService from "@/apis/test.service";
 
-export const useGetDemoData = (
-  page: number,
-  limit: number,
-  status?: string,
-  finStatus?: string,
-  carryStatus?: string,
-  realCarryStatus?: string,
-  source?: string,
-  query?: string,
-) => {
-  return useFetch<DemoData[]>(
-    [
-      "orders",
-      page,
-      limit,
-      status,
-      finStatus,
-      carryStatus,
-      realCarryStatus,
-      source,
-      query,
-    ],
-    async () =>
-      DemoService.getOrderService(
-        page,
-        limit,
-        status,
-        finStatus,
-        carryStatus,
-        realCarryStatus,
-        source,
-        query,
-      ),
+export function useGetDemoData() {
+  return useFetch<DemoUser[]>(["demo-users"], async () =>
+    DemoService.demoService(),
   );
-};
+}

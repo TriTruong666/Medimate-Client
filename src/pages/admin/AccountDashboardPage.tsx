@@ -15,6 +15,8 @@ import { FiUserPlus } from "react-icons/fi";
 import { Pagination } from "../../components/Pagination";
 import IconAction from "../../components/IconAction";
 import { Tooltip } from "../../components/Tooltip";
+import { useGetDemoData } from "@/hooks/data/demoHooks";
+import { formatRelativeTime } from "@/common/format";
 
 type AccountRow = {
   name: string;
@@ -157,14 +159,15 @@ export default function AccountDashboardPage() {
       </div>
       {/* Content */}
       <div className="my-8">
-        <AccountTable data={demoData} />
+        <AccountTable />
         <Pagination page={1} pageSize={20} total={demoData.length} />
       </div>
     </div>
   );
 }
 
-function AccountTable({ data }: AccountTableProps) {
+function AccountTable() {
+  const { data: demo_data, isLoading } = useGetDemoData();
   const [, openLockModal] = useAtom(openLockModalAtom);
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
 
@@ -188,24 +191,24 @@ function AccountTable({ data }: AccountTableProps) {
       </thead>
 
       <tbody className="dark:divide-border-dark divide-y divide-gray-100">
-        {data.map((row, i) => (
+        {demo_data?.map((row) => (
           <tr
-            key={i}
+            key={row.userId}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
             {/* Info */}
             <td className="dark:border-border-dark border-r border-gray-100 p-4">
               <div className="flex items-center gap-3">
-                <AccountAvatar name={row.name} />
+                <AccountAvatar name={row.fullName} />
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {row.name}
+                    {row.fullName}
                   </span>
                   <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
                     {row.email}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {row.createdAt}
+                    {formatRelativeTime(row.createdAt)}
                   </span>
                 </div>
               </div>
@@ -214,7 +217,7 @@ function AccountTable({ data }: AccountTableProps) {
             {/* Phone */}
             <td className="dark:border-border-dark border-r border-gray-100 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
-                {row.phone}
+                {row.phoneNumber}
               </span>
             </td>
 
@@ -226,12 +229,12 @@ function AccountTable({ data }: AccountTableProps) {
             </td>
 
             {/* Status */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <StatusBadge status={row.status} />
-            </td>
+            {/* <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+              <StatusBadge status={row.isActive} />
+            </td> */}
 
             {/* Actions */}
-            <td className="p-4 text-center">
+            {/* <td className="p-4 text-center">
               <div className="flex items-center justify-center gap-2">
                 {row.status === "locked" && (
                   <Tooltip content="Mở khoá">
@@ -251,7 +254,7 @@ function AccountTable({ data }: AccountTableProps) {
                   </Tooltip>
                 )}
               </div>
-            </td>
+            </td> */}
           </tr>
         ))}
       </tbody>

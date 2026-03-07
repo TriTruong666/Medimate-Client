@@ -66,7 +66,7 @@ export const formatRelativeTime = (dateString: string): string => {
     const year = vnTime.getFullYear();
     const hours = vnTime.getHours().toString().padStart(2, "0");
     const minutes = vnTime.getMinutes().toString().padStart(2, "0");
-    return `${day}/${month}/${year} ${hours}:${minutes}`;
+    return `${day}/${month}/${year} lúc ${hours}:${minutes}`;
   }
 
   return "";
