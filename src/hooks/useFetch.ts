@@ -5,7 +5,10 @@ import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
 export function useFetch<T>(
   queryKey: any[],
   queryFn: () => Promise<BaseResponse<T>>,
-  options?: Omit<UseQueryOptions<BaseResponse<T>, Error>, "queryKey" | "queryFn">,
+  options?: Omit<
+    UseQueryOptions<BaseResponse<T>, Error>,
+    "queryKey" | "queryFn"
+  >,
 ) {
   const {
     data: response,
@@ -19,7 +22,7 @@ export function useFetch<T>(
     queryFn: async () => {
       const res = await queryFn();
       if (!res.success) {
-        throw new Error(res.message || "An error occurred while fetching data");
+        throw new Error(res.message || "Đã xảy ra lỗi khi lấy dữ liệu");
       }
       return res;
     },
