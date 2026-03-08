@@ -158,10 +158,10 @@ export default function AccountDashboardPage() {
           </button>
         </div>
       </div>
+
       {/* Content */}
       <div className="my-8">
         <AccountTable />
-        <Pagination page={1} pageSize={20} total={demoData.length} />
       </div>
     </div>
   );
@@ -179,106 +179,108 @@ function AccountTable() {
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
 
   return (
-    <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
-      <thead>
-        <tr className="dark:bg-border-dark/30 bg-gray-50/50">
-          {columns.map((col, i) => (
-            <th
-              key={col.key}
-              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
-                i < columns.length - 1
-                  ? "dark:border-border-dark border-r border-gray-100"
-                  : ""
-              } `}
-            >
-              {col.label}
-            </th>
-          ))}
-        </tr>
-      </thead>
+    <>
+      <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
+        <thead>
+          <tr className="dark:bg-border-dark/30 bg-gray-50/50">
+            {columns.map((col, i) => (
+              <th
+                key={col.key}
+                className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${i < columns.length - 1
+                    ? "dark:border-border-dark border-r border-gray-100"
+                    : ""
+                  } `}
+              >
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
 
-      <tbody className="dark:divide-border-dark divide-y divide-gray-100">
-        {isLoading ? (
-          // Trạng thái loading
-          <tr>
-            <td colSpan={columns.length}>
-              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                <Spinner size="lg" />
-                <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Đang tải dữ liệu...
-                </p>
-              </div>
-            </td>
-          </tr>
-        ) : isError ? (
-          // Trạng thái lỗi
-          <tr>
-            <td colSpan={columns.length}>
-              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                <h3 className="mt-4 text-lg text-white">Đã xảy ra lỗi</h3>
-                <p className="mt-1 max-w-75 text-center text-sm text-gray-400">
-                  {error?.message ||
-                    "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."}
-                </p>
-                <button
-                  onClick={() => refetch()}
-                  className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
-                >
-                  Thử lại
-                </button>
-              </div>
-            </td>
-          </tr>
-        ) : demo_data && demo_data.length > 0 ? (
-          demo_data.map((row) => (
-            // Happy case
-            <tr
-              key={row.userId}
-              className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
-            >
-              <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                <div className="flex items-center gap-3">
-                  <AccountAvatar name={row.fullName} />
-                  <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {row.fullName}
-                    </span>
-                    <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
-                      {row.email}
-                    </span>
-                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                      {formatRelativeTime(row.createdAt)}
-                    </span>
-                  </div>
+        <tbody className="dark:divide-border-dark divide-y divide-gray-100">
+          {isLoading ? (
+            // Trạng thái loading
+            <tr>
+              <td colSpan={columns.length}>
+                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                  <Spinner size="lg" />
+                  <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Đang tải dữ liệu...
+                  </p>
                 </div>
               </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                <span className="text-sm text-gray-600 dark:text-gray-300">
-                  {row.phoneNumber}
-                </span>
-              </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
-                  {row.role}
-                </span>
+            </tr>
+          ) : isError ? (
+            // Trạng thái lỗi
+            <tr>
+              <td colSpan={columns.length}>
+                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                  <h3 className="mt-4 text-lg text-white">Đã xảy ra lỗi</h3>
+                  <p className="mt-1 max-w-75 text-center text-sm text-gray-400">
+                    {error?.message ||
+                      "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."}
+                  </p>
+                  <button
+                    onClick={() => refetch()}
+                    className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+                  >
+                    Thử lại
+                  </button>
+                </div>
               </td>
             </tr>
-          ))
-        ) : (
-          // Trường hợp empty list
-          <tr>
-            <td colSpan={columns.length}>
-              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                <h3 className="mt-4 text-lg text-white">Danh sách trống</h3>
-                <p className="mt-1 text-sm text-gray-400">
-                  Không tìm thấy tài khoản nào trong hệ thống.
-                </p>
-              </div>
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+          ) : demo_data && demo_data.length > 0 ? (
+            demo_data.map((row) => (
+              // Happy case
+              <tr
+                key={row.userId}
+                className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+              >
+                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                  <div className="flex items-center gap-3">
+                    <AccountAvatar name={row.fullName} />
+                    <div className="flex flex-col">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {row.fullName}
+                      </span>
+                      <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
+                        {row.email}
+                      </span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        {formatRelativeTime(row.createdAt)}
+                      </span>
+                    </div>
+                  </div>
+                </td>
+                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
+                    {row.phoneNumber}
+                  </span>
+                </td>
+                <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+                  <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
+                    {row.role}
+                  </span>
+                </td>
+              </tr>
+            ))
+          ) : (
+            // Trường hợp empty list
+            <tr>
+              <td colSpan={columns.length}>
+                <div className="flex min-h-[400px] w-full flex-col items-center justify-center py-10">
+                  <h3 className="mt-4 text-lg text-white">Danh sách trống</h3>
+                  <p className="mt-1 text-sm text-gray-400">
+                    Không tìm thấy tài khoản nào trong hệ thống.
+                  </p>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      <Pagination page={1} pageSize={20} total={demo_data?.length ?? 0} />
+    </>
   );
 }
 

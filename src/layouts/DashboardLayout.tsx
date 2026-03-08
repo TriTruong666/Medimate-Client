@@ -34,7 +34,7 @@ import { WelcomeLoading } from "../components/Loading";
 import DrawerContainer from "../components/DrawerContainer";
 
 import { useAuth } from "../hooks/useAuth";
-import { RoleBasedGuard } from "@/components/RoleBasedGuard";
+import { SidebarGuard } from "@/components/RoleBasedGuard";
 import { GoBell } from "react-icons/go";
 import { MdOutlineAttachMoney } from "react-icons/md";
 
@@ -180,12 +180,12 @@ function Sidebar() {
         {/* Nav */}
 
         <div className="">
-          <RoleBasedGuard allowedRoles={["admin"]}>
+          <SidebarGuard allowedRoles={["admin"]}>
             <AdminSidebar />
-          </RoleBasedGuard>
-          <RoleBasedGuard allowedRoles={["doctor"]}>
+          </SidebarGuard>
+          <SidebarGuard allowedRoles={["doctor"]}>
             <DoctorSidebar />
-          </RoleBasedGuard>
+          </SidebarGuard>
         </div>
       </div>
 

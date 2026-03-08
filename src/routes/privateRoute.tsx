@@ -22,7 +22,7 @@ import {
   SystemSettingDashboardPage,
 } from "../pages/SettingDashboardPage";
 import { NotFoundPrivatePage } from "../pages/NotFoundPage";
-import { RoleBasedGuard } from "@/components/RoleBasedGuard";
+import { FullPageGuard, RoleBasedGuard } from "@/components/RoleBasedGuard";
 import { PackageDashboardPage } from "@/pages/admin/PackageDashboardPage";
 import PackageOwnerDashboardPage from "@/pages/admin/PackageOwnerDashboardPage";
 import KnowledgeAddCollectionPage from "@/pages/admin/KnowledgeAddCollectionPage";
@@ -37,9 +37,9 @@ export default function PrivateRoute() {
         <Route
           path="accounts"
           element={
-            <RoleBasedGuard allowedRoles={["admin"]} isFullPage>
+            <FullPageGuard allowedRoles={["admin"]}>
               <AccountDashboardPage />
-            </RoleBasedGuard>
+            </FullPageGuard>
           }
         />
 
