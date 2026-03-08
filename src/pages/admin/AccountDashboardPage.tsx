@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { IoLockClosedOutline, IoLockOpenOutline } from "react-icons/io5";
+import { Spinner } from "../../components/Spinner";
 import { Badge } from "../../components/Badge";
 import Breadcrumb from "../../components/Breadcrumb";
 import GlassSelect from "../../components/Select";
@@ -11,7 +12,7 @@ import {
   openUnlockModalAtom,
 } from "../../stores/modalStore";
 import { useAtom } from "jotai";
-import { FiUserPlus } from "react-icons/fi";
+import { FiUserPlus, FiAlertCircle, FiInbox } from "react-icons/fi";
 import { Pagination } from "../../components/Pagination";
 import IconAction from "../../components/IconAction";
 import { Tooltip } from "../../components/Tooltip";
@@ -167,7 +168,13 @@ export default function AccountDashboardPage() {
 }
 
 function AccountTable() {
-  const { data: demo_data, isLoading } = useGetDemoData();
+  const {
+    data: demo_data,
+    isLoading,
+    error,
+    isError,
+    refetch,
+  } = useGetDemoData();
   const [, openLockModal] = useAtom(openLockModalAtom);
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
 
@@ -191,72 +198,85 @@ function AccountTable() {
       </thead>
 
       <tbody className="dark:divide-border-dark divide-y divide-gray-100">
-        {demo_data?.map((row) => (
-          <tr
-            key={row.userId}
-            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
-          >
-            {/* Info */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
-              <div className="flex items-center gap-3">
-                <AccountAvatar name={row.fullName} />
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {row.fullName}
-                  </span>
-                  <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
-                    {row.email}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatRelativeTime(row.createdAt)}
-                  </span>
-                </div>
+        {isLoading ? (
+          // Trạng thái loading
+          <tr>
+            <td colSpan={columns.length}>
+              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                <Spinner size="lg" />
+                <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
+                  Đang tải dữ liệu...
+                </p>
               </div>
             </td>
-
-            {/* Phone */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {row.phoneNumber}
-              </span>
-            </td>
-
-            {/* Role */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
-                {row.role}
-              </span>
-            </td>
-
-            {/* Status */}
-            {/* <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <StatusBadge status={row.isActive} />
-            </td> */}
-
-            {/* Actions */}
-            {/* <td className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                {row.status === "locked" && (
-                  <Tooltip content="Mở khoá">
-                    <IconAction
-                      onClick={() => openUnlockModal("account")}
-                      icon={<IoLockOpenOutline />}
-                    />
-                  </Tooltip>
-                )}
-                {row.status !== "locked" && (
-                  <Tooltip content="Khoá tài khoản">
-                    <IconAction
-                      onClick={() => openLockModal("account")}
-                      icon={<IoLockClosedOutline />}
-                      danger
-                    />
-                  </Tooltip>
-                )}
-              </div>
-            </td> */}
           </tr>
-        ))}
+        ) : isError ? (
+          // Trạng thái lỗi
+          <tr>
+            <td colSpan={columns.length}>
+              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                <h3 className="mt-4 text-lg text-white">Đã xảy ra lỗi</h3>
+                <p className="mt-1 max-w-75 text-center text-sm text-gray-400">
+                  {error?.message ||
+                    "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."}
+                </p>
+                <button
+                  onClick={() => refetch()}
+                  className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+                >
+                  Thử lại
+                </button>
+              </div>
+            </td>
+          </tr>
+        ) : demo_data && demo_data.length > 0 ? (
+          demo_data.map((row) => (
+            // Happy case
+            <tr
+              key={row.userId}
+              className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+            >
+              <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                <div className="flex items-center gap-3">
+                  <AccountAvatar name={row.fullName} />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {row.fullName}
+                    </span>
+                    <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
+                      {row.email}
+                    </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {formatRelativeTime(row.createdAt)}
+                    </span>
+                  </div>
+                </div>
+              </td>
+              <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                <span className="text-sm text-gray-600 dark:text-gray-300">
+                  {row.phoneNumber}
+                </span>
+              </td>
+              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+                <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
+                  {row.role}
+                </span>
+              </td>
+            </tr>
+          ))
+        ) : (
+          // Trường hợp empty list
+          <tr>
+            <td colSpan={columns.length}>
+              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                <h3 className="mt-4 text-lg text-white">Danh sách trống</h3>
+                <p className="mt-1 text-sm text-gray-400">
+                  Không tìm thấy tài khoản nào trong hệ thống.
+                </p>
+              </div>
+            </td>
+          </tr>
+        )}
       </tbody>
     </table>
   );
