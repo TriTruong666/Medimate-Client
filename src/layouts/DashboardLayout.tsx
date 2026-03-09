@@ -108,7 +108,7 @@ function Navbar() {
   return (
     <header className="dark:border-border-dark sticky top-0 z-10 flex items-center justify-between border-b border-transparent p-4 md:p-6">
       <div className="flex flex-1 items-center gap-4">
-        <div className="group relative hidden w-full max-md:block">
+        <div className="group relative w-112.5 max-md:block">
           <HiSearch
             size={18}
             className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-white"

@@ -2,7 +2,7 @@ import { IoArrowUp } from "react-icons/io5";
 import SplitText from "../components/SplitText";
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import GlassSelect from "../components/Select";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAutoResizeTextarea } from "../hooks/useResize";
 import ChatResponseMarkdown from "../components/ChatMarkdown";
 
@@ -16,7 +16,7 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="page-layout relative flex min-h-[calc(100vh-64px)] flex-col">
+    <div className="page-layout relative flex min-h-[calc(100vh-64px)] flex-col" data-lenis-prevent>
       {phase === "welcome" && (
         <div className="flex flex-1 items-center justify-center px-4">
           <WelcomeChatbot onStart={handleStartChat} />
@@ -145,14 +145,17 @@ function MainChat({ initialValue }: { initialValue: string }) {
   const textareaRef = useAutoResizeTextarea(value, 160);
   return (
     <>
-      {/* Messages Area */}
-      <div className="flex-1 pb-4">
+      {/* Messages Area - Increased padding bottom to avoid being hidden by fixed input */}
+      <div className="flex-1 overflow-y-auto pb-52 md:pb-60">
         <ChatMessages initialUserMessage={initialValue} />
       </div>
 
-      {/* Input Area - Sticky at the bottom of the viewport */}
-      <div className="sticky bottom-0 z-20 -mx-6 to-transparent pt-10 pb-4 xl:-mx-12 2xl:-mx-24">
-        <div className="mx-auto max-w-5xl px-4">
+      {/* Input Area - Fixed at the bottom of the viewport */}
+      <div className="fixed inset-x-0 bottom-0 z-20 md:left-64">
+        {/* Background gradient & Blur */}
+        <div className="pointer-events-none absolute inset-0 -top-16" />
+
+        <div className="relative mx-auto max-w-5xl px-4 pb-6 md:pb-8">
           <div className="relative w-full rounded-xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-xl transition focus-within:border-white/20 focus-within:bg-white/10">
             <textarea
               ref={textareaRef}
@@ -245,21 +248,11 @@ function ChatMessages({ initialUserMessage }: { initialUserMessage?: string }) {
   const [streamingText, setStreamingText] = useState("");
   const [demoStep, setDemoStep] = useState(0);
 
-  // Auto scroll to bottom
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll disabled as requested
   useEffect(() => {
-    const scroll = () => {
-      window.scrollTo({
-        top: document.documentElement.scrollHeight,
-        behavior: "instant",
-      });
-    };
-
-    // Chạy ngay lập tức khi streaming hoặc có tin nhắn mới
-    scroll();
-
-    // Và chạy thêm một lần nữa sau khi browser vẽ lại để chắc chắn
-    const frame = requestAnimationFrame(scroll);
-    return () => cancelAnimationFrame(frame);
+    // Scroll logic removed
   }, [messages, streamingText]);
 
   // Sync initial message
@@ -320,6 +313,9 @@ function ChatMessages({ initialUserMessage }: { initialUserMessage?: string }) {
           content={streamingText}
         />
       )}
+
+      {/* Ref to track the bottom of the messages */}
+      <div ref={messagesEndRef} className="h-0" />
     </div>
   );
 }
@@ -330,9 +326,8 @@ function ChatMessage({ role, content }: ChatMessageProps) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[70%] rounded-2xl px-4 py-3 ${
-          isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"
-        } `}
+        className={`max-w-[70%] rounded-2xl px-4 py-3 ${isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"
+          } `}
       >
         {isUser ? (
           <p className="text-sm leading-relaxed">{content}</p>

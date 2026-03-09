@@ -1,5 +1,4 @@
-import { Route, Routes } from "react-router-dom";
-import { Suspense } from "react";
+import { Route, Routes, Outlet } from "react-router-dom";
 import type { ReactNode } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import SettingDashboardLayout from "../layouts/SettingDashboardLayout";
@@ -36,9 +35,23 @@ export default function PrivateRoute() {
           // If it has children, render them
           if (route.children) {
             return (
-              <Route key={route.path} path={relativePath || undefined}>
+              <Route
+                key={route.path}
+                path={relativePath || undefined}
+                element={
+                  route.roles ? (
+                    <FullPageGuard allowedRoles={route.roles}>
+                      <Outlet />
+                    </FullPageGuard>
+                  ) : (
+                    <Outlet />
+                  )
+                }
+              >
                 {route.children.map((child) => {
-                  const childRelativePath = getRelativePath(child.path);
+                  const childRelativePath = child.path
+                    .replace(route.path, "")
+                    .replace(/^\//, "");
                   return (
                     <Route
                       key={child.path}

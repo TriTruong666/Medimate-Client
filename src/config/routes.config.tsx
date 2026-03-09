@@ -147,7 +147,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     ],
   },
   {
-    path: PATHS.DASHBOARD.PACKAGES,
+    path: PATHS.DASHBOARD.PACKAGES.ROOT,
     layout: "dashboard",
     label: "Gói dịch vụ",
     icon: RiVipDiamondLine,
@@ -155,13 +155,13 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     roles: ["admin"],
     children: [
       {
-        path: PATHS.DASHBOARD.PACKAGES,
+        path: PATHS.DASHBOARD.PACKAGES.ROOT,
         element: <PackageDashboardPage />,
         label: "Quản lý gói",
         index: true,
       },
       {
-        path: PATHS.DASHBOARD.PACKAGES_OWNER,
+        path: PATHS.DASHBOARD.PACKAGES.PACKAGES_OWNER,
         element: <PackageOwnerDashboardPage />,
         label: "Danh sách hội viên",
       },

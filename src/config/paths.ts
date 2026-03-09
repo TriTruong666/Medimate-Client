@@ -19,12 +19,25 @@ export const PATHS = {
     RAG_NEW: "/dashboard/rag/new",
     CHATBOT: "/dashboard/chatbot",
     TRANSACTION: "/dashboard/transaction",
-    PACKAGES: "/dashboard/packages",
-    PACKAGES_OWNER: "/dashboard/packages/owner",
+    INCOME: "/dashboard/income",
+    PACKAGES: {
+      ROOT: "/dashboard/packages",
+      PACKAGES_OWNER: "/dashboard/packages/owner",
+    },
+    DOCTOR_SUPPORT: {
+      ROOT: "/dashboard/doctor-support",
+      CONSERVATION: "/dashboard/doctor-support/:conversationId",
+    },
+    INTERNAL_CHAT: {
+      ROOT: "/dashboard/chat",
+      CONSERVATION: "/dashboard/chat/:conversationId",
+    },
+    NOTIFICATIONS: "/dashboard/notifications",
     ASSETS: {
       PRESCRIPTION: "/dashboard/assets/prescription",
       CERTIFICATE: "/dashboard/assets/certificate",
     },
+    REPORT_DOCTOR: "/dashboard/report-doctor",
     SETTINGS: {
       ROOT: "/dashboard/settings",
       SECURITY: "/dashboard/settings/security",
