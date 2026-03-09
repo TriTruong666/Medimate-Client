@@ -6,7 +6,7 @@ const base_rag_url =
     : import.meta.env.VITE_RAG_API_URL;
 
 const base_net_url =
-  import.meta.env.NODE_ENV === "production"
+  import.meta.env.MODE === "development" // k chay duoc khi .NODE_ENV nen doi thanh MODE
     ? import.meta.env.VITE_NET_API_URL_TEST
     : import.meta.env.VITE_NET_API_URL;
 
