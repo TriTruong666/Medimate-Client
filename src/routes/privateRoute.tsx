@@ -1,97 +1,82 @@
 import { Route, Routes } from "react-router-dom";
+import { Suspense } from "react";
+import type { ReactNode } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
-import SummaryDashboardPage from "../pages/SummaryDashboardPage";
-import AccountDashboardPage from "../pages/admin/AccountDashboardPage";
-
-import KnowledgeBasePage from "../pages/admin/KnowledgeBasePage";
-
-import ChatbotPage from "../pages/ChatbotPage";
-import TransactionDashboardPage from "../pages/TransactionDashboardPage";
-
-import {
-  AssetsCertificateDashboardPage,
-  AssetsPrescriptionDashboardPage,
-} from "../pages/admin/AssetsDashboardPage";
 import SettingDashboardLayout from "../layouts/SettingDashboardLayout";
-import {
-  APIKeysSettingDashboardPage,
-  MessageSettingDashboardPage,
-  NotificationSettingDashboardPage,
-  ProfileSettingDashboardPage,
-  SecuritySettingDashboardPage,
-  SystemSettingDashboardPage,
-} from "../pages/SettingDashboardPage";
 import { NotFoundPrivatePage } from "../pages/NotFoundPage";
-import { FullPageGuard, RoleBasedGuard } from "@/components/RoleBasedGuard";
-import { PackageDashboardPage } from "@/pages/admin/PackageDashboardPage";
-import PackageOwnerDashboardPage from "@/pages/admin/PackageOwnerDashboardPage";
-import KnowledgeAddCollectionPage from "@/pages/admin/KnowledgeAddCollectionPage";
-import DocumentDashboardPage from "@/pages/admin/DocumentDashboardPage";
+import { FullPageGuard } from "@/components/RoleBasedGuard";
+import { ROUTES_CONFIG } from "@/config/routes.config";
+import type { RouteConfig } from "@/config/routes.config";
 
 export default function PrivateRoute() {
+  // Helper to remove /dashboard prefix for nested routing
+  const getRelativePath = (path: string) => {
+    return path
+      .replace("/dashboard/", "")
+      .replace("/dashboard", "")
+      .replace(/^\//, "");
+  };
+
+  const renderRouteElement = (route: RouteConfig): ReactNode => {
+    if (!route.element) return null;
+
+    return route.roles ? (
+      <FullPageGuard allowedRoles={route.roles}>{route.element}</FullPageGuard>
+    ) : (
+      route.element
+    );
+  };
+
   return (
     <Routes>
       <Route element={<DashboardLayout />}>
-        <Route index element={<SummaryDashboardPage />} />
+        {ROUTES_CONFIG.filter((r) => r.layout === "dashboard").map((route) => {
+          const relativePath = getRelativePath(route.path);
 
-        <Route
-          path="accounts"
-          element={
-            <FullPageGuard allowedRoles={["admin"]}>
-              <AccountDashboardPage />
-            </FullPageGuard>
+          // If it has children, render them
+          if (route.children) {
+            return (
+              <Route key={route.path} path={relativePath || undefined}>
+                {route.children.map((child) => {
+                  const childRelativePath = getRelativePath(child.path);
+                  return (
+                    <Route
+                      key={child.path}
+                      index={child.index}
+                      path={child.index ? undefined : childRelativePath}
+                      element={renderRouteElement(child)}
+                    />
+                  );
+                })}
+              </Route>
+            );
           }
-        />
 
-        <Route path="documents" element={<DocumentDashboardPage />} />
+          return (
+            <Route
+              key={route.path}
+              index={route.index || relativePath === ""}
+              path={route.index ? undefined : relativePath}
+              element={renderRouteElement(route)}
+            />
+          );
+        })}
 
-        <Route path="rag" element={<KnowledgeBasePage />} />
-        <Route path="rag/new" element={<KnowledgeAddCollectionPage />} />
-        <Route path="chatbot" element={<ChatbotPage />} />
-        <Route path="transaction" element={<TransactionDashboardPage />} />
-
-        {/* Example: Prescription is for Admin and Doctor */}
-        <Route
-          path="assets/prescription"
-          element={
-            <RoleBasedGuard allowedRoles={["admin"]} isFullPage>
-              <AssetsPrescriptionDashboardPage />
-            </RoleBasedGuard>
-          }
-        />
-
-        <Route
-          path="assets/certificate"
-          element={<AssetsCertificateDashboardPage />}
-        />
-        <Route path="packages" element={<PackageDashboardPage />} />
-        <Route path="packages/owner" element={<PackageOwnerDashboardPage />} />
         <Route element={<SettingDashboardLayout />}>
-          <Route path="settings" element={<ProfileSettingDashboardPage />} />
-          <Route
-            path="settings/security"
-            element={<SecuritySettingDashboardPage />}
-          />
-          <Route
-            path="settings/notification"
-            element={<NotificationSettingDashboardPage />}
-          />
-          <Route
-            path="settings/message"
-            element={<MessageSettingDashboardPage />}
-          />
-          <Route
-            path="settings/system"
-            element={<SystemSettingDashboardPage />}
-          />
-          <Route
-            path="settings/keys"
-            element={<APIKeysSettingDashboardPage />}
-          />
+          {ROUTES_CONFIG.filter((r) => r.layout === "settings").map((route) => {
+            const relativePath = getRelativePath(route.path);
+            return (
+              <Route
+                key={route.path}
+                index={route.index}
+                path={route.index ? undefined : relativePath}
+                element={renderRouteElement(route)}
+              />
+            );
+          })}
         </Route>
       </Route>
 
-      {/* Catch-all for any other dashboard sub-routes */}
       <Route path="*" element={<NotFoundPrivatePage />} />
     </Routes>
   );

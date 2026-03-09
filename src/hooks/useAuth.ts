@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export type Role = "admin" | "manager" | "patient" | "doctor" | "inspector";
+export type Role = "admin" | "manager" | "patient" | "doctor" | "inspector" | "user";
 
 interface User {
   id: string;

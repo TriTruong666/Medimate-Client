@@ -106,14 +106,14 @@ export function ComponentGuard({
   );
 }
 
-function MiniSkeleton() {
+export function MiniSkeleton() {
   return <div className="h-8 w-24 animate-pulse rounded-lg bg-white/10" />;
 }
 
-function SidebarSkeleton() {
+export function SidebarSkeleton() {
   return (
-    <div className="mt-4 space-y-2 px-3">
-      {[...Array(4)].map((_, i) => (
+    <div className="mt-4 space-y-5 px-3">
+      {[...Array(6)].map((_, i) => (
         <div
           key={i}
           className="h-10 w-full animate-pulse rounded-xl bg-white/5"
@@ -123,34 +123,24 @@ function SidebarSkeleton() {
   );
 }
 
-function PageSkeleton() {
+export function PageSkeleton() {
   return (
     <div className="page-layout">
-      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div className="space-y-3">
-          <div className="h-4 w-32 rounded bg-white/10" />
-          <div className="h-10 w-64 rounded-lg bg-white/10" />
-        </div>
-        <div className="flex gap-3">
-          <div className="h-10 w-24 rounded-lg bg-white/10" />
-          <div className="h-10 w-32 rounded-lg bg-white/10" />
-        </div>
-      </div>
-      <div className="dark:border-border-dark overflow-hidden rounded-xl border border-white/5 bg-white/5">
-        <div className="h-12 border-b border-white/5 bg-white/5" />
-        {[...Array(5)].map((_, i) => (
-          <div
-            key={i}
-            className="flex h-16 items-center border-b border-white/5 px-4 last:border-0"
-          >
-            <div className="mr-4 h-10 w-10 rounded-full bg-white/10" />
-            <div className="flex-1 space-y-2">
-              <div className="h-3 w-1/3 rounded bg-white/10" />
-              <div className="h-2 w-1/4 rounded bg-white/5" />
-            </div>
-            <div className="h-3 w-20 rounded bg-white/10" />
+      <div className="animate-pulse">
+        {/* Header Skeleton */}
+        <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="space-y-3">
+            <div className="h-4 w-48 rounded bg-white/10" />
+            <div className="h-10 w-80 rounded-xl bg-white/10" />
           </div>
-        ))}
+          <div className="flex gap-3">
+            <div className="h-10 w-24 rounded-xl bg-white/10" />
+            <div className="h-10 w-32 rounded-xl bg-white/10" />
+          </div>
+        </div>
+
+        {/* Main Content Rectangle */}
+        <div className="h-[65vh] w-full rounded-3xl border border-white/5 bg-white/5" />
       </div>
     </div>
   );
