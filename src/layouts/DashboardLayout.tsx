@@ -5,6 +5,7 @@ import {
   HiChevronDown,
   HiSearch,
 } from "react-icons/hi";
+import { FiSettings } from "react-icons/fi";
 import medimateLogo from "../assets/medimate-logo.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState, useRef } from "react";
@@ -181,7 +182,7 @@ function Sidebar() {
       <div className="space-y-1 border-t border-white/5 px-3 py-4">
         <SidebarItem
           to="/dashboard/settings"
-          icon={<HiOutlineQuestionMarkCircle />}
+          icon={<FiSettings />}
           label="Cài đặt"
         />
         <SidebarItem

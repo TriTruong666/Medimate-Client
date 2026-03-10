@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 
-export type Role = "admin" | "manager" | "patient" | "doctor" | "inspector" | "user";
+export type Role =
+  | "admin"
+  | "manager"
+  | "patient"
+  | "doctor"
+  | "inspector"
+  | "user";
 
 interface User {
   id: string;
@@ -22,7 +28,7 @@ export function useAuth() {
         id: "1",
         name: "Trí Trương",
         email: "admin@medimate.com",
-        role: "admin", // Demo default role
+        role: "doctor", // Demo default role
       };
 
       // You can also read from localStorage to make it interactive
