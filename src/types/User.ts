@@ -1,13 +1,28 @@
 export type User = {
-    userId: string;
-    phoneNumber: string;
-    fullName: string;
-    email: string;
-    dateOfBirth: string | null;
-    gender: "male" | "female" | null;
-    avatarUrl: string | null;
-    isActive: boolean;
-    isOnline: boolean;
-    role: "User" | "Admin";
-    createdAt: string;
-  };
+  userId: string;
+  phoneNumber: string;
+  fullName: string;
+  email: string;
+  dateOfBirth: string | null;
+  gender: "male" | "female" | null;
+  avatarUrl: string | null;
+  isActive: boolean;
+  isOnline: boolean;
+  role: "User" | "Admin";
+  createdAt: string;
+};
+
+export type Doctor = {
+  fullName: string;
+  specialty: string;
+  currentHospitalName: string;
+  licenseNumber: string;
+  licenseImage: string;
+  createdAt: string;
+};
+
+export type CreateDoctorRequest = {
+  phoneNumber: string;
+  fullName: string;
+  email: string;
+};

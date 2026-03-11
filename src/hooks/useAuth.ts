@@ -28,7 +28,7 @@ export function useAuth() {
         id: "1",
         name: "Trí Trương",
         email: "admin@medimate.com",
-        role: "doctor", // Demo default role
+        role: "admin", // Demo default role
       };
 
       // You can also read from localStorage to make it interactive
