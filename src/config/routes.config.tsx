@@ -4,10 +4,11 @@ import { lazy } from "react";
 import { PATHS } from "./paths";
 import { FiLayout, FiUsers, FiSettings, FiFileText } from "react-icons/fi";
 import { RiVipDiamondLine, RiImageAiLine } from "react-icons/ri";
-import { IoSync } from "react-icons/io5";
+import { IoBriefcaseOutline, IoSync } from "react-icons/io5";
 import { AiOutlineRobot } from "react-icons/ai";
 import { GrTransaction } from "react-icons/gr";
 import type { Role } from "../hooks/useAuth";
+import DoctorSupportPage from "@/pages/doctor/DoctorSupportPage";
 
 // Types for Route Configuration
 export interface RouteConfig {
@@ -103,6 +104,15 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     index: true,
   },
   {
+    path: PATHS.DASHBOARD.DOCTOR_SUPPORT.ROOT,
+    layout: "dashboard",
+    label: "Công việc",
+    icon: IoBriefcaseOutline,
+    element: <DoctorSupportPage />,
+    showInSidebar: true,
+    roles: ["doctor"],
+  },
+  {
     path: PATHS.DASHBOARD.ACCOUNTS,
     element: <AccountDashboardPage />,
     layout: "dashboard",
@@ -167,6 +177,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
       },
     ],
   },
+
   {
     path: "/dashboard/assets",
     layout: "dashboard",
@@ -222,7 +233,6 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     icon: FiSettings,
     showInSidebar: false,
     roles: ["admin", "user", "doctor"],
-    index: true,
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.SECURITY,

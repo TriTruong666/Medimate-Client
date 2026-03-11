@@ -16,7 +16,10 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div className="page-layout relative flex min-h-[calc(100vh-64px)] flex-col" data-lenis-prevent>
+    <div
+      className="page-layout relative flex min-h-[calc(100vh-64px)] flex-col"
+      data-lenis-prevent
+    >
       {phase === "welcome" && (
         <div className="flex flex-1 items-center justify-center px-4">
           <WelcomeChatbot onStart={handleStartChat} />
@@ -326,8 +329,9 @@ function ChatMessage({ role, content }: ChatMessageProps) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[70%] rounded-2xl px-4 py-3 ${isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"
-          } `}
+        className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+          isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"
+        } `}
       >
         {isUser ? (
           <p className="text-sm leading-relaxed">{content}</p>
