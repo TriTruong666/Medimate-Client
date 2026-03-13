@@ -4,7 +4,7 @@ import { Spinner } from "../../components/Spinner";
 import { Badge } from "../../components/Badge";
 import Breadcrumb from "../../components/Breadcrumb";
 import GlassSelect from "../../components/Select";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PiExport } from "react-icons/pi";
 import {
   openLockModalAtom,
@@ -18,6 +18,8 @@ import IconAction from "../../components/IconAction";
 import { Tooltip } from "../../components/Tooltip";
 import { useGetDemoData } from "@/hooks/data/demoHooks";
 import { formatRelativeTime } from "@/common/format";
+import { useUserList } from "@/hooks/data/useAccountHooks";
+import { sortUsers } from "@/common/account";
 
 type AccountRow = {
   name: string;
@@ -40,6 +42,8 @@ type TableColumn = {
 type AccountTableProps = {
   data: AccountRow[];
 };
+
+type SortType = "" | "by_date" | "by_status";
 
 const breadcrumbItems = [
   {
@@ -120,7 +124,7 @@ const demoData: AccountRow[] = [
   },
 ];
 export default function AccountDashboardPage() {
-  const [type, setType] = useState("");
+  const [type, setType] = useState<SortType>("");
   const [, openModal] = useAtom(openModalAtom);
 
   return (
@@ -137,7 +141,7 @@ export default function AccountDashboardPage() {
           <div className="ml-2">
             <GlassSelect
               value={type}
-              onChange={setType}
+              onChange={value => setType(value as SortType)}
               placeholder="Sắp xếp theo"
               options={[
                 { label: "Ngày", value: "by_date" },
@@ -161,23 +165,28 @@ export default function AccountDashboardPage() {
 
       {/* Content */}
       <div className="my-8">
-        <AccountTable />
+        <AccountTable sortType={type} />
       </div>
     </div>
   );
 }
 
-function AccountTable() {
+function AccountTable({sortType}: {sortType: SortType}) {
   const {
-    data: demo_data,
+    data: users,
     isLoading,
     error,
     isError,
     refetch,
-  } = useGetDemoData();
+  } = useUserList();
+  
   const [, openLockModal] = useAtom(openLockModalAtom);
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
 
+  const sortedUsers = useMemo(() => {
+    if (!users) return [];
+    return sortUsers(users, sortType);
+  }, [users, sortType]);
   return (
     <>
       <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
@@ -229,8 +238,8 @@ function AccountTable() {
                 </div>
               </td>
             </tr>
-          ) : demo_data && demo_data.length > 0 ? (
-            demo_data.map((row) => (
+          ) : users && users.length > 0 ? (
+            sortedUsers.map((row) => (
               // Happy case
               <tr
                 key={row.userId}
@@ -262,6 +271,9 @@ function AccountTable() {
                     {row.role}
                   </span>
                 </td>
+                <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+                  <StatusBadge status={row.isOnline ? "online" : "offline"} />
+                </td>
               </tr>
             ))
           ) : (
@@ -279,7 +291,7 @@ function AccountTable() {
           )}
         </tbody>
       </table>
-      <Pagination page={1} pageSize={20} total={demo_data?.length ?? 0} />
+      <Pagination page={1} pageSize={20} total={users?.length ?? 0} />
     </>
   );
 }

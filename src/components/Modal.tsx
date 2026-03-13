@@ -27,6 +27,9 @@ import { PiHandEyeLight } from "react-icons/pi";
 import { formatPrice } from "../common/format";
 import { toast } from "../hooks/useToast";
 import { IoMdCheckmark } from "react-icons/io";
+import type { CreateUserRequest } from "@/types/User";
+import { isRequired, isValidEmail, isValidPhoneVN } from "@/common/validation";
+import { useCreateDoctor, useCreateDoctorManager } from "@/hooks/data/useAccountHooks";
 type LibraryDoc = {
   id: string;
   name: string;
@@ -42,6 +45,12 @@ type UploadItemProps = {
 
 type AddDocumentModalProps = {
   onConfirm?: (docs: LibraryDoc[]) => void;
+};
+
+type CreateErrors = {
+  email?: string;
+  fullName?: string;
+  phoneNumber?: string;
 };
 
 export function PreviewPdfModal() {
@@ -339,6 +348,51 @@ export function AddAccountModal() {
   const [phase, setPhase] = useState<"role" | "info">("role");
   const [role, setRole] = useState<"doctor" | "supervisor" | null>(null);
   const [, closeModal] = useAtom(closeModalAtom);
+  const { mutateAsync: mutateCreateDoctor, isPending: isPendingCreateDoctor } = useCreateDoctor();
+  const { mutateAsync: mutateCreateDoctorManager, isPending: isPendingCreateDoctorManager } = useCreateDoctorManager();
+
+  const [form, setForm] = useState<CreateUserRequest>({
+    email: "",
+    fullName: "",
+    phoneNumber: "",
+  });
+  const [errors, setErrors] = useState<CreateErrors>();
+
+  const handleCreate = async (role: "doctor" | "supervisor") => {
+    const nextErrors = validateAddAccountForm(form);
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error("Dữ liệu chưa hợp lệ", "Vui lòng kiểm tra lại thông tin.");
+      return;
+    }
+
+    try {
+      if (role === "doctor") {
+        const response = await mutateCreateDoctor(form);
+  
+        if (response.success) {
+          toast.success("Tạo tài khoản thành công", "Đã thêm bác sĩ mới.");
+          closeModal();
+          return;
+        }
+    
+        toast.error("Tạo tài khoản thất bại", response.message);
+      } else {
+        const response = await mutateCreateDoctorManager(form);
+  
+        if (response.success) {
+          toast.success("Tạo tài khoản thành công", "Đã thêm kiểm định viên mới.");
+          closeModal();
+          return;
+        }
+    
+        toast.error("Tạo tài khoản thất bại", response.message);
+      }
+    } catch {
+      toast.error("Tạo tài khoản thất bại", "Vui lòng thử lại.");
+    }
+  };
 
   return (
     <div className="flex w-150 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
@@ -359,7 +413,7 @@ export function AddAccountModal() {
       {/* Content */}
       <div className="p-6">
         {phase === "role" && <RolePhase selected={role} onSelect={setRole} />}
-        {phase === "info" && <InfoPhase />}
+        {phase === "info" && <InfoPhase value={form} errors={errors} onChange={(field, value) => setForm({ ...form, [field]: value })} />}
       </div>
 
       {/* Footer */}
@@ -397,7 +451,8 @@ export function AddAccountModal() {
           </button>
 
           <button
-            onClick={closeModal}
+            onClick={() => handleCreate(role as "doctor" | "supervisor")}
+            disabled={isPendingCreateDoctor || isPendingCreateDoctorManager || !role}
             className={clsx(
               "rounded-lg px-4 py-2 text-sm font-medium transition",
               role
@@ -411,6 +466,28 @@ export function AddAccountModal() {
       )}
     </div>
   );
+}
+
+function validateAddAccountForm(form: CreateUserRequest): CreateErrors {
+  const errors: CreateErrors = {};
+  
+  if (!isRequired(form.email)) {
+    errors.email = "Email là bắt buộc";
+  } else if (!isValidEmail(form.email)) {
+    errors.email = "Email không hợp lệ";
+  }
+
+  if (!isRequired(form.fullName)) {
+    errors.fullName = "Họ và tên là bắt buộc";
+  }
+
+  if (!isRequired(form.phoneNumber)) {
+    errors.phoneNumber = "Số điện thoại là bắt buộc";
+  } else if (!isValidPhoneVN(form.phoneNumber)) {
+    errors.phoneNumber = "Số điện thoại không hợp lệ";
+  }
+
+  return errors;
 }
 
 function RolePhase({
@@ -470,21 +547,29 @@ function RoleCard({ icon, title, description, active, onClick }: any) {
   );
 }
 
-function InfoPhase() {
+function InfoPhase({
+  value,
+  errors,
+  onChange,
+}: {
+  value: CreateUserRequest;
+  errors?: CreateErrors;
+  onChange: (field: keyof CreateUserRequest, value: string) => void;
+}) {
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Input label="Email" placeholder="example123@gmail.com" type="email" />
-      <Input label="Họ và tên" placeholder="Nhập tên của bạn" />
+      <Input label="Email" placeholder="example123@gmail.com" type="email" value={value.email} error={errors?.email} onChange={(e) => onChange("email", e)} />
+      <Input label="Họ và tên" placeholder="Nhập tên của bạn" value={value.fullName} error={errors?.fullName} onChange={(e) => onChange("fullName", e)} />
 
-      <Input label="Số điện thoại" placeholder="Nhập SĐT của bạn" />
-      <Input label="Mật khẩu" type="password" placeholder="Nhập mật khẩu" />
-
+      <Input label="Số điện thoại" placeholder="Nhập SĐT của bạn" value={value.phoneNumber} error={errors?.phoneNumber} onChange={(e) => onChange("phoneNumber", e)} />
+      <Input label="Mật khẩu" type="password" placeholder="12345678aA@" disabled={true}/>
+{/* 
       <Input
         label="Nhập lại mật khẩu"
         type="password"
         className="col-span-2"
         placeholder="Nhập lại mật khẩu"
-      />
+      /> */}
     </div>
   );
 }
@@ -493,12 +578,20 @@ function Input({
   label,
   type = "text",
   className,
-  placeholder = "Input here",
+  placeholder = "Input here",  
+  disabled = false,
+  value,
+  error,
+  onChange,
 }: {
   label: string;
   type?: string;
   className?: string;
   placeholder?: string;
+  disabled?: boolean;
+  value?: string;
+  error?: string;
+  onChange?: (value: string) => void;
 }) {
   return (
     <div className={clsx("flex flex-col gap-1", className)}>
@@ -506,8 +599,12 @@ function Input({
       <input
         type={type}
         placeholder={placeholder}
+        disabled={disabled}
         className="input-primary text-[13px]!"
+        value={value ?? ""}
+        onChange={(e) => onChange?.(e.target.value)}
       />
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 }
