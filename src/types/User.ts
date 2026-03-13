@@ -21,7 +21,7 @@ export type Doctor = {
   createdAt: string;
 };
 
-export type CreateDoctorRequest = {
+export type CreateUserRequest = {
   phoneNumber: string;
   fullName: string;
   email: string;

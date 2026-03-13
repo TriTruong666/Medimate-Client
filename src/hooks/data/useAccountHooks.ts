@@ -15,3 +15,13 @@ export function useCreateDoctor() {
     },
   })
 }
+
+export function useCreateDoctorManager() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UserService.createDoctorManager,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  })
+}

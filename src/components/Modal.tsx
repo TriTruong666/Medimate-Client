@@ -27,9 +27,9 @@ import { PiHandEyeLight } from "react-icons/pi";
 import { formatPrice } from "../common/format";
 import { toast } from "../hooks/useToast";
 import { IoMdCheckmark } from "react-icons/io";
-import type { CreateDoctorRequest } from "@/types/User";
+import type { CreateUserRequest } from "@/types/User";
 import { isRequired, isValidEmail, isValidPhoneVN } from "@/common/validation";
-import { useCreateDoctor } from "@/hooks/data/useAccountHooks";
+import { useCreateDoctor, useCreateDoctorManager } from "@/hooks/data/useAccountHooks";
 type LibraryDoc = {
   id: string;
   name: string;
@@ -47,7 +47,7 @@ type AddDocumentModalProps = {
   onConfirm?: (docs: LibraryDoc[]) => void;
 };
 
-type CreateDoctorErrors = {
+type CreateErrors = {
   email?: string;
   fullName?: string;
   phoneNumber?: string;
@@ -348,16 +348,17 @@ export function AddAccountModal() {
   const [phase, setPhase] = useState<"role" | "info">("role");
   const [role, setRole] = useState<"doctor" | "supervisor" | null>(null);
   const [, closeModal] = useAtom(closeModalAtom);
-  const { mutateAsync, isPending } = useCreateDoctor();
+  const { mutateAsync: mutateCreateDoctor, isPending: isPendingCreateDoctor } = useCreateDoctor();
+  const { mutateAsync: mutateCreateDoctorManager, isPending: isPendingCreateDoctorManager } = useCreateDoctorManager();
 
-  const [form, setForm] = useState<CreateDoctorRequest>({
+  const [form, setForm] = useState<CreateUserRequest>({
     email: "",
     fullName: "",
     phoneNumber: "",
   });
-  const [errors, setErrors] = useState<CreateDoctorErrors>();
+  const [errors, setErrors] = useState<CreateErrors>();
 
-  const handleCreateDoctor = async () => {
+  const handleCreate = async (role: "doctor" | "supervisor") => {
     const nextErrors = validateAddAccountForm(form);
     setErrors(nextErrors);
 
@@ -367,15 +368,27 @@ export function AddAccountModal() {
     }
 
     try {
-      const response = await mutateAsync(form);
+      if (role === "doctor") {
+        const response = await mutateCreateDoctor(form);
   
-      if (response.success) {
-        toast.success("Tạo tài khoản thành công", "Đã thêm bác sĩ mới.");
-        closeModal();
-        return;
+        if (response.success) {
+          toast.success("Tạo tài khoản thành công", "Đã thêm bác sĩ mới.");
+          closeModal();
+          return;
+        }
+    
+        toast.error("Tạo tài khoản thất bại", response.message);
+      } else {
+        const response = await mutateCreateDoctorManager(form);
+  
+        if (response.success) {
+          toast.success("Tạo tài khoản thành công", "Đã thêm kiểm định viên mới.");
+          closeModal();
+          return;
+        }
+    
+        toast.error("Tạo tài khoản thất bại", response.message);
       }
-  
-      toast.error("Tạo tài khoản thất bại", response.message);
     } catch {
       toast.error("Tạo tài khoản thất bại", "Vui lòng thử lại.");
     }
@@ -438,8 +451,8 @@ export function AddAccountModal() {
           </button>
 
           <button
-            onClick={handleCreateDoctor}
-            disabled={isPending}
+            onClick={() => handleCreate(role as "doctor" | "supervisor")}
+            disabled={isPendingCreateDoctor || isPendingCreateDoctorManager || !role}
             className={clsx(
               "rounded-lg px-4 py-2 text-sm font-medium transition",
               role
@@ -455,8 +468,8 @@ export function AddAccountModal() {
   );
 }
 
-function validateAddAccountForm(form: CreateDoctorRequest): CreateDoctorErrors {
-  const errors: CreateDoctorErrors = {};
+function validateAddAccountForm(form: CreateUserRequest): CreateErrors {
+  const errors: CreateErrors = {};
   
   if (!isRequired(form.email)) {
     errors.email = "Email là bắt buộc";
@@ -539,9 +552,9 @@ function InfoPhase({
   errors,
   onChange,
 }: {
-  value: CreateDoctorRequest;
-  errors?: CreateDoctorErrors;
-  onChange: (field: keyof CreateDoctorRequest, value: string) => void;
+  value: CreateUserRequest;
+  errors?: CreateErrors;
+  onChange: (field: keyof CreateUserRequest, value: string) => void;
 }) {
   return (
     <div className="grid grid-cols-2 gap-4">
