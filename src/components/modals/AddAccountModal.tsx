@@ -206,32 +206,18 @@ export function AddAccountModal() {
     }
 
     try {
+      let response;
       if (role === "doctor") {
-        const response = await mutateCreateDoctor(form);
-
-        if (response.success) {
-          toast.success("Tạo tài khoản thành công", "Đã thêm bác sĩ mới.");
-          closeModal();
-          return;
-        }
-
-        toast.error("Tạo tài khoản thất bại", response.message);
+        response = await mutateCreateDoctor(form);
       } else {
-        const response = await mutateCreateDoctorManager(form);
+        response = await mutateCreateDoctorManager(form);
+      }
 
-        if (response.success) {
-          toast.success(
-            "Tạo tài khoản thành công",
-            "Đã thêm kiểm định viên mới.",
-          );
-          closeModal();
-          return;
-        }
-
-        toast.error("Tạo tài khoản thất bại", response.message);
+      if (response?.success) {
+        closeModal();
       }
     } catch {
-      toast.error("Tạo tài khoản thất bại", "Vui lòng thử lại.");
+      // Toast error is already handled by onError in the mutation hooks
     }
   };
 
