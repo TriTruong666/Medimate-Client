@@ -10,7 +10,7 @@ import {
   PreviewPdfModal,
   UnlockModal,
   UploadDocumentModal,
-} from "./Modal";
+} from "./modals";
 import { closeModalAtom, modalAtom, paymentAtom } from "../stores/modalStore";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useState } from "react";

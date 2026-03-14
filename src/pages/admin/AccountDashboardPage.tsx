@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { IoLockClosedOutline, IoLockOpenOutline } from "react-icons/io5";
-import { Spinner } from "../../components/Spinner";
-import { Badge } from "../../components/Badge";
-import Breadcrumb from "../../components/Breadcrumb";
-import GlassSelect from "../../components/Select";
+import { Badge } from "../../components/custom-ui/Badge";
+import Breadcrumb from "../../components/custom-ui/Breadcrumb";
+import GlassSelect from "../../components/custom-ui/Select";
 import { useMemo, useState } from "react";
 import { PiExport } from "react-icons/pi";
 import {
@@ -12,14 +10,17 @@ import {
   openUnlockModalAtom,
 } from "../../stores/modalStore";
 import { useAtom } from "jotai";
-import { FiUserPlus, FiAlertCircle, FiInbox } from "react-icons/fi";
-import { Pagination } from "../../components/Pagination";
-import IconAction from "../../components/IconAction";
-import { Tooltip } from "../../components/Tooltip";
-import { useGetDemoData } from "@/hooks/data/demoHooks";
+import { FiUserPlus } from "react-icons/fi";
+import { Pagination } from "../../components/custom-ui/Pagination";
+
 import { formatRelativeTime } from "@/common/format";
 import { useUserList } from "@/hooks/data/useAccountHooks";
 import { sortUsers } from "@/common/account";
+import type { User } from "@/types/User";
+import { IoMdLock } from "react-icons/io";
+import { Spinner } from "@/components/custom-ui/Spinner";
+import { Tooltip } from "@/components/custom-ui/Tooltip";
+import IconAction from "@/components/custom-ui/IconAction";
 
 type AccountRow = {
   name: string;
@@ -37,10 +38,6 @@ type TableColumn = {
   label: string;
   width?: string;
   align?: "left" | "center" | "right";
-};
-
-type AccountTableProps = {
-  data: AccountRow[];
 };
 
 type SortType = "" | "by_date" | "by_status";
@@ -89,40 +86,7 @@ const columns: TableColumn[] = [
     align: "center",
   },
 ];
-const demoData: AccountRow[] = [
-  {
-    name: "Trí Trương",
-    createdAt: "Tham gia vào 26/03/2025",
-    email: "tritruonghoang3@gmail.com",
-    phone: "0776003669",
-    role: "admin",
-    status: "online",
-  },
-  {
-    name: "Phan Hân",
-    createdAt: "Tham gia vào 13/01/2025",
-    email: "hancute1301@gmail.com",
-    phone: "0123456789",
-    role: "admin",
-    status: "offline",
-  },
-  {
-    name: "Thằng Sáng",
-    createdAt: "Tham gia vào 01/02/2025",
-    email: "taoghecthangsang@gmail.com",
-    phone: "0987654312",
-    role: "patient",
-    status: "locked",
-  },
-  {
-    name: "Mr.Quốc Huy",
-    createdAt: "Tham gia vào 10/05/2025",
-    email: "anhhuyganhteam@gmail.com",
-    phone: "0651276372",
-    role: "admin",
-    status: "offline",
-  },
-];
+
 export default function AccountDashboardPage() {
   const [type, setType] = useState<SortType>("");
   const [, openModal] = useAtom(openModalAtom);
@@ -141,7 +105,7 @@ export default function AccountDashboardPage() {
           <div className="ml-2">
             <GlassSelect
               value={type}
-              onChange={value => setType(value as SortType)}
+              onChange={(value) => setType(value as SortType)}
               placeholder="Sắp xếp theo"
               options={[
                 { label: "Ngày", value: "by_date" },
@@ -171,22 +135,24 @@ export default function AccountDashboardPage() {
   );
 }
 
-function AccountTable({sortType}: {sortType: SortType}) {
-  const {
-    data: users,
-    isLoading,
-    error,
-    isError,
-    refetch,
-  } = useUserList();
-  
+function AccountTable({ sortType }: { sortType: SortType }) {
+  const { data: users, isLoading, error, isError, refetch } = useUserList();
+
   const [, openLockModal] = useAtom(openLockModalAtom);
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
+
+  const accountRoleMap: Record<User["role"], string> = {
+    Admin: "Quản trị viên",
+    Doctor: "Bác sĩ",
+    DoctorManager: "Kiểm sát viên",
+    User: "Khách hàng",
+  };
 
   const sortedUsers = useMemo(() => {
     if (!users) return [];
     return sortUsers(users, sortType);
   }, [users, sortType]);
+
   return (
     <>
       <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
@@ -195,10 +161,11 @@ function AccountTable({sortType}: {sortType: SortType}) {
             {columns.map((col, i) => (
               <th
                 key={col.key}
-                className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${i < columns.length - 1
+                className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
+                  i < columns.length - 1
                     ? "dark:border-border-dark border-r border-gray-100"
                     : ""
-                  } `}
+                } `}
               >
                 {col.label}
               </th>
@@ -267,12 +234,22 @@ function AccountTable({sortType}: {sortType: SortType}) {
                   </span>
                 </td>
                 <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
-                    {row.role}
+                  <span className="text-[13px] text-gray-600 dark:text-gray-300">
+                    {accountRoleMap[row.role]}
                   </span>
                 </td>
                 <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
                   <StatusBadge status={row.isOnline ? "online" : "offline"} />
+                </td>
+                {/* Actions */}
+                <td className="p-4 text-center">
+                  <Tooltip content="Khoá tài khoản">
+                    <IconAction
+                      onClick={() => openLockModal("account")}
+                      danger
+                      icon={<IoMdLock />}
+                    />
+                  </Tooltip>
                 </td>
               </tr>
             ))
@@ -280,7 +257,7 @@ function AccountTable({sortType}: {sortType: SortType}) {
             // Trường hợp empty list
             <tr>
               <td colSpan={columns.length}>
-                <div className="flex min-h-[400px] w-full flex-col items-center justify-center py-10">
+                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
                   <h3 className="mt-4 text-lg text-white">Danh sách trống</h3>
                   <p className="mt-1 text-sm text-gray-400">
                     Không tìm thấy tài khoản nào trong hệ thống.

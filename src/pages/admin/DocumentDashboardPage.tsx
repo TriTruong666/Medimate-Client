@@ -22,13 +22,14 @@ import { useAtom } from "jotai";
 
 import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
 import { openDeleteModalAtom, openModalAtom } from "@/stores/modalStore";
-import Breadcrumb from "@/components/Breadcrumb";
-import GlassSelect from "@/components/Select";
-import { Pagination } from "@/components/Pagination";
+import Breadcrumb from "@/components/custom-ui/Breadcrumb";
+import GlassSelect from "@/components/custom-ui/Select";
+import { Pagination } from "@/components/custom-ui/Pagination";
 import { cardContainer, cardItem } from "@/motions/cardMotion";
-import { Tooltip } from "@/components/Tooltip";
-import IconAction from "@/components/IconAction";
-import { Badge } from "@/components/Badge";
+
+import { Badge } from "@/components/custom-ui/Badge";
+import IconAction from "@/components/custom-ui/IconAction";
+import { Tooltip } from "@/components/custom-ui/Tooltip";
 
 type DocumentRow = {
   name: string;

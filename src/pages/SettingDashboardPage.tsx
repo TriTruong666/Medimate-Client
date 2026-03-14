@@ -3,11 +3,11 @@ import { BsShieldLock } from "react-icons/bs";
 import { IoIosInformationCircleOutline } from "react-icons/io";
 import { RxDesktop } from "react-icons/rx";
 import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
-import Toggle from "../components/Toggle";
-import { Badge, IconBadge } from "../components/Badge";
+import { Badge, IconBadge } from "../components/custom-ui/Badge";
 import { HiOutlineCog, HiOutlineServer } from "react-icons/hi";
 import { useState } from "react";
-import { Button } from "../components/Button";
+import { Button } from "../components/custom-ui/Button";
+import Toggle from "@/components/custom-ui/Toggle";
 
 type SettingCardProps = {
   label: string;

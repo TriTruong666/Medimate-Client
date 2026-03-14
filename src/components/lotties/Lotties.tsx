@@ -1,5 +1,5 @@
 import Lottie from "lottie-react";
-import welcomeAnimation from "../assets/animations/Welcome.json";
+import welcomeAnimation from "../../assets/animations/Welcome.json";
 export function WelcomeAnimation() {
   return (
     <div className="">

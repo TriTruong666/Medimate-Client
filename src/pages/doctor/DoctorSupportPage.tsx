@@ -1,13 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
-import {
-  FiLogOut,
-  FiLogIn,
-  FiCheck,
-  FiX,
-  FiClock,
-  FiActivity,
-} from "react-icons/fi";
+import { FiLogOut, FiLogIn, FiCheck, FiX, FiActivity } from "react-icons/fi";
 
 type ProgressState = "stop" | "active" | "pending" | "working";
 

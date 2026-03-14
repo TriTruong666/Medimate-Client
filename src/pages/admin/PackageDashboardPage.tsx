@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { HiCheck } from "react-icons/hi";
 import { HiXMark } from "react-icons/hi2";
-import Breadcrumb from "@/components/Breadcrumb";
+import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { useClickOutside } from "@/hooks/useDropdown";
 import { formatPrice } from "@/common/format";
 

@@ -1,17 +1,17 @@
 import { IoIosInformationCircleOutline } from "react-icons/io";
-import { Badge } from "../components/Badge";
-import Breadcrumb from "../components/Breadcrumb";
+import { Badge } from "../components/custom-ui/Badge";
+import Breadcrumb from "../components/custom-ui/Breadcrumb";
 import { HiOutlineCreditCard, HiOutlinePrinter } from "react-icons/hi";
-import { Pagination } from "../components/Pagination";
+import { Pagination } from "../components/custom-ui/Pagination";
 import { formatPrice } from "../common/format";
-import IconAction from "../components/IconAction";
-import { Tooltip } from "../components/Tooltip";
+import IconAction from "../components/custom-ui/IconAction";
 import { openTransactionModalAtom } from "../stores/modalStore";
 import { useAtom, useSetAtom } from "jotai";
 import {
   openDrawerAtom,
   transactionDetailDataAtom,
 } from "../stores/drawerStore";
+import { Tooltip } from "@/components/custom-ui/Tooltip";
 
 type TransactionRow = {
   id: string;

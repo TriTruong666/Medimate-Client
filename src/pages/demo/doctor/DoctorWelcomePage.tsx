@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import DotGrid from "@/components/DotGrid";
-import Typewriter from "@/components/Typewriter";
 import { motion, AnimatePresence } from "framer-motion";
 import Lenis from "lenis";
-import TextHighlighter from "@/components/TextHighlighter";
-import VariableFontHoverByLetter from "@/components/VariableFontHoverByLetter";
-import SplitText from "@/components/SplitText";
+import TextHighlighter from "@/components/animations-ui/TextHighlighter";
+import VariableFontHoverByLetter from "@/components/animations-ui/VariableFontHoverByLetter";
+import SplitText from "@/components/animations-ui/SplitText";
+import Typewriter from "@/components/animations-ui/Typewriter";
+import DotGrid from "@/components/animations-ui/DotGrid";
 
 export default function DoctorWelcomePage() {
   const [currentStep, setCurrentStep] = useState<

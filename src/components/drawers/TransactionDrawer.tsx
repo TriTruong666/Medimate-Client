@@ -2,9 +2,9 @@ import { useAtom } from "jotai";
 import {
   closeDrawerAtom,
   transactionDetailDataAtom,
-} from "../stores/drawerStore";
-import { formatPrice } from "../common/format";
-import { Badge } from "./Badge";
+} from "../../stores/drawerStore";
+import { formatPrice } from "../../common/format";
+import { Badge } from "../custom-ui/Badge";
 import { IoCloseOutline } from "react-icons/io5";
 import {
   HiOutlinePrinter,

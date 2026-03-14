@@ -1,6 +1,6 @@
 import { HiOutlineDotsVertical } from "react-icons/hi";
 import { motion } from "framer-motion";
-import Breadcrumb from "../../components/Breadcrumb";
+import Breadcrumb from "../../components/custom-ui/Breadcrumb";
 import { cardContainer, cardItem } from "../../motions/cardMotion";
 import { RiImageAddLine } from "react-icons/ri";
 import { openPdfModalAtom } from "../../stores/modalStore";

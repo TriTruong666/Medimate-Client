@@ -18,11 +18,11 @@ import {
   AvatarDropdown,
   ChatUserDropdown,
   NotificationDropdown,
-} from "../components/Dropdown";
+} from "../components/dropdowns";
 import { DarkModeIconSwitch } from "../components/Theme";
-import { ChatContainer } from "../components/Popup";
+import { ChatContainer } from "../components/popups";
 
-import { WelcomeLoading } from "../components/Loading";
+import { WelcomeLoading } from "../components/loading/WelcomeLoading";
 import DrawerContainer from "../components/DrawerContainer";
 
 import { useAuth } from "../hooks/useAuth";
@@ -30,12 +30,14 @@ import { SidebarSkeleton } from "../components/RoleBasedGuard";
 
 export default function DashboardLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!scrollRef.current) return;
+    if (!scrollRef.current || !contentRef.current) return;
 
     const lenis = new Lenis({
       wrapper: scrollRef.current,
+      content: contentRef.current,
       autoRaf: true,
       duration: 1.2,
       smoothWheel: true,
@@ -57,8 +59,10 @@ export default function DashboardLayout() {
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">
           <Navbar />
-          <div ref={scrollRef} className="flex-1 overflow-y-auto">
-            <Outlet />
+          <div ref={scrollRef} className="flex-1 overflow-hidden">
+            <div ref={contentRef}>
+              <Outlet />
+            </div>
           </div>
         </div>
       </div>

@@ -8,7 +8,7 @@ export type User = {
   avatarUrl: string | null;
   isActive: boolean;
   isOnline: boolean;
-  role: "User" | "Admin";
+  role: "User" | "Admin" | "DoctorManager" | "Doctor";
   createdAt: string;
 };
 

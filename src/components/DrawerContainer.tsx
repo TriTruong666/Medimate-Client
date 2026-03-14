@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { drawerAtom, closeDrawerAtom } from "../stores/drawerStore";
 import { useAtom } from "jotai";
-import { TransactionDrawer } from "./Drawer";
+import { TransactionDrawer } from "./drawers";
 
 export default function DrawerContainer() {
   const [drawerKey] = useAtom(drawerAtom);

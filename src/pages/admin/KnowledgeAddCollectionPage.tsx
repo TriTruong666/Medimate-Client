@@ -2,9 +2,9 @@ import { HiOutlinePlus } from "react-icons/hi";
 import { useEffect, useState } from "react";
 import { useAtom } from "jotai";
 import { IoArrowBack } from "react-icons/io5";
-import Breadcrumb from "@/components/Breadcrumb";
+import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { openModalAtom } from "@/stores/modalStore";
-import GlassSelect from "@/components/Select";
+import GlassSelect from "@/components/custom-ui/Select";
 const breadcrumbItems = [
   {
     label: "Dashboard",

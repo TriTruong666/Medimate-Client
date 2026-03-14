@@ -5,9 +5,9 @@ import {
   HiCheckCircle,
   HiInformationCircle,
 } from "react-icons/hi";
-import type { ToastType } from "../types/Toast";
 import { motion } from "framer-motion";
 import type { ReactNode } from "react";
+import type { ToastType } from "@/types/Toast";
 
 type ToastProp = {
   id: string;

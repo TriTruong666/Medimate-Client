@@ -1,10 +1,10 @@
 import { IoArrowUp } from "react-icons/io5";
-import SplitText from "../components/SplitText";
+import SplitText from "../components/animations-ui/SplitText";
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
-import GlassSelect from "../components/Select";
+import GlassSelect from "../components/custom-ui/Select";
 import { useEffect, useState, useRef } from "react";
 import { useAutoResizeTextarea } from "../hooks/useResize";
-import ChatResponseMarkdown from "../components/ChatMarkdown";
+import ChatResponseMarkdown from "../components/custom-ui/ChatMarkdown";
 
 export default function ChatbotPage() {
   const [phase, setPhase] = useState<"welcome" | "main">("welcome");

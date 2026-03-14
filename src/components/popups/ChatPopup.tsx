@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useAtom } from "jotai";
-import { chatPopupAtom, closePopupAtom } from "../stores/chatPopupStore";
+import { chatPopupAtom, closePopupAtom } from "../../stores/chatPopupStore";
 import { HiXMark } from "react-icons/hi2";
-import { ChatBubble, TypingBubble } from "./ChatBubble";
+import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
 import { useState } from "react";
 import clsx from "clsx";
 import { IoSend } from "react-icons/io5";

@@ -1,5 +1,5 @@
 import { atom } from "jotai";
-import type { PaymentQRModalProps } from "../components/Modal";
+import type { PaymentQRModalProps } from "../components/modals";
 
 type LockType = "account" | "owner_package" | null;
 
