@@ -144,7 +144,7 @@ function AccountTable({ sortType }: { sortType: SortType }) {
   const accountRoleMap: Record<User["role"], string> = {
     Admin: "Quản trị viên",
     Doctor: "Bác sĩ",
-    DoctorManager: "Kiểm sát viên",
+    DoctorManager: "Kiểm soát viên",
     User: "Khách hàng",
   };
 
