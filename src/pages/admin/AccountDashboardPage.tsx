@@ -17,7 +17,7 @@ import { formatRelativeTime } from "@/common/format";
 import { useUserList } from "@/hooks/data/useAccountHooks";
 import { sortUsers } from "@/common/account";
 import type { User } from "@/types/User";
-import { IoMdLock } from "react-icons/io";
+import { IoMdLock, IoMdUnlock } from "react-icons/io";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
@@ -239,18 +239,30 @@ function AccountTable({ sortType }: { sortType: SortType }) {
                   </span>
                 </td>
                 <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  <StatusBadge status={row.isOnline ? "online" : "offline"} />
+                  <StatusBadge status={row.isOnline ? "online" : row.isActive ? "offline" : "locked"} />
                 </td>
                 {/* Actions */}
-                <td className="p-4 text-center">
-                  <Tooltip content="Khoá tài khoản">
+                {row.isActive === true ? (
+                  <td className="p-4 text-center">
+                  <Tooltip content="Vô hiệu hóa tài khoản">
                     <IconAction
-                      onClick={() => openLockModal("account")}
+                      onClick={() => openLockModal("account", row.userId)}
                       danger
-                      icon={<IoMdLock />}
+                      icon={<IoMdLock className="text-red-400"/>}
                     />
                   </Tooltip>
                 </td>
+                ) : (
+                  <td className="p-4 text-center">
+                  <Tooltip content="Kích hoạt tài khoản">
+                    <IconAction
+                      onClick={() => openUnlockModal("account", row.userId)}
+                      icon={<IoMdUnlock />}
+                    />
+                  </Tooltip>
+                </td>
+                )}
+                
               </tr>
             ))
           ) : (

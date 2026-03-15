@@ -50,3 +50,40 @@ export function useCreateDoctorManager() {
   });
 }
 
+export function useDeactivateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UserService.deactivateUser,
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Khóa thành công", "Đã khóa tài khoản người dùng.");
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        return;
+        }
+
+      toast.error("Khóa thất bại", getApiErrorMessage(data));
+    },
+    onError: (error: unknown) => {
+      toast.error("Khóa thất bại", getApiErrorMessage(error));
+    }
+  });
+}
+
+export function useActivateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UserService.activateUser,
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Kích hoạt thành công", "Đã kích hoạt tài khoản người dùng.");
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        return;
+      }
+
+      toast.error("Kích hoạt thất bại", getApiErrorMessage(data));
+    },
+    onError: (error: unknown) => {
+      toast.error("Kích hoạt thất bại", getApiErrorMessage(error));
+    }
+  });
+}

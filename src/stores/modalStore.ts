@@ -23,6 +23,8 @@ export type ModalKey =
 
 export const modalAtom = atom<ModalKey>(null);
 
+export const userIdAtom = atom<string | null>(null);
+
 export const pdfPreviewAtom = atom<string | null>(null);
 
 export const paymentAtom = atom<PaymentQRModalProps | null>(null);
@@ -55,12 +57,14 @@ export const openPdfModalAtom = atom(null, (_, set, fileUrl: string) => {
   set(modalAtom, "preview_pdf");
 });
 
-export const openLockModalAtom = atom(null, (_, set, type: LockType) => {
+export const openLockModalAtom = atom(null, (_, set, type: LockType, userId: string) => {
+  set(userIdAtom, userId);
   set(lockTypeAtom, type);
   set(modalAtom, "lock");
 });
 
-export const openUnlockModalAtom = atom(null, (_, set, type: UnlockType) => {
+export const openUnlockModalAtom = atom(null, (_, set, type: UnlockType, userId: string) => {
+  set(userIdAtom, userId);
   set(unlockTypeAtom, type);
   set(modalAtom, "unlock");
 });

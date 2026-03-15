@@ -1,10 +1,18 @@
 import { useAtom } from "jotai";
 import { HiOutlineX, HiOutlineInformationCircle } from "react-icons/hi";
-import { closeModalAtom, lockTypeAtom } from "../../stores/modalStore";
+import { closeModalAtom, lockTypeAtom, userIdAtom } from "../../stores/modalStore";
+import { useDeactivateUser } from "@/hooks/data/useAccountHooks";
 
 export function LockModal() {
   const [lockType] = useAtom(lockTypeAtom);
   const [, closeModal] = useAtom(closeModalAtom);
+  const [userId] = useAtom(userIdAtom);
+  const { mutateAsync, isPending } = useDeactivateUser();
+
+  const handleLock = async () => {
+    if (!userId) return;
+    await mutateAsync(userId);
+  };
 
   const title =
     lockType === "account"
@@ -68,11 +76,12 @@ export function LockModal() {
         <button
           className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400"
           onClick={() => {
-            console.log("Khoá:", lockType);
+            handleLock();
             closeModal();
           }}
+          disabled={isPending}
         >
-          Khoá
+          {isPending ? "Đang khoá..." : "Khoá"}
         </button>
       </div>
     </div>
