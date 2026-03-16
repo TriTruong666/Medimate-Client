@@ -1,10 +1,18 @@
 import { useAtom } from "jotai";
 import { HiOutlineX, HiOutlineCheckCircle, HiOutlineInformationCircle } from "react-icons/hi";
-import { closeModalAtom, unlockTypeAtom } from "../../stores/modalStore";
+import { closeModalAtom, unlockTypeAtom, userIdAtom } from "../../stores/modalStore";
+import { useActivateUser } from "@/hooks/data/useAccountHooks";
 
 export function UnlockModal() {
   const [unlockType] = useAtom(unlockTypeAtom);
   const [, closeModal] = useAtom(closeModalAtom);
+  const [userId] = useAtom(userIdAtom);
+  const { mutateAsync, isPending } = useActivateUser();
+
+  const handleUnlock = async () => {
+    if (!userId) return;
+    await mutateAsync(userId);
+  };
 
   const title =
     unlockType === "account"
@@ -68,11 +76,12 @@ export function UnlockModal() {
         <button
           className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-400"
           onClick={() => {
-            console.log("Mở khoá:", unlockType);
+            handleUnlock();
             closeModal();
           }}
+          disabled={isPending}
         >
-          Mở khoá
+          {isPending ? "Đang mở khoá..." : "Mở khoá"}
         </button>
       </div>
     </div>

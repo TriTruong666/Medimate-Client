@@ -16,3 +16,13 @@ export async function createDoctorManager(request: CreateUserRequest) : Promise<
     const res = await axiosNETClient.post('/api/v1/admin/doctor-managers', request);
     return res.data;
 }
+
+export async function deactivateUser(userId: string): Promise<BaseResponse<boolean>> {
+    const res = await axiosNETClient.put(`/api/v1/users/admin/deactivate?userId=${userId}`);
+    return res.data;
+}
+
+export async function activateUser(userId: string): Promise<BaseResponse<boolean>> {
+    const res = await axiosNETClient.put(`/api/v1/users/admin/activate?userId=${userId}`);
+    return res.data;
+}

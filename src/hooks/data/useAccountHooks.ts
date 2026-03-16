@@ -3,6 +3,7 @@ import { useFetch } from "../useFetch";
 import * as UserService from "@/apis/user.service";
 import { toast } from "../useToast";
 import { translateErrorMessage, getApiErrorMessage } from "@/utils/errorHandle";
+import { getApiErrorMessage } from "@/common/api.error";
 
 export function useUserList() {
   return useFetch(["users"], async () => UserService.getUsers());
@@ -23,9 +24,13 @@ export function useCreateDoctor() {
           translateErrorMessage(data.message),
         );
       }
+        return;
+      }
+
+      toast.error("Tạo tài khoản thất bại", getApiErrorMessage(data));
     },
 
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       toast.error("Tạo tài khoản thất bại", getApiErrorMessage(error));
     },
   });
@@ -42,6 +47,7 @@ export function useCreateDoctorManager() {
           "Tạo tài khoản thành công",
           "Đã thêm kiểm định viên mới.",
         );
+        toast.success("Tạo tài khoản thành công", "Đã thêm kiểm định viên mới.");
         queryClient.invalidateQueries({ queryKey: ["users"] });
       } else {
         toast.error(
@@ -49,10 +55,52 @@ export function useCreateDoctorManager() {
           translateErrorMessage(data.message),
         );
       }
+        return;
+      }
+
+      toast.error("Tạo tài khoản thất bại", getApiErrorMessage(data));
     },
 
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       toast.error("Tạo tài khoản thất bại", getApiErrorMessage(error));
     },
+  });
+}
+
+export function useDeactivateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UserService.deactivateUser,
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Khóa thành công", "Đã khóa tài khoản người dùng.");
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        return;
+        }
+
+      toast.error("Khóa thất bại", getApiErrorMessage(data));
+    },
+    onError: (error: unknown) => {
+      toast.error("Khóa thất bại", getApiErrorMessage(error));
+    }
+  });
+}
+
+export function useActivateUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: UserService.activateUser,
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Kích hoạt thành công", "Đã kích hoạt tài khoản người dùng.");
+        queryClient.invalidateQueries({ queryKey: ["users"] });
+        return;
+      }
+
+      toast.error("Kích hoạt thất bại", getApiErrorMessage(data));
+    },
+    onError: (error: unknown) => {
+      toast.error("Kích hoạt thất bại", getApiErrorMessage(error));
+    }
   });
 }
