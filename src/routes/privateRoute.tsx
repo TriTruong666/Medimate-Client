@@ -6,6 +6,7 @@ import { NotFoundPrivatePage } from "../pages/NotFoundPage";
 import { FullPageGuard } from "@/components/RoleBasedGuard";
 import { ROUTES_CONFIG } from "@/config/routes.config";
 import type { RouteConfig } from "@/config/routes.config";
+import { AuthGuard } from "@/components/guards/AuthGuard";
 
 export default function PrivateRoute() {
   // Helper to remove /dashboard prefix for nested routing
@@ -27,70 +28,72 @@ export default function PrivateRoute() {
   };
 
   return (
-    <Routes>
-      <Route element={<DashboardLayout />}>
-        {ROUTES_CONFIG.filter((r) => r.layout === "dashboard").map((route) => {
-          const relativePath = getRelativePath(route.path);
-
-          // If it has children, render them
-          if (route.children) {
-            return (
-              <Route
-                key={route.path}
-                path={relativePath || undefined}
-                element={
-                  route.roles ? (
-                    <FullPageGuard allowedRoles={route.roles}>
-                      <Outlet />
-                    </FullPageGuard>
-                  ) : (
-                    <Outlet />
-                  )
-                }
-              >
-                {route.children.map((child) => {
-                  const childRelativePath = child.path
-                    .replace(route.path, "")
-                    .replace(/^\//, "");
-                  return (
-                    <Route
-                      key={child.path}
-                      index={child.index}
-                      path={child.index ? undefined : childRelativePath}
-                      element={renderRouteElement(child)}
-                    />
-                  );
-                })}
-              </Route>
-            );
-          }
-
-          return (
-            <Route
-              key={route.path}
-              index={route.index || relativePath === ""}
-              path={route.index ? undefined : relativePath}
-              element={renderRouteElement(route)}
-            />
-          );
-        })}
-
-        <Route element={<SettingDashboardLayout />}>
-          {ROUTES_CONFIG.filter((r) => r.layout === "settings").map((route) => {
+    <AuthGuard>
+      <Routes>
+        <Route element={<DashboardLayout />}>
+          {ROUTES_CONFIG.filter((r) => r.layout === "dashboard").map((route) => {
             const relativePath = getRelativePath(route.path);
+
+            // If it has children, render them
+            if (route.children) {
+              return (
+                <Route
+                  key={route.path}
+                  path={relativePath || undefined}
+                  element={
+                    route.roles ? (
+                      <FullPageGuard allowedRoles={route.roles}>
+                        <Outlet />
+                      </FullPageGuard>
+                    ) : (
+                      <Outlet />
+                    )
+                  }
+                >
+                  {route.children.map((child) => {
+                    const childRelativePath = child.path
+                      .replace(route.path, "")
+                      .replace(/^\//, "");
+                    return (
+                      <Route
+                        key={child.path}
+                        index={child.index}
+                        path={child.index ? undefined : childRelativePath}
+                        element={renderRouteElement(child)}
+                      />
+                    );
+                  })}
+                </Route>
+              );
+            }
+
             return (
               <Route
                 key={route.path}
-                index={route.index}
+                index={route.index || relativePath === ""}
                 path={route.index ? undefined : relativePath}
                 element={renderRouteElement(route)}
               />
             );
           })}
-        </Route>
-      </Route>
 
-      <Route path="*" element={<NotFoundPrivatePage />} />
-    </Routes>
+          <Route element={<SettingDashboardLayout />}>
+            {ROUTES_CONFIG.filter((r) => r.layout === "settings").map((route) => {
+              const relativePath = getRelativePath(route.path);
+              return (
+                <Route
+                  key={route.path}
+                  index={route.index}
+                  path={route.index ? undefined : relativePath}
+                  element={renderRouteElement(route)}
+                />
+              );
+            })}
+          </Route>
+        </Route>
+
+        <Route path="*" element={<NotFoundPrivatePage />} />
+      </Routes>
+    </AuthGuard>
   );
 }

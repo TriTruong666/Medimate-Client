@@ -1,4 +1,54 @@
+import { useState } from "react";
+import { useLogin } from "@/hooks/data/useAuthHooks";
+import { isRequired, isValidEmail } from "@/common/validation";
+import { toast } from "@/hooks/useToast";
+import { getApiErrorMessage } from "@/common/api.error";
+
+type LoginErrors = {
+  identifier?: string;
+  password?: string;
+};
+
+function validateLoginForm(identifier: string, password: string): LoginErrors {
+  const errors: LoginErrors = {};
+
+  if (!isRequired(identifier)) {
+    errors.identifier = "Email là bắt buộc";
+  } else if (!isValidEmail(identifier)) {
+    errors.identifier = "Email không hợp lệ";
+  }
+
+  if (!isRequired(password)) {
+    errors.password = "Mật khẩu là bắt buộc";
+  }
+
+  return errors;
+}
+
 export default function LoginPage() {
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState<LoginErrors>({});
+  const { mutateAsync: login, isPending, error: loginError } = useLogin();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const nextErrors = validateLoginForm(identifier, password);
+    setErrors(nextErrors);
+
+    if (Object.keys(nextErrors).length > 0) {
+      toast.error("Dữ liệu chưa hợp lệ", "Vui lòng kiểm tra lại thông tin.");
+      return;
+    }
+
+    try {
+      await login({ identifier, password });
+    } catch {
+      /* empty */
+    }
+  };
+
   return (
     <div className="relative w-full max-w-120 p-6 font-sans sm:p-8">
       <div className="mb-8 flex flex-col items-center">
@@ -10,7 +60,7 @@ export default function LoginPage() {
         </p>
       </div>
       <div className="relative rounded-2xl border border-white/10 p-8">
-        <form action="" className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
           <div className="flex flex-col gap-2">
             <label className="text-sm leading-none font-medium text-white">
@@ -19,8 +69,15 @@ export default function LoginPage() {
             <input
               className="flex h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
               placeholder="name@company.com"
-              type="email"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
             />
+            {errors.identifier && (
+              <p className="text-[12px] text-red-500 italic">
+                {errors.identifier}
+              </p>
+            )}
           </div>
           {/* Password */}
           <div className="flex flex-col gap-2">
@@ -33,7 +90,19 @@ export default function LoginPage() {
               className="flex h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
               placeholder="••••••••"
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
+            {loginError && (
+              <p className="text-[12px] text-red-500 italic">
+                {getApiErrorMessage(loginError)}
+              </p>
+            )}
+            {errors.password && (
+              <p className="text-[12px] text-red-500 italic">
+                {errors.password}
+              </p>
+            )}
           </div>
           {/* Forget */}
           <div className="flex items-center justify-between py-1">
@@ -54,12 +123,13 @@ export default function LoginPage() {
             </a>
           </div>
           {/* Signin button */}
-          <a
-            href="/dashboard"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#050505] py-3.5 font-semibold text-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] transition-all hover:bg-[#141418]"
+          <button
+            type="submit"
+            disabled={isPending}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 bg-[#050505] py-3.5 font-semibold text-white shadow-[0_10px_30px_-12px_rgba(0,0,0,0.8)] transition-all hover:bg-[#141418] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <span>Đăng nhập</span>
-          </a>
+            <span>{isPending ? "Đang đăng nhập..." : "Đăng nhập"}</span>
+          </button>
         </form>
       </div>
       <p className="mt-8 text-center text-sm text-gray-500">

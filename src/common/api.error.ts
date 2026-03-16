@@ -33,7 +33,6 @@ export type HttpStatusCode =
 export type ApiErrorCode = (typeof ApiErrorCode)[keyof typeof ApiErrorCode];
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
 
-
 export const DEFAULT_HTTP_ERROR_MESSAGES: Record<HttpStatusCode, string> = {
     [HttpStatusCode.BAD_REQUEST]: "Dữ liệu gửi lên không hợp lệ.",
     [HttpStatusCode.UNAUTHORIZED]:
@@ -54,15 +53,13 @@ export const DEFAULT_API_ERROR_MESSAGES: Record<ApiErrorCode, string> = {
     [ApiErrorCode.UNKNOWN]: "Đã có lỗi xảy ra. Vui lòng thử lại.",
 };
 
-export function getApiErrorMessage(error: unknown): string {
-    if (error instanceof AxiosError) {
-        const errorData = error.response?.data?.error as ApiErrorPayload | undefined;
-        return resolveApiErrorMessage(errorData?.code ?? error.response?.data?.code, errorData?.message);
-    }
-    return "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
-}
+export function translateErrorMessage(
+    code: unknown,
+    message?: string | null,
+): string {
+    if (message && message.trim()) return message;
 
-function resolveApiErrorMessage(code: unknown, message?: string | null): string {
+    // 2. Fallback to API specific error codes (e.g., "EMAIL_EXISTS")
     if (typeof code === "string" && code in DEFAULT_API_ERROR_MESSAGES) {
         return DEFAULT_API_ERROR_MESSAGES[code as ApiErrorCode];
     }
@@ -71,7 +68,18 @@ function resolveApiErrorMessage(code: unknown, message?: string | null): string 
         return DEFAULT_HTTP_ERROR_MESSAGES[code as HttpStatusCode];
     }
 
-    if (message && message.trim()) return message;
-
     return DEFAULT_API_ERROR_MESSAGES[ApiErrorCode.UNKNOWN];
+}
+
+export function getApiErrorMessage(error: unknown): string {
+    if (error instanceof AxiosError) {
+        const data = error.response?.data;
+        const errorData = data?.error as ApiErrorPayload | undefined;
+
+        const message = errorData?.message || data?.message;
+        const code = errorData?.code ?? data?.code;
+
+        return translateErrorMessage(code, message);
+    }
+    return "Không thể kết nối đến máy chủ. Vui lòng thử lại.";
 }

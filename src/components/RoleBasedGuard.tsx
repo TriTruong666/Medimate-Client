@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import type { Role } from "../hooks/useAuth";
-import { useAuth } from "../hooks/useAuth";
+import type { Role } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 
 interface RoleBasedGuardProps {
@@ -21,10 +21,10 @@ export function RoleBasedGuard({
   fallback = null,
   loadingSkeleton,
 }: RoleBasedGuardProps) {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
 
   // Trả về Skeleton tùy chỉnh nếu đang load
-  if (loading) {
+  if (isLoading) {
     return <>{loadingSkeleton}</>;
   }
 

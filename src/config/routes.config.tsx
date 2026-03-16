@@ -7,7 +7,7 @@ import { RiVipDiamondLine, RiImageAiLine } from "react-icons/ri";
 import { IoBriefcaseOutline, IoSync } from "react-icons/io5";
 import { AiOutlineRobot } from "react-icons/ai";
 import { GrTransaction } from "react-icons/gr";
-import type { Role } from "../hooks/useAuth";
+import type { Role } from "@/hooks/useAuth";
 import DoctorSupportPage from "@/pages/doctor/DoctorSupportPage";
 
 // Types for Route Configuration
@@ -100,7 +100,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Tổng quan",
     icon: FiLayout,
     showInSidebar: true,
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
     index: true,
   },
   {
@@ -110,7 +110,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     icon: IoBriefcaseOutline,
     element: <DoctorSupportPage />,
     showInSidebar: true,
-    roles: ["doctor"],
+    roles: ["Doctor"],
   },
   {
     path: PATHS.DASHBOARD.ACCOUNTS,
@@ -119,7 +119,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Tài khoản",
     icon: FiUsers,
     showInSidebar: true,
-    roles: ["admin"],
+    roles: ["Admin"],
   },
   {
     path: PATHS.DASHBOARD.TRANSACTION,
@@ -128,7 +128,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Giao dịch",
     icon: GrTransaction,
     showInSidebar: true,
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
   {
     path: PATHS.DASHBOARD.DOCUMENTS,
@@ -136,7 +136,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Tài liệu",
     icon: FiFileText,
     showInSidebar: true,
-    roles: ["admin"],
+    roles: ["Admin"],
     children: [
       {
         path: PATHS.DASHBOARD.DOCUMENTS,
@@ -162,7 +162,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Gói dịch vụ",
     icon: RiVipDiamondLine,
     showInSidebar: true,
-    roles: ["admin"],
+    roles: ["Admin"],
     children: [
       {
         path: PATHS.DASHBOARD.PACKAGES.ROOT,
@@ -184,7 +184,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Thư viện",
     icon: RiImageAiLine,
     showInSidebar: true,
-    roles: ["admin"],
+    roles: ["Admin"],
     children: [
       {
         path: PATHS.DASHBOARD.ASSETS.PRESCRIPTION,
@@ -205,14 +205,14 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "RAG Core",
     icon: IoSync,
     showInSidebar: true,
-    roles: ["admin"],
+    roles: ["Admin"],
   },
   {
     path: PATHS.DASHBOARD.RAG_NEW,
     element: <KnowledgeAddCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["admin"],
+    roles: ["Admin"],
   },
   {
     path: PATHS.DASHBOARD.CHATBOT,
@@ -221,7 +221,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Chatbot",
     icon: AiOutlineRobot,
     showInSidebar: true,
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
 
   // Settings Routes
@@ -232,37 +232,37 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Cài đặt hồ sơ",
     icon: FiSettings,
     showInSidebar: false,
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.SECURITY,
     element: <SecuritySettingDashboardPage />,
     layout: "settings",
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.NOTIFICATION,
     element: <NotificationSettingDashboardPage />,
     layout: "settings",
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.MESSAGE,
     element: <MessageSettingDashboardPage />,
     layout: "settings",
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.SYSTEM,
     element: <SystemSettingDashboardPage />,
     layout: "settings",
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.KEYS,
     element: <APIKeysSettingDashboardPage />,
     layout: "settings",
-    roles: ["admin", "user", "doctor"],
+    roles: ["Admin", "User", "Doctor"],
   },
 ];
 

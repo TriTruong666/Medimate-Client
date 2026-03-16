@@ -6,7 +6,7 @@ export interface BaseResponse<T> {
     code?: string | number;
     message?: string;
   };
-  data: T;
+  data?: T | null;
 }
 
 export type DemoUser = {

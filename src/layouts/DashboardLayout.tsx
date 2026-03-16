@@ -137,7 +137,7 @@ function Navbar() {
 }
 
 function Sidebar() {
-  const { user, loading } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigation = getSidebarNavigation();
 
   const filteredNav = navigation.filter((item) => {
@@ -160,7 +160,7 @@ function Sidebar() {
           </span>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <SidebarSkeleton />
         ) : (
           <nav className="mt-4 flex-1 space-y-2 overflow-y-auto px-3 pb-6">
@@ -271,10 +271,9 @@ export function SidebarItem({
       to={to}
       end={exact}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-          isActive
-            ? "bg-white/10 text-white shadow-inner"
-            : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${isActive
+          ? "bg-white/10 text-white shadow-inner"
+          : "text-gray-400 hover:bg-white/5 hover:text-white"
         }`
       }
     >
@@ -295,10 +294,9 @@ export function SubItem({ label, to }: SubItemProps) {
       to={to}
       end
       className={({ isActive }) =>
-        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-          isActive
-            ? "bg-white/10 text-white"
-            : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${isActive
+          ? "bg-white/10 text-white"
+          : "text-gray-400 hover:bg-white/5 hover:text-white"
         }`
       }
     >

@@ -2,8 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetch } from "../useFetch";
 import * as UserService from "@/apis/user.service";
 import { toast } from "../useToast";
-import { translateErrorMessage, getApiErrorMessage } from "@/utils/errorHandle";
-import { getApiErrorMessage } from "@/common/api.error";
+import { getApiErrorMessage, translateErrorMessage } from "@/common/api.error";
 
 export function useUserList() {
   return useFetch(["users"], async () => UserService.getUsers());
@@ -21,13 +20,9 @@ export function useCreateDoctor() {
       } else {
         toast.error(
           "Tạo tài khoản thất bại",
-          translateErrorMessage(data.message),
+          translateErrorMessage(data.error?.code, data.message),
         );
       }
-        return;
-      }
-
-      toast.error("Tạo tài khoản thất bại", getApiErrorMessage(data));
     },
 
     onError: (error: unknown) => {
@@ -47,18 +42,13 @@ export function useCreateDoctorManager() {
           "Tạo tài khoản thành công",
           "Đã thêm kiểm định viên mới.",
         );
-        toast.success("Tạo tài khoản thành công", "Đã thêm kiểm định viên mới.");
         queryClient.invalidateQueries({ queryKey: ["users"] });
       } else {
         toast.error(
           "Tạo tài khoản thất bại",
-          translateErrorMessage(data.message),
+          translateErrorMessage(data.error?.code, data.message),
         );
       }
-        return;
-      }
-
-      toast.error("Tạo tài khoản thất bại", getApiErrorMessage(data));
     },
 
     onError: (error: unknown) => {
@@ -76,13 +66,16 @@ export function useDeactivateUser() {
         toast.success("Khóa thành công", "Đã khóa tài khoản người dùng.");
         queryClient.invalidateQueries({ queryKey: ["users"] });
         return;
-        }
+      }
 
-      toast.error("Khóa thất bại", getApiErrorMessage(data));
+      toast.error(
+        "Khóa thất bại",
+        translateErrorMessage(data.error?.code, data.message),
+      );
     },
     onError: (error: unknown) => {
       toast.error("Khóa thất bại", getApiErrorMessage(error));
-    }
+    },
   });
 }
 
@@ -92,15 +85,21 @@ export function useActivateUser() {
     mutationFn: UserService.activateUser,
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Kích hoạt thành công", "Đã kích hoạt tài khoản người dùng.");
+        toast.success(
+          "Kích hoạt thành công",
+          "Đã kích hoạt tài khoản người dùng.",
+        );
         queryClient.invalidateQueries({ queryKey: ["users"] });
         return;
       }
 
-      toast.error("Kích hoạt thất bại", getApiErrorMessage(data));
+      toast.error(
+        "Kích hoạt thất bại",
+        translateErrorMessage(data.error?.code, data.message),
+      );
     },
     onError: (error: unknown) => {
       toast.error("Kích hoạt thất bại", getApiErrorMessage(error));
-    }
+    },
   });
 }
