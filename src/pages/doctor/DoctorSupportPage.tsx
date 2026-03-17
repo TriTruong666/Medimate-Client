@@ -1,260 +1,419 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
-import { FiLogOut, FiLogIn, FiCheck, FiX, FiActivity } from "react-icons/fi";
+import { useState, useRef, useEffect } from "react";
+import { LuGrid3X3, LuCalendarDays, LuPlus } from "react-icons/lu";
+import { FiClock, FiVideo, FiMapPin } from "react-icons/fi";
+import { cardContainer, cardItem } from "@/motions/cardMotion";
+import Breadcrumb from "@/components/custom-ui/Breadcrumb";
+import { Badge } from "@/components/custom-ui/Badge";
+import { Tooltip } from "@/components/custom-ui/Tooltip";
+import IconAction from "@/components/custom-ui/IconAction";
 
-type ProgressState = "stop" | "active" | "pending" | "working";
+type AppointmentStatus = "upcoming" | "completed" | "cancelled" | "in_progress";
+type AppointmentType = "online" | "offline";
+
+interface Appointment {
+  id: string;
+  patientName: string;
+  patientAvatar?: string;
+  type: AppointmentType;
+  date: string;
+  time: string;
+  status: AppointmentStatus;
+  symptoms: string;
+}
+
+const dummyAppointments: Appointment[] = [
+  {
+    id: "APT-001",
+    patientName: "Nguyễn Văn A",
+    type: "online",
+    date: "2026-03-17",
+    time: "09:00 - 09:30",
+    status: "upcoming",
+    symptoms: "Đau đầu, chóng mặt kéo dài 2 ngày nay.",
+  },
+  {
+    id: "APT-002",
+    patientName: "Trần Thị B",
+    type: "online",
+    date: "2026-03-17",
+    time: "10:30 - 11:00",
+    status: "in_progress",
+    symptoms: "Khám định kỳ tư vấn dinh dưỡng.",
+  },
+  {
+    id: "APT-005",
+    patientName: "Trần Thị B",
+    type: "online",
+    date: "2026-03-17",
+    time: "12:30 - 13:00",
+    status: "in_progress",
+    symptoms: "Khám định kỳ tư vấn dinh dưỡng.",
+  },
+  {
+    id: "APT-003",
+    patientName: "Lê Văn C",
+    type: "online",
+    date: "2026-03-18",
+    time: "14:00 - 14:45",
+    status: "upcoming",
+    symptoms: "Sốt cao, ho có đờm.",
+  },
+  {
+    id: "APT-004",
+    patientName: "Phạm Thu D",
+    type: "online",
+    date: "2026-03-16",
+    time: "15:00 - 16:00",
+    status: "completed",
+    symptoms: "Tái khám sau phẫu thuật.",
+  },
+];
 
 export default function DoctorSupportPage() {
-  const [progress, setProgress] = useState<ProgressState>("stop");
+  const [viewLayout, setViewLayout] = useState<"card" | "calendar">("card");
+
+  const breadcrumbItems = [
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Lịch khám", path: "/dashboard/support" },
+    { label: "Tất cả" },
+  ];
 
   return (
-    <div className="flex min-h-[calc(100vh-100px)] w-full items-center justify-center overflow-hidden p-6 text-white">
-      <AnimatePresence mode="wait">
-        <div className="flex flex-1 items-center justify-center">
-          {progress === "stop" && (
-            <Begin key="stop" onStart={() => setProgress("active")} />
-          )}
-          {progress === "active" && (
-            <ActiveShift
-              key="active"
-              onEnd={() => setProgress("stop")}
-              onNewRequest={() => setProgress("pending")}
-            />
-          )}
-          {progress === "pending" && (
-            <PendingState
-              key="pending"
-              userName="Trường"
-              onAccept={() => setProgress("working")}
-              onDecline={() => setProgress("active")}
-            />
-          )}
-          {progress === "working" && (
-            <WorkingState key="working" onEnd={() => setProgress("active")} />
-          )}
+    <div className="page-layout">
+      {/* Header */}
+      <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <Breadcrumb items={breadcrumbItems} />
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+            Lịch khám bệnh nhân
+          </h1>
         </div>
-      </AnimatePresence>
+        <div className="flex items-center gap-3">
+          {/* Layout Toggle - Apply dashboard_table_card skill */}
+          <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+            <button
+              onClick={() => setViewLayout("card")}
+              className={`${
+                viewLayout === "card"
+                  ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
+                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+              } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+            >
+              <LuGrid3X3 className="text-sm" />
+              Thẻ
+            </button>
+            <button
+              onClick={() => setViewLayout("calendar")}
+              className={`${
+                viewLayout === "calendar"
+                  ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
+                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+              } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+            >
+              <LuCalendarDays className="text-sm" />
+              Lịch
+            </button>
+          </div>
+          <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
+            Thêm lịch khẩn cấp <LuPlus />
+          </button>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="mt-8">
+        <AnimatePresence mode="wait">
+          {viewLayout === "card" && (
+            <motion.div
+              key="card-view"
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.98 }}
+              transition={{ duration: 0.3 }}
+            >
+              <AppointmentCardGrid data={dummyAppointments} />
+            </motion.div>
+          )}
+
+          {viewLayout === "calendar" && (
+            <motion.div
+              key="calendar-view"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <MonthlyCalendarView data={dummyAppointments} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </div>
   );
 }
 
-function Begin({ onStart }: { onStart: () => void }) {
+/* -------------------------------------------------------------------------- */
+/*                              CARD VIEW COMPONENT                             */
+/* -------------------------------------------------------------------------- */
+function AppointmentCardGrid({ data }: { data: Appointment[] }) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 1.05 }}
-      className="flex flex-col items-center text-center"
+      variants={cardContainer}
+      initial="hidden"
+      animate="show"
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
     >
-      <div className="mb-4 flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-2.5 py-0.5">
-        <div className="relative flex h-1 w-1">
-          <div className="absolute h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
-          <div className="relative h-1 w-1 rounded-full bg-red-500" />
-        </div>
-        <span className="text-[9px] font-bold tracking-widest text-red-500 uppercase">
-          Đang nghỉ
-        </span>
-      </div>
-      <h1 className="mb-8 text-2xl font-medium tracking-tight">
-        Sẵn sàng bắt đầu ca làm việc?
-      </h1>
-
-      <button
-        onClick={onStart}
-        className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-2.5 text-[13px] font-semibold text-gray-300 transition-all hover:border-green-500/30 hover:bg-green-500/10 hover:text-green-500 active:scale-95"
-      >
-        <FiLogIn size={14} />
-        Bắt đầu công việc
-      </button>
+      {data.map((apt) => (
+        <AppointmentCard key={apt.id} data={apt} />
+      ))}
     </motion.div>
   );
 }
 
-function ActiveShift({
-  onEnd,
-  onNewRequest,
-}: {
-  onEnd: () => void;
-  onNewRequest: () => void;
-}) {
-  const [time, setTime] = useState(0);
+function AppointmentCard({ data }: { data: Appointment }) {
+  const isNow = data.status === "in_progress";
+
+  return (
+    <motion.div
+      variants={cardItem}
+      whileHover={{ y: -4 }}
+      className={`group relative flex h-full flex-col rounded-2xl border bg-white/80 p-5 backdrop-blur transition-all duration-300 hover:z-50 dark:bg-white/5 ${
+        isNow
+          ? "border-primary/50 dark:border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
+          : "border-gray-100 hover:border-white/20 hover:bg-white/10 dark:border-white/10"
+      }`}
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold ${
+              isNow
+                ? "bg-primary text-white"
+                : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
+            }`}
+          >
+            {isNow && (
+              <div className="bg-primary/30 absolute h-10 w-10 animate-ping rounded-full" />
+            )}
+            {data.patientName.charAt(0)}
+          </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+              {data.patientName}
+            </h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {data.id}
+            </p>
+          </div>
+        </div>
+        <AppointmentTypeBadge type={data.type} />
+      </div>
+
+      <div className="my-4 h-px bg-gray-100 dark:bg-white/5" />
+
+      {/* Body */}
+      <div className="flex-1 space-y-3">
+        <div
+          className={`flex items-center gap-2 text-xs font-medium ${
+            isNow ? "text-primary" : "text-gray-600 dark:text-gray-300"
+          }`}
+        >
+          <FiClock
+            className={isNow ? "text-primary animate-pulse" : "text-gray-400"}
+          />
+          <span>
+            {data.time} • {data.date}
+          </span>
+        </div>
+        <div className="line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            Triệu chứng:{" "}
+          </span>
+          {data.symptoms}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="mt-5 flex items-center justify-between">
+        <StatusBadge status={data.status} />
+        <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
+          {isNow && (
+            <Tooltip content="Tham gia cuộc gọi">
+              <IconAction icon={<FiVideo />} />
+            </Tooltip>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                            CALENDAR VIEW COMPONENT                           */
+/* -------------------------------------------------------------------------- */
+function MonthlyCalendarView({ data }: { data: Appointment[] }) {
+  const daysOfWeek = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
+
+  // A simple static 30-day view for visualization
+  // In a real implementation we would dynamically generate based on current month
+  const days = Array.from({ length: 30 }, (_, i) => {
+    const dayDate = `2026-03-${String(i + 1).padStart(2, "0")}`;
+    const dayAppointments = data.filter((d) => d.date === dayDate);
+    return { day: i + 1, date: dayDate, appointments: dayAppointments };
+  });
+
+  // Paddings for start of month (assuming starts on Sunday for this mockup)
+  const emptyPreDays = Array.from({ length: 6 });
+
+  return (
+    <div className="dark:border-border-dark overflow-hidden rounded-xl border border-gray-100">
+      {/* Calendar Header */}
+      <div className="dark:border-border-dark dark:bg-border-dark/30 grid grid-cols-7 border-b border-gray-100 bg-gray-50/50">
+        {daysOfWeek.map((day, i) => (
+          <div
+            key={i}
+            className={`p-3 text-center text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${
+              i < 6 ? "dark:border-border-dark border-r border-gray-100" : ""
+            }`}
+          >
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar Grid */}
+      <div className="grid grid-cols-7">
+        {emptyPreDays.map((_, i) => (
+          <div
+            key={`empty-${i}`}
+            className={`dark:border-border-dark min-h-30 border-b border-gray-100 bg-transparent ${
+              i % 7 < 6 ? "border-r" : ""
+            }`}
+          />
+        ))}
+        {days.map(({ day, appointments }, i) => {
+          const gridIndex = emptyPreDays.length + i;
+          return (
+            <div
+              key={i}
+              className={`group dark:border-border-dark relative flex min-h-30 flex-col gap-1 border-b border-gray-100 bg-transparent p-2 transition hover:bg-gray-50/50 dark:hover:bg-white/5 ${
+                gridIndex % 7 < 6
+                  ? "dark:border-border-dark border-r border-gray-100"
+                  : ""
+              }`}
+            >
+              <span
+                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                  day === 17
+                    ? "bg-primary text-white"
+                    : "text-gray-500 dark:text-gray-400"
+                }`}
+              >
+                {day}
+              </span>
+              <div className="mt-1 flex-1 space-y-1">
+                {appointments.map((apt) => (
+                  <CalendarAppointmentItem key={apt.id} apt={apt} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const isNow = apt.status === "in_progress";
 
   useEffect(() => {
-    const timer = setInterval(() => setTime((t) => t + 1), 1000);
-    return () => clearInterval(timer);
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className={`flex cursor-pointer items-center justify-between rounded-md p-1.5 text-[10px] leading-tight transition-all ${
+          isOpen ? "ring-1 ring-white/20" : ""
+        } ${
+          isNow
+            ? "bg-primary/10 border-primary/40 text-primary dark:bg-primary/20 dark:text-primary-light border shadow-sm"
+            : apt.type === "online"
+              ? "border border-transparent bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
+              : "border border-transparent bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+        }`}
+        title={apt.patientName}
+      >
+        <div className="relative z-10 w-full min-w-0 pr-1">
+          <div className="flex items-center gap-1 truncate font-semibold">
+            {apt.time.split(" ")[0]}
+            {isNow && <span className="font-light">(tham gia ngay)</span>}
+          </div>
+          <div className="truncate opacity-80">{apt.patientName}</div>
+        </div>
+      </div>
+
+      {/* Mini Dropdown */}
+      {isNow && (
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -5 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: -5 }}
+              transition={{ duration: 0.15 }}
+              className="dark:border-border-dark absolute top-full left-0 z-999 mt-1 w-36 rounded-lg border border-gray-100 bg-white p-1 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:bg-[#1a1c23]"
+            >
+              <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
+                <FiVideo /> Tham gia ngay
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                               HELPERS / BADGES                               */
+/* -------------------------------------------------------------------------- */
+function StatusBadge({ status }: { status: AppointmentStatus }) {
+  const map: Record<AppointmentStatus, React.ReactNode> = {
+    upcoming: <Badge type="info" value="Sắp gọi" />,
+    in_progress: <Badge type="warning" value="Đang khám" />,
+    completed: <Badge type="success" value="Hoàn thành" />,
+    cancelled: <Badge type="error" value="Đã hủy" />,
   };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="flex flex-col items-center gap-8 text-center"
-    >
-      <div className="flex flex-col items-center">
-        <div className="mb-4 flex items-center gap-2 rounded-full border border-white/5 bg-white/5 px-2.5 py-0.5">
-          <div className="relative flex h-1 w-1">
-            <div className="absolute h-full w-full animate-ping rounded-full bg-green-500 opacity-75" />
-            <div className="relative h-1 w-1 rounded-full bg-green-500" />
-          </div>
-          <span className="text-[9px] font-bold tracking-widest text-green-500 uppercase">
-            Đang hoạt động
-          </span>
-        </div>
-
-        <div className="mb-1 font-mono text-3xl font-light tracking-tight text-white/90 tabular-nums">
-          {formatTime(time)}
-        </div>
-
-        <h2 className="text-xl font-medium text-white/80">
-          Đang tìm bệnh nhân cho bạn
-        </h2>
-        <p className="mt-3 max-w-xs text-[13px] leading-relaxed text-gray-500">
-          Hệ thống sẽ tự động thông báo kết nối khi có yêu cầu mới.
-        </p>
-
-        <button
-          onClick={onNewRequest}
-          className="mt-6 text-[9px] font-bold tracking-widest text-white/5 uppercase transition-colors hover:text-white/10"
-        >
-          (Simulate)
-        </button>
-      </div>
-
-      <button
-        onClick={onEnd}
-        className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-2.5 text-[13px] font-semibold text-gray-300 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-500 active:scale-95"
-      >
-        <FiLogOut size={14} />
-        Kết thúc ca làm
-      </button>
-    </motion.div>
-  );
+  return map[status];
 }
 
-function PendingState({
-  onAccept,
-  onDecline,
-  userName = "Bệnh nhân",
-}: {
-  onAccept: () => void;
-  onDecline: () => void;
-  userName?: string;
-}) {
-  const [timeLeft, setTimeLeft] = useState(60);
-
-  useEffect(() => {
-    if (timeLeft === 0) {
-      onDecline();
-      return;
-    }
-    const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft, onDecline]);
-
+function AppointmentTypeBadge({ type }: { type: AppointmentType }) {
+  if (type === "online") {
+    return (
+      <div className="flex items-center gap-1 rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 text-[10px] font-medium text-indigo-700 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-300">
+        <FiVideo /> Online
+      </div>
+    );
+  }
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="flex w-full flex-col items-center gap-8"
-    >
-      <div className="flex flex-col items-center space-y-2 text-center">
-        <div className="relative h-14 w-14 shrink-0">
-          <div className="text-md flex h-full w-full items-center justify-center rounded-full bg-linear-to-br from-white/20 to-white/5 font-semibold text-white">
-            {userName.charAt(0)}
-          </div>
-        </div>
-        <h2 className="text-2xl font-medium tracking-tight text-white/90">
-          Có yêu cầu hỗ trợ mới
-        </h2>
-        <p className="mt-2 text-[13px] text-gray-400">
-          Bệnh nhân{" "}
-          <span className="font-medium text-white/70">"{userName}"</span> đang
-          chờ
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2 text-lg font-light text-white tabular-nums">
-          <span className="text-sm">
-            Còn lại: <span className="font-bold">{timeLeft}s</span>
-          </span>
-        </div>
-        <div className="h-0.5 w-48 overflow-hidden rounded-full bg-white/5">
-          <motion.div
-            initial={{ width: "100%" }}
-            animate={{ width: "0%" }}
-            transition={{ duration: 60, ease: "linear" }}
-            className="bg-primary h-full"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <button
-          onClick={onDecline}
-          className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-2.5 text-[13px] font-semibold text-gray-400 transition-all hover:border-red-500/20 hover:bg-red-500/10 hover:text-red-500 active:scale-95"
-        >
-          <FiX size={16} />
-          Từ chối
-        </button>
-        <button
-          onClick={onAccept}
-          className="flex items-center gap-2 rounded-full bg-white px-8 py-2.5 text-[13px] font-semibold text-black shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all hover:scale-105 hover:bg-neutral-200 active:scale-95"
-        >
-          <FiCheck size={16} />
-          Chấp nhận
-        </button>
-      </div>
-
-      <p className="text-[9px] font-medium tracking-[0.2em] text-gray-600 uppercase">
-        Tự động từ chối sau 60 giây
-      </p>
-    </motion.div>
-  );
-}
-
-function WorkingState({ onEnd }: { onEnd: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="flex flex-col items-center gap-8 text-center"
-    >
-      <div className="relative flex h-14 w-14 items-center justify-center">
-        <motion.div
-          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="bg-primary absolute inset-0 rounded-full"
-        />
-        <div className="bg-primary/10 text-primary relative flex h-12 w-12 items-center justify-center rounded-full">
-          <FiActivity size={24} />
-        </div>
-      </div>
-
-      <div>
-        <h2 className="text-2xl font-medium text-white/90">
-          Đang trong cuộc tư vấn
-        </h2>
-        <p className="mt-2 text-[13px] text-gray-500">
-          Bác sĩ đang kết nối trực tiếp với bệnh nhân
-        </p>
-      </div>
-
-      <button
-        onClick={onEnd}
-        className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-6 py-2 text-[13px] font-semibold text-gray-400 transition-all hover:bg-white/10 hover:text-white active:scale-95"
-      >
-        Rời khỏi cuộc hội thoại
-      </button>
-    </motion.div>
+    <div className="flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+      <FiMapPin /> Tại viện
+    </div>
   );
 }

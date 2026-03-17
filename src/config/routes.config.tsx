@@ -110,7 +110,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     icon: IoBriefcaseOutline,
     element: <DoctorSupportPage />,
     showInSidebar: true,
-    roles: ["Doctor"],
+    roles: ["Doctor", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.ACCOUNTS,

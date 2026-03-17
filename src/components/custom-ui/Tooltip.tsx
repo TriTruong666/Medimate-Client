@@ -43,7 +43,7 @@ export function Tooltip({ content, children, position = "top" }: TooltipProps) {
             exit="hidden"
             variants={variants}
             transition={{ duration: 0.15 }}
-            className={`absolute z-50 w-max max-w-xs rounded-md bg-black/90 px-3 py-1 text-xs text-white shadow-lg ${positionClasses[position]}`}
+            className={`absolute z-10000 w-max max-w-xs rounded-md bg-black/90 px-3 py-1 text-xs text-white shadow-lg ${positionClasses[position]}`}
           >
             {content}
             <div
