@@ -18,6 +18,7 @@ export const ApiErrorCode = {
     EMAIL_EXISTS: "EMAIL_EXISTS",
     PHONE_EXISTS: "PHONE_EXISTS",
     USER_NOT_FOUND: "USER_NOT_FOUND",
+    MEMBERSHIP_PACKAGE_IN_USE: "MEMBERSHIP_PACKAGE_IN_USE",
     ACCESS_DENIED: "ACCESS_DENIED",
     TOKEN_INVALID: "TOKEN_INVALID",
     UNKNOWN: "UNKNOWN",
@@ -47,6 +48,8 @@ export const DEFAULT_API_ERROR_MESSAGES: Record<ApiErrorCode, string> = {
     [ApiErrorCode.EMAIL_EXISTS]: "Email này đã được sử dụng.",
     [ApiErrorCode.PHONE_EXISTS]: "Số điện thoại này đã được sử dụng.",
     [ApiErrorCode.USER_NOT_FOUND]: "Không tìm thấy người dùng.",
+    [ApiErrorCode.MEMBERSHIP_PACKAGE_IN_USE]:
+        "Không thể xóa gói vì đang có người dùng đăng ký.",
     [ApiErrorCode.ACCESS_DENIED]: "Bạn không có quyền thực hiện thao tác này.",
     [ApiErrorCode.TOKEN_INVALID]:
         "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
