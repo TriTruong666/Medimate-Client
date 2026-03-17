@@ -2,13 +2,24 @@
 import type { ReactNode } from "react";
 import { lazy } from "react";
 import { PATHS } from "./paths";
-import { FiLayout, FiUsers, FiSettings, FiFileText } from "react-icons/fi";
+import {
+  FiLayout,
+  FiUsers,
+  FiSettings,
+  FiFileText,
+  FiUserCheck,
+} from "react-icons/fi";
 import { RiVipDiamondLine, RiImageAiLine } from "react-icons/ri";
 import { IoBriefcaseOutline, IoSync } from "react-icons/io5";
 import { AiOutlineRobot } from "react-icons/ai";
 import { GrTransaction } from "react-icons/gr";
+import { LiaFileContractSolid } from "react-icons/lia";
+import { VscFeedback } from "react-icons/vsc";
 import type { Role } from "@/hooks/useAuth";
 import DoctorSupportPage from "@/pages/doctor/DoctorSupportPage";
+import DoctorContractPage from "@/pages/admin/DoctorContractPage";
+import DoctorReportPage from "@/pages/admin/DoctorReportPage";
+import CertificateApprovePage from "@/pages/doctor-manager/CertificateApprovePage";
 
 // Types for Route Configuration
 export interface RouteConfig {
@@ -104,13 +115,22 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     index: true,
   },
   {
+    path: PATHS.DASHBOARD.APPROVE_CERTIFICATE,
+    element: <CertificateApprovePage />,
+    layout: "dashboard",
+    label: "Duyệt hồ sơ",
+    icon: FiUserCheck,
+    showInSidebar: true,
+    roles: ["DoctorManager"],
+  },
+  {
     path: PATHS.DASHBOARD.DOCTOR_SUPPORT.ROOT,
     layout: "dashboard",
     label: "Công việc",
     icon: IoBriefcaseOutline,
     element: <DoctorSupportPage />,
     showInSidebar: true,
-    roles: ["Doctor", "Admin"],
+    roles: ["Doctor"],
   },
   {
     path: PATHS.DASHBOARD.ACCOUNTS,
@@ -222,6 +242,24 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     icon: AiOutlineRobot,
     showInSidebar: true,
     roles: ["Admin", "User", "Doctor"],
+  },
+  {
+    path: PATHS.DASHBOARD.DOCTOR_CONTRACT,
+    element: <DoctorContractPage />,
+    layout: "dashboard",
+    label: "Hợp đồng",
+    icon: LiaFileContractSolid,
+    showInSidebar: true,
+    roles: ["Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.DOCTOR_REPORT,
+    element: <DoctorReportPage />,
+    layout: "dashboard",
+    label: "Báo cáo bác sĩ",
+    icon: VscFeedback,
+    showInSidebar: true,
+    roles: ["Admin"],
   },
 
   // Settings Routes

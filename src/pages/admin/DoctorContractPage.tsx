@@ -1,0 +1,250 @@
+import { FiEye, FiAward, FiStar, FiMail, FiPhone } from "react-icons/fi";
+import Breadcrumb from "@/components/custom-ui/Breadcrumb";
+import { Badge } from "@/components/custom-ui/Badge";
+import { Pagination } from "@/components/custom-ui/Pagination";
+import { Tooltip } from "@/components/custom-ui/Tooltip";
+import IconAction from "@/components/custom-ui/IconAction";
+import { Spinner } from "@/components/custom-ui/Spinner";
+
+// MOCK DATA
+const mockContracts = [
+  {
+    id: "CTR-2026-001",
+    doctorName: "BS. Nguyễn Trí Trường",
+    specialty: "Tim Mạch",
+    experience: "10 Năm",
+    rating: 4.8,
+    phone: "0901234567",
+    email: "truongnt@medimate.com",
+    submitDate: "15/03/2026",
+    status: "active", // active, terminated
+  },
+  {
+    id: "CTR-2026-002",
+    doctorName: "BS. Trần Thanh Tâm",
+    specialty: "Da Liễu",
+    experience: "5 Năm",
+    rating: 4.5,
+    phone: "0918765432",
+    email: "tamtt@medimate.com",
+    submitDate: "12/03/2026",
+    status: "active",
+  },
+  {
+    id: "CTR-2026-003",
+    doctorName: "BS. Lê Phương Trinh",
+    specialty: "Nhi Khoa",
+    experience: "12 Năm",
+    rating: 4.9,
+    phone: "0987123456",
+    email: "trinhlp@medimate.com",
+    submitDate: "05/01/2025",
+    status: "terminated",
+  },
+];
+
+type ColumnKey = "doctor" | "contact" | "contract" | "actions";
+
+type TableColumn = {
+  key: ColumnKey;
+  label: string;
+  width?: string;
+  align?: "left" | "center" | "right";
+};
+
+const columns: TableColumn[] = [
+  { key: "doctor", label: "Thông tin Bác sĩ", width: "w-[30%]" },
+  { key: "contact", label: "Liên hệ", width: "w-[25%]" },
+  { key: "contract", label: "Hợp đồng", width: "w-[30%]" },
+  { key: "actions", label: "Thao tác", width: "w-[15%]", align: "center" },
+];
+
+export default function DoctorContractPage() {
+  const breadcrumbItems = [
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Bác sĩ", path: "/dashboard/doctors" },
+    { label: "Hợp đồng Bác sĩ" },
+  ];
+
+  return (
+    <div className="page-layout">
+      {/* Header */}
+      <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        <div>
+          <Breadcrumb items={breadcrumbItems} />
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+            Lưu trữ Hợp đồng
+          </h1>
+        </div>
+      </div>
+
+      {/* Content - Data Table */}
+      <div className="my-8">
+        <ContractTable />
+      </div>
+    </div>
+  );
+}
+
+function ContractTable() {
+  // Simulate useQuery logic for data_handling_ui
+  const isLoading = false;
+  const isError = false;
+  const data = mockContracts;
+
+  const colCount = columns.length;
+
+  return (
+    <>
+      <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
+        <thead>
+          <tr className="dark:bg-border-dark/30 bg-gray-50/50">
+            {columns.map((col, i) => (
+              <th
+                key={col.key}
+                className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${
+                  col.width ?? ""
+                } ${col.align === "center" ? "text-center!" : ""} ${
+                  col.align === "right" ? "text-right!" : "text-left"
+                } ${
+                  i < columns.length - 1
+                    ? "dark:border-border-dark border-r border-gray-100"
+                    : ""
+                }`}
+              >
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent">
+          {isLoading ? (
+            // 1. LOADING STATE
+            <tr>
+              <td colSpan={colCount}>
+                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                  <Spinner size="lg" />
+                  <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
+                    Đang tải danh sách hợp đồng...
+                  </p>
+                </div>
+              </td>
+            </tr>
+          ) : isError ? (
+            // 2. ERROR STATE
+            <tr>
+              <td colSpan={colCount}>
+                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                  <h3 className="mt-4 text-lg text-white">Đã xảy ra lỗi</h3>
+                  <p className="mt-1 max-w-75 text-center text-sm text-gray-400">
+                    Không thể kết nối đến máy chủ. Vui lòng thử lại sau.
+                  </p>
+                  <button className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10">
+                    Thử lại
+                  </button>
+                </div>
+              </td>
+            </tr>
+          ) : data && data.length > 0 ? (
+            // 3. HAPPY CASE (DATA RENDER)
+            data.map((row) => (
+              <tr
+                key={row.id}
+                className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+              >
+                {/* 1. Thông tin bác sĩ */}
+                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="from-primary/20 to-primary/5 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br text-sm font-bold shadow-inner">
+                      {row.doctorName.charAt(4)}
+                    </div>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="mb-0.5 truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        {row.doctorName}
+                      </span>
+                      <span className="text-primary mb-1 truncate text-[12px] font-medium">
+                        {row.specialty}
+                      </span>
+                      <div className="flex gap-2 text-[10px]">
+                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                          <FiAward className="text-amber-500" />{" "}
+                          {row.experience}
+                        </span>
+                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                          <FiStar className="text-yellow-400" /> {row.rating}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                {/* 2. Contact Info */}
+                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                  <div className="flex flex-col space-y-2 text-xs">
+                    <p className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
+                      <FiPhone className="text-gray-400" /> {row.phone}
+                    </p>
+                    <p
+                      className="pointer-events-auto flex items-center gap-1.5 truncate text-gray-600 dark:text-gray-300"
+                      title={row.email}
+                    >
+                      <FiMail className="text-gray-400" /> {row.email}
+                    </p>
+                  </div>
+                </td>
+
+                {/* 3. Contract Info & Status */}
+                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                  <div className="flex flex-col text-xs">
+                    <p className="mb-1 text-gray-500 dark:text-gray-400">
+                      Ký ngày:{" "}
+                      <span className="font-medium text-gray-800 dark:text-gray-200">
+                        {row.submitDate}
+                      </span>
+                    </p>
+                    <p className="mb-2 text-gray-500 dark:text-gray-400">
+                      Mã HĐ:{" "}
+                      <span className="font-monospace text-gray-800 dark:text-gray-200">
+                        {row.id}
+                      </span>
+                    </p>
+                    <div className="mt-1 w-fit">
+                      {row.status === "active" ? (
+                        <Badge type="success" value="Đang hiệu lực" />
+                      ) : (
+                        <Badge type="error" value="Đã chấm dứt" />
+                      )}
+                    </div>
+                  </div>
+                </td>
+
+                {/* 4. Thao tác */}
+                <td className="p-4 text-center">
+                  <Tooltip content="Mở trình xem Hợp Đồng gốc">
+                    <IconAction
+                      icon={<FiEye />}
+                      className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary-light"
+                    />
+                  </Tooltip>
+                </td>
+              </tr>
+            ))
+          ) : (
+            // 4. EMPTY DATA STATE
+            <tr>
+              <td colSpan={colCount}>
+                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
+                  <h3 className="mt-4 text-lg text-white">Chưa có dữ liệu</h3>
+                  <p className="mt-1 text-sm text-gray-400">
+                    Không tìm thấy hợp đồng y tế nào vào lúc này.
+                  </p>
+                </div>
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+      <Pagination page={1} pageSize={20} total={data?.length ?? 0} />
+    </>
+  );
+}

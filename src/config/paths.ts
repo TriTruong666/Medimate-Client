@@ -19,6 +19,8 @@ export const PATHS = {
     RAG_NEW: "/dashboard/rag/new",
     CHATBOT: "/dashboard/chatbot",
     TRANSACTION: "/dashboard/transaction",
+    DOCTOR_REPORT: "/dashboard/doctor-report",
+    DOCTOR_CONTRACT: "/dashboard/doctor-contract",
     INCOME: "/dashboard/income",
     PACKAGES: {
       ROOT: "/dashboard/packages",
@@ -32,6 +34,7 @@ export const PATHS = {
       ROOT: "/dashboard/chat",
       CONSERVATION: "/dashboard/chat/:conversationId",
     },
+    APPROVE_CERTIFICATE: "/dashboard/approve-certificate",
     NOTIFICATIONS: "/dashboard/notifications",
     ASSETS: {
       PRESCRIPTION: "/dashboard/assets/prescription",
