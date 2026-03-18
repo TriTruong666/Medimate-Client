@@ -1,14 +1,12 @@
 import axios from "axios";
 
-const base_rag_url =
-  import.meta.env.DEV
-    ? import.meta.env.VITE_RAG_API_URL_TEST
-    : import.meta.env.VITE_RAG_API_URL;
+const base_rag_url = import.meta.env.DEV
+  ? import.meta.env.VITE_PY_API_URL_TEST
+  : import.meta.env.VITE_PY_API_URL;
 
-const base_net_url =
-  import.meta.env.DEV
-    ? import.meta.env.VITE_NET_API_URL_TEST
-    : import.meta.env.VITE_NET_API_URL;
+const base_net_url = import.meta.env.DEV
+  ? import.meta.env.VITE_NET_API_URL_TEST
+  : import.meta.env.VITE_NET_API_URL;
 
 export const axiosRAGClient = axios.create({
   baseURL: base_rag_url,

@@ -6,7 +6,11 @@ services:
     restart: always
     networks:
       - medimate-network
+      - web_network
 
 networks:
   medimate-network:
     external: true
+  web_network: 
+    external: true
+    
