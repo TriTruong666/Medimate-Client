@@ -21,6 +21,7 @@ import { IoMdLock, IoMdUnlock } from "react-icons/io";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
+import type { PaginationParams } from "@/common/query.params";
 
 type AccountRow = {
   name: string;
@@ -136,7 +137,17 @@ export default function AccountDashboardPage() {
 }
 
 function AccountTable({ sortType }: { sortType: SortType }) {
-  const { data: users, isLoading, error, isError, refetch } = useUserList();
+  const [pagination, setPagination] = useState<PaginationParams>({
+    pageNumber: 1,
+    pageSize: 5,
+  });
+  const { data, isLoading, error, isError, refetch } = useUserList(pagination);
+
+  const users = data?.items ?? [];
+  const total = data?.totalCount ?? 0;
+  const pageNumber = data?.pageNumber ?? pagination.pageNumber ?? 1;
+  const pageSize = data?.pageSize ?? pagination.pageSize ?? 5;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const [, openLockModal] = useAtom(openLockModalAtom);
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
@@ -152,6 +163,15 @@ function AccountTable({ sortType }: { sortType: SortType }) {
     if (!users) return [];
     return sortUsers(users, sortType);
   }, [users, sortType]);
+
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === pageNumber) return;
+
+    setPagination((prev) => ({
+      ...prev,
+      pageNumber: nextPage,
+    }));
+  };
 
   return (
     <>
@@ -280,7 +300,12 @@ function AccountTable({ sortType }: { sortType: SortType }) {
           )}
         </tbody>
       </table>
-      <Pagination page={1} pageSize={20} total={users?.length ?? 0} />
+      <Pagination
+        page={pageNumber}
+        pageSize={pageSize}
+        total={total}
+        onPageChange={handlePageChange}
+      />
     </>
   );
 }

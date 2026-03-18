@@ -1,3 +1,5 @@
+import type { PaginationParams } from "@/common/query.params";
+
 export type PrescriptionImage = {
   imageId: string;
   prescriptionId: string;
@@ -17,21 +19,17 @@ export type DoctorCertificate = {
   uploadedAt: string;
 };
 
-export type GetPrescriptionImagesParams = {
+export interface GetPrescriptionImagesParams extends PaginationParams {
   prescriptionId?: string;
   memberId?: string;
   isProcessed?: boolean;
   isDescending?: boolean; //theo uploadedAt
-  pageNumber?: number;
-  pageSize?: number;
-};
+}
 
-export type GetDoctorCertificatesParams = {
+export interface GetDoctorCertificatesParams extends PaginationParams {
   doctorId?: string;
   status?: "pending" | "approved" | "rejected";
   type?: "certificate" | "license";
   sortBy?: "type" | "status";
   isDescending?: boolean; //mặc định theo createedAt
-  pageNumber?: number;
-  pageSize?: number;
-};
+}
