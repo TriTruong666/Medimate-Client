@@ -45,7 +45,7 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             # 1. Phải vào đúng thư mục chứa file docker-compose.yml
-            cd ~/projects/medimate/client
+            cd ~/projects/medimate/client/Medimate-Client
           
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             
