@@ -10,7 +10,7 @@ ENV VITE_NET_API_URL=$VITE_NET_API_URL
 ENV VITE_PY_API_URL=$VITE_PY_API_URL
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 

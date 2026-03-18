@@ -44,7 +44,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/projects/medimate/client
+            cd ~/projects/medimate/client/Medimate-Client
             docker compose pull
             docker compose up -d
             docker image prune -f
