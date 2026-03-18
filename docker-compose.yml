@@ -1,0 +1,12 @@
+services:
+  medimate-client:
+    
+    image: ghcr.io/tritruong666/medimate-client:latest
+    container_name: medimate-client
+    restart: always
+    networks:
+      - medimate-network
+
+networks:
+  medimate-network:
+    external: true
