@@ -37,14 +37,20 @@ jobs:
     needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy to VPS via SSH
+      - name: 🚀 Deploy to VPS via SSH
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/projects/medimate/client/Medimate-Client
+            # 1. Phải vào đúng thư mục chứa file docker-compose.yml
+            cd ~/projects/medimate/client
+          
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
             docker compose pull
+            
             docker compose up -d
+            
             docker image prune -f
