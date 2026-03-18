@@ -17,7 +17,10 @@ export function AvatarDropdown() {
   const handleLogout = () => {
     logout();
     removeCookie("token", { path: "/" });
-    window.location.href = "/";
+    localStorage.setItem("last_login", user?.fullName as string);
+    setTimeout(() => {
+      window.location.reload();
+    }, 200);
   };
 
   useClickOutside(ref, () => setOpen(false));
@@ -75,10 +78,11 @@ function AvatarDropdownItem({
   url,
   onClick,
 }: AvatarDropdownItemProps) {
-  const className = `block w-full px-4 py-2 text-left text-sm transition-colors ${danger
+  const className = `block w-full px-4 py-2 text-left text-sm transition-colors ${
+    danger
       ? "text-red-400 hover:bg-red-500/10"
       : "text-gray-300 hover:bg-white/5 hover:text-white"
-    } `;
+  } `;
 
   if (url) {
     return (
