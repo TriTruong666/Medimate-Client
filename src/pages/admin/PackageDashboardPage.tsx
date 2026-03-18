@@ -1,12 +1,24 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { FiMoreVertical, FiUsers } from "react-icons/fi";
+import { FiMoreVertical, FiPlus, FiUsers } from "react-icons/fi";
 import { AnimatePresence, motion } from "framer-motion";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { HiCheck } from "react-icons/hi";
 import { HiXMark } from "react-icons/hi2";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { useClickOutside } from "@/hooks/useDropdown";
 import { formatPrice } from "@/common/format";
+import {
+  useCreatePackage,
+  useDeletePackage,
+  usePackages,
+  useUpdatePackage,
+} from "@/hooks/data/usePackageHooks";
+import { Spinner } from "@/components/custom-ui/Spinner";
+import {
+  DeletePackageModal,
+  EditPackageModal,
+  type EditPackageFormErrors,
+} from "@/components/modals";
+import type { Package, UpdatePackageRequest } from "@/types/Package";
 
 type TableColumn = {
   key: ColumnKey;
@@ -15,92 +27,78 @@ type TableColumn = {
 
 type ColumnKey = string;
 
-type PackageType = {
-  name: string;
-  price: number;
-  users: number;
-  status?: "active" | "inactive";
-  updated?: string;
-};
 type DropdownItemProps = {
   label: string;
   danger?: boolean;
 };
 
-const columns: TableColumn[] = [
-  {
-    key: "basic",
-    label: "Basic",
-  },
-  {
-    key: "medimate",
-    label: "Medimate",
-  },
-  {
-    key: "premium",
-    label: "Premium",
-  },
-];
-
-type ComparisionRow = {
-  max_person: number | "unlimited"; // số lượng người có thể quản lý
-  sms_notification: boolean; // nhắc sms nếu quá hạn uống thuốc cho người quản lý
-  health_index: "non_auto" | "auto"; // nhập tay chỉ số sức khoẻ hoặc tự động đồng bộ từ các app Apple Health/Google Fit
-  storage_health_document: number | "unlimited"; // số lượng file bệnh án được lưu trữ
-  export_to_doctor: boolean; // Xuất báo cáo sức khỏe (PDF) để gửi bác sĩ
-  ocr: boolean;
-  chatbot: boolean; // AI Chatbot tư vấn sức khỏe cơ bản
-  drug_interaction: boolean; // tương tác thuốc
-  chat_to_doctor: boolean;
-  advertisement: boolean; // quảng cáo
-  find_hospital: boolean;
-  anomaly_detection: boolean; // dự báo bất thường của AI
+type ComparisonRow = {
+  packageName: string;
+  price: number;
+  currency: string;
+  durationDays: number;
+  memberLimit: number;
+  ocrLimit: number;
+  consultantLimit: number;
+  description: string;
 };
 
-const demoData: ComparisionRow[] = [
-  {
-    max_person: 5,
-    sms_notification: false,
-    health_index: "non_auto",
-    storage_health_document: 5,
-    export_to_doctor: false,
-    ocr: true,
-    chat_to_doctor: false,
-    chatbot: false,
-    drug_interaction: false,
-    advertisement: true,
-    anomaly_detection: false,
-    find_hospital: true,
-  },
-  {
-    max_person: 30,
-    sms_notification: true,
-    health_index: "non_auto",
-    storage_health_document: 25,
-    export_to_doctor: true,
-    ocr: true,
-    chat_to_doctor: true,
-    chatbot: true,
-    drug_interaction: false,
-    advertisement: false,
-    anomaly_detection: false,
-    find_hospital: true,
-  },
-  {
-    max_person: "unlimited",
-    sms_notification: true,
-    health_index: "auto",
-    storage_health_document: "unlimited",
-    export_to_doctor: true,
-    ocr: true,
-    chat_to_doctor: true,
-    chatbot: true,
-    drug_interaction: true,
-    advertisement: false,
-    anomaly_detection: true,
-    find_hospital: true,
-  },
-];
+type TableCellValue = string | number | boolean | null | undefined;
+
+function mapPackageToComparisonRow(pkg: Package): ComparisonRow {
+  return {
+    packageName: pkg.packageName,
+    price: pkg.price,
+    currency: pkg.currency,
+    durationDays: pkg.durationDays,
+    memberLimit: pkg.memberLimit,
+    ocrLimit: pkg.ocrLimit,
+    consultantLimit: pkg.consultantLimit,
+    description: pkg.description,
+  };
+}
+
+function mapPackageToUpdateRequest(pkg: Package): UpdatePackageRequest {
+  return {
+    packageName: pkg.packageName,
+    price: pkg.price,
+    currency: pkg.currency,
+    durationDays: pkg.durationDays,
+    memberLimit: pkg.memberLimit,
+    ocrLimit: pkg.ocrLimit,
+    consultantLimit: pkg.consultantLimit,
+    description: pkg.description,
+  };
+}
+
+const DEFAULT_PACKAGE_FORM: UpdatePackageRequest = {
+  packageName: "",
+  price: 0,
+  currency: "VND",
+  durationDays: 30,
+  memberLimit: 1,
+  ocrLimit: 0,
+  consultantLimit: 0,
+  description: "",
+};
+
+function validateEditPackageForm(
+  form: UpdatePackageRequest,
+): EditPackageFormErrors {
+  const errors: EditPackageFormErrors = {};
+
+  if (!form.packageName.trim()) errors.packageName = "Tên gói là bắt buộc.";
+  if (!form.currency.trim()) errors.currency = "Loại tiền là bắt buộc.";
+  if (form.price < 0) errors.price = "Giá không được âm.";
+  if (form.durationDays <= 0)
+    errors.durationDays = "Thời hạn phải lớn hơn 0 ngày.";
+  if (form.memberLimit <= 0) errors.memberLimit = "Số thành viên phải lớn hơn 0.";
+  if (form.ocrLimit < 0) errors.ocrLimit = "Giới hạn OCR không được âm.";
+  if (form.consultantLimit < 0)
+    errors.consultantLimit = "Giới hạn tư vấn không được âm.";
+
+  return errors;
+}
 
 const breadcrumbItems = [
   {
@@ -115,29 +113,116 @@ const breadcrumbItems = [
     label: "Quản lý gói",
   },
 ];
-
-const packages = [
-  {
-    name: "Basic",
-    price: 0,
-    users: 1124,
-    gradient: "from-slate-600 to-slate-800",
-  },
-  {
-    name: "Medimate",
-    price: 99000,
-    users: 102,
-    gradient: "from-cyan-500 via-blue-600 to-indigo-700",
-    highlight: true,
-  },
-  {
-    name: "Premium",
-    price: 199000,
-    users: 43,
-    gradient: "from-purple-600 via-pink-600 to-rose-600",
-  },
-];
 export function PackageDashboardPage() {
+  const { data, isLoading, isError, error } = usePackages();
+  const { mutateAsync: createPackage, isPending: isCreatingPackage } =
+    useCreatePackage();
+  const { mutateAsync: deletePackage, isPending: isDeletingPackage } =
+    useDeletePackage();
+  const { mutateAsync: updatePackage, isPending: isUpdatingPackage } = useUpdatePackage();
+  const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
+  const [editingPackage, setEditingPackage] = useState<Package | null>(null);
+  const [deletingPackage, setDeletingPackage] = useState<Package | null>(null);
+  const [modalForm, setModalForm] = useState<UpdatePackageRequest | null>(null);
+  const [editErrors, setEditErrors] = useState<EditPackageFormErrors>({});
+  const isSubmitting = isCreatingPackage || isUpdatingPackage;
+  const packageList = useMemo(
+    () => [...(data ?? [])].sort((a, b) => a.price - b.price),
+    [data],
+  );
+  const packageRows = packageList.map(mapPackageToComparisonRow);
+  const columns: TableColumn[] = packageList.map((pkg) => ({
+    key: pkg.packageId,
+    label: pkg.packageName,
+  }));
+
+  const handleOpenCreatePopup = () => {
+    setModalMode("create");
+    setEditingPackage(null);
+    setModalForm(DEFAULT_PACKAGE_FORM);
+    setEditErrors({});
+  };
+
+  const handleOpenEditPopup = (pkg: Package) => {
+    setModalMode("edit");
+    setEditingPackage(pkg);
+    setModalForm(mapPackageToUpdateRequest(pkg));
+    setEditErrors({});
+  };
+
+  const handleCloseEditPopup = () => {
+    setModalMode(null);
+    setEditingPackage(null);
+    setModalForm(null);
+    setEditErrors({});
+  };
+
+  const handleOpenDeletePopup = (pkg: Package) => {
+    setDeletingPackage(pkg);
+  };
+
+  const handleCloseDeletePopup = () => {
+    setDeletingPackage(null);
+  };
+
+  const handleEditFieldChange = <K extends keyof UpdatePackageRequest>(
+    field: K,
+    value: UpdatePackageRequest[K],
+  ) => {
+    setModalForm((prev) => (prev ? { ...prev, [field]: value } : prev));
+    setEditErrors((prev) => ({ ...prev, [field]: undefined }));
+  };
+
+  const handleSubmitEditPackage = async () => {
+    if (!modalMode || !modalForm) return;
+
+    const nextErrors = validateEditPackageForm(modalForm);
+    setEditErrors(nextErrors);
+    if (Object.values(nextErrors).some(Boolean)) return;
+
+    try {
+      if (modalMode === "edit") {
+        if (!editingPackage) return;
+        await updatePackage({
+          packageId: editingPackage.packageId,
+          request: modalForm,
+        });
+      } else {
+        await createPackage(modalForm);
+      }
+      handleCloseEditPopup();
+    } catch {
+      // onError đã xử lý toast ở hook
+    }
+  };
+
+  const handleConfirmDeletePackage = async () => {
+    if (!deletingPackage) return;
+
+    try {
+      const result = await deletePackage(deletingPackage.packageId);
+      if (result.success) {
+        handleCloseDeletePopup();
+      }
+    } catch {
+      // onError đã xử lý toast ở hook
+    }
+  };
+
+  if (isLoading) {
+    return <div className="page-layout">
+      <div className="my-8 space-y-8">
+        <Spinner />
+      </div>
+    </div>;
+  }
+  if (isError) {
+    return <div className="page-layout">
+      <div className="my-8 space-y-8">
+        <p className="text-red-500">{error?.message}</p>
+      </div>
+    </div>;
+  }
   return (
     <div className="page-layout">
       {/* Header */}
@@ -148,72 +233,92 @@ export function PackageDashboardPage() {
             Quản lý gói
           </h1>
         </div>
+        <button
+          type="button"
+          onClick={handleOpenCreatePopup}
+          className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition hover:opacity-90"
+        >
+          <FiPlus />
+          Thêm gói
+        </button>
       </div>
       {/* Content */}
       <div className="my-8 space-y-8">
-        <PackageGrid />
+        {packageList.length > 0 ? (
+          <PackageGrid
+            data={packageList}
+            onEdit={handleOpenEditPopup}
+            onDelete={handleOpenDeletePopup}
+          />
+        ) : (
+          <p className="text-gray-500">Không tìm thấy dữ liệu</p>
+        )}
       </div>
-      <div className="my-12 space-y-8">
-        <PackageComparisonTable />
-      </div>
+      {packageList.length > 0 && (
+        <div className="my-12 space-y-8">
+          <PackageComparisonTable columns={columns} rows={packageRows} />
+        </div>
+      )}
+
+      {modalMode && modalForm && (
+        <EditPackageModal
+          value={modalForm}
+          errors={editErrors}
+          isPending={isSubmitting}
+          title={modalMode === "create" ? "Thêm gói mới" : "Chỉnh sửa gói"}
+          submitLabel={modalMode === "create" ? "Tạo gói" : "Lưu thay đổi"}
+          onClose={handleCloseEditPopup}
+          onChange={handleEditFieldChange}
+          onSubmit={handleSubmitEditPackage}
+        />
+      )}
+
+      {deletingPackage && (
+        <DeletePackageModal
+          packageName={deletingPackage.packageName}
+          isPending={isDeletingPackage}
+          onClose={handleCloseDeletePopup}
+          onConfirm={handleConfirmDeletePackage}
+        />
+      )}
     </div>
   );
 }
 
-function PackageComparisonTable() {
+function PackageComparisonTable({
+  columns,
+  rows,
+}: {
+  columns: TableColumn[];
+  rows: ComparisonRow[];
+}) {
   const featureRows = [
     {
-      label: "Số lượng người được quản lý tối đa",
-      render: (row: ComparisionRow) =>
-        typeof row.max_person === "number" ? row.max_person : "Không giới hạn",
+      label: "Giá gói",
+      render: (row: ComparisonRow) =>
+        row.price === 0 ? "Miễn phí" : `${formatPrice(row.price)} ${row.currency}`,
     },
     {
-      label: "Thông báo SMS",
-      render: (row: ComparisionRow) => row.sms_notification,
+      label: "Thời hạn sử dụng",
+      render: (row: ComparisonRow) => `${row.durationDays} ngày`,
     },
     {
-      label: "Chỉ số sức khỏe",
-      render: (row: ComparisionRow) =>
-        row.health_index === "auto" ? "Tự động đồng bộ" : "Nhập thủ công",
+      label: "Số lượng thành viên tối đa",
+      render: (row: ComparisonRow) => row.memberLimit,
     },
     {
-      label: "Lưu trữ hồ sơ bệnh án",
-      render: (row: ComparisionRow) =>
-        typeof row.storage_health_document === "number"
-          ? `${row.storage_health_document} files`
-          : "Không giới hạn",
+      label: "OCR đơn thuốc",
+      render: (row: ComparisonRow) =>
+        row.ocrLimit > 0 ? `${row.ocrLimit} lượt` : "Không hỗ trợ",
     },
     {
-      label: "Xuất PDF gửi bác sĩ",
-      render: (row: ComparisionRow) => row.export_to_doctor,
+      label: "Tư vấn chuyên gia",
+      render: (row: ComparisonRow) =>
+        row.consultantLimit > 0 ? `${row.consultantLimit} lượt` : "Không hỗ trợ",
     },
     {
-      label: "Scan OCR đơn thuốc",
-      render: (row: ComparisionRow) => row.ocr,
-    },
-    {
-      label: "Chat với bác sĩ",
-      render: (row: ComparisionRow) => row.chat_to_doctor,
-    },
-    {
-      label: "Trợ lý MedimateAI",
-      render: (row: ComparisionRow) => row.chatbot,
-    },
-    {
-      label: "Tương tác thuốc",
-      render: (row: ComparisionRow) => row.drug_interaction,
-    },
-    {
-      label: "AI phân tích xu hướng sức khỏe",
-      render: (row: ComparisionRow) => row.anomaly_detection,
-    },
-    {
-      label: "Quảng cáo",
-      render: (row: ComparisionRow) => row.advertisement,
-    },
-    {
-      label: "Tìm nhà thuốc / bệnh viện gần nhất",
-      render: (row: ComparisionRow) => row.find_hospital,
+      label: "Mô tả",
+      render: (row: ComparisonRow) => row.description || "-",
     },
   ];
 
@@ -251,11 +356,20 @@ function PackageComparisonTable() {
               </td>
 
               {/* Plans */}
-              {demoData.map((pkg, colIndex) => (
-                <td key={colIndex} className={`px-6 py-4 text-center`}>
-                  <TableCell value={feature.render(pkg)} />
-                </td>
-              ))}
+              {columns.map((_, colIndex) => {
+                const comparedPackageData = rows[colIndex];
+                return (
+                  <td key={colIndex} className={`px-6 py-4 text-center`}>
+                    <TableCell
+                      value={
+                        comparedPackageData
+                          ? feature.render(comparedPackageData)
+                          : "-"
+                      }
+                    />
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
@@ -264,7 +378,7 @@ function PackageComparisonTable() {
   );
 }
 
-function TableCell({ value }: { value: any }) {
+function TableCell({ value }: { value: TableCellValue }) {
   if (typeof value === "boolean") {
     return value ? (
       <HiCheck className="mx-auto text-lg text-emerald-500" />
@@ -277,22 +391,60 @@ function TableCell({ value }: { value: any }) {
     return <span className="text-primary dark:text-primary">{value}</span>;
   }
 
+  if (value === "Không hỗ trợ") {
+    return (
+      <span className="inline-flex items-center justify-center gap-1 text-rose-600 dark:text-rose-400">
+        <HiXMark className="text-lg" />
+      </span>
+    );
+  }
+
+  if (value === "Miễn phí") {
+    return (
+      <span className="rounded-md bg-emerald-50 px-2 py-1 font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+        {value}
+      </span>
+    );
+  }
+
   return <span className="text-gray-700 dark:text-gray-200">{value}</span>;
 }
 
-function PackageGrid() {
+function PackageGrid({
+  data,
+  onEdit,
+  onDelete,
+}: {
+  data: Package[];
+  onEdit: (pkg: Package) => void;
+  onDelete: (pkg: Package) => void;
+}) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-      {packages.map((pkg) => (
-        <PackageCard key={pkg.name} pkg={pkg} />
+      {data.map((pkg) => (
+        <PackageCard
+          key={pkg.packageId}
+          pkg={pkg}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       ))}
     </div>
   );
 }
 
-function PackageCard({ pkg }: { pkg: PackageType }) {
+function PackageCard({
+  pkg,
+  onEdit,
+  onDelete,
+}: {
+  pkg: Package;
+  onEdit: (pkg: Package) => void;
+  onDelete: (pkg: Package) => void;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const hasActiveSubscribers = pkg.activeSubscriberCount > 0;
 
   useClickOutside(ref, () => setOpen(false));
   return (
@@ -305,7 +457,7 @@ function PackageCard({ pkg }: { pkg: PackageType }) {
         <div className="flex items-start gap-3">
           <div>
             <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-              {pkg.name}
+              {pkg.packageName}
             </h4>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Cập nhật gần đây
@@ -331,10 +483,25 @@ function PackageCard({ pkg }: { pkg: PackageType }) {
                 transition={{ duration: 0.18, ease: "easeOut" }}
                 className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#050505] backdrop-blur-xl"
               >
-                <DropdownItem label="Sửa gói" />
+                <DropdownItem
+                  label="Sửa gói"
+                  onClick={() => {
+                    setOpen(false);
+                    onEdit(pkg);
+                  }}
+                />
 
                 <div className="h-px bg-white/10" />
-                <DropdownItem label="Xoá gói" danger />
+                <DropdownItem
+                  label="Xoá gói"
+                  danger
+                  disabled={hasActiveSubscribers}
+                  onClick={() => {
+                    if (hasActiveSubscribers) return;
+                    setOpen(false);
+                    onDelete(pkg);
+                  }}
+                />
               </motion.div>
             )}
           </AnimatePresence>
@@ -348,7 +515,13 @@ function PackageCard({ pkg }: { pkg: PackageType }) {
       <div className="flex items-end justify-between">
         <div>
           <p className="text-xl font-semibold text-gray-900 dark:text-white">
-            {pkg.price === 0 ? "Miễn phí" : formatPrice(pkg.price)}
+            {pkg.price === 0 ? (
+              <span className="rounded-md bg-emerald-50 px-2 py-1 text-base font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+                Miễn phí
+              </span>
+            ) : (
+              formatPrice(pkg.price)
+            )}
             {pkg.price !== 0 && (
               <span className="ml-1 text-xs font-normal text-gray-500 dark:text-gray-400">
                 / tháng
@@ -358,11 +531,11 @@ function PackageCard({ pkg }: { pkg: PackageType }) {
 
           <div className="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
             <FiUsers />
-            <span>{pkg.users} người dùng</span>
+            <span>{pkg.activeSubscriberCount} người dùng đang hoạt động</span>
           </div>
         </div>
 
-        <StatusBadge status={pkg.status ?? "active"} />
+        <StatusBadge status="active" />
       </div>
     </motion.div>
   );
@@ -384,14 +557,22 @@ function StatusBadge({ status }: { status: "active" | "inactive" }) {
   );
 }
 
-function DropdownItem({ label, danger = false }: DropdownItemProps) {
+function DropdownItem({
+  label,
+  danger = false,
+  disabled = false,
+  onClick,
+}: DropdownItemProps & { disabled?: boolean; onClick?: () => void }) {
   return (
     <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
       className={`w-full px-4 py-2 text-left text-sm transition-colors ${
         danger
           ? "text-red-400 hover:bg-red-500/10"
           : "text-gray-300 hover:bg-white/5 hover:text-white"
-      } `}
+      } disabled:cursor-not-allowed disabled:opacity-50`}
     >
       {label}
     </button>

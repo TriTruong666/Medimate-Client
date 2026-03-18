@@ -59,7 +59,11 @@ export default function DashboardLayout() {
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">
           <Navbar />
-          <div ref={scrollRef} className="flex-1 overflow-hidden">
+          <div
+            id="dashboard-scroll-container"
+            ref={scrollRef}
+            className="flex-1 overflow-hidden"
+          >
             <div ref={contentRef}>
               <Outlet />
             </div>
