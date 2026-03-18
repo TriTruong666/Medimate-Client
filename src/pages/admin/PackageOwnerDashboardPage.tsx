@@ -1,8 +1,8 @@
 import { IoLockClosedOutline, IoLockOpenOutline } from "react-icons/io5";
 import { HiOutlineX } from "react-icons/hi";
+import { useMemo, useState } from "react";
 import { useAtom } from "jotai";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
-import { Pagination } from "@/components/custom-ui/Pagination";
 import {
   openCancelModalAtom,
   openLockModalAtom,
@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
+import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 type PackageOwnerRow = {
   name: string;
   email: string;
@@ -155,7 +156,6 @@ export default function PackageOwnerDashboardPage() {
       {/* Content */}
       <div className="my-8">
         <PackageOwnerTable data={demoData} />
-        <Pagination page={1} pageSize={20} total={demoData.length} />
       </div>
     </div>
   );
@@ -165,6 +165,15 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
   const [, openLockModal] = useAtom(openLockModalAtom);
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
   const [, openCancelModal] = useAtom(openCancelModalAtom);
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
+  const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const pagedData = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return data.slice(start, start + pageSize);
+  }, [data, currentPage, pageSize]);
+
   const duration = {
     monthly: "Hằng tháng",
     "3 months": "3 tháng",
@@ -172,29 +181,27 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
     "12 months": "12 tháng",
     yearly: "Hằng năm",
   };
-  return (
-    <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
-      <thead>
-        <tr className="dark:bg-border-dark/30 bg-gray-50/50">
-          {columns.map((col, i) => (
-            <th
-              key={col.key}
-              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
-                i < columns.length - 1
-                  ? "dark:border-border-dark border-r border-gray-100"
-                  : ""
-              } `}
-            >
-              {col.label}
-            </th>
-          ))}
-        </tr>
-      </thead>
 
-      <tbody className="dark:divide-border-dark divide-y divide-gray-100">
-        {data.map((row, i) => (
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
+    setPage(nextPage);
+  };
+
+  return (
+    <DataTableShell
+      columns={columns}
+      isEmpty={data.length === 0}
+      emptyMessage="Không tìm thấy hội viên nào trong hệ thống."
+      pagination={{
+        page: currentPage,
+        pageSize,
+        total: data.length,
+        onPageChange: handlePageChange,
+      }}
+    >
+      {pagedData.map((row, i) => (
           <tr
-            key={i}
+            key={`${row.email}-${i}`}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
             {/* Info */}
@@ -261,7 +268,7 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
                   <>
                     <Tooltip content="Khoá tạm thời">
                       <IconAction
-                        onClick={() => openLockModal("owner_package")}
+                        onClick={() => openLockModal("owner_package", row.email)}
                         danger
                         icon={<IoLockClosedOutline />}
                       />
@@ -281,7 +288,7 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
                   <>
                     <Tooltip content="Mở khoá">
                       <IconAction
-                        onClick={() => openUnlockModal("owner_package")}
+                        onClick={() => openUnlockModal("owner_package", row.email)}
                         icon={<IoLockOpenOutline />}
                       />
                     </Tooltip>
@@ -322,8 +329,7 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
             </td>
           </tr>
         ))}
-      </tbody>
-    </table>
+    </DataTableShell>
   );
 }
 
