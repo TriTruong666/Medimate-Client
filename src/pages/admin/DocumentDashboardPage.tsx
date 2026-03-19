@@ -24,12 +24,13 @@ import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
 import { openDeleteModalAtom, openModalAtom } from "@/stores/modalStore";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import GlassSelect from "@/components/custom-ui/Select";
-import { Pagination } from "@/components/custom-ui/Pagination";
 import { cardContainer, cardItem } from "@/motions/cardMotion";
 
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
+import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import { useClientPagination } from "@/hooks/useClientPagination";
 
 type DocumentRow = {
   name: string;
@@ -69,6 +70,11 @@ type DocumentCardProps = {
 
 type DocumentTableProps = {
   data: DocumentRow[];
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 export default function DocumentDashboardPage() {
@@ -191,6 +197,16 @@ export default function DocumentDashboardPage() {
   const handleChangeTableLayout = (key: string) => {
     setTableLayout(key);
   };
+
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(demoData, { initialPageSize: 5 });
+
   return (
     <div className="page-layout">
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -240,9 +256,14 @@ export default function DocumentDashboardPage() {
       </div>
       {tableLayout === "table" && (
         <div className="my-8">
-          <DocumentTable data={demoData} />
-
-          <Pagination page={1} pageSize={20} total={demoData.length} />
+          <DocumentTable
+            data={pagedData}
+            page={page}
+            pageSize={pageSize}
+            total={total}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
+          />
         </div>
       )}
 
@@ -365,29 +386,23 @@ function DocumentCard({ data }: DocumentCardProps) {
   );
 }
 
-function DocumentTable({ data }: DocumentTableProps) {
+function DocumentTable({
+  data,
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+}: DocumentTableProps) {
   const [, openDeleteModal] = useAtom(openDeleteModalAtom);
   return (
-    <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
-      <thead>
-        <tr className="dark:bg-border-dark/30 bg-gray-50/50">
-          {columns.map((col, i) => (
-            <th
-              key={col.key}
-              className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
-                i < columns.length - 1
-                  ? "dark:border-border-dark border-r border-gray-100"
-                  : ""
-              } `}
-            >
-              {col.label}
-            </th>
-          ))}
-        </tr>
-      </thead>
-
-      <tbody className="dark:divide-border-dark divide-y divide-gray-100">
-        {data.map((row, i) => (
+    <DataTableShell
+      columns={columns}
+      isEmpty={total === 0}
+      emptyMessage="Không tìm thấy dữ liệu tài liệu."
+      pagination={{ page, pageSize, total, onPageChange, onPageSizeChange }}
+    >
+      {data.map((row, i) => (
           <tr
             key={i}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
@@ -443,8 +458,7 @@ function DocumentTable({ data }: DocumentTableProps) {
             </td>
           </tr>
         ))}
-      </tbody>
-    </table>
+    </DataTableShell>
   );
 }
 

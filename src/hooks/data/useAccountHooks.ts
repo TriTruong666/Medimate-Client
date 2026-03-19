@@ -3,9 +3,10 @@ import { useFetch } from "../useFetch";
 import * as UserService from "@/apis/user.service";
 import { toast } from "../useToast";
 import { getApiErrorMessage, translateErrorMessage } from "@/common/api.error";
+import type { PaginationParams } from "@/common/query.params";
 
-export function useUserList() {
-  return useFetch(["users"], async () => UserService.getUsers());
+export function useUserList(params: PaginationParams) {
+  return useFetch(["users", params], async () => UserService.getUsers(params));
 }
 
 export function useCreateDoctor() {
