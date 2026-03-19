@@ -7,3 +7,13 @@ export function useTransactionList(params: GetTransactionsParams) {
     TransactionService.getTransactions(params),
   );
 }
+
+export function useTransactionDetail(id?: string | null) {
+  return useFetch(
+    ["transaction-detail", id],
+    async () => TransactionService.getTransactionDetail(id as string),
+    {
+      enabled: !!id,
+    },
+  );
+}

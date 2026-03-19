@@ -1,6 +1,10 @@
-import type { BasePaginatedResponse } from "@/types/APIResponse";
+import type { BasePaginatedResponse, BaseResponse } from "@/types/APIResponse";
 import { cleanQueryParams } from "@/common/query.params";
-import type { GetTransactionsParams, Transaction } from "@/types/Transaction";
+import type {
+  GetTransactionsParams,
+  Transaction,
+  TransactionDetail,
+} from "@/types/Transaction";
 import { axiosNETClient } from "./client";
 
 export async function getTransactions(
@@ -9,5 +13,12 @@ export async function getTransactions(
   const res = await axiosNETClient.get("/api/v1/transactions", {
     params: cleanQueryParams<GetTransactionsParams>(params),
   });
+  return res.data;
+}
+
+export async function getTransactionDetail(
+  id: string,
+): Promise<BaseResponse<TransactionDetail>> {
+  const res = await axiosNETClient.get(`/api/v1/transactions/${id}`);
   return res.data;
 }

@@ -1,7 +1,7 @@
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import {
   closeDrawerAtom,
-  transactionDetailDataAtom,
+  transactionDetailIdAtom,
 } from "../../stores/drawerStore";
 import { formatPrice } from "../../common/format";
 import { Badge } from "../custom-ui/Badge";
@@ -12,12 +12,23 @@ import {
   HiOutlineMail,
   HiOutlineReceiptRefund,
 } from "react-icons/hi";
+import { useTransactionDetail } from "@/hooks/data/useTransactionHooks";
 
 export function TransactionDrawer() {
   const [, closeDrawer] = useAtom(closeDrawerAtom);
-  const [data] = useAtom(transactionDetailDataAtom);
+  const [transactionId] = useAtom(transactionDetailIdAtom);
+  const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
+  const { data, isLoading, isError, error } = useTransactionDetail(transactionId);
 
-  if (!data) return null;
+  const handleCloseDrawer = () => {
+    setTransactionDetailId(null);
+    closeDrawer();
+  };
+
+  const status = normalizePaymentStatus(data?.paymentStatus);
+  const transactionType = data?.transactionType.toLowerCase() as "in" | "out";
+
+  if (!transactionId) return null;
 
   return (
     <div className="flex h-full w-120 max-w-full flex-col overflow-y-auto border-l border-white/10 bg-[#0a0a0a] font-sans text-gray-200 shadow-2xl">
@@ -27,7 +38,7 @@ export function TransactionDrawer() {
           Chi tiết giao dịch
         </h2>
         <button
-          onClick={() => closeDrawer()}
+          onClick={handleCloseDrawer}
           className="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-white/10 hover:text-white"
         >
           <IoCloseOutline size={20} />
@@ -36,6 +47,20 @@ export function TransactionDrawer() {
 
       {/* Content */}
       <div className="flex flex-col gap-7 p-6">
+        {isLoading && (
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-gray-300">
+            Đang tải chi tiết giao dịch...
+          </div>
+        )}
+
+        {isError && (
+          <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-200">
+            {error?.message || "Không thể tải chi tiết giao dịch."}
+          </div>
+        )}
+
+        {!isLoading && !isError && data && (
+          <>
         {/* Amount Section */}
         <div className="flex flex-col gap-1 border-b border-white/5 pb-7">
           <p className="text-[10px] font-bold text-gray-500 uppercase">
@@ -44,15 +69,15 @@ export function TransactionDrawer() {
           <div className="flex items-center justify-between">
             <span
               className={`font-mono text-3xl font-semibold tracking-tight ${
-                data.transaction_type === "revenue"
+                transactionType === "in"
                   ? "text-emerald-400"
                   : "text-red-400"
               }`}
             >
-              {data.transaction_type === "revenue" ? "+" : "-"}
-              {formatPrice(data.totalPrice)}
+              {transactionType === "in" ? "+" : "-"}
+              {formatPrice(data.amount || 0)}
             </span>
-            <StatusBadge status={data.status} />
+            <StatusBadge status={status} />
           </div>
         </div>
 
@@ -64,7 +89,7 @@ export function TransactionDrawer() {
           />
           <QuickAction icon={<HiOutlineDownload size={18} />} label="Tải PDF" />
           <QuickAction icon={<HiOutlineMail size={18} />} label="Gửi Email" />
-          {data.transaction_type === "revenue" ? (
+          {transactionType === "in" ? (
             <QuickAction
               icon={<HiOutlineReceiptRefund size={18} />}
               label="Hoàn tiền"
@@ -85,24 +110,18 @@ export function TransactionDrawer() {
               label="Mã giao dịch"
               value={
                 <span className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-xs text-white">
-                  {data.id}
+                  {data.transactionCode}
                 </span>
               }
             />
-            <DetailRow label="Ngày tạo" value={data.createdAt} />
-            <DetailRow
-              label="Cập nhật lần cuối"
-              value={`${data.createdAt} 14:30`}
-            />
+            <DetailRow label="Lịch hẹn" value={formatDate(data.appointmentDate)} />
             <DetailRow
               label="Phân loại"
               value={
                 <Badge
-                  type={
-                    data.transaction_type === "revenue" ? "success" : "error"
-                  }
+                  type={transactionType === "in" ? "success" : "error"}
                   value={
-                    data.transaction_type === "revenue"
+                    transactionType === "in"
                       ? "Tiền nhận vào"
                       : "Tiền chi ra"
                   }
@@ -111,9 +130,9 @@ export function TransactionDrawer() {
             />
             <DetailRow
               label="Trạng thái thanh toán"
-              value={<StatusBadge status={data.status} />}
+              value={<StatusBadge status={status} />}
             />
-            <DetailRow label="Người tạo" value="Trương Hoàng Trí" />
+            <DetailRow label="Nội dung" value={data.content || "N/A"} />
           </div>
         </div>
 
@@ -123,11 +142,21 @@ export function TransactionDrawer() {
             Chi tiết thanh toán
           </h3>
           <div className="flex flex-col gap-3">
-            <DetailRow label="Phương thức" value="Chuyển khoản (Demo)" />
-            <DetailRow label="Ngân hàng" value="Vietcombank" />
-            <DetailRow label="Số tài khoản" value="***3456789" />
-            <DetailRow label="Chủ tài khoản" value="CONG TY TNHH MEDIMATE" />
-            <DetailRow label="Nội dung" value={`Thanh toán ${data.id}`} />
+            <DetailRow label="Phương thức" value={data.paymentMethod.toLowerCase() === "payos" ? "Chuyển khoản" : "N/A"} />
+            <DetailRow label="Kênh thanh toán" value={data.paymentMethod || "N/A"} />
+            {data.paymentMethod.toLowerCase() === "payos" ? (
+              <DetailRow label="Mã đối soát PAYOS" value={data.paymentCode} />
+            )            
+             : null}
+            {/* <DetailRow label="Số tiền" value={formatPrice(data.amount || 0)} />
+            <DetailRow
+              label="Phí giao dịch"
+              value={formatPrice(data.transactionFee || 0)}
+            /> */}
+            <DetailRow
+              label="Tổng thanh toán"
+              value={formatPrice(data.amount || 0)}
+            />
           </div>
         </div>
 
@@ -139,45 +168,52 @@ export function TransactionDrawer() {
           <div className="flex flex-col gap-3">
             <DetailRow
               label={
-                data.transaction_type === "revenue"
+                transactionType === "in"
                   ? "Khách hàng"
                   : "Nhà cung cấp"
               }
               value={
-                data.transaction_type === "revenue"
-                  ? "Trần Thị Bệnh Nhân"
-                  : "Công ty TNHH Dược Phẩm XYZ"
+                transactionType === "in"
+                  ? data.senderName || "N/A"
+                  : data.receiverName || "N/A"
               }
             />
-            <DetailRow label="Số điện thoại" value="0987 *** 321" />
-            <DetailRow label="Email" value="contact@***.com" />
+            <DetailRow
+              label={transactionType === "in" ? "Người nhận" : "Người gửi"}
+              value={
+                transactionType === "in"
+                  ? data.receiverName || "N/A"
+                  : data.senderName || "N/A"
+              }
+            />
           </div>
         </div>
 
         {/* Additional Notes Demo */}
-        <div className="space-y-2">
+        {/* <div className="space-y-2">
           <h3 className="text-[10px] font-bold tracking-widest text-gray-500 uppercase">
             Ghi chú nội bộ
           </h3>
           <div className="rounded-xl border border-white/5 bg-white/2 p-3 text-xs leading-relaxed text-gray-400 italic">
-            Giao dịch phân hệ Demo. Không có giá trị pháp lý thực tế. Mọi thắc
-            mắc vui lòng liên hệ bộ phận kế toán.
+            {data.content || "Không có ghi chú."}
           </div>
-        </div>
+        </div> */}
+          </>
+        )}
       </div>
 
       {/* Footer Actions */}
       <div className="mt-auto border-t border-white/5 bg-[#0a0a0a]/90 p-5 backdrop-blur-md">
         <div className="flex gap-3">
           <button
-            onClick={() => closeDrawer()}
+            onClick={handleCloseDrawer}
             className="flex-1 rounded-lg border border-white/10 bg-transparent px-4 py-2.5 text-xs font-semibold text-white transition-colors hover:bg-white/5 active:scale-[0.98]"
           >
             Đóng
           </button>
-          <button className="flex-1 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-black shadow-lg transition-colors hover:bg-gray-200 active:scale-[0.98]">
+          {/* <button className="flex-1 rounded-lg bg-white px-4 py-2.5 text-xs font-semibold text-black shadow-lg transition-colors hover:bg-gray-200 active:scale-[0.98]">
             Chỉnh sửa
-          </button>
+          </button> */}
         </div>
       </div>
     </div>
@@ -192,7 +228,7 @@ function QuickAction({
   label: string;
 }) {
   return (
-    <button className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/5 bg-white/2 p-3 text-gray-400 transition-all hover:bg-white/[0.06] hover:text-white active:scale-95">
+    <button className="flex flex-col items-center justify-center gap-2 rounded-xl border border-white/5 bg-white/2 p-3 text-gray-400 transition-all hover:bg-white/6 hover:text-white active:scale-95">
       {icon}
       <span className="text-[10px] font-medium">{label}</span>
     </button>
@@ -223,4 +259,38 @@ function StatusBadge({ status }: { status: "pending" | "paid" | "cancelled" }) {
     cancelled: <Badge type="error" value="Bị huỷ" />,
   };
   return map[status];
+}
+
+function normalizePaymentStatus(
+  status?: string,
+): "pending" | "paid" | "cancelled" {
+  const normalizedStatus = (status || "").trim().toLowerCase();
+
+  if (
+    normalizedStatus === "paid" ||
+    normalizedStatus === "success" ||
+    normalizedStatus === "completed"
+  ) {
+    return "paid";
+  }
+
+  if (
+    normalizedStatus === "cancelled" ||
+    normalizedStatus === "canceled" ||
+    normalizedStatus === "failed" ||
+    normalizedStatus === "rejected"
+  ) {
+    return "cancelled";
+  }
+
+  return "pending";
+}
+
+function formatDate(value?: string | null) {
+  if (!value) return "N/A";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleString("vi-VN");
 }

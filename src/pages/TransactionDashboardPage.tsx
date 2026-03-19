@@ -9,21 +9,13 @@ import { useAtom, useSetAtom } from "jotai";
 import { useMemo, useState } from "react";
 import {
   openDrawerAtom,
-  transactionDetailDataAtom,
+  transactionDetailIdAtom,
 } from "../stores/drawerStore";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { useTransactionList } from "@/hooks/data/useTransactionHooks";
 import type { PaginationParams } from "@/common/query.params";
 import type { Transaction } from "@/types/Transaction";
-
-type TransactionRow = {
-  id: string;
-  createdAt: string;
-  transaction_type: "revenue" | "expenses";
-  totalPrice: number;
-  status: "pending" | "paid" | "cancelled";
-};
 
 type ColumnKey =
   | "id"
@@ -41,7 +33,7 @@ type TableColumn = {
 };
 
 type TransactionTableProps = {
-  data: TransactionRow[];
+  data: Transaction[];
   isLoading: boolean;
   isError: boolean;
   errorMessage?: string;
@@ -111,16 +103,12 @@ export default function TransactionDashboardPage() {
   const { data, isLoading, error, isError, refetch } =
     useTransactionList(pagination);
 
-  const items = data?.items ?? [];
   const total = data?.totalCount ?? 0;
   const page = data?.pageNumber ?? pagination.pageNumber ?? 1;
   const pageSize = data?.pageSize ?? pagination.pageSize ?? 5;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const tableData = useMemo(
-    () => items.map((item) => mapTransactionToRow(item)),
-    [items],
-  );
+  const tableData = useMemo(() => data?.items ?? [], [data?.items]);
 
   const handlePageChange = (nextPage: number) => {
     if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
@@ -184,10 +172,10 @@ function TransactionTable({
 }: TransactionTableProps) {
   const [, openPaymentModal] = useAtom(openTransactionModalAtom);
   const openDrawer = useSetAtom(openDrawerAtom);
-  const setTransactionDetailData = useSetAtom(transactionDetailDataAtom);
+  const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
 
-  const handleOpenDetailModal = (row: TransactionRow) => {
-    setTransactionDetailData(row);
+  const handleOpenDetailModal = (row: Transaction) => {
+    setTransactionDetailId(row.transactionId);
     openDrawer("transaction_details");
   };
   const demoPaymentData = {
@@ -218,45 +206,48 @@ function TransactionTable({
         onPageSizeChange,
       }}
     >
-      {data.map((row, i) => (
+      {data.map((row, i) => {
+          const rowType: "in" | "out" = row.transactionType.toLowerCase() as "in" | "out";
+          const rowStatus = normalizeTransactionStatus(row.status);
+
+          return (
           <tr
-            key={`${row.id}-${i}`}
+            key={`${row.transactionId}-${i}`}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
             {/* ID */}
             <td className="dark:border-border-dark border-r border-gray-100 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
-                {row.id}
+                {row.transactionCode || row.transactionId || "N/A"}
               </span>
             </td>
 
             {/* Created At */}
             <td className="dark:border-border-dark border-r border-gray-100 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
-                {row.createdAt}
+                {formatTransactionDate(row.transactionDate)}
               </span>
             </td>
 
             {/* Transaction Type */}
             <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <TransactionTypeBadge transaction_type={row.transaction_type} />
+              <TransactionTypeBadge transaction_type={rowType} />
             </td>
 
             <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
               <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
-                {formatPrice(row.totalPrice)}
+                {formatPrice(row.totalAmount ?? 0)}
               </span>
             </td>
 
             {/* Status */}
             <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <StatusBadge status={row.status} />
+              <StatusBadge status={rowStatus} />
             </td>
 
             {/* Actions */}
             <td className="p-4 text-center">
-              {row.transaction_type === "expenses" &&
-              row.status === "pending" ? (
+              {rowType === "out" && rowStatus === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => openPaymentModal(demoPaymentData)}
@@ -281,19 +272,10 @@ function TransactionTable({
               )}
             </td>
           </tr>
-        ))}
+          );
+        })}
     </DataTableShell>
   );
-}
-
-function mapTransactionToRow(item: Transaction): TransactionRow {
-  return {
-    id: item.transactionCode || item.transactionId || "N/A",
-    createdAt: formatTransactionDate(item.transactionDate),
-    transaction_type: normalizeTransactionType(item.transactionType),
-    totalPrice: item.totalAmount ?? 0,
-    status: normalizeTransactionStatus(item.status),
-  };
 }
 
 function formatTransactionDate(value?: string) {
@@ -303,21 +285,6 @@ function formatTransactionDate(value?: string) {
   if (Number.isNaN(date.getTime())) return value;
 
   return date.toLocaleDateString("vi-VN");
-}
-
-function normalizeTransactionType(
-  type?: string,
-): "revenue" | "expenses" {
-  const normalizedType = (type || "").trim().toLowerCase();
-  if (
-    normalizedType.includes("expense") ||
-    normalizedType.includes("chi") ||
-    normalizedType.includes("out")
-  ) {
-    return "expenses";
-  }
-
-  return "revenue";
 }
 
 function normalizeTransactionStatus(
@@ -358,11 +325,11 @@ function StatusBadge({ status }: { status: "pending" | "paid" | "cancelled" }) {
 function TransactionTypeBadge({
   transaction_type,
 }: {
-  transaction_type: "revenue" | "expenses";
+  transaction_type: "in" | "out";
 }) {
   const map = {
-    revenue: <Badge type="success" value="Tiền nhận vào" />,
-    expenses: <Badge type="warning" value="Tiền chi ra" />,
+    in: <Badge type="success" value="Tiền nhận vào" />,
+    out: <Badge type="warning" value="Tiền chi ra" />,
   };
 
   return map[transaction_type];
