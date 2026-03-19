@@ -1,11 +1,11 @@
 import { FiEye } from "react-icons/fi";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
-import { Pagination } from "@/components/custom-ui/Pagination";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
-import { Spinner } from "@/components/custom-ui/Spinner";
+import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { formatRelativeTime } from "@/common/format";
+import { useClientPagination } from "@/hooks/useClientPagination";
 
 // MOCK DATA structure based on AccountDashboardPage and data_handling_ui plan
 const mockCertificates = [
@@ -89,67 +89,39 @@ function CertificateTable() {
   const isLoading = false;
   const isError = false;
   const data = mockCertificates;
-
-  const colCount = columns.length;
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(data, { initialPageSize: 5 });
 
   return (
     <>
-      <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
-        <thead>
-          <tr className="dark:bg-border-dark/30 bg-gray-50/50">
-            {columns.map((col, i) => (
-              <th
-                key={col.key}
-                className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${
-                  col.width ?? ""
-                } ${col.align === "center" ? "text-center!" : ""} ${
-                  col.align === "right" ? "text-right!" : "text-left"
-                } ${
-                  i < columns.length - 1
-                    ? "dark:border-border-dark border-r border-gray-100"
-                    : ""
-                }`}
-              >
-                {col.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent">
-          {isLoading ? (
-            // 1. LOADING STATE
-            <tr>
-              <td colSpan={colCount}>
-                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                  <Spinner size="lg" />
-                  <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Đang tải danh sách chứng chỉ...
-                  </p>
-                </div>
-              </td>
-            </tr>
-          ) : isError ? (
-            // 2. ERROR STATE
-            <tr>
-              <td colSpan={colCount}>
-                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                  <h3 className="mt-4 text-lg text-white">Đã xảy ra lỗi</h3>
-                  <p className="mt-1 max-w-75 text-center text-sm text-gray-400">
-                    Không thể kết nối đến máy chủ. Vui lòng thử lại sau.
-                  </p>
-                  <button className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10">
-                    Thử lại
-                  </button>
-                </div>
-              </td>
-            </tr>
-          ) : data && data.length > 0 ? (
-            // 3. HAPPY CASE (DATA RENDER)
-            data.map((row) => (
-              <tr
-                key={row.id}
-                className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
-              >
+      <DataTableShell
+        columns={columns}
+        isLoading={isLoading}
+        isError={isError}
+        isEmpty={data.length === 0}
+        loadingMessage="Đang tải danh sách chứng chỉ..."
+        emptyTitle="Chưa có dữ liệu"
+        emptyMessage="Không tìm thấy chứng chỉ nào cần phê duyệt vào lúc này."
+        tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
+        pagination={{
+          page,
+          pageSize,
+          total,
+          onPageChange: handlePageChange,
+          onPageSizeChange: handlePageSizeChange,
+        }}
+      >
+        {pagedData.map((row) => (
+          <tr
+            key={row.id}
+            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+          >
                 {/* 1. Thông tin bác sĩ */}
                 <td className="dark:border-border-dark border-r border-gray-100 p-4">
                   <div className="flex items-center gap-3">
@@ -217,24 +189,9 @@ function CertificateTable() {
                     />
                   </Tooltip>
                 </td>
-              </tr>
-            ))
-          ) : (
-            // 4. EMPTY DATA STATE
-            <tr>
-              <td colSpan={colCount}>
-                <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                  <h3 className="mt-4 text-lg text-white">Chưa có dữ liệu</h3>
-                  <p className="mt-1 text-sm text-gray-400">
-                    Không tìm thấy chứng chỉ nào cần phê duyệt vào lúc này.
-                  </p>
-                </div>
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-      <Pagination page={1} pageSize={20} total={data?.length ?? 0} />
+          </tr>
+        ))}
+      </DataTableShell>
     </>
   );
 }

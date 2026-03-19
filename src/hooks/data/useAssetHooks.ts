@@ -1,4 +1,4 @@
-import * as AssetsService from "@/apis/assets.service";
+import * as AssetsService from "@/apis/asset.service";
 import { useFetch } from "../useFetch";
 import type {
   GetDoctorCertificatesParams,

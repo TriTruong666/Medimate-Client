@@ -13,4 +13,4 @@ export const closeDrawerAtom = atom(null, (_, set) => {
 });
 
 // Store data for transaction detail drawer
-export const transactionDetailDataAtom = atom<any>(null);
+export const transactionDetailIdAtom = atom<string | null>(null);
