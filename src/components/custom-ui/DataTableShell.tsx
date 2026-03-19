@@ -25,6 +25,8 @@ type DataTableShellProps = {
     pageSize: number;
     total: number;
     onPageChange?: (page: number) => void;
+    onPageSizeChange?: (pageSize: number) => void;
+    pageSizeOptions?: number[];
   };
   tableClassName?: string;
   tbodyClassName?: string;
@@ -119,6 +121,8 @@ export function DataTableShell({
           pageSize={pagination.pageSize}
           total={pagination.total}
           onPageChange={pagination.onPageChange}
+          onPageSizeChange={pagination.onPageSizeChange}
+          pageSizeOptions={pagination.pageSizeOptions}
         />
       )}
     </>

@@ -1,6 +1,5 @@
 import { IoLockClosedOutline, IoLockOpenOutline } from "react-icons/io5";
 import { HiOutlineX } from "react-icons/hi";
-import { useMemo, useState } from "react";
 import { useAtom } from "jotai";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import {
@@ -12,6 +11,7 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import { useClientPagination } from "@/hooks/useClientPagination";
 type PackageOwnerRow = {
   name: string;
   email: string;
@@ -165,14 +165,14 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
   const [, openLockModal] = useAtom(openLockModalAtom);
   const [, openUnlockModal] = useAtom(openUnlockModalAtom);
   const [, openCancelModal] = useAtom(openCancelModalAtom);
-  const [page, setPage] = useState(1);
-  const pageSize = 5;
-  const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pagedData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return data.slice(start, start + pageSize);
-  }, [data, currentPage, pageSize]);
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(data, { initialPageSize: 5 });
 
   const duration = {
     monthly: "Hằng tháng",
@@ -182,21 +182,17 @@ function PackageOwnerTable({ data }: PackageOwnerTableProps) {
     yearly: "Hằng năm",
   };
 
-  const handlePageChange = (nextPage: number) => {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
-    setPage(nextPage);
-  };
-
   return (
     <DataTableShell
       columns={columns}
       isEmpty={data.length === 0}
       emptyMessage="Không tìm thấy hội viên nào trong hệ thống."
       pagination={{
-        page: currentPage,
+        page,
         pageSize,
-        total: data.length,
+        total,
         onPageChange: handlePageChange,
+        onPageSizeChange: handlePageSizeChange,
       }}
     >
       {pagedData.map((row, i) => (

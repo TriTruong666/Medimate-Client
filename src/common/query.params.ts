@@ -3,7 +3,7 @@ export interface PaginationParams {
     pageSize?: number;
 }
 
-export interface QueryParams<T extends Record<string, unknown>> extends PaginationParams {
+export interface QueryParams<T extends object> extends PaginationParams {
     sortBy?: keyof T & string;
     isDescending?: boolean;
 }

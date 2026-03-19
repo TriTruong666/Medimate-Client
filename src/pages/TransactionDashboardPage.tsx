@@ -2,17 +2,20 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import { Badge } from "../components/custom-ui/Badge";
 import Breadcrumb from "../components/custom-ui/Breadcrumb";
 import { HiOutlineCreditCard, HiOutlinePrinter } from "react-icons/hi";
-import { useMemo, useState } from "react";
 import { formatPrice } from "../common/format";
 import IconAction from "../components/custom-ui/IconAction";
 import { openTransactionModalAtom } from "../stores/modalStore";
 import { useAtom, useSetAtom } from "jotai";
+import { useMemo, useState } from "react";
 import {
   openDrawerAtom,
   transactionDetailDataAtom,
 } from "../stores/drawerStore";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import { useTransactionList } from "@/hooks/data/useTransactionHooks";
+import type { PaginationParams } from "@/common/query.params";
+import type { Transaction } from "@/types/Transaction";
 
 type TransactionRow = {
   id: string;
@@ -39,6 +42,15 @@ type TableColumn = {
 
 type TransactionTableProps = {
   data: TransactionRow[];
+  isLoading: boolean;
+  isError: boolean;
+  errorMessage?: string;
+  onRetry: () => void;
+  page: number;
+  pageSize: number;
+  total: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 const breadcrumbItems = [
@@ -91,65 +103,41 @@ const columns: TableColumn[] = [
     align: "center",
   },
 ];
-const demoData: TransactionRow[] = [
-  {
-    id: "PKG0001",
-    createdAt: "12/08/2026",
-    transaction_type: "revenue",
-    status: "pending",
-    totalPrice: 259000,
-  },
-  {
-    id: "PKG0002",
-    transaction_type: "revenue",
-    createdAt: "12/08/2026",
-    status: "paid",
-    totalPrice: 259000,
-  },
-  {
-    id: "PKG0003",
-    transaction_type: "revenue",
-    createdAt: "12/08/2026",
-    status: "cancelled",
-    totalPrice: 259000,
-  },
-  {
-    id: "PKG0004",
-    transaction_type: "revenue",
-    createdAt: "12/08/2026",
-    status: "pending",
-    totalPrice: 100000,
-  },
-  {
-    id: "PKG0005",
-    transaction_type: "revenue",
-    createdAt: "12/08/2026",
-    status: "cancelled",
-    totalPrice: 259000,
-  },
-  {
-    id: "PKG0006",
-    transaction_type: "revenue",
-    createdAt: "12/08/2026",
-    status: "pending",
-    totalPrice: 2259000,
-  },
-  {
-    id: "EPX0001",
-    transaction_type: "expenses",
-    createdAt: "12/08/2026",
-    status: "paid",
-    totalPrice: 1259000,
-  },
-  {
-    id: "EPX0002",
-    transaction_type: "expenses",
-    createdAt: "12/08/2026",
-    status: "pending",
-    totalPrice: 1259000,
-  },
-];
 export default function TransactionDashboardPage() {
+  const [pagination, setPagination] = useState<PaginationParams>({
+    pageNumber: 1,
+    pageSize: 5,
+  });
+  const { data, isLoading, error, isError, refetch } =
+    useTransactionList(pagination);
+
+  const items = data?.items ?? [];
+  const total = data?.totalCount ?? 0;
+  const page = data?.pageNumber ?? pagination.pageNumber ?? 1;
+  const pageSize = data?.pageSize ?? pagination.pageSize ?? 5;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+
+  const tableData = useMemo(
+    () => items.map((item) => mapTransactionToRow(item)),
+    [items],
+  );
+
+  const handlePageChange = (nextPage: number) => {
+    if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
+
+    setPagination((prev) => ({
+      ...prev,
+      pageNumber: nextPage,
+    }));
+  };
+
+  const handlePageSizeChange = (nextPageSize: number) => {
+    setPagination({
+      pageNumber: 1,
+      pageSize: nextPageSize,
+    });
+  };
+
   return (
     <div className="page-layout">
       {/* Header */}
@@ -163,34 +151,45 @@ export default function TransactionDashboardPage() {
       </div>
       {/* Content */}
       <div className="my-8">
-        <TransactionTable data={demoData} />
+        <TransactionTable
+          data={tableData}
+          isLoading={isLoading}
+          isError={isError}
+          errorMessage={
+            error?.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
+          }
+          onRetry={() => refetch()}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+        />
       </div>
     </div>
   );
 }
 
-function TransactionTable({ data }: TransactionTableProps) {
+function TransactionTable({
+  data,
+  isLoading,
+  isError,
+  errorMessage,
+  onRetry,
+  page,
+  pageSize,
+  total,
+  onPageChange,
+  onPageSizeChange,
+}: TransactionTableProps) {
   const [, openPaymentModal] = useAtom(openTransactionModalAtom);
   const openDrawer = useSetAtom(openDrawerAtom);
   const setTransactionDetailData = useSetAtom(transactionDetailDataAtom);
-  const [page, setPage] = useState(1);
-  const pageSize = 5;
-  const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pagedData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return data.slice(start, start + pageSize);
-  }, [data, currentPage, pageSize]);
 
   const handleOpenDetailModal = (row: TransactionRow) => {
     setTransactionDetailData(row);
     openDrawer("transaction_details");
   };
-  const handlePageChange = (nextPage: number) => {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
-    setPage(nextPage);
-  };
-
   const demoPaymentData = {
     doctorName: "BS. Nguyễn Minh Hoàng",
     bankName: "Vietcombank",
@@ -205,16 +204,21 @@ function TransactionTable({ data }: TransactionTableProps) {
   return (
     <DataTableShell
       columns={columns}
+      isLoading={isLoading}
+      isError={isError}
       isEmpty={data.length === 0}
+      errorMessage={errorMessage}
       emptyMessage="Không tìm thấy giao dịch nào trong hệ thống."
+      onRetry={onRetry}
       pagination={{
-        page: currentPage,
+        page,
         pageSize,
-        total: data.length,
-        onPageChange: handlePageChange,
+        total,
+        onPageChange,
+        onPageSizeChange,
       }}
     >
-      {pagedData.map((row, i) => (
+      {data.map((row, i) => (
           <tr
             key={`${row.id}-${i}`}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
@@ -280,6 +284,65 @@ function TransactionTable({ data }: TransactionTableProps) {
         ))}
     </DataTableShell>
   );
+}
+
+function mapTransactionToRow(item: Transaction): TransactionRow {
+  return {
+    id: item.transactionCode || item.transactionId || "N/A",
+    createdAt: formatTransactionDate(item.transactionDate),
+    transaction_type: normalizeTransactionType(item.transactionType),
+    totalPrice: item.totalAmount ?? 0,
+    status: normalizeTransactionStatus(item.status),
+  };
+}
+
+function formatTransactionDate(value?: string) {
+  if (!value) return "N/A";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("vi-VN");
+}
+
+function normalizeTransactionType(
+  type?: string,
+): "revenue" | "expenses" {
+  const normalizedType = (type || "").trim().toLowerCase();
+  if (
+    normalizedType.includes("expense") ||
+    normalizedType.includes("chi") ||
+    normalizedType.includes("out")
+  ) {
+    return "expenses";
+  }
+
+  return "revenue";
+}
+
+function normalizeTransactionStatus(
+  status?: string,
+): "pending" | "paid" | "cancelled" {
+  const normalizedStatus = (status || "").trim().toLowerCase();
+
+  if (
+    normalizedStatus === "paid" ||
+    normalizedStatus === "success" ||
+    normalizedStatus === "completed"
+  ) {
+    return "paid";
+  }
+
+  if (
+    normalizedStatus === "cancelled" ||
+    normalizedStatus === "canceled" ||
+    normalizedStatus === "failed" ||
+    normalizedStatus === "rejected"
+  ) {
+    return "cancelled";
+  }
+
+  return "pending";
 }
 
 function StatusBadge({ status }: { status: "pending" | "paid" | "cancelled" }) {

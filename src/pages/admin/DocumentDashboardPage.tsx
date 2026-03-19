@@ -16,7 +16,7 @@ import {
   BsFiletypeHtml,
 } from "react-icons/bs";
 import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { useAtom } from "jotai";
 
@@ -30,6 +30,7 @@ import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import { useClientPagination } from "@/hooks/useClientPagination";
 
 type DocumentRow = {
   name: string;
@@ -73,14 +74,13 @@ type DocumentTableProps = {
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
 };
 
 export default function DocumentDashboardPage() {
   const [type, setType] = useState("");
   const [, openModal] = useAtom(openModalAtom);
   const [tableLayout, setTableLayout] = useState("table");
-  const [page, setPage] = useState(1);
-  const pageSize = 5;
   const breadcrumbItems = [
     {
       label: "Dashboard",
@@ -198,17 +198,14 @@ export default function DocumentDashboardPage() {
     setTableLayout(key);
   };
 
-  const totalPages = Math.max(1, Math.ceil(demoData.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pagedDocumentData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return demoData.slice(start, start + pageSize);
-  }, [demoData, currentPage, pageSize]);
-
-  const handlePageChange = (nextPage: number) => {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
-    setPage(nextPage);
-  };
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(demoData, { initialPageSize: 5 });
 
   return (
     <div className="page-layout">
@@ -260,11 +257,12 @@ export default function DocumentDashboardPage() {
       {tableLayout === "table" && (
         <div className="my-8">
           <DocumentTable
-            data={pagedDocumentData}
-            page={currentPage}
+            data={pagedData}
+            page={page}
             pageSize={pageSize}
-            total={demoData.length}
+            total={total}
             onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </div>
       )}
@@ -394,6 +392,7 @@ function DocumentTable({
   pageSize,
   total,
   onPageChange,
+  onPageSizeChange,
 }: DocumentTableProps) {
   const [, openDeleteModal] = useAtom(openDeleteModalAtom);
   return (
@@ -401,7 +400,7 @@ function DocumentTable({
       columns={columns}
       isEmpty={total === 0}
       emptyMessage="Không tìm thấy dữ liệu tài liệu."
-      pagination={{ page, pageSize, total, onPageChange }}
+      pagination={{ page, pageSize, total, onPageChange, onPageSizeChange }}
     >
       {data.map((row, i) => (
           <tr

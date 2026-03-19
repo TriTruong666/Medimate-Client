@@ -163,6 +163,13 @@ function AccountTable({ sortType }: { sortType: SortType }) {
     }));
   };
 
+  const handlePageSizeChange = (nextPageSize: number) => {
+    setPagination({
+      pageNumber: 1,
+      pageSize: nextPageSize,
+    });
+  };
+
   return (
     <>
       <DataTableShell
@@ -180,6 +187,7 @@ function AccountTable({ sortType }: { sortType: SortType }) {
           pageSize,
           total,
           onPageChange: handlePageChange,
+          onPageSizeChange: handlePageSizeChange,
         }}
       >
         {sortedUsers.map((row) => (

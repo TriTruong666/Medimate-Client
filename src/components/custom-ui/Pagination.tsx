@@ -5,19 +5,39 @@ type PaginationProps = {
   pageSize: number;
   total: number;
   onPageChange?: (page: number) => void;
+  onPageSizeChange?: (pageSize: number) => void;
+  pageSizeOptions?: number[];
 };
 export function Pagination({
   page,
   pageSize,
   total,
   onPageChange,
+  onPageSizeChange,
+  pageSizeOptions = [5, 10, 20, 50],
 }: PaginationProps) {
-  const totalPages = Math.ceil(total / pageSize);
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   return (
     <div className="dark:border-border-dark flex items-center justify-between border border-gray-100 px-4 py-3">
       {/* Info */}
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center gap-4">
+        {onPageSizeChange && (
+          <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+            Số dòng
+            <select
+              value={pageSize}
+              onChange={(e) => onPageSizeChange(Number(e.target.value))}
+              className="dark:border-border-dark rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none hover:bg-gray-50 dark:bg-transparent dark:text-gray-200 dark:hover:bg-white/5"
+            >
+              {pageSizeOptions.map((size) => (
+                <option key={size} value={size} className="text-black">
+                  {size}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <span className="text-xs text-gray-500 dark:text-white">
           Tổng {total} bản ghi
         </span>

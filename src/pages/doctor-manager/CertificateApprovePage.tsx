@@ -1,11 +1,11 @@
 import { FiEye } from "react-icons/fi";
-import { useMemo, useState } from "react";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { formatRelativeTime } from "@/common/format";
+import { useClientPagination } from "@/hooks/useClientPagination";
 
 // MOCK DATA structure based on AccountDashboardPage and data_handling_ui plan
 const mockCertificates = [
@@ -89,19 +89,14 @@ function CertificateTable() {
   const isLoading = false;
   const isError = false;
   const data = mockCertificates;
-  const [page, setPage] = useState(1);
-  const pageSize = 5;
-  const totalPages = Math.max(1, Math.ceil(data.length / pageSize));
-  const currentPage = Math.min(page, totalPages);
-  const pagedData = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return data.slice(start, start + pageSize);
-  }, [data, currentPage, pageSize]);
-
-  const handlePageChange = (nextPage: number) => {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === currentPage) return;
-    setPage(nextPage);
-  };
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(data, { initialPageSize: 5 });
 
   return (
     <>
@@ -115,10 +110,11 @@ function CertificateTable() {
         emptyMessage="Không tìm thấy chứng chỉ nào cần phê duyệt vào lúc này."
         tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
         pagination={{
-          page: currentPage,
+          page,
           pageSize,
-          total: data.length,
+          total,
           onPageChange: handlePageChange,
+          onPageSizeChange: handlePageSizeChange,
         }}
       >
         {pagedData.map((row) => (
