@@ -1,12 +1,24 @@
 import type { PaginationParams } from "@/common/query.params";
 
 export type DoctorDocumentStatus = "pending" | "approved" | "rejected";
+export type DoctorDocumentType =
+  | "PRACTICE_LICENSE"
+  | "SPECIALIST_CERTIFICATE"
+  | "CME"
+  | "OTHER";
+
+export const doctorDocumentTypeLabelMap: Record<DoctorDocumentType, string> = {
+  PRACTICE_LICENSE: "Chứng chỉ hành nghề",
+  SPECIALIST_CERTIFICATE: "Chứng chỉ chuyên khoa",
+  CME: "Đào tạo y khoa liên tục (CME)",
+  OTHER: "Tài liệu khác",
+};
 
 export type DoctorDocument = {
   documentId: string;
   doctorId: string;
   fileUrl: string;
-  type: string;
+  type: DoctorDocumentType | string;
   status: string;
   reviewBy: string | null;
   reviewAt: string | null;

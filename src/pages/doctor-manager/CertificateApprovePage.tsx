@@ -9,9 +9,11 @@ import { PATHS } from "@/config/paths";
 import { useLocation } from "react-router-dom";
 import { useDoctorDocuments } from "@/hooks/data/useDoctorDocumentHooks";
 import { useMemo, useState } from "react";
+import { doctorDocumentTypeLabelMap } from "@/types/DoctorDocument";
 import type {
   DoctorDocument,
   DoctorDocumentStatus,
+  DoctorDocumentType,
 } from "@/types/DoctorDocument";
 
 type CertificateRow = {
@@ -39,12 +41,28 @@ function normalizeStatus(status: string): DoctorDocumentStatus {
   return "pending";
 }
 
+function normalizeDocumentType(type: string): DoctorDocumentType {
+  const normalized = type.trim().toUpperCase();
+
+  if (
+    normalized === "PRACTICE_LICENSE" ||
+    normalized === "SPECIALIST_CERTIFICATE" ||
+    normalized === "CME"
+  ) {
+    return normalized;
+  }
+
+  return "OTHER";
+}
+
 function toCertificateRow(item: DoctorDocument): CertificateRow {
+  const documentType = normalizeDocumentType(item.type);
+
   return {
     id: item.documentId,
     doctorName: `BS. ${item.doctorId.slice(0, 8).toUpperCase()}`,
     specialty: "Chưa cập nhật",
-    certName: item.type || "Tài liệu chứng chỉ",
+    certName: doctorDocumentTypeLabelMap[documentType],
     issuePlace: item.reviewBy || "Chưa có người duyệt",
     issueDate: item.reviewAt ? formatRelativeTime(item.reviewAt) : "Chưa duyệt",
     submitDate: item.createdAt,
