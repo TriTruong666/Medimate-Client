@@ -6,6 +6,9 @@ import VariableFontHoverByLetter from "@/components/animations-ui/VariableFontHo
 import SplitText from "@/components/animations-ui/SplitText";
 import Typewriter from "@/components/animations-ui/Typewriter";
 import DotGrid from "@/components/animations-ui/DotGrid";
+import { Spinner } from "@/components/custom-ui/Spinner";
+import { toast } from "@/hooks/useToast";
+import { useDoctorMe, useUpdateDoctorMe } from "@/hooks/data/useDoctorHooks";
 
 export default function DoctorWelcomePage() {
   const [currentStep, setCurrentStep] = useState<
@@ -709,10 +712,152 @@ function IntroduceSection({ onStart }: { onStart: () => void }) {
   );
 }
 
+type SetupProgress = "name" | "bio" | "avatar" | "password" | "certificate";
+
+type DoctorOnboardingDraft = {
+  fullName: string | null;
+  bio: string | null;
+  avatarPreview: string | null | undefined;
+  avatarFile: File | null;
+  newPassword: string;
+  confirmPassword: string;
+  certificates: File[];
+};
+
+function pickFirstString(
+  source: Record<string, unknown>,
+  keys: string[],
+): string | null {
+  for (const key of keys) {
+    const value = source[key];
+    if (typeof value === "string" && value.trim().length > 0) {
+      return value;
+    }
+  }
+  return null;
+}
+
 function SetupLayout({ onStart }: { onStart?(): void }) {
-  const [setupProgress, setSetupProgress] = useState<
-    "name" | "bio" | "avatar" | "password" | "certificate"
-  >("name");
+  const [setupProgress, setSetupProgress] = useState<SetupProgress>("name");
+  const [draft, setDraft] = useState<DoctorOnboardingDraft>({
+    fullName: null,
+    bio: null,
+    avatarPreview: undefined,
+    avatarFile: null,
+    newPassword: "",
+    confirmPassword: "",
+    certificates: [],
+  });
+  const { data: doctorProfile, isLoading: isDoctorLoading } = useDoctorMe(true);
+  const updateDoctorMeMutation = useUpdateDoctorMe();
+
+  const doctorRecord = (doctorProfile ?? {}) as Record<string, unknown>;
+  const defaultName = doctorProfile?.fullName ?? "";
+  const defaultBio =
+    pickFirstString(doctorRecord, ["bio", "description", "introduction"]) ??
+    "";
+  const defaultAvatar = pickFirstString(doctorRecord, [
+    "avatarUrl",
+    "profileImageUrl",
+    "imageUrl",
+  ]);
+
+  const displayName = draft.fullName ?? defaultName;
+  const displayBio = draft.bio ?? defaultBio;
+  const displayAvatar =
+    draft.avatarPreview === undefined ? defaultAvatar : draft.avatarPreview;
+
+  const handleAvatarChange = (file: File | null) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = typeof reader.result === "string" ? reader.result : null;
+      setDraft((prev) => ({
+        ...prev,
+        avatarFile: file,
+        avatarPreview: result,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAvatarRemove = () => {
+    setDraft((prev) => ({
+      ...prev,
+      avatarFile: null,
+      avatarPreview: null,
+    }));
+  };
+
+  const handleAddCertificates = (selected: FileList | null) => {
+    if (!selected) return;
+
+    const selectedFiles = Array.from(selected);
+    setDraft((prev) => ({
+      ...prev,
+      certificates: [...prev.certificates, ...selectedFiles].slice(0, 4),
+    }));
+  };
+
+  const handleRemoveCertificate = (index: number) => {
+    setDraft((prev) => ({
+      ...prev,
+      certificates: prev.certificates.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handlePasswordNext = () => {
+    const trimmedPassword = draft.newPassword.trim();
+    if (!trimmedPassword) {
+      toast.warn("Thiếu dữ liệu", "Vui lòng nhập mật khẩu mới trước khi tiếp tục.");
+      return;
+    }
+
+    if (trimmedPassword.length < 8) {
+      toast.warn("Mật khẩu chưa hợp lệ", "Mật khẩu cần ít nhất 8 ký tự.");
+      return;
+    }
+
+    if (draft.newPassword !== draft.confirmPassword) {
+      toast.warn("Mật khẩu chưa khớp", "Vui lòng nhập lại mật khẩu trùng khớp.");
+      return;
+    }
+
+    setSetupProgress("certificate");
+  };
+
+  const handleCompleteOnboarding = async () => {
+    if (draft.certificates.length === 0) {
+      toast.warn(
+        "Thiếu chứng chỉ",
+        "Vui lòng tải lên ít nhất 1 chứng chỉ trước khi hoàn tất.",
+      );
+      return;
+    }
+
+    const response = await updateDoctorMeMutation.mutateAsync({
+      fullName: displayName.trim() || undefined,
+      bio: displayBio.trim() || undefined,
+    });
+
+    if (!response.success) {
+      return;
+    }
+
+    onStart?.();
+  };
+
+  if (isDoctorLoading) {
+    return (
+      <div className="relative flex h-screen w-full items-center justify-center font-sans antialiased">
+        <div className="flex flex-col items-center gap-4">
+          <Spinner size="lg" color="white" />
+          <p className="text-sm text-neutral-400">Đang tải thông tin bác sĩ...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative h-screen w-full overflow-hidden font-sans antialiased">
@@ -732,7 +877,15 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
               hint={["* Điền đầy đủ họ và tên", "* Không bắt buộc"]}
               buttonName="Tiếp tục"
             >
-              <NameUpdate />
+              <NameUpdate
+                value={displayName}
+                onChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    fullName: value,
+                  }))
+                }
+              />
             </SetupItem>
           </motion.div>
         )}
@@ -751,7 +904,15 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
               hint={["* Xuống dòng mỗi lần giới thiệu", "* Không bắt buộc"]}
               buttonName="Tiếp tục"
             >
-              <AddBio />
+              <AddBio
+                value={displayBio}
+                onChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    bio: value,
+                  }))
+                }
+              />
             </SetupItem>
           </motion.div>
         )}
@@ -769,7 +930,11 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
               title="Ảnh đại diện cũng rất quan trọng đấy nhé!"
               buttonName="Tiếp tục"
             >
-              <AvatarUpload />
+              <AvatarUpload
+                preview={displayAvatar}
+                onChange={handleAvatarChange}
+                onRemove={handleAvatarRemove}
+              />
             </SetupItem>
           </motion.div>
         )}
@@ -783,12 +948,27 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
             className="flex h-full w-full items-center justify-center"
           >
             <SetupItem
-              onClick={() => setSetupProgress("certificate")}
+              onClick={handlePasswordNext}
               title="Bây giờ đặt lại mật khẩu nhé!"
               buttonName="Đặt lại mật khẩu"
               hint={["* Đặt lại mật khẩu là bắt buộc"]}
             >
-              <ChangePassword />
+              <ChangePassword
+                password={draft.newPassword}
+                confirmPassword={draft.confirmPassword}
+                onPasswordChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    newPassword: value,
+                  }))
+                }
+                onConfirmPasswordChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    confirmPassword: value,
+                  }))
+                }
+              />
             </SetupItem>
           </motion.div>
         )}
@@ -802,15 +982,21 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
             className="flex h-full w-full items-center justify-center"
           >
             <SetupItem
-              onClick={onStart}
+              onClick={handleCompleteOnboarding}
               title="Bước cuối cùng, hãy upload chứng chỉ của bạn!!!"
-              buttonName="Tải lên chứng chỉ"
+              buttonName={updateDoctorMeMutation.isPending ? "Đang lưu..." : "Tải lên chứng chỉ"}
               hint={[
                 "* Đây là bước quan trọng nhất (Bắt Buộc)",
                 "* Tối đa 4 files",
               ]}
+              disabled={updateDoctorMeMutation.isPending}
+              isLoading={updateDoctorMeMutation.isPending}
             >
-              <UploadCertificate />
+              <UploadCertificate
+                files={draft.certificates}
+                onFilesChange={handleAddCertificates}
+                onRemoveFile={handleRemoveCertificate}
+              />
             </SetupItem>
           </motion.div>
         )}
@@ -825,6 +1011,8 @@ type SetupItemProps = {
   buttonName?: string;
   children?: React.ReactNode;
   onClick?(): void;
+  disabled?: boolean;
+  isLoading?: boolean;
 };
 
 function SetupItem({
@@ -833,6 +1021,8 @@ function SetupItem({
   buttonName = "Tiếp tục",
   children,
   onClick,
+  disabled = false,
+  isLoading = false,
 }: SetupItemProps) {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center space-y-8">
@@ -853,7 +1043,8 @@ function SetupItem({
 
       <button
         onClick={onClick}
-        className="group relative overflow-hidden rounded-full bg-white px-8 py-3 text-sm font-semibold text-black transition-transform duration-300 hover:scale-105 active:scale-95"
+        disabled={disabled}
+        className="group relative overflow-hidden rounded-full bg-white px-8 py-3 text-sm font-semibold text-black transition-transform duration-300 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
       >
         {/* Shiny Shimmer Effect */}
         <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-linear-to-r from-transparent via-white/80 to-transparent" />
@@ -862,6 +1053,7 @@ function SetupItem({
         <div className="absolute inset-0 -z-10 bg-white/20 opacity-0 blur-xl transition-opacity group-hover:opacity-100" />
 
         <span className="relative z-10 flex items-center gap-2">
+          {isLoading && <Spinner size="sm" color="primary" />}
           {buttonName}
           <svg
             width="15"
@@ -896,34 +1088,35 @@ function SetupItem({
   );
 }
 
-function NameUpdate() {
+function NameUpdate({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange(value: string): void;
+}) {
   return (
     <div className="">
       <input
         className="flex h-12 w-100 rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
         placeholder="Tên của bạn..."
-        value="Đặng Ngọc Sáng"
-        type="email"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        type="text"
       />
     </div>
   );
 }
 
-function AvatarUpload() {
-  const [preview, setPreview] = useState<string | null>(null);
-
-  const handleFileChange = (file: File | null) => {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemove = () => {
-    setPreview(null);
-  };
+function AvatarUpload({
+  preview,
+  onChange,
+  onRemove,
+}: {
+  preview: string | null;
+  onChange(file: File | null): void;
+  onRemove(): void;
+}) {
 
   return (
     <div className="flex w-full flex-col items-center space-y-6">
@@ -933,7 +1126,7 @@ function AvatarUpload() {
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
+            onChange={(e) => onChange(e.target.files?.[0] ?? null)}
           />
 
           {/* subtle inner glow */}
@@ -980,12 +1173,12 @@ function AvatarUpload() {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
+                onChange={(e) => onChange(e.target.files?.[0] ?? null)}
               />
             </label>
 
             <button
-              onClick={handleRemove}
+              onClick={onRemove}
               type="button"
               className="text-xs text-neutral-300 transition hover:text-red-500"
             >
@@ -998,19 +1191,37 @@ function AvatarUpload() {
   );
 }
 
-function AddBio() {
+function AddBio({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange(value: string): void;
+}) {
   return (
     <div className="">
       <textarea
         rows={4}
         placeholder="Một vài thông tin về bản thân..."
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
         className="h-40 max-h-40 w-150 resize-none rounded-xl border border-white/10 bg-black px-4 py-4 pr-4 text-sm text-white transition duration-300 outline-none placeholder:text-gray-400 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none"
       ></textarea>
     </div>
   );
 }
 
-function ChangePassword() {
+function ChangePassword({
+  password,
+  confirmPassword,
+  onPasswordChange,
+  onConfirmPasswordChange,
+}: {
+  password: string;
+  confirmPassword: string;
+  onPasswordChange(value: string): void;
+  onConfirmPasswordChange(value: string): void;
+}) {
   return (
     <div className="flex w-100 flex-col space-y-8">
       <div className="flex flex-col gap-2">
@@ -1022,6 +1233,8 @@ function ChangePassword() {
         <input
           className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
           placeholder="Mật khẩu mới"
+          value={password}
+          onChange={(e) => onPasswordChange(e.target.value)}
           type="password"
         />
       </div>
@@ -1034,6 +1247,8 @@ function ChangePassword() {
         <input
           className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
           placeholder="Nhập lại mật khẩu"
+          value={confirmPassword}
+          onChange={(e) => onConfirmPasswordChange(e.target.value)}
           type="password"
         />
       </div>
@@ -1041,19 +1256,15 @@ function ChangePassword() {
   );
 }
 
-function UploadCertificate() {
-  const [files, setFiles] = useState<File[]>([]);
-
-  const handleFileChange = (selected: FileList | null) => {
-    if (!selected) return;
-
-    const newFiles = Array.from(selected);
-    setFiles((prev) => [...prev, ...newFiles]);
-  };
-
-  const removeFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
+function UploadCertificate({
+  files,
+  onFilesChange,
+  onRemoveFile,
+}: {
+  files: File[];
+  onFilesChange(selected: FileList | null): void;
+  onRemoveFile(index: number): void;
+}) {
 
   const getFileIcon = (file: File) => {
     if (file.type.includes("pdf")) return "PDF";
@@ -1069,7 +1280,7 @@ function UploadCertificate() {
           multiple
           accept=".pdf"
           className="hidden"
-          onChange={(e) => handleFileChange(e.target.files)}
+          onChange={(e) => onFilesChange(e.target.files)}
         />
 
         <div className="relative flex flex-col items-center space-y-4 text-neutral-400 transition-all duration-300 group-hover:text-white">
@@ -1120,7 +1331,7 @@ function UploadCertificate() {
               </div>
 
               <button
-                onClick={() => removeFile(index)}
+                onClick={() => onRemoveFile(index)}
                 type="button"
                 className="text-xs text-neutral-400 transition hover:text-red-500"
               >
