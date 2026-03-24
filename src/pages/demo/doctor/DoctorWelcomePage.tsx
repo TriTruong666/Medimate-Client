@@ -8,7 +8,15 @@ import Typewriter from "@/components/animations-ui/Typewriter";
 import DotGrid from "@/components/animations-ui/DotGrid";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { toast } from "@/hooks/useToast";
-import { useDoctorMe, useUpdateDoctorMe } from "@/hooks/data/useDoctorHooks";
+import { getApiErrorMessage, translateErrorMessage } from "@/common/api.error";
+import {
+  useChangeMyPassword,
+  useDoctorMe,
+  useSubmitDoctorMe,
+} from "@/hooks/data/useDoctorHooks";
+
+const DEFAULT_OLD_PASSWORD =
+  import.meta.env.VITE_DOCTOR_INITIAL_PASSWORD ?? "12345678aA@";
 
 export default function DoctorWelcomePage() {
   const [currentStep, setCurrentStep] = useState<
@@ -716,12 +724,15 @@ type SetupProgress = "name" | "bio" | "avatar" | "password" | "certificate";
 
 type DoctorOnboardingDraft = {
   fullName: string | null;
+  specialty: string | null;
+  currentHospitalName: string | null;
+  licenseNumber: string | null;
+  yearsOfExperience: string | null;
   bio: string | null;
-  avatarPreview: string | null | undefined;
-  avatarFile: File | null;
+  avatarImage: File | null;
+  licenseImage: File[];
   newPassword: string;
   confirmPassword: string;
-  certificates: File[];
 };
 
 function pickFirstString(
@@ -741,86 +752,164 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
   const [setupProgress, setSetupProgress] = useState<SetupProgress>("name");
   const [draft, setDraft] = useState<DoctorOnboardingDraft>({
     fullName: null,
+    specialty: null,
+    currentHospitalName: null,
+    licenseNumber: null,
+    yearsOfExperience: null,
     bio: null,
-    avatarPreview: undefined,
-    avatarFile: null,
+    avatarImage: null,
+    licenseImage: [],
     newPassword: "",
     confirmPassword: "",
-    certificates: [],
   });
   const { data: doctorProfile, isLoading: isDoctorLoading } = useDoctorMe(true);
-  const updateDoctorMeMutation = useUpdateDoctorMe();
+  const submitDoctorMeMutation = useSubmitDoctorMe();
+  const changePasswordMutation = useChangeMyPassword();
 
   const doctorRecord = (doctorProfile ?? {}) as Record<string, unknown>;
   const defaultName = doctorProfile?.fullName ?? "";
+  const defaultSpecialty = doctorProfile?.specialty ?? "";
+  const defaultCurrentHospitalName = doctorProfile?.currentHospitalName ?? "";
+  const defaultLicenseNumber = doctorProfile?.licenseNumber ?? "";
+  const defaultAvatar =
+    pickFirstString(doctorRecord, ["avatarUrl", "avatarImage", "profileImage"]) ??
+    "";
   const defaultBio =
     pickFirstString(doctorRecord, ["bio", "description", "introduction"]) ??
     "";
-  const defaultAvatar = pickFirstString(doctorRecord, [
-    "avatarUrl",
-    "profileImageUrl",
-    "imageUrl",
-  ]);
 
   const displayName = draft.fullName ?? defaultName;
+  const displaySpecialty = draft.specialty ?? defaultSpecialty;
+  const displayCurrentHospitalName =
+    draft.currentHospitalName ?? defaultCurrentHospitalName;
+  const displayLicenseNumber = draft.licenseNumber ?? defaultLicenseNumber;
+  const displayYearsOfExperience = draft.yearsOfExperience ?? "";
+  const displayAvatar = defaultAvatar;
   const displayBio = draft.bio ?? defaultBio;
-  const displayAvatar =
-    draft.avatarPreview === undefined ? defaultAvatar : draft.avatarPreview;
 
-  const handleAvatarChange = (file: File | null) => {
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = typeof reader.result === "string" ? reader.result : null;
-      setDraft((prev) => ({
-        ...prev,
-        avatarFile: file,
-        avatarPreview: result,
-      }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleAvatarRemove = () => {
-    setDraft((prev) => ({
-      ...prev,
-      avatarFile: null,
-      avatarPreview: null,
-    }));
-  };
-
-  const handleAddCertificates = (selected: FileList | null) => {
-    if (!selected) return;
+  const handleLicenseImageChange = (selected: FileList | null) => {
+    if (!selected || selected.length === 0) return;
 
     const selectedFiles = Array.from(selected);
     setDraft((prev) => ({
       ...prev,
-      certificates: [...prev.certificates, ...selectedFiles].slice(0, 4),
+      licenseImage: [...prev.licenseImage, ...selectedFiles].slice(0, 3),
     }));
   };
 
-  const handleRemoveCertificate = (index: number) => {
+  const handleRemoveLicenseImage = (index: number) => {
     setDraft((prev) => ({
       ...prev,
-      certificates: prev.certificates.filter((_, i) => i !== index),
+      licenseImage: prev.licenseImage.filter((_, i) => i !== index),
     }));
   };
 
-  const handlePasswordNext = () => {
+  const handleAvatarImageChange = (selected: FileList | null) => {
+    if (!selected || selected.length === 0) return;
+
+    const [selectedFile] = Array.from(selected);
+    setDraft((prev) => ({
+      ...prev,
+      avatarImage: selectedFile,
+    }));
+  };
+
+  const handleRemoveAvatarImage = () => {
+    setDraft((prev) => ({
+      ...prev,
+      avatarImage: null,
+    }));
+  };
+
+  const handleAvatarChange = () => {
+    setSetupProgress("password");
+  };
+
+  const handleAvatarRemove = () => {
+    handleRemoveAvatarImage();
+  };
+
+  const validateNameStep = () => {
+    if (!displayName.trim()) {
+      setSetupProgress("name");
+      toast.warn("Thiếu dữ liệu", "Vui lòng nhập họ và tên bác sĩ.");
+      return false;
+    }
+
+    if (!displaySpecialty.trim()) {
+      setSetupProgress("name");
+      toast.warn("Thiếu dữ liệu", "Vui lòng nhập chuyên khoa.");
+      return false;
+    }
+
+    if (!displayCurrentHospitalName.trim()) {
+      setSetupProgress("name");
+      toast.warn("Thiếu dữ liệu", "Vui lòng nhập bệnh viện hiện tại.");
+      return false;
+    }
+
+    if (!displayLicenseNumber.trim()) {
+      setSetupProgress("name");
+      toast.warn("Thiếu dữ liệu", "Vui lòng nhập số giấy phép hành nghề.");
+      return false;
+    }
+
+    const parsedYearsOfExperience = Number.parseInt(
+      displayYearsOfExperience.trim(),
+      10,
+    );
+
+    if (
+      displayYearsOfExperience.trim().length === 0 ||
+      Number.isNaN(parsedYearsOfExperience) ||
+      parsedYearsOfExperience < 0 ||
+      parsedYearsOfExperience > 80
+    ) {
+      setSetupProgress("name");
+      toast.warn(
+        "Kinh nghiệm chưa hợp lệ",
+        "Số năm kinh nghiệm phải nằm trong khoảng từ 0 đến 80.",
+      );
+      return false;
+    }
+
+    return true;
+  };
+
+  const validatePasswordStep = () => {
     const trimmedPassword = draft.newPassword.trim();
+
     if (!trimmedPassword) {
+      setSetupProgress("password");
       toast.warn("Thiếu dữ liệu", "Vui lòng nhập mật khẩu mới trước khi tiếp tục.");
-      return;
+      return false;
     }
 
     if (trimmedPassword.length < 8) {
+      setSetupProgress("password");
       toast.warn("Mật khẩu chưa hợp lệ", "Mật khẩu cần ít nhất 8 ký tự.");
-      return;
+      return false;
     }
 
     if (draft.newPassword !== draft.confirmPassword) {
+      setSetupProgress("password");
       toast.warn("Mật khẩu chưa khớp", "Vui lòng nhập lại mật khẩu trùng khớp.");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleNameNext = () => {
+    if (!validateNameStep()) {
+      return;
+    }
+
+    setSetupProgress("bio");
+  };
+
+  const handlePasswordNext = () => {
+    if (!validatePasswordStep()) {
       return;
     }
 
@@ -828,24 +917,68 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
   };
 
   const handleCompleteOnboarding = async () => {
-    if (draft.certificates.length === 0) {
+    if (!validatePasswordStep() || !validateNameStep()) {
+      return;
+    }
+
+    const parsedYearsOfExperience = Number.parseInt(
+      displayYearsOfExperience.trim(),
+      10,
+    );
+    const trimmedPassword = draft.newPassword.trim();
+
+    if (draft.licenseImage.length === 0) {
+      setSetupProgress("certificate");
       toast.warn(
         "Thiếu chứng chỉ",
-        "Vui lòng tải lên ít nhất 1 chứng chỉ trước khi hoàn tất.",
+        "Vui lòng tải lên ít nhất 1 ảnh giấy phép trước khi hoàn tất.",
       );
       return;
     }
 
-    const response = await updateDoctorMeMutation.mutateAsync({
-      fullName: displayName.trim() || undefined,
-      bio: displayBio.trim() || undefined,
-    });
+    try {
+      const changePasswordResponse = await changePasswordMutation.mutateAsync({
+        oldPassword: DEFAULT_OLD_PASSWORD,
+        newPassword: trimmedPassword,
+        confirmPassword: draft.confirmPassword.trim(),
+      });
 
-    if (!response.success) {
-      return;
+      if (!changePasswordResponse.success) {
+        setSetupProgress("password");
+        toast.error(
+          "Đổi mật khẩu thất bại",
+          translateErrorMessage(
+            changePasswordResponse.error?.code,
+            changePasswordResponse.message,
+          ),
+        );
+        return;
+      }
+
+      const response = await submitDoctorMeMutation.mutateAsync({
+        fullName: displayName.trim(),
+        specialty: displaySpecialty.trim(),
+        currentHospitalName: displayCurrentHospitalName.trim(),
+        avatarImage: draft.avatarImage || undefined,
+        licenseNumber: displayLicenseNumber.trim(),
+        licenseImage: draft.licenseImage,
+        yearsOfExperience: parsedYearsOfExperience,
+        bio: displayBio.trim(),
+      });
+
+      if (!response.success) {
+        setSetupProgress("certificate");
+        toast.error(
+          "Gửi hồ sơ thất bại",
+          translateErrorMessage(response.error?.code, response.message),
+        );
+        return;
+      }
+
+      onStart?.();
+    } catch (error: unknown) {
+      toast.error("Gửi hồ sơ thất bại", getApiErrorMessage(error));
     }
-
-    onStart?.();
   };
 
   if (isDoctorLoading) {
@@ -872,17 +1005,45 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
             className="flex h-full w-full items-center justify-center"
           >
             <SetupItem
-              onClick={() => setSetupProgress("bio")}
+              onClick={handleNameNext}
               title="Chúng tôi có thể gọi bác sĩ là?"
               hint={["* Điền đầy đủ họ và tên", "* Không bắt buộc"]}
               buttonName="Tiếp tục"
             >
               <NameUpdate
-                value={displayName}
-                onChange={(value) =>
+                fullName={displayName}
+                specialty={displaySpecialty}
+                currentHospitalName={displayCurrentHospitalName}
+                licenseNumber={displayLicenseNumber}
+                yearsOfExperience={displayYearsOfExperience}
+                onFullNameChange={(value) =>
                   setDraft((prev) => ({
                     ...prev,
                     fullName: value,
+                  }))
+                }
+                onSpecialtyChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    specialty: value,
+                  }))
+                }
+                onCurrentHospitalNameChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    currentHospitalName: value,
+                  }))
+                }
+                onLicenseNumberChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    licenseNumber: value,
+                  }))
+                }
+                onYearsOfExperienceChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    yearsOfExperience: value,
                   }))
                 }
               />
@@ -926,7 +1087,7 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
             className="flex h-full w-full items-center justify-center"
           >
             <SetupItem
-              onClick={() => setSetupProgress("password")}
+              onClick={handleAvatarChange}
               title="Ảnh đại diện cũng rất quan trọng đấy nhé!"
               buttonName="Tiếp tục"
             >
@@ -934,6 +1095,8 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
                 preview={displayAvatar}
                 onChange={handleAvatarChange}
                 onRemove={handleAvatarRemove}
+                onAvatarImageChange={handleAvatarImageChange}
+                avatarImage={draft.avatarImage}
               />
             </SetupItem>
           </motion.div>
@@ -984,18 +1147,22 @@ function SetupLayout({ onStart }: { onStart?(): void }) {
             <SetupItem
               onClick={handleCompleteOnboarding}
               title="Bước cuối cùng, hãy upload chứng chỉ của bạn!!!"
-              buttonName={updateDoctorMeMutation.isPending ? "Đang lưu..." : "Tải lên chứng chỉ"}
+              buttonName={
+                submitDoctorMeMutation.isPending || changePasswordMutation.isPending
+                  ? "Đang gửi..."
+                  : "Gửi hồ sơ xét duyệt"
+              }
               hint={[
                 "* Đây là bước quan trọng nhất (Bắt Buộc)",
-                "* Tối đa 4 files",
+                "* Tối đa 3 ảnh giấy phép (hình hoặc PDF)",
               ]}
-              disabled={updateDoctorMeMutation.isPending}
-              isLoading={updateDoctorMeMutation.isPending}
+              disabled={submitDoctorMeMutation.isPending || changePasswordMutation.isPending}
+              isLoading={submitDoctorMeMutation.isPending || changePasswordMutation.isPending}
             >
               <UploadCertificate
-                files={draft.certificates}
-                onFilesChange={handleAddCertificates}
-                onRemoveFile={handleRemoveCertificate}
+                files={draft.licenseImage}
+                onFileChange={handleLicenseImageChange}
+                onRemoveFile={handleRemoveLicenseImage}
               />
             </SetupItem>
           </motion.div>
@@ -1024,6 +1191,10 @@ function SetupItem({
   disabled = false,
   isLoading = false,
 }: SetupItemProps) {
+  const handleClick = () => {
+    onClick?.();
+  };
+
   return (
     <div className="flex h-full w-full flex-col items-center justify-center space-y-8">
       {/* Title */}
@@ -1042,7 +1213,7 @@ function SetupItem({
       </div>
 
       <button
-        onClick={onClick}
+        onClick={handleClick}
         disabled={disabled}
         className="group relative overflow-hidden rounded-full bg-white px-8 py-3 text-sm font-semibold text-black transition-transform duration-300 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100"
       >
@@ -1089,104 +1260,66 @@ function SetupItem({
 }
 
 function NameUpdate({
-  value,
-  onChange,
+  fullName,
+  specialty,
+  currentHospitalName,
+  licenseNumber,
+  yearsOfExperience,
+  onFullNameChange,
+  onSpecialtyChange,
+  onCurrentHospitalNameChange,
+  onLicenseNumberChange,
+  onYearsOfExperienceChange,
 }: {
-  value: string;
-  onChange(value: string): void;
+  fullName: string;
+  specialty: string;
+  currentHospitalName: string;
+  licenseNumber: string;
+  yearsOfExperience: string;
+  onFullNameChange(value: string): void;
+  onSpecialtyChange(value: string): void;
+  onCurrentHospitalNameChange(value: string): void;
+  onLicenseNumberChange(value: string): void;
+  onYearsOfExperienceChange(value: string): void;
 }) {
   return (
-    <div className="">
+    <div className="grid w-130 grid-cols-1 gap-4 md:grid-cols-2">
       <input
-        className="flex h-12 w-100 rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
-        placeholder="Tên của bạn..."
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
+        placeholder="Họ và tên bác sĩ"
+        value={fullName}
+        onChange={(e) => onFullNameChange(e.target.value)}
         type="text"
       />
-    </div>
-  );
-}
+      <input
+        className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
+        placeholder="Chuyên khoa"
+        value={specialty}
+        onChange={(e) => onSpecialtyChange(e.target.value)}
+        type="text"
+      />
+      <input
+        className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
+        placeholder="Bệnh viện hiện tại"
+        value={currentHospitalName}
+        onChange={(e) => onCurrentHospitalNameChange(e.target.value)}
+        type="text"
+      />
+      <input
+        className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
+        placeholder="Số giấy phép hành nghề"
+        value={licenseNumber}
+        onChange={(e) => onLicenseNumberChange(e.target.value)}
+        type="text"
+      />
 
-function AvatarUpload({
-  preview,
-  onChange,
-  onRemove,
-}: {
-  preview: string | null;
-  onChange(file: File | null): void;
-  onRemove(): void;
-}) {
-
-  return (
-    <div className="flex w-full flex-col items-center space-y-6">
-      {!preview ? (
-        <label className="group relative flex h-56 w-140 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/20 bg-black transition-all duration-300 hover:border-white/40 hover:bg-white/4">
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => onChange(e.target.files?.[0] ?? null)}
-          />
-
-          {/* subtle inner glow */}
-          <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.05),transparent_70%)] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-          <div className="relative flex flex-col items-center space-y-4 text-neutral-400 transition-all duration-300 group-hover:text-white">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/3">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              >
-                <path d="M12 16V4M12 4L8 8M12 4L16 8" />
-                <path d="M4 20H20" />
-              </svg>
-            </div>
-
-            <div className="text-center">
-              <p className="text-sm font-medium tracking-wide">
-                Tải ảnh đại diện
-              </p>
-              <p className="mt-1 text-xs text-neutral-500">
-                PNG, JPG tối đa 5MB
-              </p>
-            </div>
-          </div>
-        </label>
-      ) : (
-        <div className="group relative w-56">
-          <img
-            src={preview}
-            alt="Avatar preview"
-            className="h-56 w-full rounded-full object-cover ring-1 ring-white/10 transition-all duration-300 group-hover:ring-white/30"
-          />
-
-          {/* overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-black/60 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-            <label className="cursor-pointer rounded-full border border-white/20 px-5 py-2 text-xs tracking-wide text-white transition hover:border-white/50">
-              Thay đổi
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => onChange(e.target.files?.[0] ?? null)}
-              />
-            </label>
-
-            <button
-              onClick={onRemove}
-              type="button"
-              className="text-xs text-neutral-300 transition hover:text-red-500"
-            >
-              Xoá ảnh
-            </button>
-          </div>
-        </div>
-      )}
+      <input
+        className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none md:col-span-2"
+        placeholder="Số năm kinh nghiệm (0-80)"
+        value={yearsOfExperience}
+        onChange={(e) => onYearsOfExperienceChange(e.target.value)}
+        type="text"
+      />
     </div>
   );
 }
@@ -1199,14 +1332,81 @@ function AddBio({
   onChange(value: string): void;
 }) {
   return (
-    <div className="">
+    <div className="flex w-150 flex-col gap-3">
       <textarea
         rows={4}
         placeholder="Một vài thông tin về bản thân..."
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-40 max-h-40 w-150 resize-none rounded-xl border border-white/10 bg-black px-4 py-4 pr-4 text-sm text-white transition duration-300 outline-none placeholder:text-gray-400 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none"
+        className="h-40 max-h-40 w-full resize-none rounded-xl border border-white/10 bg-black px-4 py-4 pr-4 text-sm text-white transition duration-300 outline-none placeholder:text-gray-400 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none"
       ></textarea>
+    </div>
+  );
+}
+
+function AvatarUpload({
+  preview,
+  onChange,
+  onRemove,
+  onAvatarImageChange,
+  avatarImage,
+}: {
+  preview: string;
+  onChange(): void;
+  onRemove(): void;
+  onAvatarImageChange(selected: FileList | null): void;
+  avatarImage: File | null;
+}) {
+  return (
+    <div className="flex w-150 flex-col gap-3">
+      <label className="group relative flex h-28 w-full cursor-pointer items-center justify-center rounded-xl border border-dashed border-white/20 bg-black transition-all duration-300 hover:border-white/40 hover:bg-white/4">
+        <input
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => onAvatarImageChange(e.target.files)}
+        />
+
+        <div className="text-center text-sm text-neutral-400 transition-all duration-300 group-hover:text-white">
+          Tải lên AvatarImage
+        </div>
+      </label>
+
+      {(avatarImage || preview) && (
+        <div className="flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3">
+          <div className="flex flex-col">
+            <span className="text-sm text-white">
+              {avatarImage ? avatarImage.name : "Ảnh đại diện hiện tại"}
+            </span>
+            {avatarImage ? (
+              <span className="text-xs text-neutral-500">
+                {(avatarImage.size / 1024 / 1024).toFixed(2)} MB
+              </span>
+            ) : (
+              <span className="text-xs text-neutral-500">Đã có ảnh từ hồ sơ</span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2">
+            {avatarImage && (
+              <button
+                onClick={onRemove}
+                type="button"
+                className="text-xs text-neutral-400 transition hover:text-red-500"
+              >
+                Xoa
+              </button>
+            )}
+            <button
+              onClick={onChange}
+              type="button"
+              className="text-xs text-neutral-300 transition hover:text-white"
+            >
+              Tiếp tục
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1258,17 +1458,16 @@ function ChangePassword({
 
 function UploadCertificate({
   files,
-  onFilesChange,
+  onFileChange,
   onRemoveFile,
 }: {
   files: File[];
-  onFilesChange(selected: FileList | null): void;
+  onFileChange(selected: FileList | null): void;
   onRemoveFile(index: number): void;
 }) {
-
-  const getFileIcon = (file: File) => {
-    if (file.type.includes("pdf")) return "PDF";
-    return "FILE";
+  const getFileIcon = (selected: File) => {
+    if (selected.type.includes("pdf")) return "PDF";
+    return "IMG";
   };
 
   return (
@@ -1278,9 +1477,9 @@ function UploadCertificate({
         <input
           type="file"
           multiple
-          accept=".pdf"
+          accept=".pdf,image/*"
           className="hidden"
-          onChange={(e) => onFilesChange(e.target.files)}
+          onChange={(e) => onFileChange(e.target.files)}
         />
 
         <div className="relative flex flex-col items-center space-y-4 text-neutral-400 transition-all duration-300 group-hover:text-white">
@@ -1300,10 +1499,10 @@ function UploadCertificate({
 
           <div className="text-center">
             <p className="text-sm font-medium tracking-wide">
-              Tải lên chứng chỉ hành nghề
+              Tải lên ảnh giấy phép hành nghề
             </p>
             <p className="mt-1 text-xs text-neutral-500">
-              Chỉ hỗ trợ PDF — tối đa 10MB mỗi file
+              Hỗ trợ PDF/JPG/PNG — tối đa 10MB mỗi ảnh, tối đa 3 ảnh
             </p>
           </div>
         </div>
@@ -1314,7 +1513,7 @@ function UploadCertificate({
         <div className="space-y-3">
           {files.map((file, index) => (
             <div
-              key={index}
+              key={`${file.name}-${index}`}
               className="group flex items-center justify-between rounded-xl border border-white/10 bg-black px-4 py-3 transition hover:border-white/20"
             >
               <div className="flex items-center gap-4">
