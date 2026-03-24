@@ -4,6 +4,7 @@ import { useLogin } from "@/hooks/data/useAuthHooks";
 import { isRequired, isValidEmail } from "@/common/validation";
 import { toast } from "@/hooks/useToast";
 import { getApiErrorMessage } from "@/common/api.error";
+import { getFCMToken } from "@/lib/fcm";
 
 type LoginErrors = {
   identifier?: string;
@@ -45,7 +46,8 @@ export default function LoginPage() {
     }
 
     try {
-      await login({ identifier, password });
+      const fcmToken = await getFCMToken();
+      await login({ identifier, password, fcmToken });
     } catch {
       /* empty */
     }

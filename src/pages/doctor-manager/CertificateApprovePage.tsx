@@ -5,41 +5,52 @@ import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { formatRelativeTime } from "@/common/format";
-import { useClientPagination } from "@/hooks/useClientPagination";
+import { PATHS } from "@/config/paths";
+import { useLocation } from "react-router-dom";
+import { useDoctorDocuments } from "@/hooks/data/useDoctorDocumentHooks";
+import { useMemo, useState } from "react";
+import type {
+  DoctorDocument,
+  DoctorDocumentStatus,
+} from "@/types/DoctorDocument";
 
-// MOCK DATA structure based on AccountDashboardPage and data_handling_ui plan
-const mockCertificates = [
-  {
-    id: "CERT-001",
-    doctorName: "BS. Nguyễn Trí Trường",
-    specialty: "Tim Mạch",
-    certName: "Chứng chỉ hành nghề khám bệnh, chữa bệnh",
-    issuePlace: "Sở Y tế TP.HCM",
-    issueDate: "10/05/2018",
-    submitDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    status: "pending",
-  },
-  {
-    id: "CERT-002",
-    doctorName: "BS. Nguyễn Trí Trường",
-    specialty: "Tim Mạch",
-    certName: "Bằng Chuyên khoa cấp I - Nội Tim Mạch",
-    issuePlace: "Đại học Y Dược TP.HCM",
-    issueDate: "20/08/2022",
-    submitDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-    status: "approved",
-  },
-  {
-    id: "CERT-003",
-    doctorName: "BS. Lê Phương Thảo",
-    specialty: "Da Liễu",
-    certName: "Chứng chỉ Đào tạo liên tục Laser Thẩm mỹ",
-    issuePlace: "Bác sĩ Da liễu Trung Ương",
-    issueDate: "15/12/2024",
-    submitDate: new Date().toISOString(),
-    status: "pending",
-  },
-];
+type CertificateRow = {
+  id: string;
+  doctorName: string;
+  specialty: string;
+  certName: string;
+  issuePlace: string;
+  issueDate: string;
+  submitDate: string;
+  status: DoctorDocumentStatus;
+};
+
+function normalizeStatus(status: string): DoctorDocumentStatus {
+  const normalized = status.trim().toLowerCase().replace(/[\s-]/g, "_");
+
+  if (["approved", "accept", "accepted", "verified"].includes(normalized)) {
+    return "approved";
+  }
+
+  if (["rejected", "reject", "denied"].includes(normalized)) {
+    return "rejected";
+  }
+
+  return "pending";
+}
+
+function toCertificateRow(item: DoctorDocument): CertificateRow {
+  return {
+    id: item.documentId,
+    doctorName: `BS. ${item.doctorId.slice(0, 8).toUpperCase()}`,
+    specialty: "Chưa cập nhật",
+    certName: item.type || "Tài liệu chứng chỉ",
+    issuePlace: item.reviewBy || "Chưa có người duyệt",
+    issueDate: item.reviewAt ? formatRelativeTime(item.reviewAt) : "Chưa duyệt",
+    submitDate: item.createdAt,
+    status: normalizeStatus(item.status),
+  };
+}
 
 type ColumnKey = "doctor" | "certificate" | "status" | "actions";
 
@@ -58,6 +69,22 @@ const columns: TableColumn[] = [
 ];
 
 export default function CertificateApprovePage() {
+  const { pathname } = useLocation();
+
+  const activeStatus: DoctorDocumentStatus =
+    pathname === PATHS.DASHBOARD.APPROVE_CERTIFICATE_REJECTED
+      ? "rejected"
+      : pathname === PATHS.DASHBOARD.APPROVE_CERTIFICATE_APPROVED
+        ? "approved"
+        : "pending";
+
+  const pageTitle =
+    pathname === PATHS.DASHBOARD.APPROVE_CERTIFICATE_REJECTED
+      ? "Hồ sơ Chứng chỉ Bị từ chối"
+      : pathname === PATHS.DASHBOARD.APPROVE_CERTIFICATE_APPROVED
+        ? "Hồ sơ Chứng chỉ Đã duyệt"
+        : "Hồ sơ Chứng chỉ Chưa duyệt";
+
   const breadcrumbItems = [
     { label: "Dashboard", path: "/dashboard" },
     { label: "Quản lý Y tế", path: "/dashboard/approve-certificate" },
@@ -71,32 +98,44 @@ export default function CertificateApprovePage() {
         <div>
           <Breadcrumb items={breadcrumbItems} />
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Phê duyệt Chứng chỉ Bác sĩ
+            {pageTitle}
           </h1>
         </div>
       </div>
 
       {/* Content - Data Table */}
       <div className="my-8">
-        <CertificateTable />
+        <CertificateTable key={activeStatus} activeStatus={activeStatus} />
       </div>
     </div>
   );
 }
 
-function CertificateTable() {
-  // Simulate useQuery logic for data_handling_ui
-  const isLoading = false;
-  const isError = false;
-  const data = mockCertificates;
+function CertificateTable({
+  activeStatus,
+}: {
+  activeStatus: DoctorDocumentStatus;
+}) {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5);
+
   const {
-    page,
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useDoctorDocuments({
+    pageNumber: page,
     pageSize,
-    total,
-    pagedData,
-    handlePageChange,
-    handlePageSizeChange,
-  } = useClientPagination(data, { initialPageSize: 5 });
+    status: activeStatus,
+  });
+
+  const rows = useMemo(() => {
+    return (data?.items ?? []).map(toCertificateRow);
+  }, [data?.items]);
+
+  const total = data?.totalCount ?? 0;
 
   return (
     <>
@@ -104,20 +143,25 @@ function CertificateTable() {
         columns={columns}
         isLoading={isLoading}
         isError={isError}
-        isEmpty={data.length === 0}
+        errorMessage={error?.message}
+        onRetry={() => void refetch()}
+        isEmpty={!isLoading && !isError && rows.length === 0}
         loadingMessage="Đang tải danh sách chứng chỉ..."
         emptyTitle="Chưa có dữ liệu"
-        emptyMessage="Không tìm thấy chứng chỉ nào cần phê duyệt vào lúc này."
+        emptyMessage="Không tìm thấy chứng chỉ nào trong trạng thái này."
         tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
         pagination={{
           page,
           pageSize,
           total,
-          onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
+          onPageChange: setPage,
+          onPageSizeChange: (nextPageSize) => {
+            setPageSize(nextPageSize);
+            setPage(1);
+          },
         }}
       >
-        {pagedData.map((row) => (
+        {rows.map((row) => (
           <tr
             key={row.id}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
