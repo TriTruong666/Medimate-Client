@@ -35,6 +35,8 @@ export const PATHS = {
       CONSERVATION: "/dashboard/chat/:conversationId",
     },
     APPROVE_CERTIFICATE: "/dashboard/approve-certificate",
+    APPROVE_CERTIFICATE_REJECTED: "/dashboard/approve-certificate/rejected",
+    APPROVE_CERTIFICATE_APPROVED: "/dashboard/approve-certificate/approved",
     NOTIFICATIONS: "/dashboard/notifications",
     ASSETS: {
       PRESCRIPTION: "/dashboard/assets/prescription",
