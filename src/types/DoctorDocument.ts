@@ -1,6 +1,6 @@
 import type { PaginationParams } from "@/common/query.params";
 
-export type DoctorDocumentStatus = "pending" | "approved" | "rejected";
+export type DoctorDocumentStatus = "Pending" | "Approved" | "Rejected";
 export type DoctorDocumentType =
   | "PRACTICE_LICENSE"
   | "SPECIALIST_CERTIFICATE"

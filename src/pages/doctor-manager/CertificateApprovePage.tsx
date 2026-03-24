@@ -31,14 +31,14 @@ function normalizeStatus(status: string): DoctorDocumentStatus {
   const normalized = status.trim().toLowerCase().replace(/[\s-]/g, "_");
 
   if (["approved", "accept", "accepted", "verified"].includes(normalized)) {
-    return "approved";
+    return "Approved";
   }
 
   if (["rejected", "reject", "denied"].includes(normalized)) {
-    return "rejected";
+    return "Rejected";
   }
 
-  return "pending";
+  return "Pending";
 }
 
 function normalizeDocumentType(type: string): DoctorDocumentType {
@@ -91,10 +91,10 @@ export default function CertificateApprovePage() {
 
   const activeStatus: DoctorDocumentStatus =
     pathname === PATHS.DASHBOARD.APPROVE_CERTIFICATE_REJECTED
-      ? "rejected"
+      ? "Rejected"
       : pathname === PATHS.DASHBOARD.APPROVE_CERTIFICATE_APPROVED
-        ? "approved"
-        : "pending";
+        ? "Approved"
+        : "Pending";
 
   const pageTitle =
     pathname === PATHS.DASHBOARD.APPROVE_CERTIFICATE_REJECTED
@@ -233,9 +233,9 @@ function CertificateTable({
 
                 {/* 3. Trạng thái */}
                 <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  {row.status === "pending" ? (
+                  {row.status === "Pending" ? (
                     <Badge type="warning" value="Chờ duyệt" />
-                  ) : row.status === "approved" ? (
+                  ) : row.status === "Approved" ? (
                     <Badge type="success" value="Đã duyệt" />
                   ) : (
                     <Badge type="error" value="Bị từ chối" />
