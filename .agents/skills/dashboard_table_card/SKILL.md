@@ -1,11 +1,11 @@
 ---
 name: dashboard_table_card_pattern
-description: Guidelines and code templates for creating dashboard pages with toggleable Table and Card layouts in Medimate.
+description: Guidelines and code templates for creating dashboard pages with toggleable Table and Card layouts in Picare.
 ---
 
 # Dashboard Table and Card Layout Pattern
 
-When creating a new dashboard page that lists data (e.g., resources, documents, users), it is highly encouraged to provide both a **Table Layout** and a **Grid/Card Layout**. Please follow this specific pattern based on `DocumentDashboardPage.tsx` to maintain UI consistency across the Medimate admin dashboard.
+When creating a new dashboard page that lists data (e.g., resources, documents, users), it is highly encouraged to provide both a **Table Layout** and a **Grid/Card Layout**. Please follow this specific pattern based on `DocumentDashboardPage.tsx` to maintain UI consistency across the Picare admin dashboard.
 
 ## 1. State Management
 
@@ -70,36 +70,49 @@ Render the corresponding component based on `tableLayout`.
 )}
 ```
 
-## 4. Table Component Styling
+### 4. Table Component Styling
 
-Tables must use the predefined dark/light theme classes strictly. Avoid creating custom padding randomly. Use the layout seen below:
+Tables must follow a consistent layout to ensure a clean, professional "Simple & Black" look, as seen in `AccountDashboardPage.tsx`.
+
+**Core Rules (The REQUIRED Standard):**
+- **Container**: Wrap in a `div.overflow-x-auto`.
+- **Table Layout**: Use `table-fixed` for precise column width control via `width` classes on `<th>`.
+- **Minimum Width**: Set a `min-w-225` utility to prevent squashing.
+- **Header Style**: Use `dark:bg-border-dark/30 bg-gray-50/50` with uppercase, small, semi-bold text.
+- **Borders**: Use `dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left`.
+- **Body Styling**: Use `dark:divide-border-dark divide-y divide-gray-100`.
+- **Row Hover**: Use `transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5`.
 
 ```tsx
-function YourTableComponent({ data }: { data: any[] }) {
+function YourTableComponent({ data, isLoading, isError, refetch }: TableProps) {
   return (
-    <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
-      <thead>
-        <tr className="dark:bg-border-dark/30 bg-gray-50/50">
-          <th className="border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 dark:border-border-dark border-r border-gray-100">
-            Column 1
-          </th>
-          {/* ... other th ... */}
-        </tr>
-      </thead>
-      <tbody className="dark:divide-border-dark divide-y divide-gray-100">
-        {data.map((row, i) => (
-          <tr
-            key={i}
-            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
-          >
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
-              Row Content
-            </td>
-            {/* ... other td ... */}
+    <div className="overflow-x-auto">
+      <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
+        <thead>
+          <tr className="dark:bg-border-dark/30 bg-gray-50/50">
+            <th className="w-[40%] border-b p-4 text-xs font-semibold uppercase text-gray-500 dark:border-border-dark dark:border-r dark:text-gray-400">
+              Cột 1
+            </th>
+            {/* ... */}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="dark:divide-border-dark divide-y divide-gray-100">
+          {isLoading ? (
+            <tr>
+              <td colSpan={columnCount} className="py-20 text-center">
+                <Spinner size="lg" />
+              </td>
+            </tr>
+          ) : (
+            data.map((row) => (
+              <tr key={row.id} className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5">
+                <td className="dark:border-border-dark border-r border-gray-100 p-4">{/* Content */}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
   );
 }
 ```
@@ -159,3 +172,32 @@ import { HiOutlineDownload, HiOutlineTrash } from "react-icons/hi";
   </Tooltip>
 </div>
 ```
+## 7. Pagination Integration
+
+Pagination must follow the exact UI pattern used in `AccountDashboardPage.tsx` and `HaravanOrderDashboardPage.tsx`.
+
+**Standard Usage:**
+1. **Placement**: Place immediately after the table container.
+2. **Conditional Rendering**: Hide pagination during `isLoading` or `isError` states to keep the UI clean.
+3. **Props**: Pass `total`, `page`, `pageSize`, and an `onPageChange` callback.
+
+```tsx
+{/* Inside Dashboard Page */}
+<div className="my-8">
+  <YourTableComponent data={data} isLoading={isLoading} />
+  
+  {!isLoading && pagination && (
+    <Pagination
+      total={pagination.totalRecords}
+      page={page}
+      pageSize={pagination.pageSize}
+      onPageChange={setPage}
+    />
+  )}
+</div>
+```
+
+**Design Standards for Pagination:**
+- **Alignment**: Items should be aligned using the `Pagination` component's built-in flex layout.
+- **Style**: Use the original `Pagination.tsx` UI provided in the project (Glassmorphism borders, subtle hover effects).
+- **Behavior**: Must update the parent `page` state via `onPageChange`.

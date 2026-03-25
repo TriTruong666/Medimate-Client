@@ -17,9 +17,19 @@ export const doctorDocumentTypeLabelMap: Record<DoctorDocumentType, string> = {
 export type DoctorDocument = {
   documentId: string;
   doctorId: string;
+  doctorName?: string | null;
+  doctorSpecialty?: string | null;
   fileUrl: string;
+  documentName?: string | null;
+  documentType?: DoctorDocumentType | string | null;
   type: DoctorDocumentType | string;
   status: string;
+  rejectReason?: string | null;
+  submittedAt?: string | null;
+  reviewedByName?: string | null;
+  reviewedAt?: string | null;
+  issuedBy?: string | null;
+  issuedAt?: string | null;
   reviewBy: string | null;
   reviewAt: string | null;
   note: string | null;

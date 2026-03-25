@@ -4,11 +4,16 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import {
+  CertificateDetailReviewModal,
+  type CertificateDetailModalRow,
+} from "../../components/modals/CertificateDetailReviewModal";
 import { formatRelativeTime } from "@/common/format";
 import { PATHS } from "@/config/paths";
 import { useLocation } from "react-router-dom";
 import { useDoctorDocuments } from "@/hooks/data/useDoctorDocumentHooks";
 import { useMemo, useState } from "react";
+import { toast } from "@/hooks/useToast";
 import { doctorDocumentTypeLabelMap } from "@/types/DoctorDocument";
 import type {
   DoctorDocument,
@@ -16,15 +21,16 @@ import type {
   DoctorDocumentType,
 } from "@/types/DoctorDocument";
 
-type CertificateRow = {
-  id: string;
-  doctorName: string;
-  specialty: string;
-  certName: string;
+type CertificateRow = CertificateDetailModalRow & {
   issuePlace: string;
   issueDate: string;
-  submitDate: string;
+};
+
+type MockReviewState = {
   status: DoctorDocumentStatus;
+  reviewedAt: string;
+  reviewedBy: string;
+  rejectReason: string | null;
 };
 
 function normalizeStatus(status: string): DoctorDocumentStatus {
@@ -55,18 +61,37 @@ function normalizeDocumentType(type: string): DoctorDocumentType {
   return "OTHER";
 }
 
+function parseFileUrls(raw: string): string[] {
+  return raw
+    .split(/[\n,;]+/)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 function toCertificateRow(item: DoctorDocument): CertificateRow {
-  const documentType = normalizeDocumentType(item.type);
+  const documentType = normalizeDocumentType(
+    item.documentType || item.documentName || item.type,
+  );
+
+  const doctorName = item.doctorName?.trim() || item.doctorId.slice(0, 8);
+  const specialty = item.doctorSpecialty?.trim() || "Chưa cập nhật";
+  const reviewerName = item.reviewedByName || item.reviewBy || "Chưa có người duyệt";
+  const reviewedAt = item.reviewedAt || item.reviewAt;
+  const submittedAt = item.submittedAt || item.createdAt;
+  const rejectReason = item.rejectReason ?? item.note;
 
   return {
     id: item.documentId,
-    doctorName: `BS. ${item.doctorId.slice(0, 8).toUpperCase()}`,
-    specialty: "Chưa cập nhật",
+    doctorName,
+    specialty,
     certName: doctorDocumentTypeLabelMap[documentType],
-    issuePlace: item.reviewBy || "Chưa có người duyệt",
-    issueDate: item.reviewAt ? formatRelativeTime(item.reviewAt) : "Chưa duyệt",
-    submitDate: item.createdAt,
+    certType: documentType,
+    fileUrls: parseFileUrls(item.fileUrl),
+    issuePlace: reviewerName,
+    issueDate: reviewedAt ? formatRelativeTime(reviewedAt) : "Chưa duyệt",
+    submitDate: submittedAt,
     status: normalizeStatus(item.status),
+    rejectReason,
   };
 }
 
@@ -136,6 +161,10 @@ function CertificateTable({
 }) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [selectedRow, setSelectedRow] = useState<CertificateRow | null>(null);
+  const [mockReviewById, setMockReviewById] = useState<
+    Record<string, MockReviewState>
+  >({});
 
   const {
     data,
@@ -150,10 +179,55 @@ function CertificateTable({
   });
 
   const rows = useMemo(() => {
-    return (data?.items ?? []).map(toCertificateRow);
-  }, [data?.items]);
+    const baseRows = (data?.items ?? []).map(toCertificateRow);
+
+    return baseRows
+      .map((row) => {
+        const mockState = mockReviewById[row.id];
+        if (!mockState) return row;
+
+        return {
+          ...row,
+          status: mockState.status,
+          issuePlace: mockState.reviewedBy,
+          issueDate: formatRelativeTime(mockState.reviewedAt),
+          rejectReason: mockState.rejectReason,
+        };
+      })
+      .filter((row) => row.status === activeStatus);
+  }, [data?.items, mockReviewById, activeStatus]);
 
   const total = data?.totalCount ?? 0;
+
+  const handleApprove = (row: CertificateRow) => {
+    setMockReviewById((prev) => ({
+      ...prev,
+      [row.id]: {
+        status: "Approved",
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: "Reviewer (Mock)",
+        rejectReason: null,
+      },
+    }));
+
+    toast.success("Duyệt thành công", "Đã cập nhật trạng thái hồ sơ (mock).");
+    setSelectedRow(null);
+  };
+
+  const handleReject = (row: CertificateRow, reason: string) => {
+    setMockReviewById((prev) => ({
+      ...prev,
+      [row.id]: {
+        status: "Rejected",
+        reviewedAt: new Date().toISOString(),
+        reviewedBy: "Reviewer (Mock)",
+        rejectReason: reason,
+      },
+    }));
+
+    toast.success("Đã từ chối", "Đã cập nhật trạng thái hồ sơ (mock).");
+    setSelectedRow(null);
+  };
 
   return (
     <>
@@ -247,6 +321,7 @@ function CertificateTable({
                   <Tooltip content="Xem file gốc chứng chỉ">
                     <IconAction
                       icon={<FiEye />}
+                      onClick={() => setSelectedRow(row)}
                       className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary-light"
                     />
                   </Tooltip>
@@ -254,6 +329,14 @@ function CertificateTable({
           </tr>
         ))}
       </DataTableShell>
+
+      <CertificateDetailReviewModal
+        key={selectedRow?.id ?? "certificate-detail-empty"}
+        row={selectedRow}
+        onClose={() => setSelectedRow(null)}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
     </>
   );
 }
