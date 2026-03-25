@@ -1,11 +1,11 @@
 ---
 name: api_hooks
-description: "Guidelines and templates for writing API hooks (React Query) in the Medimate dashboard."
+description: "Guidelines and templates for writing API hooks (React Query) in the Picare dashboard."
 ---
 
-# Medimate API Hooks Standard
+# Picare API Hooks Standard
 
-This skill defines the standard pattern for writing API integration hooks in the Medimate project. All API calls must be wrapped in custom React hooks using `@tanstack/react-query` to ensure consistent data fetching, caching, error handling, and UI feedback (toast notifications).
+This skill defines the standard pattern for writing API integration hooks in the Picare project. All API calls must be wrapped in custom React hooks using `@tanstack/react-query` to ensure consistent data fetching, caching, error handling, and UI feedback (toast notifications).
 
 ## 📁 File Structure & Location
 - API service files (Axios calls) are placed in `src/apis/*.service.ts`.
@@ -17,27 +17,33 @@ When creating a new hook file, ensure you include the following standard imports
 
 ```typescript
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFetch } from "../useFetch"; // Use this instead of standard useQuery
+import { useFetch, useSuspenseFetch } from "../useFetch"; // Use these instead of standard useQuery
 import { toast } from "../useToast"; // Standard toast notification
 import { getApiErrorMessage, translateErrorMessage } from "@/common/api.error"; // Error handling
-// Import your service here:
+// Import your service and types here:
 // import * as YourService from "@/apis/your.service";
+// import type { ... } from "@/types/...";
 ```
 
 ## 🔍 1. Queries (Fetching Data)
 
-For data fetching, use the custom `useFetch` wrapper. It automatically handles extracting `data` from our standard `BaseResponse<T>` and throwing errors when `success` is false.
+For data fetching, use the custom `useFetch` wrapper. It automatically handles extracting `data` from our standard `BaseResponse<T>` and throwing errors when `success` is false. Use `useSuspenseFetch` if the component uses React Suspense.
 
 ### Template:
 ```typescript
-export function useYourEntityList() {
-  return useFetch(["your_query_key"], async () => YourService.getEntities());
+/**
+ * Lấy danh sách thực thể
+ */
+export function useEntityList() {
+  return useFetch(["entities"], () => EntityService.getEntities());
 }
 
-// Or with parameters:
-export function useYourEntityDetail(id: string) {
-  return useFetch(["your_query_key", id], async () => YourService.getEntityDetail(id), {
-    enabled: !!id, // Prevent fetching if id is missing
+/**
+ * Lấy chi tiết chi tiết thực thể theo ID
+ */
+export function useEntity(id: string) {
+  return useFetch(["entities", id], () => EntityService.getEntity(id), {
+    enabled: !!id,
   });
 }
 ```
@@ -45,90 +51,76 @@ export function useYourEntityDetail(id: string) {
 ## ✍️ 2. Mutations (Creating, Updating, Deleting)
 
 For operations that modify data, we use `useMutation`.
-**Crucial Rules for Mutations:**
-1. Check `data.success` inside `onSuccess`.
-2. Use `toast.success` and `toast.error` for both successful cases and handled logical errors.
-3. Call `queryClient.invalidateQueries` to refresh the associated data table upon success.
-4. Extract server-side logical errors using `translateErrorMessage(data.error?.code, data.message)`.
-5. Extract network/system errors in `onError` using `getApiErrorMessage(error)`.
 
-### Template:
+### Standard Mutation Rules:
+1. **`onSuccess` Logic**:
+   - Check `data.success`.
+   - If `true`: Show `toast.success` and call `queryClient.invalidateQueries`.
+   - If `false`: Show `toast.error` using `translateErrorMessage(data.error_code, data.message)`.
+2. **`onError` Logic**: Use `toast.error("Lỗi", getApiErrorMessage(err))` to handle network/system errors.
+3. **Typing**: Use specific types for `mutationFn` arguments.
+
+### Template for Create:
 ```typescript
-export function useCreateYourEntity() {
+export function useCreateEntity() {
   const queryClient = useQueryClient();
-
   return useMutation({
-    mutationFn: YourService.createEntity,
-
+    mutationFn: (data: PostEntityBody) => EntityService.createEntity(data),
     onSuccess: (data) => {
-      // 1. Success case
       if (data.success) {
-        toast.success("Thành công", "Đã thêm dữ liệu mới.");
-        // Invalidate the query key used in useFetch
-        queryClient.invalidateQueries({ queryKey: ["your_query_key"] });
-      } 
-      // 2. Logical Error from API (e.g. duplicate email, validation)
-      else {
-        toast.error(
-          "Thất bại",
-          translateErrorMessage(data.error?.code, data.message)
-        );
+        toast.success("Thành công", "Đã tạo thực thể mới");
+        queryClient.invalidateQueries({ queryKey: ["entities"] });
+      } else {
+        toast.error("Thất bại", translateErrorMessage(data.error_code, data.message));
       }
     },
-
-    // 3. Network or Unhandled Error
-    onError: (error: unknown) => {
-      toast.error("Thất bại", getApiErrorMessage(error));
-    },
+    onError: (err) => toast.error("Lỗi", getApiErrorMessage(err)),
   });
 }
 ```
 
-## 💡 Detailed Example (`useAccountHooks.ts` Reference)
-
-Below is the standard, complete reference for an optimal hook setup based on `useAccountHooks.ts`:
-
+### Template for Update (Handling ID and Data):
 ```typescript
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFetch } from "../useFetch";
-import * as UserService from "@/apis/user.service";
-import { toast } from "../useToast";
-import {
-  getApiErrorMessage,
-  translateErrorMessage,
-} from "@/common/api.error";
-
-// --- QUERY ---
-export function useUserList() {
-  return useFetch(["users"], async () => UserService.getUsers());
-}
-
-// --- MUTATION ---
-export function useCreateDoctor() {
+export function useUpdateEntity() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: UserService.createDoctor,
-
-    onSuccess: (data) => {
+    mutationFn: ({ id, data }: { id: string; data: PutEntityBody }) =>
+      EntityService.updateEntity(data, id), // Note: order depends on service signature
+    onSuccess: (data, variables) => {
       if (data.success) {
-        toast.success("Tạo tài khoản thành công", "Đã thêm bác sĩ mới.");
-        queryClient.invalidateQueries({ queryKey: ["users"] });
+        toast.success("Thành công", "Đã cập nhật thông tin");
+        queryClient.invalidateQueries({ queryKey: ["entities"] });
+        queryClient.invalidateQueries({ queryKey: ["entities", variables.id] });
       } else {
-        toast.error(
-          "Tạo tài khoản thất bại",
-          translateErrorMessage(data.error?.code, data.message),
-        );
+        toast.error("Thất bại", translateErrorMessage(data.error_code, data.message));
       }
     },
+    onError: (err) => toast.error("Lỗi", getApiErrorMessage(err)),
+  });
+}
+```
 
-    onError: (error: unknown) => {
-      toast.error("Tạo tài khoản thất bại", getApiErrorMessage(error));
+### Template for Delete:
+```typescript
+export function useDeleteEntity() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => EntityService.deleteEntity(id),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Thành công", "Đã xóa thực thể");
+        queryClient.invalidateQueries({ queryKey: ["entities"] });
+      } else {
+        toast.error("Thất bại", translateErrorMessage(data.error_code, data.message));
+      }
     },
+    onError: (err) => toast.error("Lỗi", getApiErrorMessage(err)),
   });
 }
 ```
 
 ## ⚖️ Error Handling Flow Explained
-- **`translateErrorMessage(code, message)`**: Used inside `onSuccess` when the HTTP request succeeds (200 OK) but the API returns `success: false` due to business logic (e.g., "EMAIL_EXISTS"). It checks the code against our custom API dictionary messages, falling back to the default message provided by the backend.
-- **`getApiErrorMessage(error)`**: Used inside `onError` when the HTTP request itself fails (e.g., 400 Bad Request, 500 Server Error) or the network is down.
+- **`translateErrorMessage(error_code, message)`**: Used inside `onSuccess` when the HTTP request succeeds (200 OK) but the API returns `success: false`. It maps backend error codes to Vietnamese messages.
+- **`getApiErrorMessage(error)`**: Used inside `onError` for network errors, 4xx/5xx responses. It internaly calls `translateErrorMessage`.
+- **Field Name**: Always use `data.error_code` (not `error.code`) as per `BaseResponse` interface.
+

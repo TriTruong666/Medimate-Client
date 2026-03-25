@@ -1,11 +1,11 @@
 ---
-name: medimate_ui
-description: "Guidelines for maintaining Medimate's minimalist, high-end dark theme UI."
+name: picare_ui
+description: "Guidelines for maintaining Picare's minimalist, high-end dark theme UI."
 ---
 
-# Medimate UI Design Standards
+# Picare UI Design Standards
 
-This skill ensures all agents maintain a consistent "Simple & Black" aesthetic for the Medimate project. Avoid typical "AI-generated" clutter (excessive badges, redundant icons, bright/flat colors).
+This skill ensures all agents maintain a consistent "Simple & Black" aesthetic for the Picare project. Avoid typical "AI-generated" clutter (excessive badges, redundant icons, bright/flat colors).
 
 ## 🌑 Core Aesthetic: "High-End Dark SaaS"
 
@@ -19,14 +19,14 @@ This skill ensures all agents maintain a consistent "Simple & Black" aesthetic f
 > [!IMPORTANT]
 > **Constraint**: Do NOT add decorative icons or "status badges" unless strictly necessary for functionality. The UI should feel airy and professional, not "busy."
 
-- **Rounded Corners**: Use `rounded-xl` (0.5rem) or `rounded-2xl` (1rem) for containers.
+- **Rounded Corners**: Use `rounded-lg` (0.5rem) or `rounded-2xl` (1rem) for containers.
 - **Micro-interactions**: Use `hover:scale-[1.02]` or `transition-all` instead of heavy shadows or glow.
 - **Shadows**: Avoid heavy shadows. Use subtle ring or inner borders for depth.
 
 ## 🎨 Design Tokens (from index.css)
 
 ### Colors
-- **Primary**: `#EC4899` (Use sparingly for actions).
+- **Primary**: `#de3c3c` (Used for primary buttons and critical actions).
 - **Accent Purple**: `#E1A3F1` (Used for logo/loader).
 - **Background Dark**: `#18181b`.
 - **Surface Dark**: `#202022`.
