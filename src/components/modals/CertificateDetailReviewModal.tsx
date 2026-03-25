@@ -21,6 +21,7 @@ type Props = {
   onClose(): void;
   onApprove(row: CertificateDetailModalRow): void;
   onReject(row: CertificateDetailModalRow, reason: string): void;
+  isSubmitting?: boolean;
 };
 
 function isPdf(url: string): boolean {
@@ -36,6 +37,7 @@ export function CertificateDetailReviewModal({
   onClose,
   onApprove,
   onReject,
+  isSubmitting = false,
 }: Props) {
   const [rejectReason, setRejectReason] = useState("");
   const [activeFileIndex, setActiveFileIndex] = useState(0);
@@ -59,6 +61,7 @@ export function CertificateDetailReviewModal({
           <h3 className="text-base font-semibold text-white">Chi tiết hồ sơ chứng chỉ</h3>
           <button
             onClick={onClose}
+            disabled={isSubmitting}
             className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
           >
             <HiOutlineX className="h-5 w-5" />
@@ -148,6 +151,7 @@ export function CertificateDetailReviewModal({
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
+                disabled={isSubmitting}
                 placeholder="Nhập lý do từ chối (bắt buộc nếu Reject)"
                 className="h-24 w-full resize-none rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-sm text-white outline-none transition focus:border-white/30"
               />
@@ -162,17 +166,18 @@ export function CertificateDetailReviewModal({
                   }
                   onReject(row, rejectReason.trim());
                 }}
-                disabled={!canSubmitReject}
+                disabled={!canSubmitReject || isSubmitting}
                 className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Reject
+                {isSubmitting ? "Đang xử lý..." : "Reject"}
               </button>
 
               <button
                 onClick={() => onApprove(row)}
-                className="rounded-lg bg-emerald-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500"
+                disabled={isSubmitting}
+                className="rounded-lg bg-emerald-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Approve
+                {isSubmitting ? "Đang xử lý..." : "Approve"}
               </button>
             </div>
           </div>
