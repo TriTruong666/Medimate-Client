@@ -155,13 +155,6 @@ export function CertificateDetailReviewModal({
 
             <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-4">
               <button
-                onClick={onClose}
-                className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
-              >
-                Đóng
-              </button>
-
-              <button
                 onClick={() => {
                   if (!canSubmitReject) {
                     toast.warn("Thiếu dữ liệu", "Vui lòng nhập lý do từ chối.");
@@ -169,7 +162,8 @@ export function CertificateDetailReviewModal({
                   }
                   onReject(row, rejectReason.trim());
                 }}
-                className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500"
+                disabled={!canSubmitReject}
+                className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Reject
               </button>
