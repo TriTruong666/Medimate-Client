@@ -36,14 +36,18 @@ export const formatPriceDisplay = (value: string): string => {
   return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
-export const formatRelativeTime = (dateString: string): string => {
+export const formatRelativeTime = (dateString: string, isUTC?: boolean): string => {
   const date = new Date(dateString);
+  isUTC = isUTC ?? true;
 
   // Convert UTC -> Vietnam timezone (UTC+7)
-  const vnTime = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+  const vnTime = isUTC ? new Date(date.getTime() + 7 * 60 * 60 * 1000) : date;
 
   const now = new Date();
-  const nowVN = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  // const nowVN = new Date(now.getTime() + 7 * 60 * 60 * 1000);
+  const nowVN = new Date(now.getTime());
+  console.log("vnTime:", vnTime);
+  console.log("nowVN:", nowVN);
 
   const diffMs = nowVN.getTime() - vnTime.getTime();
   const diffSec = Math.floor(diffMs / 1000);

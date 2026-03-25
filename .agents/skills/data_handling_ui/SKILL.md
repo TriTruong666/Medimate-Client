@@ -1,12 +1,13 @@
 ---
 name: data_handling_ui
-description: Guidelines and code templates for handling React Query UI states (loading, error, empty, data) in tables securely and beautifully.
+description: Guidelines and code templates for handling React Query UI states (loading, error, empty, data) in tables and grid layouts securely and beautifully.
 ---
 
-# UI Data Handling Pattern for Tables (React Query)
+# UI Data Handling Pattern (React Query)
 
-When implementing Tables or Data Grids powered by React Query (e.g., `useQuery`), you must account for 4 primary UI states: **Loading**, **Error**, **Empty Data**, and **Successful Data Display**. 
-This pattern is based on `AccountDashboardPage.tsx` and must be strictly followed to ensure a consistent, premium user experience.
+When implementing data-driven UIs (Tables, Grids, or Details) powered by React Query, you must account for 4 primary UI states: **Loading**, **Error**, **Empty Data**, and **Successful Data Display**.
+
+This pattern ensures a premium user experience and consistent behavior across the Picare OMS dashboard.
 
 ## 1. Using UseQuery Destructuring
 
@@ -15,77 +16,49 @@ Always pull the necessary state properties from your custom data hooks:
 const { data, isLoading, error, isError, refetch } = useYourDataHook();
 ```
 
-## 2. Table Render Layout Strategy
+---
 
-Control the rendering inside the `<tbody>` using ternary operators. Instead of rendering the whole table conditionally, the table skeleton (Headers) should always remain visible. Only the internal `<tbody>` rows change.
+## 2. Table Layout Strategy
 
-**Important**: For Loading, Error, and Empty states, you MUST use `colSpan={columns.length}` on the `<td>` to span the entire table width, along with a flex container `min-h-100` to ensure vertical alignment.
+For tables, maintain the table structure (`<table>`, `<thead>`) but conditionalize the `<tbody>` rows.
 
-### ✅ Code Template
-
+### ✅ Table Template
 ```tsx
 import { Spinner } from "@/components/custom-ui/Spinner";
 
 function YourTableComponent() {
   const { data, isLoading, error, isError, refetch } = useYourDataHook();
-  
-  // Assuming `columns` is an array of your table headers
-  const colCount = columns.length; 
+  const colCount = 5; // Total columns in your table
 
   return (
-    <table className="dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left">
-      <thead>
-        {/* Render your Table Headers here */}
-      </thead>
-      
-      <tbody className="dark:divide-border-dark divide-y divide-gray-100">
+    <table>
+      <thead>{/* Headers */}</thead>
+      <tbody>
         {isLoading ? (
-          // 1. LOADING STATE
+          /* 1. LOADING STATE */
           <tr>
             <td colSpan={colCount}>
-              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                <Spinner size="lg" />
-                <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Đang tải dữ liệu...
-                </p>
-              </div>
+              <div className="flex min-h-100 items-center justify-center"><Spinner size="lg" /></div>
             </td>
           </tr>
         ) : isError ? (
-          // 2. ERROR STATE
+          /* 2. ERROR STATE */
           <tr>
             <td colSpan={colCount}>
-              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                <h3 className="mt-4 text-lg text-white">Đã xảy ra lỗi</h3>
-                <p className="mt-1 max-w-75 text-center text-sm text-gray-400">
-                  {error?.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."}
-                </p>
-                <button
-                  onClick={() => refetch()}
-                  className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
-                >
-                  Thử lại
-                </button>
+              <div className="flex min-h-100 flex-col items-center justify-center">
+                <h3>Đã xảy ra lỗi</h3>
+                <button onClick={() => refetch()}>Thử lại</button>
               </div>
             </td>
           </tr>
         ) : data && data.length > 0 ? (
-          // 3. HAPPY CASE (DATA RENDER)
-          data.map((row) => (
-            <tr key={row.id} className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5">
-              {/* Process your Table Cells <td>...</td> here */}
-            </tr>
-          ))
+          /* 3. HAPPY CASE */
+          data.map(item => <tr key={item.id}>{/* Cells */}</tr>)
         ) : (
-          // 4. EMPTY DATA STATE
+          /* 4. EMPTY STATE */
           <tr>
             <td colSpan={colCount}>
-              <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                <h3 className="mt-4 text-lg text-white">Danh sách trống</h3>
-                <p className="mt-1 text-sm text-gray-400">
-                  Không tìm thấy dữ liệu nào trong hệ thống.
-                </p>
-              </div>
+              <div className="flex min-h-100 items-center justify-center">Danh sách trống</div>
             </td>
           </tr>
         )}
@@ -95,9 +68,70 @@ function YourTableComponent() {
 }
 ```
 
-## Rules for Component Usage
+---
 
-1. **`Spinner` component**: Use `<Spinner size="lg" />` imported from `@/components/custom-ui/Spinner` for data table loadings.
-2. **`min-h-100`**: To prevent layout shifting, full-table state blocks must use `min-h-100` flex containers.
-3. **Refetching**: Always provide a "Thử lại" manual retry button in the Error state bound to `refetch()`.
-4. **Header Visibility**: Keep table headers visually present during the Loading/Empty/Error states so the user maintains context. Do NOT unmount the `<thead>`.
+## 3. Grid/Card Layout Strategy (Premium Dashboard Pattern)
+
+For dashboard grids (e.g., Company list), use **Skeleton Cards** (pulse effects) for loading and **Minimalist Hero Blocks** (no background/border) for error/empty states. This keeps the interface clean and premium.
+
+### ✅ Grid Template (Skeleton + Minimalist States)
+```tsx
+import { HiOutlineRefresh, HiOutlineArchive } from "react-icons/hi";
+
+export function YourGridDashboard() {
+  const { data, isLoading, isError, error, refetch } = useYourDataHook();
+
+  return (
+    <div>
+      {isLoading ? (
+        /* 1. PREMIUM LOADING (SKELETONS) */
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="card-primary h-32 animate-pulse bg-white/5 opacity-50" />
+          ))}
+        </div>
+      ) : isError ? (
+        /* 2. MINIMALIST ERROR BLOCK (No Card BG) */
+        <div className="flex min-h-60 flex-col items-center justify-center p-8 text-center">
+           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
+              <HiOutlineRefresh className="text-3xl text-red-500/50" />
+            </div>
+          <h3 className="text-white text-lg font-semibold">Đã xảy ra lỗi</h3>
+          <p className="text-white/50 text-sm mt-2">{error?.message || "Không thể tải dữ liệu"}</p>
+          <button onClick={() => refetch()} className="mt-6 flex items-center gap-2 rounded-xl bg-white/10 px-5 py-2.5 text-sm font-medium text-white hover:bg-white/20">
+            <HiOutlineRefresh /> Thử lại
+          </button>
+        </div>
+      ) : data && data.length > 0 ? (
+        /* 3. DATA RENDER */
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {data.map(item => <YourCard key={item.id} data={item} />)}
+          <AddCard />
+        </div>
+      ) : (
+        /* 4. MINIMALIST EMPTY STATE (No Card BG) */
+        <div className="flex min-h-60 flex-col items-center justify-center p-8 text-center">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
+            <HiOutlineArchive className="text-3xl text-white/20" />
+          </div>
+          <h3 className="text-white text-lg font-semibold">Danh sách trống</h3>
+          <p className="text-white/50 text-sm mt-2">Chưa có dữ liệu nào trong hệ thống</p>
+          <button onClick={onAdd} className="btn-primary mt-6">Thêm ngay</button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+## 📏 Rules for Data Handling
+
+1. **Minimalist Style**: Avoid using boxed cards or background panels for Empty/Error states unless specifically requested. A centered icon + text on a transparent background is preferred for Picare OMS.
+2. **Skeleton Pulse**: For Grid/Card layouts, use `animate-pulse` cards that respect the same grid structure as the final content.
+3. **Context Preservation**: Page titles and navigation elements must remain interactive/visible while data is loading.
+4. **Error Icons**: Use relevant icons (e.g., Refresh for errors, Archive/Box for empty) with subtle tinted backgrounds (e.g., `bg-red-500/10`).
+5. **Layout Stability**: Maintain a consistent `min-h` for state containers to prevent layout jumping when switching states.
+
+

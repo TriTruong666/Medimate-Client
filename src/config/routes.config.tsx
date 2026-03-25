@@ -116,12 +116,29 @@ export const ROUTES_CONFIG: RouteConfig[] = [
   },
   {
     path: PATHS.DASHBOARD.APPROVE_CERTIFICATE,
-    element: <CertificateApprovePage />,
     layout: "dashboard",
     label: "Duyệt hồ sơ",
     icon: FiUserCheck,
     showInSidebar: true,
     roles: ["DoctorManager"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.APPROVE_CERTIFICATE,
+        element: <CertificateApprovePage />,
+        label: "Hồ sơ chưa duyệt",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.APPROVE_CERTIFICATE_REJECTED,
+        element: <CertificateApprovePage />,
+        label: "Hồ sơ bị từ chối",
+      },
+      {
+        path: PATHS.DASHBOARD.APPROVE_CERTIFICATE_APPROVED,
+        element: <CertificateApprovePage />,
+        label: "Hồ sơ được duyệt",
+      },
+    ],
   },
   {
     path: PATHS.DASHBOARD.DOCTOR_SUPPORT.ROOT,

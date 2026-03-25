@@ -3,6 +3,12 @@ import { axiosNETClient } from "./client";
 import type { BasePaginatedResponse, BaseResponse } from "@/types/APIResponse";
 import { cleanQueryParams, type PaginationParams } from "@/common/query.params";
 
+export type ChangeMyPasswordRequest = {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
 export async function getUsers(params: PaginationParams): Promise<BasePaginatedResponse<User[]>> {
   const res = await axiosNETClient.get("/api/v1/users", {
     params: cleanQueryParams<PaginationParams>(params),
@@ -41,6 +47,16 @@ export async function activateUser(
 ): Promise<BaseResponse<boolean>> {
   const res = await axiosNETClient.put(
     `/api/v1/users/admin/activate?userId=${userId}`,
+  );
+  return res.data;
+}
+
+export async function changeMyPassword(
+  request: ChangeMyPasswordRequest,
+): Promise<BaseResponse<null>> {
+  const res = await axiosNETClient.put(
+    "/api/v1/users/me/change-password",
+    request,
   );
   return res.data;
 }

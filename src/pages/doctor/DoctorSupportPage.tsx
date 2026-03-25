@@ -7,75 +7,128 @@ import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
-
-type AppointmentStatus = "upcoming" | "completed" | "cancelled" | "in_progress";
-type AppointmentType = "online" | "offline";
+import { Spinner } from "@/components/custom-ui/Spinner";
+import { useDoctorAppointments } from "@/hooks/data/useAppointmentHooks";
+import { formatDate, formatTime } from "@/common/format";
+import type {
+  AppointmentStatus,
+  AppointmentType,
+  DoctorAppointment,
+} from "@/types/Appointment";
 
 interface Appointment {
   id: string;
   patientName: string;
   patientAvatar?: string;
   type: AppointmentType;
+  dateKey: string;
   date: string;
   time: string;
   status: AppointmentStatus;
   symptoms: string;
 }
 
-const dummyAppointments: Appointment[] = [
-  {
-    id: "APT-001",
-    patientName: "Nguyễn Văn A",
+function normalizeAppointmentStatus(status: string): AppointmentStatus {
+  const normalized = status.trim().toLowerCase().replace(/[\s-]/g, "_");
+
+  if (["completed", "done", "finished"].includes(normalized)) {
+    return "completed";
+  }
+
+  if (["cancelled", "canceled"].includes(normalized)) {
+    return "cancelled";
+  }
+
+  if (["in_progress", "ongoing", "processing"].includes(normalized)) {
+    return "in_progress";
+  }
+
+  return "upcoming";
+}
+
+function toMaskedLabel(prefix: string, value: string): string {
+  if (!value) return prefix;
+  const shortValue = value.slice(0, 8).toUpperCase();
+  return `${prefix} ${shortValue}`;
+}
+
+function mapAppointment(raw: DoctorAppointment): Appointment {
+  return {
+    id: raw.appointmentId,
+    patientName: toMaskedLabel("Bệnh nhân", raw.memberId),
     type: "online",
-    date: "2026-03-17",
-    time: "09:00 - 09:30",
-    status: "upcoming",
-    symptoms: "Đau đầu, chóng mặt kéo dài 2 ngày nay.",
-  },
-  {
-    id: "APT-002",
-    patientName: "Trần Thị B",
-    type: "online",
-    date: "2026-03-17",
-    time: "10:30 - 11:00",
-    status: "in_progress",
-    symptoms: "Khám định kỳ tư vấn dinh dưỡng.",
-  },
-  {
-    id: "APT-005",
-    patientName: "Trần Thị B",
-    type: "online",
-    date: "2026-03-17",
-    time: "12:30 - 13:00",
-    status: "in_progress",
-    symptoms: "Khám định kỳ tư vấn dinh dưỡng.",
-  },
-  {
-    id: "APT-003",
-    patientName: "Lê Văn C",
-    type: "online",
-    date: "2026-03-18",
-    time: "14:00 - 14:45",
-    status: "upcoming",
-    symptoms: "Sốt cao, ho có đờm.",
-  },
-  {
-    id: "APT-004",
-    patientName: "Phạm Thu D",
-    type: "online",
-    date: "2026-03-16",
-    time: "15:00 - 16:00",
-    status: "completed",
-    symptoms: "Tái khám sau phẫu thuật.",
-  },
-];
+    dateKey: raw.appointmentDate,
+    date: formatDate(raw.appointmentDate),
+    time: formatTime(raw.appointmentDate),
+    status: normalizeAppointmentStatus(raw.status),
+    symptoms:
+      raw.cancelReason?.trim() || "Chưa có ghi chú cho lịch hẹn này.",
+  };
+}
+
+function AppointmentState({
+  type,
+  message,
+  onRetry,
+}: {
+  type: "loading" | "error" | "empty";
+  message?: string;
+  onRetry?: () => void;
+}) {
+  if (type === "loading") {
+    return (
+      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8">
+        <Spinner size="lg" />
+        <p className="mt-4 text-sm font-medium text-gray-400">
+          Đang tải lịch hẹn...
+        </p>
+      </div>
+    );
+  }
+
+  if (type === "error") {
+    return (
+      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8">
+        <h3 className="text-lg font-semibold text-white">Đã xảy ra lỗi</h3>
+        <p className="mt-2 max-w-100 text-center text-sm text-gray-400">
+          {message || "Không thể tải dữ liệu lịch hẹn. Vui lòng thử lại."}
+        </p>
+        <button
+          onClick={onRetry}
+          className="mt-6 rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/15"
+        >
+          Thử lại
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8">
+      <h3 className="text-lg font-semibold text-white">Chưa có lịch hẹn</h3>
+      <p className="mt-2 text-center text-sm text-gray-400">
+        Không tìm thấy lịch hẹn nào cho bác sĩ hiện tại.
+      </p>
+    </div>
+  );
+}
 
 export default function DoctorSupportPage() {
   const [viewLayout, setViewLayout] = useState<"card" | "calendar">("card");
+  const {
+    data: appointmentResponse,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useDoctorAppointments();
+
+  const appointments = (appointmentResponse ?? []).map(mapAppointment);
+  const hasAppointments = appointments.length > 0;
 
   const breadcrumbItems = [
     { label: "Dashboard", path: "/dashboard" },
-    { label: "Lịch khám", path: "/dashboard/support" },
+    { label: "Lịch khám", path: "/dashboard/doctor-support" },
     { label: "Tất cả" },
   ];
 
@@ -132,7 +185,19 @@ export default function DoctorSupportPage() {
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.3 }}
             >
-              <AppointmentCardGrid data={dummyAppointments} />
+              {isLoading ? (
+                <AppointmentState type="loading" />
+              ) : isError ? (
+                <AppointmentState
+                  type="error"
+                  message={error?.message}
+                  onRetry={() => void refetch()}
+                />
+              ) : hasAppointments ? (
+                <AppointmentCardGrid data={appointments} />
+              ) : (
+                <AppointmentState type="empty" />
+              )}
             </motion.div>
           )}
 
@@ -144,7 +209,19 @@ export default function DoctorSupportPage() {
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.3 }}
             >
-              <MonthlyCalendarView data={dummyAppointments} />
+              {isLoading ? (
+                <AppointmentState type="loading" />
+              ) : isError ? (
+                <AppointmentState
+                  type="error"
+                  message={error?.message}
+                  onRetry={() => void refetch()}
+                />
+              ) : hasAppointments ? (
+                <MonthlyCalendarView data={appointments} />
+              ) : (
+                <AppointmentState type="empty" />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -256,16 +333,35 @@ function AppointmentCard({ data }: { data: Appointment }) {
 function MonthlyCalendarView({ data }: { data: Appointment[] }) {
   const daysOfWeek = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
-  // A simple static 30-day view for visualization
-  // In a real implementation we would dynamically generate based on current month
-  const days = Array.from({ length: 30 }, (_, i) => {
-    const dayDate = `2026-03-${String(i + 1).padStart(2, "0")}`;
-    const dayAppointments = data.filter((d) => d.date === dayDate);
-    return { day: i + 1, date: dayDate, appointments: dayAppointments };
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const firstDay = new Date(currentYear, currentMonth, 1);
+  const dayOffset = (firstDay.getDay() + 6) % 7;
+  const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+  const days = Array.from({ length: daysInMonth }, (_, i) => {
+    const day = i + 1;
+    const dayDate = new Date(currentYear, currentMonth, day);
+    const dayAppointments = data.filter((apt) => {
+      const aptDate = new Date(apt.dateKey);
+      return (
+        !Number.isNaN(aptDate.getTime()) &&
+        aptDate.getFullYear() === currentYear &&
+        aptDate.getMonth() === currentMonth &&
+        aptDate.getDate() === day
+      );
+    });
+
+    return {
+      day,
+      date: dayDate.toISOString(),
+      appointments: dayAppointments,
+      isToday: day === today.getDate(),
+    };
   });
 
-  // Paddings for start of month (assuming starts on Sunday for this mockup)
-  const emptyPreDays = Array.from({ length: 6 });
+  const emptyPreDays = Array.from({ length: dayOffset });
 
   return (
     <div className="dark:border-border-dark overflow-hidden rounded-xl border border-gray-100">
@@ -293,7 +389,7 @@ function MonthlyCalendarView({ data }: { data: Appointment[] }) {
             }`}
           />
         ))}
-        {days.map(({ day, appointments }, i) => {
+        {days.map(({ day, appointments, isToday }, i) => {
           const gridIndex = emptyPreDays.length + i;
           return (
             <div
@@ -306,7 +402,7 @@ function MonthlyCalendarView({ data }: { data: Appointment[] }) {
             >
               <span
                 className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                  day === 17
+                  isToday
                     ? "bg-primary text-white"
                     : "text-gray-500 dark:text-gray-400"
                 }`}
