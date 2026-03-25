@@ -11,9 +11,11 @@ import {
 import { formatRelativeTime } from "@/common/format";
 import { PATHS } from "@/config/paths";
 import { useLocation } from "react-router-dom";
-import { useDoctorDocuments } from "@/hooks/data/useDoctorDocumentHooks";
+import {
+  useDoctorDocuments,
+  useReviewDoctorDocument,
+} from "@/hooks/data/useDoctorDocumentHooks";
 import { useMemo, useState } from "react";
-import { toast } from "@/hooks/useToast";
 import { doctorDocumentTypeLabelMap } from "@/types/DoctorDocument";
 import type {
   DoctorDocument,
@@ -22,15 +24,8 @@ import type {
 } from "@/types/DoctorDocument";
 
 type CertificateRow = CertificateDetailModalRow & {
-  issuePlace: string;
-  issueDate: string;
-};
-
-type MockReviewState = {
-  status: DoctorDocumentStatus;
-  reviewedAt: string;
   reviewedBy: string;
-  rejectReason: string | null;
+  reviewedDate: string;
 };
 
 function normalizeStatus(status: string): DoctorDocumentStatus {
@@ -75,10 +70,10 @@ function toCertificateRow(item: DoctorDocument): CertificateRow {
 
   const doctorName = item.doctorName?.trim() || item.doctorId.slice(0, 8);
   const specialty = item.doctorSpecialty?.trim() || "Chưa cập nhật";
-  const reviewerName = item.reviewedByName || item.reviewBy || "Chưa có người duyệt";
-  const reviewedAt = item.reviewedAt || item.reviewAt;
+  const reviewerName = item.reviewBy || "Chưa có người duyệt";
+  const reviewedAt = item.reviewAt;
   const submittedAt = item.submittedAt || item.createdAt;
-  const rejectReason = item.rejectReason ?? item.note;
+  const rejectReason = item.note ?? "";
 
   return {
     id: item.documentId,
@@ -87,8 +82,8 @@ function toCertificateRow(item: DoctorDocument): CertificateRow {
     certName: doctorDocumentTypeLabelMap[documentType],
     certType: documentType,
     fileUrls: parseFileUrls(item.fileUrl),
-    issuePlace: reviewerName,
-    issueDate: reviewedAt ? formatRelativeTime(reviewedAt) : "Chưa duyệt",
+    reviewedBy: reviewerName,
+    reviewedDate: reviewedAt ? formatRelativeTime(reviewedAt) : "Chưa duyệt",
     submitDate: submittedAt,
     status: normalizeStatus(item.status),
     rejectReason,
@@ -162,9 +157,7 @@ function CertificateTable({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [selectedRow, setSelectedRow] = useState<CertificateRow | null>(null);
-  const [mockReviewById, setMockReviewById] = useState<
-    Record<string, MockReviewState>
-  >({});
+  const reviewDocumentMutation = useReviewDoctorDocument();
 
   const {
     data,
@@ -179,54 +172,47 @@ function CertificateTable({
   });
 
   const rows = useMemo(() => {
-    const baseRows = (data?.items ?? []).map(toCertificateRow);
-
-    return baseRows
-      .map((row) => {
-        const mockState = mockReviewById[row.id];
-        if (!mockState) return row;
-
-        return {
-          ...row,
-          status: mockState.status,
-          issuePlace: mockState.reviewedBy,
-          issueDate: formatRelativeTime(mockState.reviewedAt),
-          rejectReason: mockState.rejectReason,
-        };
-      })
-      .filter((row) => row.status === activeStatus);
-  }, [data?.items, mockReviewById, activeStatus]);
+    return (data?.items ?? []).map(toCertificateRow).filter((row) => row.status === activeStatus);
+  }, [data?.items, activeStatus]);
 
   const total = data?.totalCount ?? 0;
 
-  const handleApprove = (row: CertificateRow) => {
-    setMockReviewById((prev) => ({
-      ...prev,
-      [row.id]: {
-        status: "Approved",
-        reviewedAt: new Date().toISOString(),
-        reviewedBy: "Reviewer (Mock)",
-        rejectReason: null,
-      },
-    }));
+  const handleApprove = async (row: CertificateRow) => {
+    try {
+      const result = await reviewDocumentMutation.mutateAsync({
+        id: row.id,
+        payload: {
+          status: "approved",
+          note: "",
+        },
+      });
 
-    toast.success("Duyệt thành công", "Đã cập nhật trạng thái hồ sơ (mock).");
-    setSelectedRow(null);
+      if (result.success) {
+        setSelectedRow(null);
+        await refetch();
+      }
+    } catch {
+      // Error toast is handled in the mutation hook.
+    }
   };
 
-  const handleReject = (row: CertificateRow, reason: string) => {
-    setMockReviewById((prev) => ({
-      ...prev,
-      [row.id]: {
-        status: "Rejected",
-        reviewedAt: new Date().toISOString(),
-        reviewedBy: "Reviewer (Mock)",
-        rejectReason: reason,
-      },
-    }));
+  const handleReject = async (row: CertificateRow, reason: string) => {
+    try {
+      const result = await reviewDocumentMutation.mutateAsync({
+        id: row.id,
+        payload: {
+          status: "rejected",
+          note: reason.trim(),
+        },
+      });
 
-    toast.success("Đã từ chối", "Đã cập nhật trạng thái hồ sơ (mock).");
-    setSelectedRow(null);
+      if (result.success) {
+        setSelectedRow(null);
+        await refetch();
+      }
+    } catch {
+      // Error toast is handled in the mutation hook.
+    }
   };
 
   return (
@@ -287,16 +273,16 @@ function CertificateTable({
                     <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                       <span>
                         <span className="font-medium text-gray-600 dark:text-gray-300">
-                          Nơi cấp:
+                          Người duyệt:
                         </span>{" "}
-                        {row.issuePlace}
+                        {row.reviewedBy}
                       </span>
                       <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-600"></span>
                       <span>
                         <span className="font-medium text-gray-600 dark:text-gray-300">
-                          Cấp ngày:
+                          Duyệt lúc:
                         </span>{" "}
-                        {row.issueDate}
+                        {row.reviewedDate}
                       </span>
                     </div>
                     <div className="mt-2 text-[11px] text-gray-400 italic dark:text-gray-500">
@@ -336,6 +322,7 @@ function CertificateTable({
         onClose={() => setSelectedRow(null)}
         onApprove={handleApprove}
         onReject={handleReject}
+        isSubmitting={reviewDocumentMutation.isPending}
       />
     </>
   );
