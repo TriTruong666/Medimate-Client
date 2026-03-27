@@ -4,6 +4,7 @@ import {
   HiOutlineDocumentText,
   HiOutlineUser,
   HiOutlineCalendar,
+  HiOutlineCheck,
   HiOutlineTrash,
 } from "react-icons/hi";
 import { useState } from "react";
@@ -19,12 +20,17 @@ import {
   useDoctorAvailabilities,
   useUpdateDoctorAvailability,
 } from "@/hooks/data/useDoctorAvailabilityHooks";
+import {
+  useDoctorAvailabilityExceptions,
+  useUpdateDoctorAvailabilityException,
+} from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
 import { toast } from "@/hooks/useToast";
 import type {
   CreateDoctorAvailabilityBody,
   DoctorAvailability,
   UpdateDoctorAvailabilityBody,
 } from "@/types/DoctorAvailability";
+import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityException";
 
 const dayOfWeekOptions = [
   { value: "Monday", label: "Thứ 2" },
@@ -82,7 +88,7 @@ export function DoctorProfileDetailModal({
   onClose: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<
-    "profile" | "documents" | "availabilities"
+    "profile" | "documents" | "availabilities" | "exceptions"
   >("profile");
 
   if (!account) return null;
@@ -145,6 +151,17 @@ export function DoctorProfileDetailModal({
                 <HiOutlineCalendar className="h-5 w-5" />
                 Lịch làm việc
               </button>
+              <button
+                onClick={() => setActiveTab("exceptions")}
+                className={`flex items-center gap-2 border-b-2 py-3 text-sm font-medium transition-colors ${
+                  activeTab === "exceptions"
+                    ? "border-primary text-primary"
+                    : "border-transparent text-gray-400 hover:text-gray-200"
+                }`}
+              >
+                <HiOutlineCalendar className="h-5 w-5" />
+                Lịch nghỉ
+              </button>
             </div>
           </div>
 
@@ -157,6 +174,9 @@ export function DoctorProfileDetailModal({
             {activeTab === "documents" && <DocumentsTab doctorId={account.doctorId} />}
             {activeTab === "availabilities" && (
               <DoctorAvailabilitiesTab doctorId={account.doctorId} />
+            )}
+            {activeTab === "exceptions" && (
+              <DoctorAvailabilityExceptionsTab doctorId={account.doctorId} />
             )}
           </div>
 
@@ -599,6 +619,123 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
           </div>
         )}
       </section>
+    </div>
+  );
+}
+
+function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
+  const { data, isLoading, isError, error, refetch } =
+    useDoctorAvailabilityExceptions(doctorId);
+  const updateMutation = useUpdateDoctorAvailabilityException(doctorId);
+  const [view, setView] = useState<"pending" | "approved">("pending");
+
+  const items = data ?? [];
+  const pending = items.filter((item) => !item.isAvailableOverride);
+  const approved = items.filter((item) => item.isAvailableOverride);
+  const visibleItems = view === "pending" ? pending : approved;
+
+  async function handleApprove(item: DoctorAvailabilityException) {
+    if (!item.exceptionId) {
+      toast.error("Thiếu ID", "Không tìm thấy ID lịch nghỉ để duyệt.");
+      return;
+    }
+
+    try {
+      await updateMutation.mutateAsync({
+        id: item.exceptionId,
+        data: {
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          reason: item.reason,
+          isAvailableOverride: true,
+        },
+      });
+    } catch {
+      // Toast handled by mutation onError.
+    }
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2 rounded-lg bg-white/5 p-1">
+          <button
+            onClick={() => setView("pending")}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+              view === "pending"
+                ? "bg-primary text-white"
+                : "text-gray-400 hover:bg-white/5 hover:text-white"
+            }`}
+          >
+            Chưa duyệt ({pending.length})
+          </button>
+          <button
+            onClick={() => setView("approved")}
+            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
+              view === "approved"
+                ? "bg-primary text-white"
+                : "text-gray-400 hover:bg-white/5 hover:text-white"
+            }`}
+          >
+            Đã duyệt ({approved.length})
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => void refetch()}
+          className="rounded-lg border border-white/10 bg-transparent px-3 py-1.5 text-xs text-gray-300 transition hover:bg-white/10"
+        >
+          Làm mới
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="flex h-36 items-center justify-center">
+          <Spinner size="lg" />
+        </div>
+      ) : isError ? (
+        <div className="rounded-lg border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          {error?.message || "Không thể tải lịch nghỉ của bác sĩ."}
+        </div>
+      ) : visibleItems.length === 0 ? (
+        <div className="flex h-30 items-center justify-center rounded-lg border border-dashed border-white/10 text-sm text-gray-400">
+          Không có lịch nghỉ trong nhóm này.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visibleItems.map((item, index) => (
+            <div
+              key={item.exceptionId || `${item.date}-${item.startTime}-${item.endTime}-${index}`}
+              className="flex flex-col gap-3 rounded-lg border border-white/10 bg-black/20 p-3 md:flex-row md:items-center md:justify-between"
+            >
+              <div className="text-xs text-gray-300">
+                <p className="font-medium text-white">{formatRelativeTime(item.date)}</p>
+                <p className="mt-1">
+                  {item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}
+                </p>
+                <p className="mt-1 text-gray-400">Lý do: {item.reason || "Không có"}</p>
+              </div>
+
+              {view === "pending" ? (
+                <button
+                  type="button"
+                  onClick={() => void handleApprove(item)}
+                  disabled={updateMutation.isPending}
+                  className="inline-flex items-center gap-1 self-start rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs text-emerald-300 transition hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <HiOutlineCheck className="h-4 w-4" /> Duyệt lịch nghỉ
+                </button>
+              ) : (
+                <span className="self-start rounded-full bg-emerald-500/20 px-2 py-1 text-[11px] text-emerald-300">
+                  Đã duyệt
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

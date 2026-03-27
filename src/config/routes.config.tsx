@@ -8,6 +8,7 @@ import {
   FiSettings,
   FiFileText,
   FiUserCheck,
+  FiCalendar,
 } from "react-icons/fi";
 import { RiVipDiamondLine, RiImageAiLine } from "react-icons/ri";
 import { IoBriefcaseOutline, IoSync } from "react-icons/io5";
@@ -22,6 +23,7 @@ import DoctorProfilesPage from "@/pages/doctor-manager/DoctorProfilesPage";
 import DoctorReportPage from "@/pages/admin/DoctorReportPage";
 import CertificateApprovePage from "@/pages/doctor-manager/CertificateApprovePage";
 import AccountApprovePage from "@/pages/doctor-manager/AccountApprovePage";
+import DoctorExceptionApprovePage from "@/pages/doctor-manager/DoctorExceptionApprovePage";
 
 // Types for Route Configuration
 export interface RouteConfig {
@@ -165,6 +167,32 @@ export const ROUTES_CONFIG: RouteConfig[] = [
         path: PATHS.DASHBOARD.APPROVE_ACCOUNT_VERIFIED,
         element: <AccountApprovePage />,
         label: "Thông tin được duyệt",
+      },
+    ],
+  },
+  {
+    path: PATHS.DASHBOARD.APPROVE_EXCEPTION.ROOT,
+    layout: "dashboard",
+    label: "Duyệt lịch nghỉ",
+    icon: FiCalendar,
+    showInSidebar: true,
+    roles: ["DoctorManager"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.APPROVE_EXCEPTION.ROOT,
+        element: <DoctorExceptionApprovePage />,
+        label: "Chưa duyệt",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.APPROVE_EXCEPTION.PAST_UNAPPROVED,
+        element: <DoctorExceptionApprovePage />,
+        label: "Không duyệt",
+      },
+      {
+        path: PATHS.DASHBOARD.APPROVE_EXCEPTION.APPROVED,
+        element: <DoctorExceptionApprovePage />,
+        label: "Đã duyệt",
       },
     ],
   },
