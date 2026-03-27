@@ -37,6 +37,15 @@ export const PATHS = {
     APPROVE_CERTIFICATE: "/dashboard/approve-certificate",
     APPROVE_CERTIFICATE_REJECTED: "/dashboard/approve-certificate/rejected",
     APPROVE_CERTIFICATE_APPROVED: "/dashboard/approve-certificate/approved",
+    APPROVE_ACCOUNT: "/dashboard/approve-account",
+    APPROVE_ACCOUNT_REJECTED: "/dashboard/approve-account/rejected",
+    APPROVE_ACCOUNT_VERIFIED: "/dashboard/approve-account/verified",
+    APPROVE_EXCEPTION: {
+      ROOT: "/dashboard/approve-exception",
+      PAST_UNAPPROVED: "/dashboard/approve-exception/past-unapproved",
+      APPROVED: "/dashboard/approve-exception/approved",
+    },
+    DOCTOR_PROFILES: "/dashboard/doctor-profiles",
     NOTIFICATIONS: "/dashboard/notifications",
     ASSETS: {
       PRESCRIPTION: "/dashboard/assets/prescription",

@@ -8,7 +8,10 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Spinner } from "@/components/custom-ui/Spinner";
+import { DoctorExceptionModal } from "@/components/modals/DoctorExceptionModal";
 import { useDoctorAppointments } from "@/hooks/data/useAppointmentHooks";
+import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
+import { toast } from "@/hooks/useToast";
 import { formatDate, formatTime } from "@/common/format";
 import type {
   AppointmentStatus,
@@ -115,6 +118,7 @@ function AppointmentState({
 
 export default function DoctorSupportPage() {
   const [viewLayout, setViewLayout] = useState<"card" | "calendar">("card");
+  const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
   const {
     data: appointmentResponse,
     isLoading,
@@ -122,9 +126,23 @@ export default function DoctorSupportPage() {
     error,
     refetch,
   } = useDoctorAppointments();
+  const { data: doctorProfile } = useDoctorMe(true);
 
   const appointments = (appointmentResponse ?? []).map(mapAppointment);
   const hasAppointments = appointments.length > 0;
+  const doctorId = doctorProfile?.doctorId || "";
+
+  function handleOpenExceptionModal() {
+    if (!doctorId) {
+      toast.error(
+        "Không thể mở lịch nghỉ",
+        "Không tìm thấy thông tin bác sĩ hiện tại.",
+      );
+      return;
+    }
+
+    setIsExceptionModalOpen(true);
+  }
 
   const breadcrumbItems = [
     { label: "Dashboard", path: "/dashboard" },
@@ -168,8 +186,11 @@ export default function DoctorSupportPage() {
               Lịch
             </button>
           </div>
-          <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
-            Thêm lịch khẩn cấp <LuPlus />
+          <button
+            onClick={handleOpenExceptionModal}
+            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10"
+          >
+            Thêm lịch nghỉ <LuPlus />
           </button>
         </div>
       </div>
@@ -226,6 +247,12 @@ export default function DoctorSupportPage() {
           )}
         </AnimatePresence>
       </div>
+
+      <DoctorExceptionModal
+        open={isExceptionModalOpen}
+        doctorId={doctorId}
+        onClose={() => setIsExceptionModalOpen(false)}
+      />
     </div>
   );
 }

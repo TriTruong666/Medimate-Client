@@ -24,18 +24,23 @@ export type DoctorDocument = {
   documentType?: DoctorDocumentType | string | null;
   type: DoctorDocumentType | string;
   status: string;
-  rejectReason?: string | null;
   submittedAt?: string | null;
-  reviewedByName?: string | null;
-  reviewedAt?: string | null;
-  issuedBy?: string | null;
-  issuedAt?: string | null;
-  reviewBy: string | null;
-  reviewAt: string | null;
-  note: string | null;
+  fileMimeType?: string | null;
+  fileExtension?: string | null;
+  updatedAt?: string | null;
+  reviewBy?: string | null;
+  reviewAt?: string | null;
+  note?: string | null;
   createdAt: string;
 };
 
 export type GetDoctorDocumentsParams = PaginationParams & {
   status?: DoctorDocumentStatus;
+};
+
+export type ReviewDoctorDocumentStatus = "approved" | "rejected";
+
+export type ReviewDoctorDocumentRequest = {
+  status: ReviewDoctorDocumentStatus;
+  note: string;
 };

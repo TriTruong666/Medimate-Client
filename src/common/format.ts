@@ -31,6 +31,14 @@ export const formatDateTime = (isoString: string): string => {
   }).format(date);
 };
 
+export const convertToVNDateISOString = (localDateTime: string): string => {
+  const date = new Date(localDateTime);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const vnDate = new Date(date.getTime() + 7 * 60 * 60 * 1000);
+  return vnDate.toISOString();
+};
+
 export const formatPriceDisplay = (value: string): string => {
   const numeric = value.replace(/\D/g, "");
   return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, ".");

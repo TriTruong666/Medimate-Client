@@ -15,7 +15,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         useDoctorMe(shouldFetchDoctor);
 
     const isDoctorInactive =
-        (doctorProfile?.status || "").toLowerCase() === "inactive";
+        ["inactive", "pending", "verified"].includes((doctorProfile?.status || "").toLowerCase());
 
     if (isLoading || (shouldFetchDoctor && isLoadingDoctorProfile)) {
         return <FullScreenSpinner />;

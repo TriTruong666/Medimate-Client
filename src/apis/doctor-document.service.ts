@@ -1,6 +1,10 @@
 import { cleanQueryParams } from "@/common/query.params";
-import type { BasePaginatedResponse } from "@/types/APIResponse";
-import type { DoctorDocument, GetDoctorDocumentsParams } from "@/types/DoctorDocument";
+import type { BasePaginatedResponse, BaseResponse } from "@/types/APIResponse";
+import type {
+  DoctorDocument,
+  GetDoctorDocumentsParams,
+  ReviewDoctorDocumentRequest,
+} from "@/types/DoctorDocument";
 import { axiosNETClient } from "./client";
 
 export async function getDoctorDocuments(
@@ -10,5 +14,24 @@ export async function getDoctorDocuments(
     params: cleanQueryParams<GetDoctorDocumentsParams>(params),
   });
 
+  return res.data;
+}
+
+export async function reviewDoctorDocument(
+  documentId: string,
+  payload: ReviewDoctorDocumentRequest,
+): Promise<BaseResponse<DoctorDocument>> {
+  const res = await axiosNETClient.patch(
+    `/api/v1/doctor-documents/${documentId}/review`,
+    payload,
+  );
+
+  return res.data;
+}
+
+export async function getDoctorDocumentsByDoctorId(
+  doctorId: string,
+): Promise<BaseResponse<DoctorDocument[]>> {
+  const res = await axiosNETClient.get(`/api/v1/doctor-documents/doctors/${doctorId}`);
   return res.data;
 }

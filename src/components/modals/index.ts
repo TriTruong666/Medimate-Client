@@ -9,3 +9,4 @@ export * from "./PaymentQRModal";
 export * from "./PreviewPdfModal";
 export * from "./UnlockModal";
 export * from "./UploadDocumentModal";
+export * from "./ConfirmUpdateProfileModal";
