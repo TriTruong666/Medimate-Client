@@ -21,8 +21,6 @@ import {
 } from "react-icons/hi2";
 import { HiChevronDown } from "react-icons/hi";
 import { MdOutlineShowChart } from "react-icons/md";
-import { useEffect } from "react";
-import { toast } from "../hooks/useToast";
 import { dashboardContainer, dashboardItem } from "../motions/dashboardMotion";
 
 ChartJS.register(
@@ -36,17 +34,6 @@ ChartJS.register(
   PointElement,
 );
 export default function SummaryDashboardPage() {
-
-  useEffect(() => {
-    toast.warn(
-      "Trang này chỉ là DEMO",
-      "Team góp ý giúp trí cái cần bỏ vô cái trang này để view mấy cái thông số",
-      {
-        actionLabel: "Close",
-        duration: 10000,
-      },
-    );
-  }, []);
 
   const donutData = {
     labels: ["Chờ nạp", "Đang nạp", "Đã nạp"],

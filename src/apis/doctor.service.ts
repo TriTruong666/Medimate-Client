@@ -42,3 +42,22 @@ export async function submitDoctorMe(
   const res = await axiosNETClient.post("/api/v1/doctors/me/submit", formData);
   return res.data;
 }
+
+export async function updateDoctorMe(
+  formData: FormData,
+): Promise<BaseResponse<DoctorProfile>> {
+  const res = await axiosNETClient.put("/api/v1/doctors/me", formData);
+  return res.data;
+}
+
+export type ActivateDoctorRequest = {
+  doctorId: string;
+  verifyCode: number;
+};
+
+export async function activateDoctor(
+  request: ActivateDoctorRequest,
+): Promise<BaseResponse<DoctorProfile>> {
+  const res = await axiosNETClient.post("/api/v1/doctors/activate", request);
+  return res.data;
+}
