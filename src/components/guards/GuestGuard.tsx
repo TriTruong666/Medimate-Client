@@ -22,12 +22,15 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
     }
 
     if (isAuthenticated) {
-        const redirectTo =
-            shouldFetchDoctor && isDoctorInactive
+        let redirectTo = PATHS.DASHBOARD.ROOT;
+
+        if (shouldFetchDoctor) {
+            redirectTo = isDoctorInactive
                 ? PATHS.AUTH.DOCTOR_WELCOME
-                : user?.role === "DoctorManager"
-                ? PATHS.DASHBOARD.APPROVE_CERTIFICATE
-                : PATHS.DASHBOARD.ROOT;
+                : PATHS.DASHBOARD.DOCTOR_SUPPORT.ROOT;
+        } else if (user?.role === "DoctorManager") {
+            redirectTo = PATHS.DASHBOARD.APPROVE_CERTIFICATE;
+        }
 
         return <Navigate to={redirectTo} replace />;
     }

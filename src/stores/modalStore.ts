@@ -19,6 +19,7 @@ export type ModalKey =
   | "cancel"
   | "delete"
   | "transaction"
+  | "confirm_update_profile"
   | null;
 
 export const modalAtom = atom<ModalKey>(null);
@@ -28,6 +29,8 @@ export const userIdAtom = atom<string | null>(null);
 export const pdfPreviewAtom = atom<string | null>(null);
 
 export const paymentAtom = atom<PaymentQRModalProps | null>(null);
+
+export const confirmSubmitDataAtom = atom<FormData | null>(null);
 
 export const lockTypeAtom = atom<LockType>(null);
 
@@ -50,6 +53,7 @@ export const closeModalAtom = atom(null, (_, set) => {
   set(cancelTypeAtom, null);
   set(deleteTypeAtom, null);
   set(paymentAtom, null);
+  set(confirmSubmitDataAtom, null);
 });
 
 export const openPdfModalAtom = atom(null, (_, set, fileUrl: string) => {
@@ -86,3 +90,8 @@ export const openTransactionModalAtom = atom(
     set(modalAtom, "transaction");
   },
 );
+
+export const openConfirmUpdateProfileModalAtom = atom(null, (_, set, data: FormData) => {
+  set(confirmSubmitDataAtom, data);
+  set(modalAtom, "confirm_update_profile");
+});

@@ -13,15 +13,27 @@ import {
   useChangeMyPassword,
   useDoctorMe,
   useSubmitDoctorMe,
+  useActivateDoctor,
 } from "@/hooks/data/useDoctorHooks";
+import { useLogout } from "@/hooks/data/useAuthHooks";
 
 const DEFAULT_OLD_PASSWORD =
   import.meta.env.VITE_DOCTOR_INITIAL_PASSWORD ?? "12345678aA@";
 
 export default function DoctorWelcomePage() {
   const [currentStep, setCurrentStep] = useState<
-    "welcome" | "introduce" | "setup" | "complete"
+    "welcome" | "introduce" | "setup" | "complete" | "activate"
   >("welcome");
+
+  const { data: doctorProfile } = useDoctorMe(true);
+
+  useEffect(() => {
+    if (doctorProfile?.status === "Verified") {
+      setCurrentStep("activate");
+    } else if (doctorProfile?.status === "Pending") {
+      setCurrentStep("complete");
+    }
+  }, [doctorProfile?.status]);
 
   useEffect(() => {
     if (currentStep === "introduce") {
@@ -110,7 +122,7 @@ export default function DoctorWelcomePage() {
         )}
         {currentStep === "complete" && (
           <motion.div
-            key="setup"
+            key="complete"
             initial={{ opacity: 0, scale: 0.95, filter: "blur(5px)" }}
             animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
             transition={{ duration: 1, ease: "easeOut" }}
@@ -119,12 +131,88 @@ export default function DoctorWelcomePage() {
             <CompleteSection />
           </motion.div>
         )}
+        {currentStep === "activate" && (
+          <motion.div
+            key="activate"
+            initial={{ opacity: 0, scale: 0.95, filter: "blur(5px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="min-h-screen w-full"
+          >
+            <ActivateSection doctorProfile={doctorProfile} />
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
 }
 
+function ActivateSection({ doctorProfile }: { doctorProfile: any }) {
+  const [otp, setOtp] = useState("");
+  const { mutateAsync: activateDoctor, isPending } = useActivateDoctor();
+
+  const handleActivate = async () => {
+    if (!otp || otp.length !== 6 || !doctorProfile?.doctorId) return;
+    try {
+      await activateDoctor({
+        doctorId: doctorProfile.doctorId,
+        verifyCode: Number(otp),
+      });
+      window.location.href = "/dashboard/doctor-support";
+    } catch {}
+  };
+
+  return (
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden font-sans antialiased text-white p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="z-10 flex w-full max-w-md flex-col items-center space-y-8 rounded-2xl bg-neutral-900 border border-white/10 p-8 shadow-2xl"
+      >
+        <div className="flex flex-col items-center text-center space-y-4">
+           <div className="h-16 w-16 flex items-center justify-center rounded-full bg-green-500/20 text-green-400 mb-2">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+           </div>
+           <h2 className="text-2xl font-bold">Hồ sơ đã được duyệt!</h2>
+           <p className="text-sm text-neutral-400 leading-relaxed">
+             Tài khoản của bạn đã được quản trị viên phê duyệt. Chúng tôi vừa gửi một mã <strong className="text-white">OTP 6 số</strong> đến email của bạn.<br/>Hãy nhập mã đó vào đây để kích hoạt tài khoản.
+           </p>
+        </div>
+
+        <div className="flex w-full flex-col items-center space-y-6">
+          <input
+            type="text"
+            maxLength={6}
+            value={otp}
+            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
+            className="w-full text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl bg-black border border-white/20 text-white placeholder-white/20 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+            placeholder="000000"
+          />
+
+          <button
+            onClick={handleActivate}
+            disabled={isPending || otp.length !== 6}
+            className="w-full h-12 rounded-xl bg-white text-black font-bold text-sm tracking-wide disabled:opacity-50 hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+          >
+            {isPending ? <Spinner size="sm" color="primary" /> : "Xác nhận Kích hoạt"}
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 function CompleteSection() {
+  const { mutateAsync: logoutAsync, isPending } = useLogout();
+
+  const handleLogout = async () => {
+    try {
+      await logoutAsync();
+      window.location.href = "/";
+    } catch {}
+  };
+
   return (
     <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden font-sans antialiased">
       <motion.div
@@ -201,13 +289,13 @@ function CompleteSection() {
             </p>
           </motion.div>
         </div>
-        <a href="/">
+        <div onClick={handleLogout} className="cursor-pointer">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 2.6, duration: 0.6 }}
           >
-            <button className="group relative overflow-hidden rounded-full bg-white px-8 py-4 text-sm font-semibold text-black transition-transform duration-300 hover:scale-105 active:scale-95">
+            <button disabled={isPending} className="group relative overflow-hidden rounded-full bg-white px-8 py-4 text-sm font-semibold text-black transition-transform duration-300 hover:scale-105 active:scale-95 disabled:opacity-50">
               {/* Shiny Shimmer Effect */}
               <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-linear-to-r from-transparent via-white/80 to-transparent" />
 
@@ -246,7 +334,7 @@ function CompleteSection() {
               />
             </button>
           </motion.div>
-        </a>
+        </div>
       </motion.div>
     </div>
   );

@@ -10,6 +10,7 @@ import {
   PreviewPdfModal,
   UnlockModal,
   UploadDocumentModal,
+  ConfirmUpdateProfileModal,
 } from "./modals";
 import { closeModalAtom, modalAtom, paymentAtom } from "../stores/modalStore";
 import { AnimatePresence, motion } from "framer-motion";
@@ -53,6 +54,7 @@ export default function ModalContainer() {
             {modalKey === "unlock" && <UnlockModal />}
             {modalKey === "cancel" && <CancelModal />}
             {modalKey === "delete" && <DeleteModal />}
+            {modalKey === "confirm_update_profile" && <ConfirmUpdateProfileModal />}
             {modalKey === "transaction" && paymentData && (
               <PaymentQRModal {...paymentData} />
             )}

@@ -4,10 +4,15 @@ import { IoIosInformationCircleOutline } from "react-icons/io";
 import { RxDesktop } from "react-icons/rx";
 import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
 import { Badge, IconBadge } from "../components/custom-ui/Badge";
-import { HiOutlineCog, HiOutlineServer } from "react-icons/hi";
-import { useState } from "react";
+import { HiOutlineCog, HiOutlineServer, HiOutlineTrash } from "react-icons/hi";
+import { useState, useEffect } from "react";
 import { Button } from "../components/custom-ui/Button";
 import Toggle from "@/components/custom-ui/Toggle";
+import { useAuth } from "@/hooks/useAuth";
+import { useChangeMyPassword, useDoctorMe } from "@/hooks/data/useDoctorHooks";
+import { useAtom } from "jotai";
+import { openConfirmUpdateProfileModalAtom } from "@/stores/modalStore";
+import { toast } from "@/hooks/useToast";
 
 type SettingCardProps = {
   label: string;
@@ -67,113 +72,317 @@ function SettingCard({
 }
 
 export function ProfileSettingDashboardPage() {
+  const { user } = useAuth();
+  const { data: doctorProfile } = useDoctorMe(user?.role === "Doctor");
+  const [, openConfirm] = useAtom(openConfirmUpdateProfileModalAtom);
+
+  const [form, setForm] = useState({
+    fullName: "",
+    specialty: "",
+    currentHospitalName: "",
+    licenseNumber: "",
+    yearsOfExperience: 0,
+    bio: "",
+    avatarImage: null as File | null,
+    licenseImage: [] as File[],
+  });
+
+  const [original, setOriginal] = useState<typeof form | null>(null);
+
+  useEffect(() => {
+    if (doctorProfile && user?.role === "Doctor") {
+       const initial = {
+          fullName: doctorProfile.fullName || user?.fullName || "",
+          specialty: doctorProfile.specialty || "",
+          currentHospitalName: doctorProfile.currentHospitalName || "",
+          licenseNumber: doctorProfile.licenseNumber || "",
+          yearsOfExperience: doctorProfile.yearsOfExperience || 0,
+          bio: doctorProfile.bio || "",
+          avatarImage: null,
+          licenseImage: [],
+       };
+       setForm(initial);
+       setOriginal(initial);
+    } else if (user && user?.role !== "Doctor") {
+       setForm(prev => ({ ...prev, fullName: user.fullName || "" }));
+    }
+  }, [doctorProfile, user]);
+
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    if (user?.role !== "Doctor") {
+       toast.warn("Tính năng giới hạn", "Tính năng cập nhật hồ sơ chi tiết hiện chỉ khả dụng cho Bác sĩ.");
+       return;
+    }
+
+    if (!original) return;
+
+    const fd = new FormData();
+    let hasChanges = false;
+
+    if (form.fullName !== original.fullName) { fd.append("fullName", form.fullName); hasChanges = true; }
+    if (form.specialty !== original.specialty) { fd.append("specialty", form.specialty); hasChanges = true; }
+    if (form.currentHospitalName !== original.currentHospitalName) { fd.append("currentHospitalName", form.currentHospitalName); hasChanges = true; }
+    if (form.licenseNumber !== original.licenseNumber) { fd.append("licenseNumber", form.licenseNumber); hasChanges = true; }
+    if (form.yearsOfExperience !== original.yearsOfExperience) { fd.append("yearsOfExperience", String(form.yearsOfExperience)); hasChanges = true; }
+    if (form.bio !== original.bio) { fd.append("bio", form.bio); hasChanges = true; }
+    
+    if (form.avatarImage) { fd.append("avatarImage", form.avatarImage); hasChanges = true; }
+    if (form.licenseImage.length > 0) {
+      form.licenseImage.forEach(f => fd.append("licenseImage", f));
+      hasChanges = true;
+    }
+
+    if (!hasChanges) {
+      toast.warn("Không có thay đổi", "Vui lòng tinh chỉnh ít nhất 1 mục trước khi cập nhật.");
+      return;
+    }
+
+    openConfirm(fd);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setForm({ ...form, avatarImage: e.target.files[0] });
+    }
+  };
+
+  const handleLicenseFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setForm({ ...form, licenseImage: [...form.licenseImage, ...Array.from(e.target.files)] });
+    }
+  };
+
+  const removeLicenseFile = (index: number) => {
+    const newFiles = [...form.licenseImage];
+    newFiles.splice(index, 1);
+    setForm({ ...form, licenseImage: newFiles });
+  };
+
+  // The record fetched may have profileImage, avatarImage or avatarUrl
+  const fetchedAvatar = (doctorProfile as any)?.avatarImage || (doctorProfile as any)?.profileImage || (doctorProfile as any)?.avatarUrl;
+  const avatarPreview = form.avatarImage 
+    ? URL.createObjectURL(form.avatarImage) 
+    : (fetchedAvatar || user?.avatarUrl || "https://i.pravatar.cc/300");
+
   return (
     <div className="w-full space-y-6 px-12 py-4">
-      {/* Content */}
-
       <div className="flex flex-col space-y-6">
         <SettingCard
           label="Thông tin cơ bản"
-          description="Bạn có thể cập nhật Tên & Số điện thoại của bạn"
-          buttonTitle="Cập nhật"
+          description="Cập nhật các thông tin cá nhân hiện tại của bạn"
+          buttonTitle="Lưu cập nhật"
+          onSubmit={handleSubmit}
           helper={
             <span className="helper-setting-card">
-              Chỉ được thay đổi 1 lần / tuần
+               Dành cho: {user?.role === "Doctor" ? "Bác sĩ" : "Người dùng"}
             </span>
           }
         >
-          <form className="flex flex-col space-y-4">
+          <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
             <div className="flex items-center space-x-4">
               <input
-                value="tritruonghoang3@gmail.com"
-                placeholder="abcd1234@gmail.com"
-                className="input-primary disabled: w-[50%]"
+                value={user?.email || ""}
+                placeholder="Email liên hệ"
+                className="input-primary text-black placeholder:text-gray-500 w-[50%] disabled:opacity-50"
                 disabled
+                readOnly
               />
               <input
-                value="0776003669"
-                placeholder="Nhập số điện thoại"
-                className="input-primary w-[50%]"
+                value={user?.phoneNumber || ""}
+                placeholder="Số điện thoại"
+                className="input-primary text-black placeholder:text-gray-500 w-[50%] disabled:opacity-50"
+                disabled
+                readOnly
               />
             </div>
             <input
-              value="Trí Trương"
-              placeholder="Tên của bạn"
-              className="input-primary w-full"
+              value={form.fullName}
+              onChange={e => setForm({...form, fullName: e.target.value})}
+              placeholder="Họ và tên"
+              className="input-primary text-black placeholder:text-gray-500 w-full"
             />
+            {user?.role === "Doctor" && (
+              <>
+                <div className="flex items-center space-x-4">
+                  <input
+                    value={form.specialty}
+                    onChange={e => setForm({...form, specialty: e.target.value})}
+                    placeholder="Chuyên khoa (VD: Nội khoa, Nhi khoa)"
+                    className="input-primary text-black placeholder:text-gray-500 w-[50%]"
+                  />
+                  <input
+                    value={form.currentHospitalName}
+                    onChange={e => setForm({...form, currentHospitalName: e.target.value})}
+                    placeholder="Nơi công tác"
+                    className="input-primary text-black placeholder:text-gray-500 w-[50%]"
+                  />
+                </div>
+                <div className="flex items-center space-x-4">
+                  <input
+                    value={form.licenseNumber}
+                    onChange={e => setForm({...form, licenseNumber: e.target.value})}
+                    placeholder="Mã số chứng chỉ hành nghề"
+                    className="input-primary text-black placeholder:text-gray-500 w-[65%]"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={form.yearsOfExperience}
+                    onChange={e => setForm({...form, yearsOfExperience: Number(e.target.value)})}
+                    placeholder="Năm kinh nghiệm"
+                    className="input-primary text-black placeholder:text-gray-500 w-[35%]"
+                  />
+                </div>
+                <textarea
+                  value={form.bio}
+                  onChange={e => setForm({...form, bio: e.target.value})}
+                  placeholder="Giới thiệu chuyên môn y khoa..."
+                  className="input-primary text-black placeholder:text-gray-500 min-h-[100px] w-full py-3"
+                />
+              </>
+            )}
           </form>
         </SettingCard>
+        
         <SettingCard
           label="Ảnh đại diện"
-          description="Cập nhật ảnh đại diện để người khác nhận diện bạn tốt hơn"
-          buttonTitle="Lưu thay đổi"
+          description="Cập nhật ảnh đại diện để người bệnh an tâm nhận diện"
+          buttonTitle="Lưu ảnh đại diện"
+          onSubmit={handleSubmit}
           helper={
             <span className="helper-setting-card">
-              Ảnh vuông, tối đa 5MB (PNG, JPG)
+              Ảnh vuông rõ nét, tối đa 5MB.
             </span>
           }
         >
           <div className="flex flex-col items-center py-8">
             <div className="group relative cursor-pointer">
-              {/* Avatar */}
               <div className="relative h-48 w-48 rounded-full bg-linear-to-br from-white/20 to-white/5 p-0.5 transition">
-                <div className="h-full w-full overflow-hidden rounded-full bg-neutral-900">
+                <div className="h-full w-full overflow-hidden rounded-full bg-neutral-900 border border-white/10">
                   <img
-                    src="https://i.pravatar.cc/300"
+                    src={avatarPreview}
                     alt="avatar"
                     className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                   />
                 </div>
               </div>
-
-              {/* Hover Overlay */}
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-full bg-black/60 opacity-0 backdrop-blur-sm transition duration-300 group-hover:opacity-100">
                 <label className="cursor-pointer rounded-full bg-white/10 px-5 py-2 text-sm text-white backdrop-blur-md transition hover:bg-white/20">
-                  Đổi ảnh
-                  <input type="file" className="hidden" />
+                  Tải ảnh mới
+                  <input type="file" onChange={handleAvatarChange} accept="image/*" className="hidden" />
                 </label>
-
-                <button className="text-sm text-red-400 transition hover:text-red-300">
-                  Xóa ảnh
-                </button>
+                {form.avatarImage && (
+                  <button onClick={(e) => { e.preventDefault(); setForm({...form, avatarImage: null}); }} className="text-sm text-red-400 transition hover:text-red-300">
+                    Bỏ chọn
+                  </button>
+                )}
               </div>
             </div>
           </div>
         </SettingCard>
+
+        {user?.role === "Doctor" && (
+           <SettingCard
+            label="Chứng chỉ & Bằng cấp (Bổ sung)"
+            description="Tải lên hình ảnh CCHN hoặc chứng chỉ liên quan để làm hồ sơ minh bạch hơn."
+            buttonTitle="Lưu chứng chỉ"
+            onSubmit={handleSubmit}
+            helper={
+              <span className="helper-setting-card">
+                Bạn có thể bổ sung hoặc cập nhật chứng chỉ.
+              </span>
+            }
+          >
+            <div className="flex flex-col py-4 w-full">
+               <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-white/10 border-dashed rounded-xl cursor-pointer bg-white/5 hover:bg-white/10 transition">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <p className="mb-2 text-sm text-gray-400">
+                        <span className="font-semibold text-white">Click tải lên</span> nhiều ảnh
+                      </p>
+                      <p className="text-xs text-gray-500">PNG, JPG, PDF</p>
+                  </div>
+                  <input type="file" multiple accept="image/*,.pdf" onChange={handleLicenseFiles} className="hidden" />
+               </label>
+
+               {form.licenseImage.length > 0 && (
+                 <div className="mt-4 flex flex-wrap gap-4">
+                   {form.licenseImage.map((file, i) => (
+                     <div key={i} className="relative flex items-center justify-between overflow-hidden rounded-lg border border-white/10 bg-white/5 p-2 px-3">
+                        <span className="text-xs text-white max-w-[150px] truncate">{file.name}</span>
+                        <button type="button" onClick={() => removeLicenseFile(i)} className="ml-3 text-gray-400 hover:text-red-400 transition">
+                          <HiOutlineTrash className="h-4 w-4" />
+                        </button>
+                     </div>
+                   ))}
+                 </div>
+               )}
+            </div>
+          </SettingCard>
+        )}
       </div>
     </div>
   );
 }
 
 export function SecuritySettingDashboardPage() {
+  const [passwords, setPasswords] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const changePasswordMutation = useChangeMyPassword();
+
+  const handlePasswordChange = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!passwords.oldPassword || !passwords.newPassword || !passwords.confirmPassword) {
+      toast.error("Thiếu thông tin", "Vui lòng nhập đầy đủ các trường mật khẩu.");
+      return;
+    }
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      toast.error("Không khớp", "Mật khẩu xác nhận không trùng khớp.");
+      return;
+    }
+
+    try {
+      await changePasswordMutation.mutateAsync(passwords);
+      setPasswords({ oldPassword: "", newPassword: "", confirmPassword: "" });
+    } catch {}
+  };
+
   return (
     <div className="w-full space-y-6 px-12 py-4">
       <div className="flex flex-col space-y-6">
         <SettingCard
           label="Mật khẩu"
           description="Cập nhật mật khẩu để bảo vệ tài khoản của bạn"
-          buttonTitle="Đổi mật khẩu"
-          helper={
-            <span className="helper-setting-card">
-              Bạn có thể đổi mật khẩu 1 tháng / lần
-            </span>
-          }
+          buttonTitle={changePasswordMutation.isPending ? "Đang xử lý..." : "Đổi mật khẩu"}
+          onSubmit={handlePasswordChange}
+          disable={changePasswordMutation.isPending}
+          helper={<div />}
         >
-          <form className="flex max-w-3xl flex-col gap-4">
+          <form className="flex max-w-3xl flex-col gap-4" onSubmit={handlePasswordChange}>
             <input
               type="password"
               placeholder="Mật khẩu hiện tại"
-              className="input-primary"
+              className="input-primary text-black placeholder:text-gray-500"
+              value={passwords.oldPassword}
+              onChange={(e) => setPasswords({...passwords, oldPassword: e.target.value})}
             />
             <input
               type="password"
               placeholder="Mật khẩu mới"
-              className="input-primary"
+              className="input-primary text-black placeholder:text-gray-500"
+              value={passwords.newPassword}
+              onChange={(e) => setPasswords({...passwords, newPassword: e.target.value})}
             />
             <input
               type="password"
               placeholder="Xác nhận mật khẩu mới"
-              className="input-primary"
+              className="input-primary text-black placeholder:text-gray-500"
+              value={passwords.confirmPassword}
+              onChange={(e) => setPasswords({...passwords, confirmPassword: e.target.value})}
             />
           </form>
         </SettingCard>

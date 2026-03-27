@@ -4,7 +4,7 @@ import type {
   GetDoctorDocumentsParams,
   ReviewDoctorDocumentRequest,
 } from "@/types/DoctorDocument";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useFetch } from "../useFetch";
 import { toast } from "../useToast";
 
@@ -12,6 +12,17 @@ export function useDoctorDocuments(params: GetDoctorDocumentsParams) {
   return useFetch(["doctor-documents", params], async () =>
     DoctorDocumentService.getDoctorDocuments(params),
   );
+}
+
+export function useDoctorDocumentsByDoctorId(doctorId: string) {
+  return useQuery({
+    queryKey: ["doctor-documents", "doctor", doctorId],
+    queryFn: async () => {
+      const res = await DoctorDocumentService.getDoctorDocumentsByDoctorId(doctorId);
+      return res.data;
+    },
+    enabled: !!doctorId,
+  });
 }
 
 type ReviewDoctorDocumentVariables = {

@@ -28,3 +28,10 @@ export async function reviewDoctorDocument(
 
   return res.data;
 }
+
+export async function getDoctorDocumentsByDoctorId(
+  doctorId: string,
+): Promise<BaseResponse<DoctorDocument[]>> {
+  const res = await axiosNETClient.get(`/api/v1/doctor-documents/doctors/${doctorId}`);
+  return res.data;
+}
