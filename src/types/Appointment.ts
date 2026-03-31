@@ -1,8 +1,10 @@
 export type AppointmentStatus =
-  | "upcoming"
-  | "completed"
-  | "cancelled"
-  | "in_progress";
+  | "Pending"
+  | "Approved"
+  | "Rejected"
+  | "Completed"
+  | "Cancelled"
+  | "InProgress";
 
 export type AppointmentType = "online" | "offline";
 
@@ -12,7 +14,7 @@ export interface DoctorAppointment {
   memberId: string;
   availabilityId: string;
   appointmentDate: string;
-  status: string;
+  status: AppointmentStatus;
   cancelReason: string | null;
   createdAt: string;
 }

@@ -31,24 +31,6 @@ interface Appointment {
   symptoms: string;
 }
 
-function normalizeAppointmentStatus(status: string): AppointmentStatus {
-  const normalized = status.trim().toLowerCase().replace(/[\s-]/g, "_");
-
-  if (["completed", "done", "finished"].includes(normalized)) {
-    return "completed";
-  }
-
-  if (["cancelled", "canceled"].includes(normalized)) {
-    return "cancelled";
-  }
-
-  if (["in_progress", "ongoing", "processing"].includes(normalized)) {
-    return "in_progress";
-  }
-
-  return "upcoming";
-}
-
 function toMaskedLabel(prefix: string, value: string): string {
   if (!value) return prefix;
   const shortValue = value.slice(0, 8).toUpperCase();
@@ -63,7 +45,7 @@ function mapAppointment(raw: DoctorAppointment): Appointment {
     dateKey: raw.appointmentDate,
     date: formatDate(raw.appointmentDate),
     time: formatTime(raw.appointmentDate),
-    status: normalizeAppointmentStatus(raw.status),
+    status: raw.status,
     symptoms:
       raw.cancelReason?.trim() || "Chưa có ghi chú cho lịch hẹn này.",
   };
@@ -276,7 +258,7 @@ function AppointmentCardGrid({ data }: { data: Appointment[] }) {
 }
 
 function AppointmentCard({ data }: { data: Appointment }) {
-  const isNow = data.status === "in_progress";
+  const isNow = data.status === "InProgress";
 
   return (
     <motion.div
@@ -452,7 +434,7 @@ function MonthlyCalendarView({ data }: { data: Appointment[] }) {
 function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const isNow = apt.status === "in_progress";
+  const isNow = apt.status === "InProgress";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -518,10 +500,12 @@ function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
 /* -------------------------------------------------------------------------- */
 function StatusBadge({ status }: { status: AppointmentStatus }) {
   const map: Record<AppointmentStatus, React.ReactNode> = {
-    upcoming: <Badge type="info" value="Sắp gọi" />,
-    in_progress: <Badge type="warning" value="Đang khám" />,
-    completed: <Badge type="success" value="Hoàn thành" />,
-    cancelled: <Badge type="error" value="Đã hủy" />,
+    Pending: <Badge type="info" value="Chưa duyệt" />,
+    InProgress: <Badge type="warning" value="Đang khám" />,
+    Completed: <Badge type="success" value="Hoàn thành" />,
+    Cancelled: <Badge type="error" value="Đã hủy" />,
+    Approved: <Badge type="success" value="Đã duyệt" />,
+    Rejected: <Badge type="error" value="Đã từ chối" />,
   };
   return map[status];
 }
