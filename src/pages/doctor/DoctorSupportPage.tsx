@@ -1,18 +1,24 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { LuGrid3X3, LuCalendarDays, LuPlus } from "react-icons/lu";
-import { FiClock, FiVideo, FiMapPin } from "react-icons/fi";
+import { FiClock, FiVideo, FiMapPin, FiCheck, FiX } from "react-icons/fi";
 import { cardContainer, cardItem } from "@/motions/cardMotion";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
-import IconAction from "@/components/custom-ui/IconAction";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { DoctorExceptionModal } from "@/components/modals/DoctorExceptionModal";
-import { useDoctorAppointments } from "@/hooks/data/useAppointmentHooks";
+import {
+  useDoctorAppointments,
+  useUpdateAppointmentStatus,
+} from "@/hooks/data/useAppointmentHooks";
+import {
+  useAppointmentSession,
+} from "@/hooks/data/useSessionHooks";
 import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
 import { toast } from "@/hooks/useToast";
 import { formatDate, formatTime } from "@/common/format";
+import { useNavigate } from "react-router-dom";
 import type {
   AppointmentStatus,
   AppointmentType,
@@ -98,9 +104,12 @@ function AppointmentState({
   );
 }
 
-export default function DoctorSupportPage() {
+type FilterTab = "all" | "pending" | "approved" | "inprogress" | "history";
+
+export default function DoctorSupportPage({ filter = "all", title = "Lịch khám bệnh nhân" }: { filter?: FilterTab; title?: string }) {
   const [viewLayout, setViewLayout] = useState<"card" | "calendar">("card");
   const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
+  
   const {
     data: appointmentResponse,
     isLoading,
@@ -111,7 +120,19 @@ export default function DoctorSupportPage() {
   const { data: doctorProfile } = useDoctorMe(true);
 
   const appointments = (appointmentResponse ?? []).map(mapAppointment);
-  const hasAppointments = appointments.length > 0;
+  
+  const filteredAppointments = appointments.filter((apt) => {
+    switch (filter) {
+      case "all": return true;
+      case "pending": return apt.status === "Pending";
+      case "approved": return apt.status === "Approved";
+      case "inprogress": return apt.status === "InProgress";
+      case "history": return ["Completed", "Cancelled", "Rejected"].includes(apt.status);
+      default: return true;
+    }
+  });
+
+  const hasAppointments = filteredAppointments.length > 0;
   const doctorId = doctorProfile?.doctorId || "";
 
   function handleOpenExceptionModal() {
@@ -128,8 +149,8 @@ export default function DoctorSupportPage() {
 
   const breadcrumbItems = [
     { label: "Dashboard", path: "/dashboard" },
-    { label: "Lịch khám", path: "/dashboard/doctor-support" },
-    { label: "Tất cả" },
+    { label: "Công việc", path: "/dashboard/doctor-support" },
+    { label: title },
   ];
 
   return (
@@ -139,7 +160,7 @@ export default function DoctorSupportPage() {
         <div>
           <Breadcrumb items={breadcrumbItems} />
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-            Lịch khám bệnh nhân
+            {title}
           </h1>
         </div>
         <div className="flex items-center gap-3">
@@ -197,7 +218,7 @@ export default function DoctorSupportPage() {
                   onRetry={() => void refetch()}
                 />
               ) : hasAppointments ? (
-                <AppointmentCardGrid data={appointments} />
+                <AppointmentCardGrid data={filteredAppointments} />
               ) : (
                 <AppointmentState type="empty" />
               )}
@@ -221,7 +242,7 @@ export default function DoctorSupportPage() {
                   onRetry={() => void refetch()}
                 />
               ) : hasAppointments ? (
-                <MonthlyCalendarView data={appointments} />
+                <MonthlyCalendarView data={filteredAppointments} />
               ) : (
                 <AppointmentState type="empty" />
               )}
@@ -259,6 +280,25 @@ function AppointmentCardGrid({ data }: { data: Appointment[] }) {
 
 function AppointmentCard({ data }: { data: Appointment }) {
   const isNow = data.status === "InProgress";
+  const isCallReady = data.status === "InProgress" || data.status === "Approved";
+  const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
+  const navigate = useNavigate();
+
+  const { data: sessionData, isLoading: sessionLoading } = useAppointmentSession(data.id, isCallReady);
+  const sessionId = sessionData?.consultanSessionId;
+  const canJoin = isCallReady && !!sessionId;
+
+  function handleApprove() {
+    updateStatus({ id: data.id, status: "Approved" });
+  }
+
+  function handleReject() {
+    updateStatus({ id: data.id, status: "Rejected" });
+  }
+
+  function handleJoinCall() {
+    if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+  }
 
   return (
     <motion.div
@@ -325,9 +365,49 @@ function AppointmentCard({ data }: { data: Appointment }) {
       <div className="mt-5 flex items-center justify-between">
         <StatusBadge status={data.status} />
         <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
-          {isNow && (
-            <Tooltip content="Tham gia cuộc gọi">
-              <IconAction icon={<FiVideo />} />
+          {data.status === "Pending" && (
+            <>
+              <Tooltip content="Duyệt lịch hẹn">
+                <button
+                  onClick={handleApprove}
+                  disabled={isPending}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100 disabled:opacity-50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
+                >
+                  <FiCheck />
+                </button>
+              </Tooltip>
+              <Tooltip content="Từ chối">
+                <button
+                  onClick={handleReject}
+                  disabled={isPending}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:opacity-50 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
+                >
+                  <FiX />
+                </button>
+              </Tooltip>
+            </>
+          )}
+          {isCallReady && (
+            <Tooltip
+              content={
+                sessionLoading
+                  ? "Đang tải Session..."
+                  : canJoin
+                    ? "Tham gia cuộc gọi"
+                    : "Chưa có Session"
+              }
+            >
+              <button
+                disabled={!canJoin}
+                onClick={handleJoinCall}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
+                  canJoin
+                    ? "bg-primary/10 text-primary hover:bg-primary/20"
+                    : "bg-gray-100 text-gray-400 opacity-50 dark:bg-white/5"
+                } disabled:opacity-50`}
+              >
+                {sessionLoading ? <Spinner size="sm" /> : <FiVideo />}
+              </button>
             </Tooltip>
           )}
         </div>
@@ -435,6 +515,31 @@ function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isNow = apt.status === "InProgress";
+  const isCallReady = apt.status === "InProgress" || apt.status === "Approved";
+  const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
+  const navigate = useNavigate();
+
+  const { data: sessionData, isLoading: sessionLoading } = useAppointmentSession(apt.id, isCallReady);
+  const sessionId = sessionData?.consultanSessionId;
+  const canJoin = isCallReady && !!sessionId;
+
+  function handleApprove(e: React.MouseEvent) {
+    e.stopPropagation();
+    updateStatus({ id: apt.id, status: "Approved" });
+    setIsOpen(false);
+  }
+
+  function handleReject(e: React.MouseEvent) {
+    e.stopPropagation();
+    updateStatus({ id: apt.id, status: "Rejected" });
+    setIsOpen(false);
+  }
+
+  function handleJoinCall(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+    setIsOpen(false);
+  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -474,7 +579,7 @@ function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
       </div>
 
       {/* Mini Dropdown */}
-      {isNow && (
+      {(isCallReady || apt.status === "Pending") && (
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -484,9 +589,38 @@ function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
               transition={{ duration: 0.15 }}
               className="dark:border-border-dark absolute top-full left-0 z-999 mt-1 w-36 rounded-lg border border-gray-100 bg-white p-1 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:bg-[#1a1c23]"
             >
-              <button className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-gray-700 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5">
-                <FiVideo /> Tham gia ngay
-              </button>
+              {isCallReady && (
+                <button
+                  onClick={handleJoinCall}
+                  disabled={!canJoin}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition ${
+                    canJoin
+                      ? "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                      : "cursor-not-allowed text-gray-400 opacity-50"
+                  } disabled:opacity-50`}
+                >
+                  <FiVideo />{" "}
+                  {sessionLoading ? "Đang tải Session..." : "Tham gia ngay"}
+                </button>
+              )}
+              {apt.status === "Pending" && (
+                <>
+                  <button
+                    onClick={handleApprove}
+                    disabled={isPending}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-emerald-600 transition hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
+                  >
+                    <FiCheck /> Duyệt lịch hẹn
+                  </button>
+                  <button
+                    onClick={handleReject}
+                    disabled={isPending}
+                    className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-rose-600 transition hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-500/10"
+                  >
+                    <FiX /> Từ chối
+                  </button>
+                </>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

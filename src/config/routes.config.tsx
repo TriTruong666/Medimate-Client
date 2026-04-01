@@ -18,6 +18,7 @@ import { LiaFileContractSolid } from "react-icons/lia";
 import { VscFeedback } from "react-icons/vsc";
 import type { Role } from "@/hooks/useAuth";
 import DoctorSupportPage from "@/pages/doctor/DoctorSupportPage";
+import DoctorVideoCallPage from "@/pages/doctor/DoctorVideoCallPage";
 import DoctorContractPage from "@/pages/admin/DoctorContractPage";
 import DoctorProfilesPage from "@/pages/doctor-manager/DoctorProfilesPage";
 import DoctorReportPage from "@/pages/admin/DoctorReportPage";
@@ -210,9 +211,43 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     layout: "dashboard",
     label: "Công việc",
     icon: IoBriefcaseOutline,
-    element: <DoctorSupportPage />,
     showInSidebar: true,
     roles: ["Doctor"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.ROOT,
+        element: <DoctorSupportPage filter="all" title="Tất cả công việc" />,
+        label: "Tất cả công việc",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.PENDING,
+        element: <DoctorSupportPage filter="pending" title="Công việc cần duyệt" />,
+        label: "Cần duyệt",
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.APPROVED,
+        element: <DoctorSupportPage filter="approved" title="Công việc sắp diễn ra" />,
+        label: "Sắp diễn ra",
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.IN_PROGRESS,
+        element: <DoctorSupportPage filter="inprogress" title="Công việc đến giờ hẹn" />,
+        label: "Đến giờ hẹn",
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.HISTORY,
+        element: <DoctorSupportPage filter="history" title="Lịch sử công việc" />,
+        label: "Lịch sử",
+      },
+    ],
+  },
+  {
+    path: PATHS.DASHBOARD.VIDEO_CALL,
+    element: <DoctorVideoCallPage />,
+    layout: "dashboard",
+    roles: ["Doctor", "DoctorManager", "Admin"],
+    showInSidebar: false,
   },
   {
     path: PATHS.DASHBOARD.ACCOUNTS,
