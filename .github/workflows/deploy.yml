@@ -33,6 +33,7 @@ jobs:
           build-args: |
             VITE_NET_API_URL=${{ secrets.VITE_NET_API_URL }}
             VITE_PY_API_URL=${{ secrets.VITE_PY_API_URL }}
+            VITE_AGORA_APP_ID=${{ secrets.VITE_AGORA_APP_ID }}
 
   deploy:
     needs: build-and-push
