@@ -45,9 +45,11 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-            cd ~/projects/medimate/client
+            mkdir -p ~/.docker
 
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            cd ~/projects/medimate/client
 
             docker compose down
 
