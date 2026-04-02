@@ -22,3 +22,13 @@ export async function getTransactionDetail(
   const res = await axiosNETClient.get(`/api/v1/transactions/${id}`);
   return res.data;
 }
+
+export async function getUserTransactions(
+  userId: string,
+  params: GetTransactionsParams
+): Promise<BasePaginatedResponse<Transaction[]>> {
+  const res = await axiosNETClient.get(`/api/v1/transactions/user/${userId}`, {
+    params: cleanQueryParams<GetTransactionsParams>(params),
+  });
+  return res.data;
+}

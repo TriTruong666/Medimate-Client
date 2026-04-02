@@ -13,9 +13,13 @@ import {
 } from "../stores/drawerStore";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
-import { useTransactionList } from "@/hooks/data/useTransactionHooks";
+import {
+  useTransactionList,
+  useUserTransactionList,
+} from "@/hooks/data/useTransactionHooks";
 import type { PaginationParams } from "@/common/query.params";
 import type { Transaction } from "@/types/Transaction";
+import { useAuth } from "@/hooks/useAuth";
 
 type ColumnKey =
   | "id"
@@ -96,12 +100,26 @@ const columns: TableColumn[] = [
   },
 ];
 export default function TransactionDashboardPage() {
+  const { user } = useAuth();
+  const isDoctor = user?.role === "Doctor";
+  const userId = user?.userId ?? "";
+
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
     pageSize: 5,
   });
-  const { data, isLoading, error, isError, refetch } =
-    useTransactionList(pagination);
+
+  const allTransactionsQuery = useTransactionList(pagination, {
+    enabled: !isDoctor,
+  });
+
+  const userTransactionsQuery = useUserTransactionList(userId, pagination, {
+    enabled: isDoctor && !!userId,
+  });
+
+  const { data, isLoading, error, isError, refetch } = isDoctor
+    ? userTransactionsQuery
+    : allTransactionsQuery;
 
   const total = data?.totalCount ?? 0;
   const page = data?.pageNumber ?? pagination.pageNumber ?? 1;

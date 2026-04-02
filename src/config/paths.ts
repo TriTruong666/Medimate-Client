@@ -28,8 +28,13 @@ export const PATHS = {
     },
     DOCTOR_SUPPORT: {
       ROOT: "/dashboard/doctor-support",
+      PENDING: "/dashboard/doctor-support/pending",
+      APPROVED: "/dashboard/doctor-support/approved",
+      IN_PROGRESS: "/dashboard/doctor-support/in-progress",
+      HISTORY: "/dashboard/doctor-support/history",
       CONSERVATION: "/dashboard/doctor-support/:conversationId",
     },
+    VIDEO_CALL: "/dashboard/video-call/:sessionId",
     INTERNAL_CHAT: {
       ROOT: "/dashboard/chat",
       CONSERVATION: "/dashboard/chat/:conversationId",
