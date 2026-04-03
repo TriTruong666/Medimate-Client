@@ -4,6 +4,7 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import { useClientPagination } from "@/hooks/useClientPagination";
 import { useManagementDoctors } from "@/hooks/data/useManagementHooks";
 import { useState } from "react";
 import type { DoctorAccount } from "@/apis/management.service";
@@ -37,6 +38,15 @@ export default function DoctorProfilesPage() {
     { label: "Danh sách Bác sĩ" },
   ];
 
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(safeRows, { initialPageSize: 5 });
+
   return (
     <div className="page-layout">
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
@@ -64,14 +74,14 @@ export default function DoctorProfilesPage() {
           emptyMessage="Không tìm thấy bác sĩ nào trong hệ thống."
           tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
           pagination={{
-              page: 1,
-              pageSize: Math.max(safeRows.length, 5),
-              total: safeRows.length,
-              onPageChange: () => {},
-              onPageSizeChange: () => {},
+              page,
+              pageSize,
+              total,
+              onPageChange: handlePageChange,
+              onPageSizeChange: handlePageSizeChange,
           }}
         >
-          {safeRows.map((row: DoctorAccount) => (
+          {pagedData.map((row: DoctorAccount) => (
             <tr
               key={row.doctorId}
               className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"

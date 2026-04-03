@@ -1,11 +1,11 @@
 ---
 name: api_hooks
-description: "Guidelines and templates for writing API hooks (React Query) in the Picare dashboard."
+description: "Guidelines and templates for writing API hooks (React Query) in the Medimate dashboard."
 ---
 
-# Picare API Hooks Standard
+# Medimate API Hooks Standard
 
-This skill defines the standard pattern for writing API integration hooks in the Picare project. All API calls must be wrapped in custom React hooks using `@tanstack/react-query` to ensure consistent data fetching, caching, error handling, and UI feedback (toast notifications).
+This skill defines the standard pattern for writing API integration hooks in the Medimate project. All API calls must be wrapped in custom React hooks using `@tanstack/react-query` to ensure consistent data fetching, caching, error handling, and UI feedback (toast notifications).
 
 ## 📁 File Structure & Location
 - API service files (Axios calls) are placed in `src/apis/*.service.ts`.

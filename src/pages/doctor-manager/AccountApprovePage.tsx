@@ -6,6 +6,7 @@ import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { PATHS } from "@/config/paths";
 import { useLocation } from "react-router-dom";
+import { useClientPagination } from "@/hooks/useClientPagination";
 import {
   useManagementDoctors,
   useReviewDoctorAccount,
@@ -93,6 +94,15 @@ function AccountTable({ activeStatus }: { activeStatus: DoctorAccountStatus }) {
     } catch {}
   };
 
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(safeRows, { initialPageSize: 5 });
+
   return (
     <>
       <DataTableShell
@@ -107,14 +117,14 @@ function AccountTable({ activeStatus }: { activeStatus: DoctorAccountStatus }) {
         emptyMessage="Không tìm thấy tài khoản nào trong trạng thái này."
         tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
         pagination={{
-            page: 1,
-            pageSize: Math.max(safeRows.length, 5),
-            total: safeRows.length,
-            onPageChange: () => {},
-            onPageSizeChange: () => {},
+            page,
+            pageSize,
+            total,
+            onPageChange: handlePageChange,
+            onPageSizeChange: handlePageSizeChange,
         }}
       >
-        {safeRows.map((row: DoctorAccount) => (
+        {pagedData.map((row: DoctorAccount) => (
           <tr
             key={row.doctorId}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"

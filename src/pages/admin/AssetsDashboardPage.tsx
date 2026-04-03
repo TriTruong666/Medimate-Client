@@ -23,7 +23,8 @@ type BaseAsset = {
   type: AssetType;
 };
 
-const DEFAULT_ERROR_MESSAGE = "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.";
+const DEFAULT_ERROR_MESSAGE =
+  "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.";
 
 const ASSET_UI: Record<AssetType, { badge: string; overlay: boolean }> = {
   image: {
@@ -222,9 +223,7 @@ function AssetLibrary({
   onBackToTop?: () => void;
 }) {
   if (isLoading) {
-    return (
-      <AssetLibraryState loading message="Đang tải dữ liệu..." />
-    );
+    return <AssetLibraryState loading message="Đang tải dữ liệu..." />;
   }
 
   if (isError) {
@@ -322,23 +321,27 @@ export function AssetsPrescriptionDashboardPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const [allImages, setAllImages] = useState<BaseAsset[]>([]);
 
-  const { data, isLoading, isError, isFetching, error, refetch } = AssetHooks.usePrescriptionImagesList({
-    pageNumber,
-    pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
-    isDescending: true,
-  });
+  const { data, isLoading, isError, isFetching, error, refetch } =
+    AssetHooks.usePrescriptionImagesList({
+      pageNumber,
+      pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+      isDescending: true,
+    });
 
   const currentPageItems: BaseAsset[] = useMemo(
     () =>
-      (data?.items ?? []).map((item) => ({
-        id: item.imageId,
-        name: `Prescription-${item.imageId.slice(0, 6)}.png`,
-        size: "N/A",
-        date: new Date(item.uploadedAt).toLocaleDateString("vi-VN"),
-        preview: item.thumbnailUrl || item.imageUrl,
-        fileUrl: item.imageUrl,
-        type: "image" as const,
-      })),
+      (data?.items ?? []).map((item) => {
+        const id = item.imageId || (item as any).id || Math.random().toString();
+        return {
+          id,
+          name: `Prescription-${id.slice(0, 6)}.png`,
+          size: "N/A",
+          date: new Date(item.uploadedAt).toLocaleDateString("vi-VN"),
+          preview: item.thumbnailUrl || item.imageUrl,
+          fileUrl: item.imageUrl,
+          type: "image" as const,
+        };
+      }),
     [data],
   );
   const totalPages = data?.totalPages;
@@ -348,7 +351,8 @@ export function AssetsPrescriptionDashboardPage() {
       : undefined;
   const hasMoreAssets =
     hasMoreByTotalPages ??
-    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE && currentPageItems.length > 0);
+    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE &&
+      currentPageItems.length > 0);
 
   useEffect(() => {
     if (pageNumber === 1) {
@@ -392,7 +396,7 @@ export function AssetsCertificateDashboardPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const [allCertificates, setAllCertificates] = useState<BaseAsset[]>([]);
 
-  const { data, isLoading, isFetching, isError, error, refetch } = 
+  const { data, isLoading, isFetching, isError, error, refetch } =
     AssetHooks.useDoctorCertificatesList({
       pageNumber,
       pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
@@ -401,15 +405,18 @@ export function AssetsCertificateDashboardPage() {
 
   const currentPageItems: BaseAsset[] = useMemo(
     () =>
-      (data?.items ?? []).map((item) => ({
-        id: item.certificateId,
-        name: `Certificate-${item.certificateId.slice(0, 6)}.pdf`,
-        size: "N/A",
-        date: new Date(item.uploadedAt).toLocaleDateString("vi-VN"),
-        preview: item.thumbnailUrl || item.imageUrl,
-        fileUrl: item.imageUrl,
-        type: "pdf" as const,
-      })),
+      (data?.items ?? []).map((item) => {
+        const id = item.certificateId || (item as any).id || (item as any).documentId || Math.random().toString();
+        return {
+          id,
+          name: `Certificate-${id.slice(0, 6)}.pdf`,
+          size: "N/A",
+          date: new Date(item.uploadedAt).toLocaleDateString("vi-VN"),
+          preview: item.thumbnailUrl || item.imageUrl,
+          fileUrl: item.imageUrl,
+          type: "pdf" as const,
+        };
+      }),
     [data],
   );
   const totalPages = data?.totalPages;
@@ -419,7 +426,8 @@ export function AssetsCertificateDashboardPage() {
       : undefined;
   const hasMoreAssets =
     hasMoreByTotalPages ??
-    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE && currentPageItems.length > 0);
+    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE &&
+      currentPageItems.length > 0);
 
   useEffect(() => {
     if (pageNumber === 1) {

@@ -20,31 +20,39 @@ export function Pagination({
 
   return (
     <div className="dark:border-border-dark flex items-center justify-between border border-gray-100 px-4 py-3">
-      {/* Info */}
-      <div className="flex items-center gap-4">
+      {/* Info & Page Size */}
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4 border-r pr-6 dark:border-white/10 border-gray-100">
+          <span className="text-xs text-gray-500 dark:text-white">
+            Tổng {total} bản ghi
+          </span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            Trang <span className="font-medium">{page}</span> trên{" "}
+            <span className="font-medium">{totalPages}</span>
+          </span>
+        </div>
+
         {onPageSizeChange && (
-          <label className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            Số dòng
-            <select
-              value={pageSize}
-              onChange={(e) => onPageSizeChange(Number(e.target.value))}
-              className="dark:border-border-dark rounded-md border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none hover:bg-gray-50 dark:bg-transparent dark:text-gray-200 dark:hover:bg-white/5"
-            >
-              {pageSizeOptions.map((size) => (
-                <option key={size} value={size} className="text-black">
-                  {size}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-gray-400 uppercase tracking-tight">Hiển thị</span>
+            <div className="relative group/select">
+              <select
+                value={pageSize}
+                onChange={(e) => onPageSizeChange(Number(e.target.value))}
+                className="appearance-none bg-white/5 border border-white/10 rounded-md px-2 py-1 text-[11px] font-bold text-gray-300 outline-none cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all min-w-[48px] text-center"
+              >
+                {pageSizeOptions.map((opt) => (
+                  <option key={opt} value={opt} className="bg-[#121212] text-white">
+                    {opt}
+                  </option>
+                ))}
+              </select>
+              <div className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500 group-hover/select:text-white transition-colors">
+                {/* Custom arrow could go here if appearance-none was fully exploited, but keeping it simple for now */}
+              </div>
+            </div>
+          </div>
         )}
-        <span className="text-xs text-gray-500 dark:text-white">
-          Tổng {total} bản ghi
-        </span>
-        <span className="text-xs text-gray-500 dark:text-gray-400">
-          Trang <span className="font-medium">{page}</span> trên{" "}
-          <span className="font-medium">{totalPages}</span>
-        </span>
       </div>
 
       {/* Controls */}
