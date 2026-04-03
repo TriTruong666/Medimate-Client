@@ -11,7 +11,6 @@ import {
   usePackages,
   useUpdatePackage,
 } from "@/hooks/data/usePackageHooks";
-import { Spinner } from "@/components/custom-ui/Spinner";
 import {
   DeletePackageModal,
   EditPackageModal,
@@ -112,7 +111,7 @@ const breadcrumbItems = [
   },
 ];
 export function PackageDashboardPage() {
-  const { data, isLoading, isError, error } = usePackages();
+  const { data, isLoading, isError, error, refetch } = usePackages();
   const { mutateAsync: createPackage, isPending: isCreatingPackage } =
     useCreatePackage();
   const { mutateAsync: deletePackage, isPending: isDeletingPackage } =
@@ -208,24 +207,6 @@ export function PackageDashboardPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="page-layout">
-        <div className="my-8 space-y-8">
-          <Spinner />
-        </div>
-      </div>
-    );
-  }
-  if (isError) {
-    return (
-      <div className="page-layout">
-        <div className="my-8 space-y-8">
-          <p className="text-red-500">{error?.message}</p>
-        </div>
-      </div>
-    );
-  }
   return (
     <div className="page-layout">
       {/* Header */}
@@ -236,34 +217,79 @@ export function PackageDashboardPage() {
             Quản lý gói
           </h1>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleOpenCreatePopup}
-            className="btn-primary"
-          >
-            <FiPlus />
-            Thêm gói
-          </button>
-        </div>
-      </div>
-      {/* Content */}
-      <div className="my-8 space-y-8">
-        {packageList.length > 0 ? (
-          <PackageGrid
-            data={packageList}
-            onEdit={handleOpenEditPopup}
-            onDelete={handleOpenDeletePopup}
-          />
-        ) : (
-          <p className="text-gray-500">Không tìm thấy dữ liệu</p>
+        {!isLoading && !isError && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleOpenCreatePopup}
+              className="btn-primary"
+            >
+              <FiPlus />
+              Thêm gói
+            </button>
+          </div>
         )}
       </div>
-      {packageList.length > 0 && (
-        <div className="my-12 space-y-8">
-          <PackageComparisonTable columns={columns} rows={packageRows} />
-        </div>
-      )}
+
+      {/* Content */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="my-8 space-y-8"
+      >
+        {isLoading ? (
+          /* PREMIUM LOADING (SKELETONS) */
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="h-48 animate-pulse rounded-2xl bg-white/5 opacity-50"
+              />
+            ))}
+          </div>
+        ) : isError ? (
+          /* NEW ERROR STATE PATTERN */
+          <div className="flex min-h-[400px] flex-col items-center justify-center py-10">
+            <p className="max-w-md text-center text-sm font-medium text-red-500">
+              {error?.message || "Đã xảy ra lỗi khi tải dữ liệu từ hệ thống"}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-6 rounded-lg border border-white/5 bg-white/5 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-white/10"
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : packageList.length > 0 ? (
+          /* DATA RENDER */
+          <>
+            <PackageGrid
+              data={packageList}
+              onEdit={handleOpenEditPopup}
+              onDelete={handleOpenDeletePopup}
+            />
+
+            <div className="my-12 space-y-8">
+              <PackageComparisonTable columns={columns} rows={packageRows} />
+            </div>
+          </>
+        ) : (
+          /* NEW EMPTY STATE PATTERN (WITH CTA, NO ICON) */
+          <div className="flex min-h-[400px] flex-col items-center justify-center py-10 text-center">
+            <h3 className="text-lg font-semibold text-white">Danh sách trống</h3>
+            <p className="mt-2 text-sm text-white/50">
+              Chưa có dữ liệu nào được tìm thấy trong hệ thống
+            </p>
+            <button
+              onClick={handleOpenCreatePopup}
+              className="mt-6 flex items-center gap-2 rounded-lg bg-red-500 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:opacity-90"
+            >
+              <FiPlus className="text-lg" />
+              Thêm gói ngay
+            </button>
+          </div>
+        )}
+      </motion.div>
 
       {modalMode && modalForm && (
         <EditPackageModal

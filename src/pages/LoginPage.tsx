@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLogin } from "@/hooks/data/useAuthHooks";
 import { isRequired, isValidEmail } from "@/common/validation";
-import { toast } from "@/hooks/useToast";
 import { getApiErrorMessage } from "@/common/api.error";
 import { getFCMToken } from "@/lib/fcm";
 
@@ -28,7 +27,6 @@ function validateLoginForm(identifier: string, password: string): LoginErrors {
 }
 
 export default function LoginPage() {
-  const [lastLogin, setLastLogin] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginErrors>({});
@@ -41,7 +39,6 @@ export default function LoginPage() {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      toast.error("Dữ liệu chưa hợp lệ", "Vui lòng kiểm tra lại thông tin.");
       return;
     }
 
@@ -53,9 +50,7 @@ export default function LoginPage() {
     }
   };
 
-  useEffect(() => {
-    setLastLogin((localStorage.getItem("last_login") as string) || "");
-  }, []);
+
 
   return (
     <div className="relative w-full max-w-120 p-6 font-sans sm:p-8">
