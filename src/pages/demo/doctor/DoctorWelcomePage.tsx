@@ -946,7 +946,7 @@ function SetupLayout({
     10,
   );
 
-  const nameFieldErrors: SetupFieldErrors = {
+  const profileFieldErrors: SetupFieldErrors = {
     fullName: displayName.trim()
       ? undefined
       : "Vui lòng nhập họ và tên bác sĩ.",
@@ -967,10 +967,11 @@ function SetupLayout({
           : parsedYearsOfExperience < 0 || parsedYearsOfExperience > 80
             ? "Số năm kinh nghiệm phải nằm trong khoảng từ 0 đến 80."
             : undefined,
-    bio: displayBio.trim()
-      ? undefined
-      : "Vui lòng nhập giới thiệu về bản thân.",
   };
+
+  const bioFieldError = displayBio.trim()
+    ? undefined
+    : "Vui lòng nhập giới thiệu về bản thân.";
 
   const passwordFieldErrors: SetupFieldErrors = {
     newPassword: draft.newPassword.trim()
@@ -1005,10 +1006,11 @@ function SetupLayout({
     }
   };
 
-  const hasNameErrors = Object.values(nameFieldErrors).some(Boolean);
+  const hasNameErrors = Object.values(profileFieldErrors).some(Boolean);
+  const hasBioError = Boolean(bioFieldError);
   const hasPasswordErrors = Object.values(passwordFieldErrors).some(Boolean);
   const canSubmitOnboarding =
-    !hasNameErrors && !hasPasswordErrors && draft.licenseImage.length > 0;
+    !hasNameErrors && !hasBioError && !hasPasswordErrors && draft.licenseImage.length > 0;
 
   const handleLicenseImageChange = (selected: FileList | null) => {
     if (!selected || selected.length === 0) return;
@@ -1053,9 +1055,19 @@ function SetupLayout({
   };
 
   const validateNameStep = () => {
-    if (Object.values(nameFieldErrors).some(Boolean)) {
+    if (Object.values(profileFieldErrors).some(Boolean)) {
       setSetupProgress("name");
-      focusFirstInvalidField(nameFieldErrors);
+      focusFirstInvalidField(profileFieldErrors);
+      return false;
+    }
+
+    return true;
+  };
+
+  const validateBioStep = () => {
+    if (bioFieldError) {
+      setSetupProgress("bio");
+      focusFirstInvalidField({ bio: bioFieldError });
       return false;
     }
 
@@ -1089,7 +1101,7 @@ function SetupLayout({
   };
 
   const handleCompleteOnboarding = async () => {
-    if (!validateNameStep() || !validatePasswordStep()) {
+    if (!validateNameStep() || !validateBioStep() || !validatePasswordStep()) {
       return;
     }
 
@@ -1206,7 +1218,7 @@ function SetupLayout({
                     yearsOfExperience: value,
                   }))
                 }
-                errors={nameFieldErrors}
+                errors={profileFieldErrors}
                 fullNameRef={registerFieldRef("fullName")}
                 specialtyRef={registerFieldRef("specialty")}
                 currentHospitalNameRef={registerFieldRef("currentHospitalName")}
@@ -1232,7 +1244,7 @@ function SetupLayout({
               hint={["* Xuống dòng mỗi lần giới thiệu", "* Bắt buộc"]}
               buttonName="Tiếp tục"
               secondaryButtonName="Quay lại"
-              disabled={!!nameFieldErrors.bio}
+              disabled={hasBioError}
             >
               <AddBio
                 value={displayBio}
@@ -1242,7 +1254,7 @@ function SetupLayout({
                     bio: value,
                   }))
                 }
-                errors={nameFieldErrors}
+                errors={{ bio: bioFieldError }}
                 bioRef={registerFieldRef("bio")}
               />
             </SetupItem>
