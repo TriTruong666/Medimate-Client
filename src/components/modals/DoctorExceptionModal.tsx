@@ -133,7 +133,7 @@ export function DoctorExceptionModal({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="z-10 flex h-[90vh] min-h-0 max-h-[820px] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-2xl"
+            className="z-10 flex h-[90vh] min-h-0 max-h-[820px] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl shadow-2xl"
           >
             <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-4 md:px-6">
               <div>
@@ -144,9 +144,9 @@ export function DoctorExceptionModal({
               </div>
               <button
                 onClick={onClose}
-                className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white"
+                className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white transition"
               >
-                <HiOutlineX className="h-6 w-6" />
+                <HiOutlineX className="h-5 w-5" />
               </button>
             </div>
 
@@ -253,10 +253,10 @@ export function DoctorExceptionModal({
               </section>
             </div>
 
-            <div className="flex justify-end border-t border-white/10 bg-white/5 p-4 md:px-6">
+            <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6 shadow-sm">
               <button
                 onClick={onClose}
-                className="rounded-lg bg-white/5 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-white/10"
+                className="rounded-lg px-6 py-2.5 text-sm font-medium text-gray-300 transition hover:bg-white/10"
               >
                 Đóng
               </button>

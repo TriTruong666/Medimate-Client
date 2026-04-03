@@ -166,7 +166,7 @@ export function PaymentQRModal({
 
         <button
           onClick={handleCheckPayment}
-          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-400"
+          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
         >
           Kiểm tra giao dịch
         </button>

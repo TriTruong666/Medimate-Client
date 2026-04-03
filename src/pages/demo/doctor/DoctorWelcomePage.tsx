@@ -174,21 +174,37 @@ function ActivateSection({
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden font-sans antialiased text-white p-4">
+    <div className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden p-4 font-sans text-white antialiased">
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="z-10 flex w-full max-w-md flex-col items-center space-y-8 rounded-2xl bg-neutral-900 border border-white/10 p-8 shadow-2xl"
+        className="z-10 flex w-full max-w-md flex-col items-center space-y-8 rounded-2xl border border-white/10 bg-neutral-900 p-8 shadow-2xl"
       >
-        <div className="flex flex-col items-center text-center space-y-4">
-           <div className="h-16 w-16 flex items-center justify-center rounded-full bg-green-500/20 text-green-400 mb-2">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-           </div>
-           <h2 className="text-2xl font-bold">Hồ sơ đã được duyệt!</h2>
-           <p className="text-sm text-neutral-400 leading-relaxed">
-             Tài khoản của bạn đã được quản trị viên phê duyệt. Chúng tôi vừa gửi một mã <strong className="text-white">OTP 6 số</strong> đến email của bạn.<br/>Hãy nhập mã đó vào đây để kích hoạt tài khoản.
-           </p>
+        <div className="flex flex-col items-center space-y-4 text-center">
+          <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20 text-green-400">
+            <svg
+              className="h-8 w-8"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold">Hồ sơ đã được duyệt!</h2>
+          <p className="text-sm leading-relaxed text-neutral-400">
+            Tài khoản của bạn đã được quản trị viên phê duyệt. Chúng tôi vừa gửi
+            một mã <strong className="text-white">OTP 6 số</strong> đến email
+            của bạn.
+            <br />
+            Hãy nhập mã đó vào đây để kích hoạt tài khoản.
+          </p>
         </div>
 
         <div className="flex w-full flex-col items-center space-y-6">
@@ -196,17 +212,21 @@ function ActivateSection({
             type="text"
             maxLength={6}
             value={otp}
-            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-            className="w-full text-center text-3xl tracking-[1em] font-mono h-16 rounded-xl bg-black border border-white/20 text-white placeholder-white/20 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none transition-all"
+            onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ""))}
+            className="focus:border-primary focus:ring-primary h-16 w-full rounded-xl border border-white/20 bg-black text-center font-mono text-3xl tracking-[1em] text-white placeholder-white/20 transition-all focus:ring-1 focus:outline-none"
             placeholder="000000"
           />
 
           <button
             onClick={handleActivate}
             disabled={isPending || otp.length !== 6}
-            className="w-full h-12 rounded-xl bg-white text-black font-bold text-sm tracking-wide disabled:opacity-50 hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-bold tracking-wide text-black transition-colors hover:bg-neutral-200 disabled:opacity-50"
           >
-            {isPending ? <Spinner size="sm" color="primary" /> : "Xác nhận Kích hoạt"}
+            {isPending ? (
+              <Spinner size="sm" color="primary" />
+            ) : (
+              "Xác nhận Kích hoạt"
+            )}
           </button>
         </div>
       </motion.div>
@@ -308,7 +328,10 @@ function CompleteSection() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 2.6, duration: 0.6 }}
           >
-            <button disabled={isPending} className="group relative overflow-hidden rounded-full bg-white px-8 py-4 text-sm font-semibold text-black transition-transform duration-300 hover:scale-105 active:scale-95 disabled:opacity-50">
+            <button
+              disabled={isPending}
+              className="group relative overflow-hidden rounded-full bg-white px-8 py-4 text-sm font-semibold text-black transition-transform duration-300 hover:scale-105 active:scale-95 disabled:opacity-50"
+            >
               {/* Shiny Shimmer Effect */}
               <div className="absolute inset-0 -translate-x-full animate-[shimmer_2.5s_infinite] bg-linear-to-r from-transparent via-white/80 to-transparent" />
 
@@ -870,7 +893,9 @@ function SetupLayout({
   onBack?(): void;
 }) {
   const [setupProgress, setSetupProgress] = useState<SetupProgress>("name");
-  const fieldRefs = useRef<Partial<Record<SetupFieldErrorKey, HTMLElement | null>>>({});
+  const fieldRefs = useRef<
+    Partial<Record<SetupFieldErrorKey, HTMLElement | null>>
+  >({});
   const [draft, setDraft] = useState<DoctorOnboardingDraft>({
     fullName: null,
     specialty: null,
@@ -899,11 +924,13 @@ function SetupLayout({
   const defaultCurrentHospitalName = doctorProfile?.currentHospitalName ?? "";
   const defaultLicenseNumber = doctorProfile?.licenseNumber ?? "";
   const defaultAvatar =
-    pickFirstString(doctorRecord, ["avatarUrl", "avatarImage", "profileImage"]) ??
-    "";
+    pickFirstString(doctorRecord, [
+      "avatarUrl",
+      "avatarImage",
+      "profileImage",
+    ]) ?? "";
   const defaultBio =
-    pickFirstString(doctorRecord, ["bio", "description", "introduction"]) ??
-    "";
+    pickFirstString(doctorRecord, ["bio", "description", "introduction"]) ?? "";
 
   const displayName = draft.fullName ?? defaultName;
   const displaySpecialty = draft.specialty ?? defaultSpecialty;
@@ -914,11 +941,18 @@ function SetupLayout({
   const displayAvatar = defaultAvatar;
   const displayBio = draft.bio ?? defaultBio;
 
-  const parsedYearsOfExperience = Number.parseInt(displayYearsOfExperience.trim(), 10);
+  const parsedYearsOfExperience = Number.parseInt(
+    displayYearsOfExperience.trim(),
+    10,
+  );
 
   const nameFieldErrors: SetupFieldErrors = {
-    fullName: displayName.trim() ? undefined : "Vui lòng nhập họ và tên bác sĩ.",
-    specialty: displaySpecialty.trim() ? undefined : "Vui lòng nhập chuyên khoa.",
+    fullName: displayName.trim()
+      ? undefined
+      : "Vui lòng nhập họ và tên bác sĩ.",
+    specialty: displaySpecialty.trim()
+      ? undefined
+      : "Vui lòng nhập chuyên khoa.",
     currentHospitalName: displayCurrentHospitalName.trim()
       ? undefined
       : "Vui lòng nhập bệnh viện hiện tại.",
@@ -933,7 +967,9 @@ function SetupLayout({
           : parsedYearsOfExperience < 0 || parsedYearsOfExperience > 80
             ? "Số năm kinh nghiệm phải nằm trong khoảng từ 0 đến 80."
             : undefined,
-    bio: displayBio.trim() ? undefined : "Vui lòng nhập giới thiệu về bản thân.",
+    bio: displayBio.trim()
+      ? undefined
+      : "Vui lòng nhập giới thiệu về bản thân.",
   };
 
   const passwordFieldErrors: SetupFieldErrors = {
@@ -951,9 +987,9 @@ function SetupLayout({
   };
 
   const focusFirstInvalidField = (fields: SetupFieldErrors) => {
-    const firstInvalidKey = Object.entries(fields).find(([, value]) => Boolean(value))?.[0] as
-      | SetupFieldErrorKey
-      | undefined;
+    const firstInvalidKey = Object.entries(fields).find(([, value]) =>
+      Boolean(value),
+    )?.[0] as SetupFieldErrorKey | undefined;
 
     if (!firstInvalidKey) {
       return;
@@ -961,14 +997,18 @@ function SetupLayout({
 
     const target = fieldRefs.current[firstInvalidKey];
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
-    if (typeof (target as HTMLInputElement | HTMLTextAreaElement | null)?.focus === "function") {
+    if (
+      typeof (target as HTMLInputElement | HTMLTextAreaElement | null)
+        ?.focus === "function"
+    ) {
       (target as HTMLInputElement | HTMLTextAreaElement).focus();
     }
   };
 
   const hasNameErrors = Object.values(nameFieldErrors).some(Boolean);
   const hasPasswordErrors = Object.values(passwordFieldErrors).some(Boolean);
-  const canSubmitOnboarding = !hasNameErrors && !hasPasswordErrors && draft.licenseImage.length > 0;
+  const canSubmitOnboarding =
+    !hasNameErrors && !hasPasswordErrors && draft.licenseImage.length > 0;
 
   const handleLicenseImageChange = (selected: FileList | null) => {
     if (!selected || selected.length === 0) return;
@@ -1101,7 +1141,9 @@ function SetupLayout({
       <div className="relative flex h-screen w-full items-center justify-center font-sans antialiased">
         <div className="flex flex-col items-center gap-4">
           <Spinner size="lg" color="white" />
-          <p className="text-sm text-neutral-400">Đang tải thông tin bác sĩ...</p>
+          <p className="text-sm text-neutral-400">
+            Đang tải thông tin bác sĩ...
+          </p>
         </div>
       </div>
     );
@@ -1123,9 +1165,7 @@ function SetupLayout({
               onClick={handleNameNext}
               onSecondaryClick={onBack}
               title="Chúng tôi có thể gọi bác sĩ là?"
-              hint={[
-                "* Bắt buộc",
-              ]}
+              hint={["* Bắt buộc"]}
               buttonName="Tiếp tục"
               secondaryButtonName="Quay lại"
               disabled={hasNameErrors}
@@ -1288,7 +1328,8 @@ function SetupLayout({
               onSecondaryClick={() => setSetupProgress("password")}
               title="Bước cuối cùng, hãy upload chứng chỉ của bạn!!!"
               buttonName={
-                submitDoctorMeMutation.isPending || changePasswordMutation.isPending
+                submitDoctorMeMutation.isPending ||
+                changePasswordMutation.isPending
                   ? "Đang gửi..."
                   : "Gửi hồ sơ xét duyệt"
               }
@@ -1297,14 +1338,25 @@ function SetupLayout({
                 "* Đây là bước quan trọng nhất (Bắt Buộc)",
                 "* Tối đa 3 ảnh giấy phép (hình hoặc PDF)",
               ]}
-              disabled={submitDoctorMeMutation.isPending || changePasswordMutation.isPending || !canSubmitOnboarding}
-              isLoading={submitDoctorMeMutation.isPending || changePasswordMutation.isPending}
+              disabled={
+                submitDoctorMeMutation.isPending ||
+                changePasswordMutation.isPending ||
+                !canSubmitOnboarding
+              }
+              isLoading={
+                submitDoctorMeMutation.isPending ||
+                changePasswordMutation.isPending
+              }
             >
               <UploadCertificate
                 files={draft.licenseImage}
                 onFileChange={handleLicenseImageChange}
                 onRemoveFile={handleRemoveLicenseImage}
-                error={draft.licenseImage.length === 0 ? "Vui lòng tải lên ít nhất 1 ảnh giấy phép." : undefined}
+                error={
+                  draft.licenseImage.length === 0
+                    ? "Vui lòng tải lên ít nhất 1 ảnh giấy phép."
+                    : undefined
+                }
                 containerRef={registerFieldRef("licenseImage")}
               />
             </SetupItem>
@@ -1464,7 +1516,9 @@ function NameUpdate({
           onChange={(e) => onFullNameChange(e.target.value)}
           type="text"
         />
-        {errors?.fullName && <p className="px-1 text-xs text-red-400">* {errors.fullName}</p>}
+        {errors?.fullName && (
+          <p className="px-1 text-xs text-red-400">* {errors.fullName}</p>
+        )}
       </div>
 
       <div className="space-y-1">
@@ -1476,7 +1530,9 @@ function NameUpdate({
           onChange={(e) => onSpecialtyChange(e.target.value)}
           type="text"
         />
-        {errors?.specialty && <p className="px-1 text-xs text-red-400">* {errors.specialty}</p>}
+        {errors?.specialty && (
+          <p className="px-1 text-xs text-red-400">* {errors.specialty}</p>
+        )}
       </div>
 
       <div className="space-y-1">
@@ -1489,7 +1545,9 @@ function NameUpdate({
           type="text"
         />
         {errors?.currentHospitalName && (
-          <p className="px-1 text-xs text-red-400">* {errors.currentHospitalName}</p>
+          <p className="px-1 text-xs text-red-400">
+            * {errors.currentHospitalName}
+          </p>
         )}
       </div>
 
@@ -1517,7 +1575,9 @@ function NameUpdate({
           type="text"
         />
         {errors?.yearsOfExperience && (
-          <p className="px-1 text-xs text-red-400">* {errors.yearsOfExperience}</p>
+          <p className="px-1 text-xs text-red-400">
+            * {errors.yearsOfExperience}
+          </p>
         )}
       </div>
     </div>
@@ -1595,7 +1655,9 @@ function AvatarUpload({
                 {(avatarImage.size / 1024 / 1024).toFixed(2)} MB
               </span>
             ) : (
-              <span className="text-xs text-neutral-500">Đã có ảnh từ hồ sơ</span>
+              <span className="text-xs text-neutral-500">
+                Đã có ảnh từ hồ sơ
+              </span>
             )}
           </div>
 
@@ -1656,7 +1718,9 @@ function ChangePassword({
           onChange={(e) => onPasswordChange(e.target.value)}
           type="password"
         />
-        {errors?.newPassword && <p className="px-1 text-xs text-red-400">* {errors.newPassword}</p>}
+        {errors?.newPassword && (
+          <p className="px-1 text-xs text-red-400">* {errors.newPassword}</p>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
@@ -1673,7 +1737,9 @@ function ChangePassword({
           type="password"
         />
         {errors?.confirmPassword && (
-          <p className="px-1 text-xs text-red-400">* {errors.confirmPassword}</p>
+          <p className="px-1 text-xs text-red-400">
+            * {errors.confirmPassword}
+          </p>
         )}
       </div>
     </div>
@@ -1699,7 +1765,11 @@ function UploadCertificate({
   };
 
   return (
-    <div ref={containerRef} tabIndex={-1} className="flex w-full max-w-2xl flex-col space-y-6">
+    <div
+      ref={containerRef}
+      tabIndex={-1}
+      className="flex w-full max-w-2xl flex-col space-y-6"
+    >
       {/* Upload Box */}
       <label className="group relative flex h-48 w-full cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/20 bg-black transition-all duration-300 hover:border-white/40 hover:bg-white/4">
         <input

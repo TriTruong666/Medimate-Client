@@ -1,6 +1,6 @@
 ---
 name: medimate_ui_master
-description: "The consolidated master guide for building high-end, minimalist dark theme interfaces in the Medimate dashboard. Includes page registration, dashboard layouts, component usage from src/components, and specialized designs."
+description: "The consolidated master guide for building high-end, minimalist dark theme interfaces in the Medimate dashboard. Includes page registration, dashboard layouts, component usage from src/components, and specialized designs. Use Vietnamese to communicate."
 ---
 
 # Medimate UI Master Documentation
@@ -17,7 +17,7 @@ This document is the single source of truth for the **UI/UX** of the Medimate ec
 Maintain a "Simple & Black" aesthetic. Our goal is a premium, high-end dark SaaS feel.
 
 ### 🎨 Design Palette & Tokens
-- **Backgrounds**: Main (`#18181b`), Surface (`#202022`), Glass (`bg-white/5` or `bg-white/2` with `backdrop-blur`).
+- **Backgrounds**: Main (`#EC4899`), Surface (`#202022`), Glass (`bg-white/5` or `bg-white/2` with `backdrop-blur`).
 - **Borders**: Thin and subtle (`border-white/10` or `border-white/5`).
 - **Primary Color**: `#de3c3c` (Red) for primary actions.
 - **Accent Purple**: `#E1A3F1` for branding and decorative elements.

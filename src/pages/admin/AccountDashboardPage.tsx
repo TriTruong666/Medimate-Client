@@ -155,7 +155,8 @@ function AccountTable({ sortType }: { sortType: SortType }) {
   }, [users, sortType]);
 
   const handlePageChange = (nextPage: number) => {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === pageNumber) return;
+    if (nextPage < 1 || nextPage > totalPages || nextPage === pageNumber)
+      return;
 
     setPagination((prev) => ({
       ...prev,
@@ -178,7 +179,8 @@ function AccountTable({ sortType }: { sortType: SortType }) {
         isError={isError}
         isEmpty={sortedUsers.length === 0}
         errorMessage={
-          error?.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
+          error?.message ||
+          "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
         }
         emptyMessage="Không tìm thấy tài khoản nào trong hệ thống."
         onRetry={() => refetch()}
@@ -196,58 +198,61 @@ function AccountTable({ sortType }: { sortType: SortType }) {
             key={row.userId}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                  <div className="flex items-center gap-3">
-                    <AccountAvatar name={row.fullName} />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {row.fullName}
-                      </span>
-                      <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
-                        {row.email}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatRelativeTime(row.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {row.phoneNumber}
+            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+              <div className="flex items-center gap-3">
+                <AccountAvatar name={row.fullName} />
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {row.fullName}
                   </span>
-                </td>
-                <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  <span className="text-[13px] text-gray-600 dark:text-gray-300">
-                    {accountRoleMap[row.role]}
+                  <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
+                    {row.email}
                   </span>
-                </td>
-                <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  <StatusBadge status={row.isOnline ? "online" : row.isActive ? "offline" : "locked"} />
-                </td>
-                {/* Actions */}
-                {row.isActive === true ? (
-                  <td className="p-4 text-center">
-                  <Tooltip content="Vô hiệu hóa tài khoản">
-                    <IconAction
-                      onClick={() => openLockModal("account", row.userId)}
-                      danger
-                      icon={<IoMdLock className="text-red-400"/>}
-                    />
-                  </Tooltip>
-                </td>
-                ) : (
-                  <td className="p-4 text-center">
-                  <Tooltip content="Kích hoạt tài khoản">
-                    <IconAction
-                      onClick={() => openUnlockModal("account", row.userId)}
-                      icon={<IoMdUnlock />}
-                    />
-                  </Tooltip>
-                </td>
-                )}
-                
-              </tr>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatRelativeTime(row.createdAt)}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                {row.phoneNumber}
+              </span>
+            </td>
+            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+              <span className="text-[13px] text-gray-600 dark:text-gray-300">
+                {accountRoleMap[row.role]}
+              </span>
+            </td>
+            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+              <StatusBadge
+                status={
+                  row.isOnline ? "online" : row.isActive ? "offline" : "locked"
+                }
+              />
+            </td>
+            {/* Actions */}
+            {row.isActive === true ? (
+              <td className="p-4 text-center">
+                <Tooltip content="Vô hiệu hóa tài khoản">
+                  <IconAction
+                    onClick={() => openLockModal("account", row.userId)}
+                    danger
+                    icon={<IoMdLock className="text-red-400" />}
+                  />
+                </Tooltip>
+              </td>
+            ) : (
+              <td className="p-4 text-center">
+                <Tooltip content="Kích hoạt tài khoản">
+                  <IconAction
+                    onClick={() => openUnlockModal("account", row.userId)}
+                    icon={<IoMdUnlock />}
+                  />
+                </Tooltip>
+              </td>
+            )}
+          </tr>
         ))}
       </DataTableShell>
     </>

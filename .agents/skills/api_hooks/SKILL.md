@@ -1,6 +1,6 @@
 ---
 name: api_hooks
-description: "Guidelines and templates for writing API hooks (React Query) in the Medimate dashboard."
+description: "Guidelines and templates for writing API hooks (React Query) in the Medimate dashboard. Use Vietnamese to communicate. "
 ---
 
 # Medimate API Hooks Standard

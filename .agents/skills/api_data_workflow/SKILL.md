@@ -1,11 +1,11 @@
 ---
 name: api_data_workflow
-description: "Master Guide for full API-to-UI integration in Medimate, covering Types, Services, Hooks, UI State Handling, and Validation Strategy."
+description: "Master Guide for full API-to-UI integration in Medimate, covering Types, Services, Hooks, UI State Handling, and Validation Strategy. Use Vietnamese to communicate."
 ---
 
 # Medimate API-to-UI Integration Workflow
 
-This guide defines the complete standard for integrating backend data into the Medimate OMS frontend. To maintain a premium, high-end experience, every new feature must follow these 4 steps exactly and utilize standardized components.
+This guide defines the complete standard for integrating backend data into the Medimate frontend. To maintain a premium, high-end experience, every new feature must follow these 4 steps exactly and utilize standardized components.
 
 ---
 

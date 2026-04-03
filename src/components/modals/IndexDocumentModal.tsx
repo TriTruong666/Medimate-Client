@@ -43,8 +43,8 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6 shadow-sm">
         <h2 className="text-base font-semibold text-white">
           Thêm tài liệu vào Collection
         </h2>
@@ -106,7 +106,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-white/10 bg-white/2 p-6">
+      <div className="flex items-center justify-between border-t border-white/10 bg-white/5 p-6 shadow-sm">
         <p className="text-xs text-gray-400">
           Đã chọn {selected.length} tài liệu
         </p>
@@ -125,7 +125,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
               closeModal();
             }}
             disabled={selected.length === 0}
-            className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition disabled:opacity-40"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-white/10 disabled:text-white/40"
           >
             Thêm tài liệu
           </button>

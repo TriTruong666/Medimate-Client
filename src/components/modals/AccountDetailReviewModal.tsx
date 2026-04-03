@@ -35,13 +35,13 @@ export function AccountDetailReviewModal({
            initial={{ opacity: 0, scale: 0.95 }}
            animate={{ opacity: 1, scale: 1 }}
            exit={{ opacity: 0, scale: 0.95 }}
-           className="z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-2xl"
+           className="z-10 flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl shadow-2xl"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-4 md:p-6">
-            <h2 className="text-lg font-semibold text-white">Chi tiết hồ sơ Bác sĩ</h2>
-            <button onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white" disabled={isSubmitting}>
-              <HiOutlineX className="h-6 w-6" />
+          <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6 shadow-sm">
+            <h2 className="text-base font-semibold text-white">Chi tiết hồ sơ Bác sĩ</h2>
+            <button onClick={onClose} className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white transition" disabled={isSubmitting}>
+              <HiOutlineX className="h-5 w-5" />
             </button>
           </div>
 
@@ -141,7 +141,7 @@ export function AccountDetailReviewModal({
           </div>
 
           {/* Footer Actions */}
-          <div className="flex flex-col-reverse justify-end gap-3 border-t border-white/10 bg-white/5 p-4 md:flex-row md:p-6">
+          <div className="flex flex-col-reverse justify-end gap-3 border-t border-white/10 bg-white/5 p-6 md:flex-row">
             <button
               onClick={() => {
                 if (showRejectInput) setShowRejectInput(false);

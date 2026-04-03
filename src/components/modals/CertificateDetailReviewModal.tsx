@@ -54,11 +54,11 @@ export function CertificateDetailReviewModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
       <div
-        className="w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl"
+        className="w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-5">
-          <h3 className="text-base font-semibold text-white">Chi tiết hồ sơ chứng chỉ</h3>
+        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-white">Chi tiết hồ sơ chứng chỉ</h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
@@ -68,7 +68,7 @@ export function CertificateDetailReviewModal({
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 p-5 lg:grid-cols-[1fr_360px]">
+        <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
             <div className="rounded-xl border border-white/10 bg-black/40 p-4">
               <div className="mb-3 text-sm font-medium text-white">Preview file gốc ({row.fileUrls.length})</div>

@@ -102,7 +102,7 @@ export function DoctorProfileDetailModal({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="z-10 flex h-[90vh] min-h-0 max-h-[800px] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 shadow-2xl"
+          className="z-10 flex h-[90vh] min-h-0 max-h-[800px] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl shadow-2xl"
         >
           {/* Header */}
           <div className="flex flex-col border-b border-white/10 bg-white/5">
@@ -112,7 +112,7 @@ export function DoctorProfileDetailModal({
                 onClick={onClose}
                 className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white"
               >
-                <HiOutlineX className="h-6 w-6" />
+                <HiOutlineX className="h-5 w-5" />
               </button>
             </div>
             
@@ -180,11 +180,10 @@ export function DoctorProfileDetailModal({
             )}
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end border-t border-white/10 bg-white/5 p-4 md:p-6">
+          <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
             <button
               onClick={onClose}
-              className="rounded-lg bg-white/5 px-6 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition"
+              className="rounded-lg px-6 py-2 text-sm font-medium text-gray-300 transition hover:bg-white/10"
             >
               Đóng
             </button>

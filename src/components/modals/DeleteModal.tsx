@@ -14,8 +14,8 @@ export function DeleteModal() {
       : "";
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6">
         <h2 className="text-base font-semibold tracking-tight text-white">
           {title}
         </h2>
@@ -48,7 +48,7 @@ export function DeleteModal() {
         </div>
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md">
+      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
         <button
           onClick={closeModal}
           className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
