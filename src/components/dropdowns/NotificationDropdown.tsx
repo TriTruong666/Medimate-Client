@@ -24,11 +24,22 @@ export function NotificationDropdown() {
   const markReadMutation = useMarkNotificationRead();
   const markAllReadMutation = useMarkAllNotificationsRead();
 
-  const sortedNotifications = [...notifications].sort(
+  const sortedNotifications = [...(notifications || [])].sort(
     (a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
   const unreadCount = sortedNotifications.filter((item) => !item.isRead).length;
+
+  // Lắng nghe và cập nhật Title Tab Trình Duyệt
+  import("react").then((React) => {
+    React.useEffect(() => {
+      if (unreadCount > 0) {
+        document.title = `(${unreadCount}) Medimate - Bác Sĩ`;
+      } else {
+        document.title = "Medimate - Bác Sĩ";
+      }
+    }, [unreadCount]);
+  });
 
   useClickOutside(ref, () => setOpen(false));
   useEscapeKey(() => setOpen(false));
