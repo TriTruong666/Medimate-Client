@@ -1,6 +1,6 @@
 import * as AppointmentService from "@/apis/appointment.service";
 import { useFetch } from "../useFetch";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../useToast";
 import { getApiErrorMessage, translateErrorMessage } from "@/common/api.error";
 import type { AppointmentStatus } from "@/types/Appointment";
@@ -9,6 +9,36 @@ export function useDoctorAppointments() {
   return useFetch(["doctor-appointments"], async () =>
     AppointmentService.getDoctorAppointments(),
   );
+}
+
+export function useAppointmentDetail(appointmentId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ["appointment-detail", appointmentId],
+    enabled: enabled && !!appointmentId,
+    queryFn: async () => {
+      try {
+        const res = await AppointmentService.getAppointmentDetail(appointmentId);
+
+        if (!res.success) {
+          throw new Error(
+            translateErrorMessage(res.error?.code, res.message),
+          );
+        }
+
+        if (!res.data) {
+          throw new Error("Không tìm thấy thông tin lịch hẹn.");
+        }
+
+        return res.data;
+      } catch (error) {
+        if (error instanceof Error) {
+          throw error;
+        }
+
+        throw new Error(getApiErrorMessage(error));
+      }
+    },
+  });
 }
 
 export function useUpdateAppointmentStatus() {

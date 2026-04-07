@@ -157,24 +157,35 @@ export default function DoctorVideoCallPage() {
       )}
 
       {/* Main Video Area */}
-      <div className="relative flex-1 bg-[#111]">
+      <div className={`relative flex-1 bg-[#111] ${remoteUsers.length > 1 ? 'flex flex-wrap items-center justify-center gap-4 p-4' : ''}`}>
         {remoteUsers.length > 0 ? (
-          <VideoPlayer
-            videoTrack={remoteUsers[0].videoTrack}
-            className="h-full w-full object-cover"
-          />
+          remoteUsers.map((user) => (
+            <div
+              key={user.uid}
+              className={`relative overflow-hidden ${
+                remoteUsers.length === 1
+                  ? "h-full w-full"
+                  : "h-[45%] w-full rounded-2xl border border-white/5 shadow-2xl sm:w-[48%]"
+              }`}
+            >
+              <VideoPlayer
+                videoTrack={user.videoTrack}
+                className="h-full w-full object-cover"
+              />
+              <div className="absolute bottom-4 left-4 rounded bg-black/60 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+                {remoteUsers.length > 1 ? `Đối tác tham gia (${user.uid})` : "Thành viên"}
+              </div>
+            </div>
+          ))
         ) : (
           <div className="flex h-full flex-col items-center justify-center bg-gray-900/50">
             <div className="mb-4 rounded-full bg-white/5 p-6 shadow-[0_0_30px_rgba(255,255,255,0.05)]">
               <div className="text-white/20">
-              <Spinner size="lg" />
-            </div>
+                <Spinner size="lg" />
+              </div>
             </div>
             <p className="text-lg font-medium text-gray-300">
-              Chờ bệnh nhân kết nối...
-            </p>
-            <p className="text-xs text-gray-500 mt-2">
-              (UID: {remoteUsers[0]?.uid || "N/A"})
+              Chờ thiết lập kết nối hiển thị...
             </p>
           </div>
         )}

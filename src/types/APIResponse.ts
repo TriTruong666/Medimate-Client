@@ -5,6 +5,7 @@ export interface BaseResponse<T> {
   error?: {
     code?: string | number;
     message?: string;
+    field?: string;
   };
   data?: T | null;
 }
@@ -16,6 +17,7 @@ export interface BasePaginatedResponse<T> {
   error?: {
     code?: string | number;
     message?: string;
+    field?: string;
   };
   data?: {
     items: T | null;

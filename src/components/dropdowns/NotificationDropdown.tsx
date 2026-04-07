@@ -3,13 +3,57 @@ import { AnimatePresence, motion } from "framer-motion";
 import { HiBell } from "react-icons/hi";
 import { formatRelativeTime } from "../../common/format";
 import { useClickOutside, useEscapeKey } from "../../hooks/useDropdown";
+import {
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+} from "@/hooks/data/useNotificationHooks";
+import { Spinner } from "../custom-ui/Spinner";
+import type { AppNotification } from "@/types/Notification";
 
 export function NotificationDropdown() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const {
+    data: notifications = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useNotifications();
+  const markReadMutation = useMarkNotificationRead();
+  const markAllReadMutation = useMarkAllNotificationsRead();
+
+  const sortedNotifications = [...(notifications || [])].sort(
+    (a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+  const unreadCount = sortedNotifications.filter((item) => !item.isRead).length;
+
+  // Lắng nghe và cập nhật Title Tab Trình Duyệt
+  import("react").then((React) => {
+    React.useEffect(() => {
+      if (unreadCount > 0) {
+        document.title = `(${unreadCount}) Medimate - Bác Sĩ`;
+      } else {
+        document.title = "Medimate - Bác Sĩ";
+      }
+    }, [unreadCount]);
+  });
 
   useClickOutside(ref, () => setOpen(false));
   useEscapeKey(() => setOpen(false));
+
+  function handleMarkRead(item: AppNotification) {
+    if (item.isRead || markReadMutation.isPending) return;
+    markReadMutation.mutate(item.notificationId);
+  }
+
+  function handleMarkAllRead() {
+    if (unreadCount === 0 || markAllReadMutation.isPending) return;
+    markAllReadMutation.mutate();
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -17,9 +61,11 @@ export function NotificationDropdown() {
         className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition hover:bg-white/10"
       >
         <HiBell className="text-lg text-white/80" />
-        <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
-          3
-        </span>
+        {unreadCount > 0 && (
+          <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+            {unreadCount > 99 ? "99+" : unreadCount}
+          </span>
+        )}
       </button>
 
       <AnimatePresence>
@@ -33,39 +79,57 @@ export function NotificationDropdown() {
           >
             <div className="flex items-center justify-between px-4 py-3">
               <p className="text-sm font-medium text-white">Thông báo</p>
+              <button
+                type="button"
+                onClick={() => void refetch()}
+                className="text-xs text-white/50 transition hover:text-white/80"
+              >
+                Làm mới
+              </button>
             </div>
 
             <div className="border-t border-white/10" />
 
             <div className="max-h-100 overflow-y-auto">
-              <NotificationDropdownItem
-                title="Tin nhắn mới"
-                description="Medimate replied to your question."
-                date="2026-02-02T08:00:00"
-                unread
-              />
-
-              <NotificationDropdownItem
-                title="Cập nhật mới"
-                description="Search index completed successfully."
-                date="2026-01-31T20:30:00"
-              />
-
-              <NotificationDropdownItem
-                title="Nhắc nhở"
-                description="You have unfinished conversations."
-                date="2026-01-30T10:00:00"
-              />
-              <NotificationDropdownItem
-                title="Nhắc nhở"
-                description="You have unfinished conversations."
-                date="2026-01-30T10:00:00"
-              />
+              {isLoading ? (
+                <div className="flex h-32 items-center justify-center">
+                  <Spinner size="md" />
+                </div>
+              ) : isError ? (
+                <div className="px-4 py-6 text-center">
+                  <p className="text-sm text-red-300">
+                    {error?.message || "Không thể tải thông báo."}
+                  </p>
+                </div>
+              ) : sortedNotifications.length === 0 ? (
+                <div className="px-4 py-8 text-center text-sm text-white/50">
+                  Chưa có thông báo nào.
+                </div>
+              ) : (
+                sortedNotifications.map((item) => (
+                  <NotificationDropdownItem
+                    key={item.notificationId}
+                    title={item.title}
+                    description={item.message}
+                    date={item.createdAt}
+                    unread={!item.isRead}
+                    onClick={() => handleMarkRead(item)}
+                    disabled={markReadMutation.isPending}
+                  />
+                ))
+              )}
             </div>
 
             <div className="">
-              <button className="w-full px-4 py-3 text-center text-xs text-white/50 hover:text-white/80">
-                Đánh dấu đã đọc hết
+              <button
+                type="button"
+                onClick={handleMarkAllRead}
+                disabled={unreadCount === 0 || markAllReadMutation.isPending}
+                className="w-full px-4 py-3 text-center text-xs text-white/50 transition hover:text-white/80 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {markAllReadMutation.isPending
+                  ? "Đang cập nhật..."
+                  : "Đánh dấu đã đọc hết"}
               </button>
             </div>
           </motion.div>
@@ -80,6 +144,8 @@ type NotificationDropdownItemProps = {
   description: string;
   date: string;
   unread?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
 };
 
 function NotificationDropdownItem({
@@ -87,9 +153,14 @@ function NotificationDropdownItem({
   description,
   date,
   unread,
+  onClick,
+  disabled,
 }: NotificationDropdownItemProps) {
   return (
-    <div
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
       className={`group relative flex gap-3 border-b border-white/10 px-4 py-3 transition hover:bg-white/5`}
     >
       {unread && (
@@ -106,6 +177,6 @@ function NotificationDropdownItem({
       <span className="shrink-0 text-[11px] text-white/30">
         {formatRelativeTime(date)}
       </span>
-    </div>
+    </button>
   );
 }
