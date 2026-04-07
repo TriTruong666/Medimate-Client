@@ -8,6 +8,7 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { DoctorExceptionModal } from "@/components/modals/DoctorExceptionModal";
+import { DoctorSupportDetailPage } from "./DoctorSupportDetailPage";
 import {
   useDoctorAppointments,
   useUpdateAppointmentStatus,
@@ -28,6 +29,8 @@ import type {
 interface Appointment {
   id: string;
   patientName: string;
+  patientShortId: string;
+  appointmentShortId: string;
   patientAvatar?: string;
   type: AppointmentType;
   dateKey: string;
@@ -37,16 +40,23 @@ interface Appointment {
   symptoms: string;
 }
 
-function toMaskedLabel(prefix: string, value: string): string {
-  if (!value) return prefix;
-  const shortValue = value.slice(0, 8).toUpperCase();
-  return `${prefix} ${shortValue}`;
+function getPatientLabel(raw: DoctorAppointment): string {
+  const memberName = raw.memberName?.trim();
+  if (memberName) return memberName;
+  return "Bệnh nhân";
+}
+
+function toShortId(value: string, length = 6): string {
+  if (!value) return "N/A";
+  return value.replace(/-/g, "").toUpperCase().slice(0, length);
 }
 
 function mapAppointment(raw: DoctorAppointment): Appointment {
   return {
     id: raw.appointmentId,
-    patientName: toMaskedLabel("Bệnh nhân", raw.memberId),
+    patientName: getPatientLabel(raw),
+    patientShortId: toShortId(raw.memberId),
+    appointmentShortId: toShortId(raw.appointmentId),
     type: "online",
     dateKey: raw.appointmentDate,
     date: formatDate(raw.appointmentDate),
@@ -109,6 +119,7 @@ type FilterTab = "all" | "pending" | "approved" | "inprogress" | "history";
 export default function DoctorSupportPage({ filter = "all", title = "Lịch khám bệnh nhân" }: { filter?: FilterTab; title?: string }) {
   const [viewLayout, setViewLayout] = useState<"card" | "calendar">("card");
   const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
   
   const {
     data: appointmentResponse,
@@ -218,7 +229,10 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
                   onRetry={() => void refetch()}
                 />
               ) : hasAppointments ? (
-                <AppointmentCardGrid data={filteredAppointments} />
+                <AppointmentCardGrid
+                  data={filteredAppointments}
+                  onOpenDetail={setSelectedAppointmentId}
+                />
               ) : (
                 <AppointmentState type="empty" />
               )}
@@ -242,7 +256,10 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
                   onRetry={() => void refetch()}
                 />
               ) : hasAppointments ? (
-                <MonthlyCalendarView data={filteredAppointments} />
+                <MonthlyCalendarView
+                  data={filteredAppointments}
+                  onOpenDetail={setSelectedAppointmentId}
+                />
               ) : (
                 <AppointmentState type="empty" />
               )}
@@ -256,6 +273,12 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
         doctorId={doctorId}
         onClose={() => setIsExceptionModalOpen(false)}
       />
+
+      <DoctorSupportDetailPage
+        open={!!selectedAppointmentId}
+        appointmentId={selectedAppointmentId}
+        onClose={() => setSelectedAppointmentId(null)}
+      />
     </div>
   );
 }
@@ -263,7 +286,13 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
 /* -------------------------------------------------------------------------- */
 /*                              CARD VIEW COMPONENT                             */
 /* -------------------------------------------------------------------------- */
-function AppointmentCardGrid({ data }: { data: Appointment[] }) {
+function AppointmentCardGrid({
+  data,
+  onOpenDetail,
+}: {
+  data: Appointment[];
+  onOpenDetail: (appointmentId: string) => void;
+}) {
   return (
     <motion.div
       variants={cardContainer}
@@ -272,13 +301,19 @@ function AppointmentCardGrid({ data }: { data: Appointment[] }) {
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
     >
       {data.map((apt) => (
-        <AppointmentCard key={apt.id} data={apt} />
+        <AppointmentCard key={apt.id} data={apt} onOpenDetail={onOpenDetail} />
       ))}
     </motion.div>
   );
 }
 
-function AppointmentCard({ data }: { data: Appointment }) {
+function AppointmentCard({
+  data,
+  onOpenDetail,
+}: {
+  data: Appointment;
+  onOpenDetail: (appointmentId: string) => void;
+}) {
   const isNow = data.status === "InProgress";
   const isCallReady = data.status === "InProgress" || data.status === "Approved";
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
@@ -300,11 +335,24 @@ function AppointmentCard({ data }: { data: Appointment }) {
     if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
   }
 
+  function handleOpenDetail() {
+    onOpenDetail(data.id);
+  }
+
   return (
     <motion.div
+      role="button"
+      tabIndex={0}
+      onClick={handleOpenDetail}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleOpenDetail();
+        }
+      }}
       variants={cardItem}
       whileHover={{ y: -4 }}
-      className={`group relative flex h-full flex-col rounded-2xl border bg-white/80 p-5 backdrop-blur transition-all duration-300 hover:z-50 dark:bg-white/5 ${
+      className={`group relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white/80 p-5 backdrop-blur transition-all duration-300 hover:z-50 dark:bg-white/5 ${
         isNow
           ? "border-primary/50 dark:border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
           : "border-gray-100 hover:border-white/20 hover:bg-white/10 dark:border-white/10"
@@ -329,8 +377,8 @@ function AppointmentCard({ data }: { data: Appointment }) {
             <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
               {data.patientName}
             </h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {data.id}
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              APT #{data.appointmentShortId} • BN #{data.patientShortId}
             </p>
           </div>
         </div>
@@ -369,7 +417,10 @@ function AppointmentCard({ data }: { data: Appointment }) {
             <>
               <Tooltip content="Duyệt lịch hẹn">
                 <button
-                  onClick={handleApprove}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleApprove();
+                  }}
                   disabled={isPending}
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 transition hover:bg-emerald-100 disabled:opacity-50 dark:bg-emerald-500/10 dark:text-emerald-400 dark:hover:bg-emerald-500/20"
                 >
@@ -378,7 +429,10 @@ function AppointmentCard({ data }: { data: Appointment }) {
               </Tooltip>
               <Tooltip content="Từ chối">
                 <button
-                  onClick={handleReject}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleReject();
+                  }}
                   disabled={isPending}
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-50 text-rose-600 transition hover:bg-rose-100 disabled:opacity-50 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
                 >
@@ -399,7 +453,10 @@ function AppointmentCard({ data }: { data: Appointment }) {
             >
               <button
                 disabled={!canJoin}
-                onClick={handleJoinCall}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleJoinCall();
+                }}
                 className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
                   canJoin
                     ? "bg-primary/10 text-primary hover:bg-primary/20"
@@ -419,7 +476,13 @@ function AppointmentCard({ data }: { data: Appointment }) {
 /* -------------------------------------------------------------------------- */
 /*                            CALENDAR VIEW COMPONENT                           */
 /* -------------------------------------------------------------------------- */
-function MonthlyCalendarView({ data }: { data: Appointment[] }) {
+function MonthlyCalendarView({
+  data,
+  onOpenDetail,
+}: {
+  data: Appointment[];
+  onOpenDetail: (appointmentId: string) => void;
+}) {
   const daysOfWeek = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
   const today = new Date();
@@ -500,7 +563,11 @@ function MonthlyCalendarView({ data }: { data: Appointment[] }) {
               </span>
               <div className="mt-1 flex-1 space-y-1">
                 {appointments.map((apt) => (
-                  <CalendarAppointmentItem key={apt.id} apt={apt} />
+                  <CalendarAppointmentItem
+                    key={apt.id}
+                    apt={apt}
+                    onOpenDetail={onOpenDetail}
+                  />
                 ))}
               </div>
             </div>
@@ -511,7 +578,13 @@ function MonthlyCalendarView({ data }: { data: Appointment[] }) {
   );
 }
 
-function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
+function CalendarAppointmentItem({
+  apt,
+  onOpenDetail,
+}: {
+  apt: Appointment;
+  onOpenDetail: (appointmentId: string) => void;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isNow = apt.status === "InProgress";
@@ -538,6 +611,12 @@ function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
   function handleJoinCall(e: React.MouseEvent) {
     e.stopPropagation();
     if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+    setIsOpen(false);
+  }
+
+  function handleOpenDetail(e: React.MouseEvent) {
+    e.stopPropagation();
+    onOpenDetail(apt.id);
     setIsOpen(false);
   }
 
@@ -589,6 +668,12 @@ function CalendarAppointmentItem({ apt }: { apt: Appointment }) {
               transition={{ duration: 0.15 }}
               className="dark:border-border-dark absolute top-full left-0 z-999 mt-1 w-36 rounded-lg border border-gray-100 bg-white p-1 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:bg-[#1a1c23]"
             >
+              <button
+                onClick={handleOpenDetail}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-white transition hover:bg-white/5"
+              >
+                <FiClock /> Chi tiết lịch hẹn
+              </button>
               {isCallReady && (
                 <button
                   onClick={handleJoinCall}
