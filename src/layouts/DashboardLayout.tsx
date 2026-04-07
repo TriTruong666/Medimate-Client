@@ -27,6 +27,7 @@ import DrawerContainer from "../components/DrawerContainer";
 
 import { useAuth } from "../hooks/useAuth";
 import { SidebarSkeleton } from "../components/RoleBasedGuard";
+import { SignalRInjector } from "../hooks/useSignalR";
 
 export default function DashboardLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,7 @@ export default function DashboardLayout() {
       <ToastContainer />
       <DrawerContainer />
       <ChatContainer />
+      <SignalRInjector />
       <div className="flex h-screen overflow-hidden">
         <Sidebar />
         <div className="relative flex h-full flex-1 flex-col overflow-hidden">
