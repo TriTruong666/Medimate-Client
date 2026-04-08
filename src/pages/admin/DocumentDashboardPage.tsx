@@ -5,7 +5,6 @@ import { MdOutlineDriveFolderUpload } from "react-icons/md";
 import {
   HiOutlineDownload,
   HiOutlineTrash,
-  HiOutlineRefresh,
 } from "react-icons/hi";
 import {
   BsFiletypeJson,
@@ -17,40 +16,19 @@ import {
 } from "react-icons/bs";
 import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
 import { useState } from "react";
-
 import { useAtom } from "jotai";
-
 import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
 import { openDeleteModalAtom, openModalAtom } from "@/stores/modalStore";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import GlassSelect from "@/components/custom-ui/Select";
 import { cardContainer, cardItem } from "@/motions/cardMotion";
-
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
+import { useRAGDocuments } from "@/hooks/data/useRAGDocumentHooks";
+import { formatRelativeTime } from "@/common/format";
+import type { RAGDocument } from "@/types/RAGDocument";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
-import { useClientPagination } from "@/hooks/useClientPagination";
-
-type DocumentRow = {
-  name: string;
-  updated: string;
-  typeLabel: string;
-  fileType:
-    | "pdf"
-    | "json"
-    | "text"
-    | "docx"
-    | "doc"
-    | "txt"
-    | "csv"
-    | "xls"
-    | "xlsx"
-    | "html"
-    | "md";
-  size: string;
-  status: "uploaded" | "indexed" | "failed" | "indexing";
-};
 
 type ColumnKey = "name" | "type" | "size" | "status" | "actions";
 
@@ -60,21 +38,31 @@ type TableColumn = {
   width?: string;
   align?: "left" | "center" | "right";
 };
+
 type DocumentCardGridProps = {
-  data: DocumentRow[];
+  data: RAGDocument[];
 };
 
 type DocumentCardProps = {
-  data: DocumentRow;
+  data: RAGDocument;
 };
 
 type DocumentTableProps = {
-  data: DocumentRow[];
+  data: RAGDocument[];
   page: number;
   pageSize: number;
   total: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (pageSize: number) => void;
+  isLoading?: boolean;
+};
+
+const formatFileSize = (bytes: number) => {
+  if (!bytes || bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 export default function DocumentDashboardPage() {
@@ -95,117 +83,28 @@ export default function DocumentDashboardPage() {
     },
   ];
 
-  const demoData: DocumentRow[] = [
-    {
-      name: "Project_Specs_v2.pdf",
-      updated: "Thêm vào 2 tiếng trước",
-      fileType: "pdf",
-      typeLabel: "PDF",
-      size: "4.2 MB",
-      status: "indexed",
-    },
-    {
-      name: "SEP409.json",
-      updated: "Cập nhật hôm qua",
-      fileType: "json",
-      typeLabel: "JSON",
-      size: "156 MB",
-      status: "uploaded",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "indexing",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-    {
-      name: "Medimate.docx",
-      updated: "Cập nhật hôm qua",
-      fileType: "docx",
-      typeLabel: "DOCX",
-      size: "1.2 MB",
-      status: "failed",
-    },
-  ];
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [searchQuery] = useState("");
+
+  const { data: response, isLoading } = useRAGDocuments({
+    page,
+    limit: pageSize,
+    q: searchQuery,
+  });
+
+  const documents = response?.data.items || [];
+  const total = response?.data.pagination.total_records || 0;
+
+  const handlePageChange = (newPage: number) => setPage(newPage);
+  const handlePageSizeChange = (newSize: number) => {
+    setPageSize(newSize);
+    setPage(1);
+  };
 
   const handleChangeTableLayout = (key: string) => {
     setTableLayout(key);
   };
-
-  const {
-    page,
-    pageSize,
-    total,
-    pagedData,
-    handlePageChange,
-    handlePageSizeChange,
-  } = useClientPagination(demoData, { initialPageSize: 5 });
 
   return (
     <div className="page-layout">
@@ -257,25 +156,30 @@ export default function DocumentDashboardPage() {
       {tableLayout === "table" && (
         <div className="my-8">
           <DocumentTable
-            data={pagedData}
+            data={documents}
             page={page}
             pageSize={pageSize}
             total={total}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
+            isLoading={isLoading}
           />
         </div>
       )}
 
       {tableLayout === "card" && (
         <div className="my-8 space-y-8">
-          <DocumentCardGrid data={demoData} />
-          <div className="flex justify-center">
-            {" "}
-            <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
-              Tải thêm tài liệu <LuPlus />
-            </button>
-          </div>
+          <DocumentCardGrid data={documents} />
+          {total > pageSize && (
+            <div className="flex justify-center">
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10"
+              >
+                Tải thêm tài liệu <LuPlus />
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -323,7 +227,7 @@ function DocumentCardGrid({ data }: DocumentCardGridProps) {
       className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
     >
       {data.map((doc) => (
-        <DocumentCard key={doc.name} data={doc} />
+        <DocumentCard key={doc.id} data={doc} />
       ))}
     </motion.div>
   );
@@ -340,14 +244,14 @@ function DocumentCard({ data }: DocumentCardProps) {
     >
       {/* Header */}
       <div className="flex items-start gap-3">
-        <FileIcon type={data.fileType} />
+        <FileIcon type={data.type as any} />
 
         <div className="min-w-0 flex-1">
           <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-            {data.name}
+            {data.doc_name}
           </h4>
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {data.updated}
+            {formatRelativeTime(data.created_at)}
           </p>
         </div>
       </div>
@@ -357,17 +261,17 @@ function DocumentCard({ data }: DocumentCardProps) {
       {/* Meta */}
       <div className="flex items-center justify-between text-xs">
         <span className="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 font-medium text-gray-600 dark:border-white/10 dark:bg-white/10 dark:text-gray-300">
-          {data.typeLabel}
+          {(data.type || "N/A").toUpperCase()}
         </span>
 
         <span className="font-mono text-gray-500 dark:text-gray-400">
-          {data.size}
+          {formatFileSize(data.file_size)}
         </span>
       </div>
 
       {/* Footer */}
       <div className="mt-4 flex items-center justify-between">
-        <StatusBadge status={data.status} />
+        <StatusBadge status={data.status as any} />
 
         <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
           <Tooltip content="Tải xuống">
@@ -393,6 +297,7 @@ function DocumentTable({
   total,
   onPageChange,
   onPageSizeChange,
+  isLoading,
 }: DocumentTableProps) {
   const [, openDeleteModal] = useAtom(openDeleteModalAtom);
   return (
@@ -401,72 +306,85 @@ function DocumentTable({
       isEmpty={total === 0}
       emptyMessage="Không tìm thấy dữ liệu tài liệu."
       pagination={{ page, pageSize, total, onPageChange, onPageSizeChange }}
+      isLoading={isLoading}
     >
       {data.map((row, i) => (
-          <tr
-            key={i}
-            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
-          >
-            {/* Name */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
-              <div className="flex items-center gap-3">
-                <FileIcon type={row.fileType} />
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {row.name}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {row.updated}
-                  </span>
-                </div>
+        <tr
+          key={row.id || i}
+          className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+        >
+          {/* Name */}
+          <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <div className="flex items-center gap-3">
+              <FileIcon type={row.type as any} />
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {row.doc_name}
+                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {formatRelativeTime(row.created_at)}
+                </span>
               </div>
-            </td>
+            </div>
+          </td>
 
-            {/* Type */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <span className="text-sm text-gray-600 dark:text-gray-300">
-                {row.typeLabel}
-              </span>
-            </td>
+          {/* Type */}
+          <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <span className="text-sm text-gray-600 dark:text-gray-300">
+              {(row.type || "N/A").toUpperCase()}
+            </span>
+          </td>
 
-            {/* Size */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <span className="font-mono text-sm text-gray-600 dark:text-gray-300">
-                {row.size}
-              </span>
-            </td>
+          {/* Size */}
+          <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <span className="font-mono text-sm text-gray-600 dark:text-gray-300">
+              {formatFileSize(row.file_size)}
+            </span>
+          </td>
 
-            {/* Status */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-              <StatusBadge status={row.status} />
-            </td>
+          {/* Status */}
+          <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <StatusBadge status={row.status as any} />
+          </td>
 
-            {/* Actions */}
-            <td className="p-4 text-center">
-              <div className="flex items-center justify-center gap-2">
-                <Tooltip content="Tải xuống">
-                  <IconAction icon={<HiOutlineDownload />} />
-                </Tooltip>
-                <Tooltip content="Xoá tài liệu">
-                  <IconAction
-                    onClick={() => openDeleteModal("document")}
-                    icon={<HiOutlineTrash />}
-                    danger
-                  />
-                </Tooltip>
-              </div>
-            </td>
-          </tr>
-        ))}
+          {/* Actions */}
+          <td className="p-4 text-center">
+            <div className="flex items-center justify-center gap-2">
+              <Tooltip content="Tải xuống">
+                <IconAction icon={<HiOutlineDownload />} />
+              </Tooltip>
+              <Tooltip content="Xoá tài liệu">
+                <IconAction
+                  onClick={() => openDeleteModal("document")}
+                  icon={<HiOutlineTrash />}
+                  danger
+                />
+              </Tooltip>
+            </div>
+          </td>
+        </tr>
+      ))}
     </DataTableShell>
   );
 }
 
-function FileIcon({ type }: { type: DocumentRow["fileType"] }) {
-  const map: Record<
-    DocumentRow["fileType"],
-    { icon: React.ReactNode; className: string }
-  > = {
+function FileIcon({
+  type,
+}: {
+  type:
+  | "pdf"
+  | "json"
+  | "text"
+  | "docx"
+  | "doc"
+  | "txt"
+  | "csv"
+  | "xls"
+  | "xlsx"
+  | "html"
+  | "md";
+}) {
+  const map: Record<string, { icon: React.ReactNode; className: string }> = {
     pdf: {
       icon: <AiOutlineFilePdf />,
       className: "bg-red-100 text-red-600 dark:bg-red-900/20 dark:text-red-400",
@@ -523,7 +441,11 @@ function FileIcon({ type }: { type: DocumentRow["fileType"] }) {
     },
   };
 
-  const item = map[type];
+  const item = map[type] || {
+    icon: <BsFiletypeTxt />,
+    className:
+      "bg-gray-100 text-gray-600 dark:bg-gray-900/20 dark:text-gray-400",
+  };
 
   return (
     <div

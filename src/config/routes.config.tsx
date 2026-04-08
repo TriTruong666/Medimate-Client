@@ -274,24 +274,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     icon: FiFileText,
     showInSidebar: true,
     roles: ["Admin"],
-    children: [
-      {
-        path: PATHS.DASHBOARD.DOCUMENTS,
-        element: <DocumentDashboardPage />,
-        label: "Tất cả",
-        index: true,
-      },
-      {
-        path: `${PATHS.DASHBOARD.DOCUMENTS}/uploaded`,
-        element: <DocumentDashboardPage />,
-        label: "Vừa tải lên",
-      },
-      {
-        path: `${PATHS.DASHBOARD.DOCUMENTS}/indexed`,
-        element: <DocumentDashboardPage />,
-        label: "Đã nạp",
-      },
-    ],
+    element: <DocumentDashboardPage />,
   },
   {
     path: PATHS.DASHBOARD.PACKAGES.ROOT,
