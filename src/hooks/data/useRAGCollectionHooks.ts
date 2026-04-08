@@ -5,12 +5,17 @@ import * as RAGCollectionService from "@/apis/rag_collection.service";
 import type {
   CreateCollectionRequest,
   AssignDocumentToCollectionRequest,
+  UpdateCollectionRequest,
 } from "@/types/RAGCollection";
 
 /**
  * Hook lấy danh sách collection từ RAG server (có phân trang)
  */
-export function useRAGCollections(params: { page: number; limit: number; q?: string }) {
+export function useRAGCollections(params: {
+  page: number;
+  limit: number;
+  q?: string;
+}) {
   return useQuery({
     queryKey: ["rag", "collections", params],
     queryFn: async () => {
@@ -105,9 +110,42 @@ export function useProcessRAGCollection() {
     }) => RAGCollectionService.processCollection(collectionId, params),
     onSuccess: (res) => {
       if (res.success) {
-        toast.success("Đã bắt đầu", "Server đang xử lý dữ liệu...");
+        toast.info(
+          "Đã bắt đầu xử lý",
+          "Server đang xử lý dữ liệu, vui lòng chờ trong giây lát...",
+        );
       } else {
         toast.error("Thất bại", res.message || "Yêu cầu xử lý thất bại");
+      }
+    },
+    onError: (err) => {
+      toast.error("Lỗi", getApiErrorMessage(err));
+    },
+  });
+}
+
+/**
+ * Hook cập nhật thông tin collection
+ */
+export function useUpdateRAGCollection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      collectionId,
+      data,
+    }: {
+      collectionId: string;
+      data: UpdateCollectionRequest;
+    }) => RAGCollectionService.updateCollection(collectionId, data),
+    onSuccess: (res, variables) => {
+      if (res.success) {
+        toast.success("Thành công", "Đã cập nhật collection");
+        queryClient.invalidateQueries({ queryKey: ["rag", "collections"] });
+        queryClient.invalidateQueries({
+          queryKey: ["rag", "collections", variables.collectionId],
+        });
+      } else {
+        toast.error("Thất bại", res.message || "Cập nhật thất bại");
       }
     },
     onError: (err) => {

@@ -25,7 +25,7 @@ export function useRAGDocuments(params: { page: number; limit: number; q?: strin
 export function useBulkUploadRAGDocuments() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (filesString: string[]) => RAGDocumentService.bulkUploadDocument(filesString),
+    mutationFn: (formData: FormData) => RAGDocumentService.bulkUploadDocument(formData),
     onSuccess: (res) => {
       if (res.success) {
         toast.success("Thành công", "Đã tải lên các tài liệu thành công");

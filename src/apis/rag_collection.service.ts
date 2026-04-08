@@ -7,6 +7,7 @@ import type {
   AssignDocumentToCollectionRequest,
   CreateCollectionRequest,
   RAGCollection,
+  UpdateCollectionRequest,
 } from "@/types/RAGCollection";
 
 export const createCollection = async (
@@ -50,6 +51,17 @@ export const processCollection = async (
   const res = await axiosRAGClient.post(
     `api/v1/collections/${collectionId}/process`,
     params,
+  );
+  return res.data;
+};
+
+export const updateCollection = async (
+  collectionId: string,
+  data: UpdateCollectionRequest,
+): Promise<RAGApiResponse<null>> => {
+  const res = await axiosRAGClient.patch(
+    `api/v1/collections/${collectionId}`,
+    data,
   );
   return res.data;
 };

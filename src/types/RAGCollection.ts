@@ -15,3 +15,9 @@ export interface CreateCollectionRequest {
 export interface AssignDocumentToCollectionRequest {
   document_ids: string[];
 }
+
+export interface UpdateCollectionRequest {
+  name?: string;
+  description?: string;
+  is_active?: boolean;
+}

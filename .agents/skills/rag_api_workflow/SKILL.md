@@ -89,15 +89,19 @@ export function useUpdateCollection() {
 
 ---
 
-## ♾️ Bước 4: Xử lý Phân trang "Load More"
-RAG Server sử dụng `current_page`, `total_pages`, `limit`, `total_records`.
+## ♾️ Bước 4: Xử lý Phân trang "Load More" (Infinite Loading)
+Dành cho giao diện Grid/Card, Medimate ưu tiên sử dụng nút "Load More" ở giữa dưới cùng thay vì phân trang số trang truyền thống.
 
 ### Logic xử lý trong Component:
 ```tsx
 const [page, setPage] = useState(1);
-const [allData, setAllData] = useState<Collection[]>([]);
+const [allData, setAllData] = useState<RAGDocument[]>([]);
 
-const { data: response } = useRAGCollections({ page, limit: 10 });
+const { data: response, isLoading, isError, refetch } = useRAGDocuments({ page, limit: 12 });
+
+// Metadata cần thiết
+const total = response?.data.pagination.total_records || 0;
+const hasMore = allData.length < total;
 
 useEffect(() => {
   if (response?.data.items) {
@@ -106,10 +110,25 @@ useEffect(() => {
   }
 }, [response, page]);
 
-// Kiểm tra còn trang không:
-const hasMore = response?.data.pagination ? 
-  response.data.pagination.current_page < response.data.pagination.total_pages : false;
+const handleLoadMore = () => {
+  if (!isLoading && hasMore) setPage(p => p + 1);
+};
 ```
+
+---
+
+## 🚦 Bước 5: 3 Trạng thái UI chuẩn (Loading, Error, Empty)
+Mọi trang danh sách RAG phải tuân thủ 3 block giao diện dưới đây để đảm bảo trải nghiệm người dùng đồng nhất với `ui_master`.
+
+### 1. Loading State (Skeleton)
+- **Grid view**: Sử dụng Skeleton Card với hiệu ứng `animate-pulse`. Hiển thị ít nhất 8 card khi `isLoading && allData.length === 0`.
+- **Table view**: Sử dụng Spinner lớn ở giữa bảng thông qua `DataTableShell`.
+
+### 2. Error State
+Hiển thị icon cảnh báo, thông báo lỗi thân thiện và nút **"Thử lại"** gọi hàm `refetch()`.
+
+### 3. Empty State
+Khi không có dữ liệu (`total === 0`), hiển thị thông báo trống kèm nút **Call-to-Action (CTA)** (ví dụ: "Tải lên ngay", "Tạo mới") để dẫn dắt người dùng.
 
 ---
 

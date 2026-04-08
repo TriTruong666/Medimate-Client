@@ -2,8 +2,12 @@ import type { RAGApiResponse, RAGApiPaginatedResponse } from "@/types/APIRespons
 import { axiosRAGClient } from "./client";
 import type { RAGDocument } from "@/types/RAGDocument";
 
-export const bulkUploadDocument = async (filesString: string[]): Promise<RAGApiResponse<null>> => {
-    const res = await axiosRAGClient.post(`api/v1/documents/bulk-upload-documents`, filesString)
+export const bulkUploadDocument = async (formData: FormData): Promise<RAGApiResponse<any>> => {
+    const res = await axiosRAGClient.post(`api/v1/documents/bulk-upload-documents`, formData, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+        },
+    })
     return res.data
 }
 

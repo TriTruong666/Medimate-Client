@@ -54,6 +54,9 @@ const KnowledgeBasePage = lazy(
 const KnowledgeAddCollectionPage = lazy(
   () => import("../pages/admin/KnowledgeAddCollectionPage"),
 );
+const KnowledgeDetailCollectionPage = lazy(
+  () => import("../pages/admin/KnowledgeDetailCollectionPage"),
+);
 const ChatbotPage = lazy(() => import("../pages/ChatbotPage"));
 const TransactionDashboardPage = lazy(
   () => import("../pages/TransactionDashboardPage"),
@@ -330,6 +333,13 @@ export const ROUTES_CONFIG: RouteConfig[] = [
   {
     path: PATHS.DASHBOARD.RAG_NEW,
     element: <KnowledgeAddCollectionPage />,
+    layout: "dashboard",
+    showInSidebar: false,
+    roles: ["Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.RAG_DETAIL,
+    element: <KnowledgeDetailCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
     roles: ["Admin"],

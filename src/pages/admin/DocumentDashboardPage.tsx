@@ -25,10 +25,13 @@ import { cardContainer, cardItem } from "@/motions/cardMotion";
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
-import { useRAGDocuments } from "@/hooks/data/useRAGDocumentHooks";
 import { formatRelativeTime } from "@/common/format";
 import type { RAGDocument } from "@/types/RAGDocument";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import { useEffect } from "react";
+import { FiPlus, FiRefreshCcw } from "react-icons/fi";
+import { Spinner } from "@/components/custom-ui/Spinner";
+import { useRAGDocuments } from "@/hooks/data/useRAGDocumentHooks";
 
 type ColumnKey = "name" | "type" | "size" | "status" | "actions";
 
@@ -84,17 +87,49 @@ export default function DocumentDashboardPage() {
   ];
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12); // Tăng size cho card view
   const [searchQuery] = useState("");
+  const [allDocuments, setAllDocuments] = useState<RAGDocument[]>([]);
 
-  const { data: response, isLoading } = useRAGDocuments({
+  const {
+    data: response,
+    isLoading,
+    isError,
+    refetch,
+  } = useRAGDocuments({
     page,
     limit: pageSize,
     q: searchQuery,
   });
 
-  const documents = response?.data.items || [];
   const total = response?.data.pagination.total_records || 0;
+  
+  // Dữ liệu hiển thị cho Card view (Infinity)
+  const cardDocuments = page === 1 ? (response?.data.items || []) : allDocuments;
+  const hasMore = cardDocuments.length < total;
+
+  // Xử lý nạp thêm dữ liệu vào allDocuments khi page > 1
+  useEffect(() => {
+    if (response?.data.items) {
+      if (page === 1) {
+        setAllDocuments(response.data.items);
+      } else {
+        // Tránh trùng lặp nếu response chưa kịp đổi
+        setAllDocuments((prev) => {
+          const combined = [...prev, ...response.data.items];
+          // Simple deduplication by ID
+          const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
+          return unique;
+        });
+      }
+    }
+  }, [response, page]);
+
+  // Reset khi search
+  useEffect(() => {
+    setPage(1);
+    setAllDocuments([]);
+  }, [searchQuery]);
 
   const handlePageChange = (newPage: number) => setPage(newPage);
   const handlePageSizeChange = (newSize: number) => {
@@ -102,8 +137,16 @@ export default function DocumentDashboardPage() {
     setPage(1);
   };
 
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      setPage((prev) => prev + 1);
+    }
+  };
+
   const handleChangeTableLayout = (key: string) => {
     setTableLayout(key);
+    // Reset về trang 1 khi đổi layout để tránh confusion
+    setPage(1);
   };
 
   return (
@@ -156,28 +199,86 @@ export default function DocumentDashboardPage() {
       {tableLayout === "table" && (
         <div className="my-8">
           <DocumentTable
-            data={documents}
+            data={response?.data.items || []}
             page={page}
             pageSize={pageSize}
             total={total}
             onPageChange={handlePageChange}
             onPageSizeChange={handlePageSizeChange}
             isLoading={isLoading}
+            isError={isError}
+            onRetry={refetch}
           />
         </div>
       )}
 
       {tableLayout === "card" && (
-        <div className="my-8 space-y-8">
-          <DocumentCardGrid data={documents} />
-          {total > pageSize && (
-            <div className="flex justify-center">
+        <div className="my-8">
+          {isLoading && cardDocuments.length === 0 ? (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {[...Array(8)].map((_, i) => (
+                <DocumentCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : isError ? (
+            <div className="flex min-h-[400px] flex-col items-center justify-center py-10">
+              <div className="mb-4 rounded-full bg-red-500/10 p-4 text-red-500">
+                <FiRefreshCcw className="text-3xl" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Đã xảy ra lỗi</h3>
+              <p className="mt-2 text-sm text-white/50">
+                Không thể tải danh sách tài liệu vào lúc này.
+              </p>
               <button
-                onClick={() => setPage((p) => p + 1)}
-                className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10"
+                onClick={() => refetch()}
+                className="mt-6 rounded-lg border border-white/5 bg-white/5 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-white/10"
               >
-                Tải thêm tài liệu <LuPlus />
+                Thử lại
               </button>
+            </div>
+          ) : cardDocuments.length === 0 ? (
+            <div className="flex min-h-[400px] flex-col items-center justify-center py-10 text-center">
+              <div className="mb-4 rounded-full bg-white/5 p-4 text-gray-400">
+                <LuGrid3X3 className="text-3xl" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">
+                Chưa có tài liệu
+              </h3>
+              <p className="mt-2 text-sm text-white/50">
+                Bắt đầu bằng cách tải lên tài liệu đầu tiên của bạn.
+              </p>
+              <button
+                onClick={() => openModal("upload")}
+                className="mt-6 flex items-center gap-2 rounded-lg bg-red-500 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-red-600"
+              >
+                <LuPlus className="text-lg" />
+                Tải lên ngay
+              </button>
+            </div>
+          ) : (
+            /* 4. DATA RENDER */
+            <div className="space-y-10">
+              <DocumentCardGrid data={cardDocuments} />
+
+              {hasMore && (
+                <div className="flex justify-center pb-10">
+                  <button
+                    onClick={handleLoadMore}
+                    disabled={isLoading}
+                    className="flex min-w-40 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10 disabled:opacity-50"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Spinner size="sm" /> <span>Đang tải...</span>
+                      </>
+                    ) : (
+                      <>
+                        Tải thêm tài liệu <LuPlus />
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -298,7 +399,9 @@ function DocumentTable({
   onPageChange,
   onPageSizeChange,
   isLoading,
-}: DocumentTableProps) {
+  isError,
+  onRetry,
+}: DocumentTableProps & { isError?: boolean; onRetry?: () => void }) {
   const [, openDeleteModal] = useAtom(openDeleteModalAtom);
   return (
     <DataTableShell
@@ -307,6 +410,8 @@ function DocumentTable({
       emptyMessage="Không tìm thấy dữ liệu tài liệu."
       pagination={{ page, pageSize, total, onPageChange, onPageSizeChange }}
       isLoading={isLoading}
+      isError={isError}
+      onRetry={onRetry}
     >
       {data.map((row, i) => (
         <tr
@@ -315,10 +420,10 @@ function DocumentTable({
         >
           {/* Name */}
           <td className="dark:border-border-dark border-r border-gray-100 p-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <FileIcon type={row.type as any} />
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+              <div className="flex flex-col min-w-0">
+                <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                   {row.doc_name}
                 </span>
                 <span className="text-xs text-gray-500 dark:text-gray-400">
@@ -449,7 +554,7 @@ function FileIcon({
 
   return (
     <div
-      className={`flex h-10 w-10 items-center justify-center rounded-lg ${item.className}`}
+      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${item.className}`}
     >
       {item.icon}
     </div>
@@ -468,7 +573,29 @@ function StatusBadge({
     failed: <Badge type="error" value="Thất bại" />,
   };
 
-  return map[status];
+  return map[status] || <Badge type="info" value={status} />;
+}
+
+function DocumentCardSkeleton() {
+  return (
+    <div className="dark:border-border-dark flex h-48 flex-col rounded-2xl border border-gray-100 bg-white/5 p-4 backdrop-blur">
+      <div className="flex items-start gap-3">
+        <div className="h-10 w-10 animate-pulse rounded-lg bg-white/10" />
+        <div className="flex-1 space-y-2">
+          <div className="h-4 w-3/4 animate-pulse rounded bg-white/10" />
+          <div className="h-3 w-1/4 animate-pulse rounded bg-white/10" />
+        </div>
+      </div>
+      <div className="mt-8 h-px w-full bg-white/5" />
+      <div className="mt-auto flex items-center justify-between">
+        <div className="h-6 w-16 animate-pulse rounded-full bg-white/10" />
+        <div className="flex gap-2">
+          <div className="h-8 w-8 animate-pulse rounded-lg bg-white/10" />
+          <div className="h-8 w-8 animate-pulse rounded-lg bg-white/10" />
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // const PAGE_SIZE = 5;
