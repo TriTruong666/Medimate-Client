@@ -25,4 +25,12 @@ export const toast = {
       ...options,
     });
   },
+  info(title: string, message: string, options = {}) {
+    toastStore.push({
+      title,
+      message,
+      type: "info",
+      ...options,
+    });
+  },
 };

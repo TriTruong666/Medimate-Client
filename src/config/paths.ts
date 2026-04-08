@@ -17,6 +17,7 @@ export const PATHS = {
     DOCUMENTS: "/dashboard/documents",
     RAG: "/dashboard/rag",
     RAG_NEW: "/dashboard/rag/new",
+    RAG_DETAIL: "/dashboard/rag/:id",
     CHATBOT: "/dashboard/chatbot",
     TRANSACTION: "/dashboard/transaction",
     DOCTOR_REPORT: "/dashboard/doctor-report",
