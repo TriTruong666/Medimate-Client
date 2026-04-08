@@ -3,13 +3,22 @@ export const formatPrice = (price: number): string => {
   return `${formatted} VND`;
 };
 
-export const formatTime = (isoString: string): string => {
-  const date = new Date(isoString);
-  return new Intl.DateTimeFormat("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false, // Sử dụng định dạng 24h
-  }).format(date);
+export const formatTime = (input: string, isIso = false): string => {
+  if (isIso) {
+    const date = new Date(input);
+    return new Intl.DateTimeFormat("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false, // Sử dụng định dạng 24h
+    }).format(date);
+  }
+  const timeParts = input.split(":");
+  if (timeParts.length >= 2) {
+    const hours = timeParts[0].padStart(2, "0");
+    const minutes = timeParts[1].padStart(2, "0");
+    return `${hours}:${minutes}`;
+  }
+  return input;
 };
 
 export const formatDate = (isoString: string): string => {
@@ -44,7 +53,10 @@ export const formatPriceDisplay = (value: string): string => {
   return numeric.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
-export const formatRelativeTime = (dateString: string, isUTC?: boolean): string => {
+export const formatRelativeTime = (
+  dateString: string,
+  isUTC?: boolean,
+): string => {
   const date = new Date(dateString);
   isUTC = isUTC ?? true;
 

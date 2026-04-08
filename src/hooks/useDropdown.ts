@@ -26,5 +26,5 @@ export function useEscapeKey(onClose: () => void) {
     }
     document.addEventListener("keydown", onEsc);
     return () => document.removeEventListener("keydown", onEsc);
-  }, []);
+  }, [onClose]);
 }

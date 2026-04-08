@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { HiBell } from "react-icons/hi";
 import { formatRelativeTime } from "../../common/format";
@@ -30,16 +30,14 @@ export function NotificationDropdown() {
   );
   const unreadCount = sortedNotifications.filter((item) => !item.isRead).length;
 
-  // Lắng nghe và cập nhật Title Tab Trình Duyệt
-  import("react").then((React) => {
-    React.useEffect(() => {
-      if (unreadCount > 0) {
-        document.title = `(${unreadCount}) Medimate - Bác Sĩ`;
-      } else {
-        document.title = "Medimate - Bác Sĩ";
-      }
-    }, [unreadCount]);
-  });
+  useEffect(() => {
+    if (unreadCount > 0) {
+      document.title = `(${unreadCount}) Medimate - Bác Sĩ`;
+      return;
+    }
+
+    document.title = "Medimate - Bác Sĩ";
+  }, [unreadCount]);
 
   useClickOutside(ref, () => setOpen(false));
   useEscapeKey(() => setOpen(false));
