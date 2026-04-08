@@ -77,7 +77,7 @@ export function PrescriptionSessionModal({
               <div>
                 <h2 className="text-lg font-semibold text-white">Đơn thuốc theo session</h2>
                 <p className="mt-1 text-xs text-gray-400">
-                  {session.memberName || `Bệnh nhân ${shortId(session.memberId)}`}
+                  Bệnh nhân: {session.memberName || `Bệnh nhân ${shortId(session.memberId)}`}
                 </p>
               </div>
               <button
@@ -100,7 +100,7 @@ export function PrescriptionSessionModal({
                 <div>
                   <h3 className="text-sm font-semibold text-white">Danh sách đơn thuốc</h3>
                   <p className="mt-1 text-xs text-gray-400">
-                    Chỉ session đang <span className="text-white">InProgress</span> mới được tạo đơn mới.
+                    Chỉ phiên tư vấn đang <span className="text-white">diễn ra</span> mới được tạo đơn mới.
                   </p>
                 </div>
 
@@ -134,7 +134,7 @@ export function PrescriptionSessionModal({
                 </div>
               ) : list.length === 0 ? (
                 <div className="flex min-h-100 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
-                  Chưa có đơn thuốc cho session này.
+                  Chưa có đơn thuốc cho phiên tư vấn này.
                 </div>
               ) : (
                 <div className="grid gap-4 xl:grid-cols-2">
@@ -149,7 +149,7 @@ export function PrescriptionSessionModal({
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <p className="text-sm font-semibold text-white">
-                            {item.memberName || item.memberId}
+                            Bệnh nhân: {item.memberName || item.memberId}
                           </p>
                           <p className="mt-1 text-xs text-white/60">{item.diagnosis}</p>
                           <p className="mt-1 text-xs text-white/50">
