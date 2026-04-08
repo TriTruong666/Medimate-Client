@@ -101,6 +101,8 @@ export function useSignalR() {
         console.log("💬 [SignalR] ReceiveMessage:", data);
         playNotificationSound();
         queryClient.invalidateQueries({ queryKey: ["chat-messages", data?.sessionId] });
+        queryClient.invalidateQueries({ queryKey: ["chat-sessions"] });
+        queryClient.invalidateQueries({ queryKey: ["chat-session-details", data?.sessionId] });
         queryClient.invalidateQueries({ queryKey: ["session-details"] });
         
         if (data && data.senderName) {
@@ -110,6 +112,8 @@ export function useSignalR() {
 
       newConnection.on("ReceiveMessageUpdate", () => {
         queryClient.invalidateQueries({ queryKey: ["chat-messages"] });
+        queryClient.invalidateQueries({ queryKey: ["chat-sessions"] });
+        queryClient.invalidateQueries({ queryKey: ["chat-session-details"] });
         queryClient.invalidateQueries({ queryKey: ["session-details"] });
       });
 
