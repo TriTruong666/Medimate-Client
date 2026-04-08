@@ -1,5 +1,6 @@
 import { Badge } from "@/components/custom-ui/Badge";
 import { formatDate } from "@/common/format";
+import { getGenderDisplay } from "@/common/mappers";
 import { useAppointmentDetail } from "@/hooks/data/useAppointmentHooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
@@ -246,7 +247,6 @@ export function DoctorSupportDetailPage({
 												<h3 className="mt-1 text-lg font-semibold text-white">
 													{data.doctorName}
 												</h3>
-												<p className="text-sm text-gray-400">{data.specialty}</p>
 											</div>
 										</div>
 
@@ -269,7 +269,7 @@ export function DoctorSupportDetailPage({
 													{data.memberName}
 												</h3>
 												<p className="text-sm text-gray-400">
-													{data.memberGender || "Chưa cập nhật"}
+													{getGenderDisplay(data.memberGender)}
 												</p>
 											</div>
 										</div>
