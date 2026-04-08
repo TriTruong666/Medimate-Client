@@ -10,6 +10,12 @@ import { Button } from "../components/custom-ui/Button";
 import Toggle from "@/components/custom-ui/Toggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useChangeMyPassword, useDoctorMe } from "@/hooks/data/useDoctorHooks";
+import {
+  useCreateDoctorBankAccount,
+  useDeleteDoctorBankAccount,
+  useDoctorBankAccounts,
+  useUpdateDoctorBankAccount,
+} from "@/hooks/data/useDoctorBankAccountHooks";
 import { useAtom } from "jotai";
 import { openConfirmUpdateProfileModalAtom } from "@/stores/modalStore";
 import { toast } from "@/hooks/useToast";
@@ -75,6 +81,15 @@ export function ProfileSettingDashboardPage() {
   const { user } = useAuth();
   const { data: doctorProfile } = useDoctorMe(user?.role === "Doctor");
   const [, openConfirm] = useAtom(openConfirmUpdateProfileModalAtom);
+  const doctorId = doctorProfile?.doctorId || "";
+
+  const {
+    data: bankAccounts = [],
+    isLoading: isBankAccountsLoading,
+  } = useDoctorBankAccounts(doctorId);
+  const createBankAccountMutation = useCreateDoctorBankAccount(doctorId);
+  const updateBankAccountMutation = useUpdateDoctorBankAccount(doctorId);
+  const deleteBankAccountMutation = useDeleteDoctorBankAccount(doctorId);
 
   const [form, setForm] = useState({
     fullName: "",
@@ -88,6 +103,12 @@ export function ProfileSettingDashboardPage() {
   });
 
   const [original, setOriginal] = useState<typeof form | null>(null);
+  const [bankForm, setBankForm] = useState({
+    bankName: "",
+    accountNumber: "",
+    accountHolder: "",
+    editingId: "",
+  });
 
   useEffect(() => {
     if (doctorProfile && user?.role === "Doctor") {
@@ -188,6 +209,75 @@ export function ProfileSettingDashboardPage() {
     const newFiles = [...form.licenseImage];
     newFiles.splice(index, 1);
     setForm({ ...form, licenseImage: newFiles });
+  };
+
+  const resetBankForm = () => {
+    setBankForm({
+      bankName: "",
+      accountNumber: "",
+      accountHolder: "",
+      editingId: "",
+    });
+  };
+
+  const handleEditBankAccount = (id: string) => {
+    const selected = bankAccounts.find((item) => item.bankAccountId === id);
+    if (!selected) return;
+
+    setBankForm({
+      bankName: selected.bankName || "",
+      accountNumber: selected.accountNumber || "",
+      accountHolder: selected.accountHolder || "",
+      editingId: selected.bankAccountId,
+    });
+  };
+
+  const handleSubmitBankAccount = async () => {
+    if (user?.role !== "Doctor") {
+      toast.warn("Tính năng giới hạn", "Chỉ bác sĩ mới có thể quản lý tài khoản ngân hàng.");
+      return;
+    }
+
+    if (!doctorId) {
+      toast.warn("Thiếu thông tin", "Không tìm thấy thông tin bác sĩ để lưu tài khoản ngân hàng.");
+      return;
+    }
+
+    const payload = {
+      bankName: bankForm.bankName.trim(),
+      accountNumber: bankForm.accountNumber.trim(),
+      accountHolder: bankForm.accountHolder.trim(),
+    };
+
+    if (!payload.bankName || !payload.accountNumber || !payload.accountHolder) {
+      toast.warn("Thiếu thông tin", "Vui lòng nhập đầy đủ tên ngân hàng, số tài khoản và chủ tài khoản.");
+      return;
+    }
+
+    try {
+      if (bankForm.editingId) {
+        await updateBankAccountMutation.mutateAsync({
+          id: bankForm.editingId,
+          payload,
+        });
+      } else {
+        await createBankAccountMutation.mutateAsync(payload);
+      }
+      resetBankForm();
+    } catch {
+      // Toast is handled in mutation hooks.
+    }
+  };
+
+  const handleDeleteBankAccount = async (id: string) => {
+    try {
+      await deleteBankAccountMutation.mutateAsync(id);
+      if (bankForm.editingId === id) {
+        resetBankForm();
+      }
+    } catch {
+      // Toast is handled in mutation hooks.
+    }
   };
 
   // The record fetched may have profileImage, avatarImage or avatarUrl
@@ -337,6 +427,114 @@ export function ProfileSettingDashboardPage() {
             </div>
           </div>
         </SettingCard>
+
+        {user?.role === "Doctor" && (
+          <SettingCard
+            label="Tài khoản ngân hàng"
+            description="Thêm tài khoản ngân hàng để nhận thanh toán từ hệ thống."
+            helper={
+              <span className="helper-setting-card">
+                Bạn có thể thêm nhiều tài khoản và chỉnh sửa bất cứ lúc nào.
+              </span>
+            }
+            disable
+          >
+            <div className="flex w-full flex-col gap-4 py-4">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <input
+                  value={bankForm.bankName}
+                  onChange={(e) =>
+                    setBankForm({ ...bankForm, bankName: e.target.value })
+                  }
+                  placeholder="Tên ngân hàng"
+                  className="input-primary w-full text-white placeholder:text-neutral-400"
+                />
+                <input
+                  value={bankForm.accountNumber}
+                  onChange={(e) =>
+                    setBankForm({ ...bankForm, accountNumber: e.target.value })
+                  }
+                  placeholder="Số tài khoản"
+                  className="input-primary w-full text-white placeholder:text-neutral-400"
+                />
+                <input
+                  value={bankForm.accountHolder}
+                  onChange={(e) =>
+                    setBankForm({ ...bankForm, accountHolder: e.target.value })
+                  }
+                  placeholder="Chủ tài khoản"
+                  className="input-primary w-full text-white placeholder:text-neutral-400"
+                />
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => void handleSubmitBankAccount()}
+                  disabled={
+                    createBankAccountMutation.isPending ||
+                    updateBankAccountMutation.isPending
+                  }
+                  className="btn-primary"
+                >
+                  {bankForm.editingId ? "Cập nhật tài khoản" : "Thêm tài khoản"}
+                </button>
+                {bankForm.editingId && (
+                  <button
+                    type="button"
+                    onClick={resetBankForm}
+                    className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+                  >
+                    Hủy chỉnh sửa
+                  </button>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                {isBankAccountsLoading ? (
+                  <p className="text-sm text-gray-400">Đang tải tài khoản ngân hàng...</p>
+                ) : bankAccounts.length === 0 ? (
+                  <p className="text-sm text-gray-400">Chưa có tài khoản ngân hàng nào.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {bankAccounts.map((account) => (
+                      <div
+                        key={account.bankAccountId}
+                        className="flex flex-col gap-3 rounded-lg border border-white/10 bg-black/30 p-3 md:flex-row md:items-center md:justify-between"
+                      >
+                        <div className="min-w-0 space-y-1">
+                          <p className="text-sm font-medium text-white">
+                            {account.bankName} - {account.accountNumber}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Chủ tài khoản: {account.accountHolder}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleEditBankAccount(account.bankAccountId)}
+                            className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-gray-200 transition hover:bg-white/10"
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteBankAccount(account.bankAccountId)}
+                            disabled={deleteBankAccountMutation.isPending}
+                            className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-500/10"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </SettingCard>
+        )}
 
         {user?.role === "Doctor" && (
           <SettingCard

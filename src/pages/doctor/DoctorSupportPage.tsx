@@ -17,6 +17,8 @@ import {
   useAppointmentSession,
 } from "@/hooks/data/useSessionHooks";
 import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
+import { useDoctorAvailabilities } from "@/hooks/data/useDoctorAvailabilityHooks";
+import { useDoctorAvailabilityExceptions } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
 import { toast } from "@/hooks/useToast";
 import { formatDate } from "@/common/format";
 import { useNavigate } from "react-router-dom";
@@ -25,6 +27,8 @@ import type {
   AppointmentType,
   DoctorAppointment,
 } from "@/types/Appointment";
+import type { DayOfWeek, DoctorAvailability } from "@/types/DoctorAvailability";
+import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityException";
 
 interface Appointment {
   id: string;
@@ -38,6 +42,67 @@ interface Appointment {
   time: string;
   status: AppointmentStatus;
   symptoms: string;
+}
+
+const DAY_OF_WEEK_TO_INDEX: Record<DayOfWeek, number> = {
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+  Sunday: 0,
+};
+
+function toDayOfWeekIndex(value: string): number | null {
+  if (value in DAY_OF_WEEK_TO_INDEX) {
+    return DAY_OF_WEEK_TO_INDEX[value as DayOfWeek];
+  }
+  return null;
+}
+
+function normalizeDateKey(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, "0");
+  const day = `${date.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatTimeLabel(value?: string | null): string {
+  if (!value) return "--:--";
+  return value.slice(0, 5);
+}
+
+const APPOINTMENT_PRIORITY: Record<AppointmentStatus, number> = {
+  InProgress: 0,
+  Pending: 1,
+  Approved: 2,
+  Completed: 3,
+  Cancelled: 4,
+  Rejected: 5,
+};
+
+function getTimeInMinutes(value: string): number {
+  const match = value.match(/(\d{2}):(\d{2})/);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  return hour * 60 + minute;
+}
+
+function sortAppointmentsForCalendar(items: Appointment[]): Appointment[] {
+  return [...items].sort((a, b) => {
+    const priorityDiff =
+      (APPOINTMENT_PRIORITY[a.status] ?? 999) -
+      (APPOINTMENT_PRIORITY[b.status] ?? 999);
+    if (priorityDiff !== 0) return priorityDiff;
+
+    return getTimeInMinutes(a.time) - getTimeInMinutes(b.time);
+  });
 }
 
 function getPatientLabel(raw: DoctorAppointment): string {
@@ -150,8 +215,27 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
     refetch,
   } = useDoctorAppointments();
   const { data: doctorProfile } = useDoctorMe(true);
+  const doctorId = doctorProfile?.doctorId || "";
+  const {
+    data: availabilityResponse,
+    isLoading: isAvailabilityLoading,
+    isError: isAvailabilityError,
+    error: availabilityError,
+    refetch: refetchAvailabilities,
+  } = useDoctorAvailabilities(doctorId);
+  const {
+    data: exceptionResponse,
+    isLoading: isExceptionLoading,
+    isError: isExceptionError,
+    error: exceptionError,
+    refetch: refetchExceptions,
+  } = useDoctorAvailabilityExceptions(doctorId);
 
   const appointments = (appointmentResponse ?? []).map(mapAppointment);
+  const availabilities = (availabilityResponse ?? []).filter((item) => item.isActive);
+  const approvedExceptions = (exceptionResponse ?? []).filter(
+    (item) => item.isAvailableOverride,
+  );
   
   const filteredAppointments = appointments.filter((apt) => {
     switch (filter) {
@@ -165,7 +249,15 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
   });
 
   const hasAppointments = filteredAppointments.length > 0;
-  const doctorId = doctorProfile?.doctorId || "";
+  const calendarLoading =
+    isLoading || (!doctorId ? false : isAvailabilityLoading || isExceptionLoading);
+  const calendarError =
+    isError || isAvailabilityError || isExceptionError;
+  const calendarErrorMessage =
+    error?.message ||
+    availabilityError?.message ||
+    exceptionError?.message ||
+    "Không thể tải dữ liệu lịch làm việc.";
 
   function handleOpenExceptionModal() {
     if (!doctorId) {
@@ -268,21 +360,30 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
               exit={{ opacity: 0, y: 10 }}
               transition={{ duration: 0.3 }}
             >
-              {isLoading ? (
+              {calendarLoading ? (
                 <AppointmentState type="loading" />
-              ) : isError ? (
+              ) : calendarError ? (
                 <AppointmentState
                   type="error"
-                  message={error?.message}
-                  onRetry={() => void refetch()}
+                  message={calendarErrorMessage}
+                  onRetry={() => {
+                    void refetch();
+                    void refetchAvailabilities();
+                    void refetchExceptions();
+                  }}
                 />
-              ) : hasAppointments ? (
+              ) : hasAppointments || availabilities.length > 0 || approvedExceptions.length > 0 ? (
                 <MonthlyCalendarView
                   data={filteredAppointments}
+                  availabilities={availabilities}
+                  approvedExceptions={approvedExceptions}
                   onOpenDetail={setSelectedAppointmentId}
                 />
               ) : (
-                <AppointmentState type="empty" />
+                <AppointmentState
+                  type="empty"
+                  message="Chưa có lịch làm việc hoặc lịch hẹn nào cho bác sĩ hiện tại."
+                />
               )}
             </motion.div>
           )}
@@ -499,11 +600,19 @@ function AppointmentCard({
 /* -------------------------------------------------------------------------- */
 function MonthlyCalendarView({
   data,
+  availabilities,
+  approvedExceptions,
   onOpenDetail,
 }: {
   data: Appointment[];
+  availabilities: DoctorAvailability[];
+  approvedExceptions: DoctorAvailabilityException[];
   onOpenDetail: (appointmentId: string) => void;
 }) {
+  const [expandedDay, setExpandedDay] = useState<{
+    dateLabel: string;
+    appointments: Appointment[];
+  } | null>(null);
   const daysOfWeek = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
   const today = new Date();
@@ -513,10 +622,28 @@ function MonthlyCalendarView({
   const dayOffset = (firstDay.getDay() + 6) % 7;
   const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
+  const exceptionByDate = new Map<string, DoctorAvailabilityException[]>();
+  approvedExceptions.forEach((item) => {
+    const key = normalizeDateKey(item.date);
+    if (!key) return;
+    const prev = exceptionByDate.get(key) ?? [];
+    prev.push(item);
+    exceptionByDate.set(key, prev);
+  });
+
   const days = Array.from({ length: daysInMonth }, (_, i) => {
     const day = i + 1;
     const dayDate = new Date(currentYear, currentMonth, day);
-    const dayAppointments = data.filter((apt) => {
+    const dayDateKey = normalizeDateKey(dayDate.toISOString());
+    const dayOfWeek = dayDate.getDay();
+
+    const dayAvailabilities = availabilities.filter((slot) => {
+      const dayIndex = toDayOfWeekIndex(slot.dayOfWeek);
+      return dayIndex !== null && dayIndex === dayOfWeek;
+    });
+
+    const dayExceptions = exceptionByDate.get(dayDateKey) ?? [];
+    const dayAppointments = sortAppointmentsForCalendar(data.filter((apt) => {
       const aptDate = new Date(apt.dateKey);
       return (
         !Number.isNaN(aptDate.getTime()) &&
@@ -524,11 +651,14 @@ function MonthlyCalendarView({
         aptDate.getMonth() === currentMonth &&
         aptDate.getDate() === day
       );
-    });
+    }));
 
     return {
       day,
       date: dayDate.toISOString(),
+      dateLabel: dayDate.toLocaleDateString("vi-VN"),
+      availabilities: dayAvailabilities,
+      exceptions: dayExceptions,
       appointments: dayAppointments,
       isToday: day === today.getDate(),
     };
@@ -562,12 +692,19 @@ function MonthlyCalendarView({
             }`}
           />
         ))}
-        {days.map(({ day, appointments, isToday }, i) => {
+        {days.map(({ day, dateLabel, availabilities: dayAvailabilities, exceptions, appointments, isToday }, i) => {
           const gridIndex = emptyPreDays.length + i;
+          const hasApprovedDayOff = exceptions.length > 0;
+          const visibleAppointments = appointments.slice(0, 2);
+          const hiddenAppointmentsCount = Math.max(appointments.length - visibleAppointments.length, 0);
           return (
             <div
               key={i}
-              className={`group dark:border-border-dark relative flex min-h-30 flex-col gap-1 border-b border-gray-100 bg-transparent p-2 transition hover:bg-gray-50/50 dark:hover:bg-white/5 ${
+              className={`group dark:border-border-dark relative flex min-h-30 flex-col gap-1 border-b border-gray-100 p-2 transition hover:bg-gray-50/50 dark:hover:bg-white/5 ${
+                hasApprovedDayOff
+                  ? "bg-rose-50/60 dark:bg-rose-500/8"
+                  : "bg-transparent"
+              } ${
                 gridIndex % 7 < 6
                   ? "dark:border-border-dark border-r border-gray-100"
                   : ""
@@ -583,18 +720,142 @@ function MonthlyCalendarView({
                 {day}
               </span>
               <div className="mt-1 flex-1 space-y-1">
-                {appointments.map((apt) => (
+                {dayAvailabilities.slice(0, 2).map((slot) => (
+                  <div
+                    key={`${slot.id}-${slot.startTime}-${slot.endTime}`}
+                    className="rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-1 text-[10px] leading-tight text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
+                    title={`Lịch làm: ${formatTimeLabel(slot.startTime)} - ${formatTimeLabel(slot.endTime)}`}
+                  >
+                    Làm {formatTimeLabel(slot.startTime)}-{formatTimeLabel(slot.endTime)}
+                  </div>
+                ))}
+                {dayAvailabilities.length > 2 && (
+                  <div className="text-[10px] text-emerald-600 dark:text-emerald-300/90">
+                    +{dayAvailabilities.length - 2} khung giờ
+                  </div>
+                )}
+
+                {exceptions.slice(0, 2).map((item) => (
+                  <div
+                    key={item.exceptionId || `${item.date}-${item.startTime}-${item.endTime}`}
+                    className="rounded-md border border-rose-200 bg-rose-50 px-1.5 py-1 text-[10px] leading-tight text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"
+                    title={`Nghỉ đã duyệt: ${formatTimeLabel(item.startTime)} - ${formatTimeLabel(item.endTime)}${item.reason ? ` | ${item.reason}` : ""}`}
+                  >
+                    Nghỉ {formatTimeLabel(item.startTime)}-{formatTimeLabel(item.endTime)}
+                  </div>
+                ))}
+                {exceptions.length > 2 && (
+                  <div className="text-[10px] text-rose-600 dark:text-rose-300/90">
+                    +{exceptions.length - 2} lịch nghỉ
+                  </div>
+                )}
+
+                {visibleAppointments.map((apt) => (
                   <CalendarAppointmentItem
                     key={apt.id}
                     apt={apt}
                     onOpenDetail={onOpenDetail}
                   />
                 ))}
+
+                {hiddenAppointmentsCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExpandedDay({
+                        dateLabel,
+                        appointments,
+                      });
+                    }}
+                    className="w-full rounded-md border border-white/10 bg-white/5 px-1.5 py-1 text-left text-[10px] font-semibold text-gray-600 transition hover:bg-white/10 dark:text-gray-200"
+                  >
+                    +{hiddenAppointmentsCount} lịch hẹn
+                  </button>
+                )}
               </div>
             </div>
           );
         })}
       </div>
+
+      <div className="dark:border-border-dark flex flex-wrap items-center gap-4 border-t border-gray-100 bg-gray-50/40 px-3 py-2 text-[11px] text-gray-600 dark:bg-white/2 dark:text-gray-300">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+          Lịch làm việc
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
+          Lịch nghỉ đã duyệt
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-indigo-400" />
+          Lịch hẹn bệnh nhân
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {expandedDay && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-120 flex items-center justify-center bg-black/60 p-4"
+            onClick={() => setExpandedDay(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              onClick={(event) => event.stopPropagation()}
+              className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#17181d] p-4 shadow-2xl"
+            >
+              <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Lịch hẹn trong ngày</h3>
+                  <p className="text-xs text-gray-400">{expandedDay.dateLabel}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedDay(null)}
+                  className="rounded-md border border-white/10 px-2 py-1 text-xs text-gray-300 transition hover:bg-white/10"
+                >
+                  Đóng
+                </button>
+              </div>
+
+              <div className="max-h-90 space-y-2 overflow-y-auto pr-1">
+                {expandedDay.appointments.map((apt) => (
+                  <div
+                    key={apt.id}
+                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-white">
+                        {apt.time} • {apt.patientName}
+                      </p>
+                      <p className="text-[11px] text-gray-400">APT #{apt.appointmentShortId}</p>
+                    </div>
+                    <div className="ml-3 flex items-center gap-2">
+                      <StatusBadge status={apt.status} />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenDetail(apt.id);
+                          setExpandedDay(null);
+                        }}
+                        className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-gray-200 transition hover:bg-white/10"
+                      >
+                        Chi tiết
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
