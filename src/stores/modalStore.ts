@@ -40,6 +40,8 @@ export const cancelTypeAtom = atom<CancelType>(null);
 
 export const deleteTypeAtom = atom<DeleteType>(null);
 
+export const collectionIdAtom = atom<string | null>(null);
+
 export const openModalAtom = atom(null, (_, set, key: ModalKey) => {
   set(modalAtom, key);
 });
@@ -94,4 +96,9 @@ export const openTransactionModalAtom = atom(
 export const openConfirmUpdateProfileModalAtom = atom(null, (_, set, data: FormData) => {
   set(confirmSubmitDataAtom, data);
   set(modalAtom, "confirm_update_profile");
+});
+
+export const openIndexModalAtom = atom(null, (_, set, collectionId: string) => {
+  set(collectionIdAtom, collectionId);
+  set(modalAtom, "index");
 });

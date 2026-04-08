@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { IoArrowBack } from "react-icons/io5";
 import { HiOutlinePlus } from "react-icons/hi";
+import { AiOutlineFilePdf } from "react-icons/ai";
+import { FiFileText } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { openModalAtom } from "@/stores/modalStore";
@@ -9,6 +11,7 @@ import {
   useRAGCollectionDetail,
   useUpdateRAGCollection,
 } from "@/hooks/data/useRAGCollectionHooks";
+import { openIndexModalAtom } from "@/stores/modalStore";
 const breadcrumbItems = [
   {
     label: "Dashboard",
@@ -40,10 +43,7 @@ export default function KnowledgeDetailCollectionPage() {
           </div>
 
           <div className="my-10 w-full">
-            <DetailCollectionForm
-              onStartIndexing={() => setIsIndexing(true)}
-              setCurrentStep={setCurrentStep}
-            />
+            <DetailCollectionForm />
           </div>
         </>
       ) : (
@@ -55,29 +55,17 @@ export default function KnowledgeDetailCollectionPage() {
   );
 }
 
-type SelectedDoc = {
-  id: string;
-  name: string;
-  size: string; // "4.2 MB"
-};
 
-function DetailCollectionForm({
-  onStartIndexing,
-  setCurrentStep,
-}: {
-  onStartIndexing: () => void;
-  setCurrentStep: React.Dispatch<React.SetStateAction<IndexingStep>>;
-}) {
+function DetailCollectionForm() {
   const { id: collectionId } = useParams();
   const navigate = useNavigate();
-  const [, openModal] = useAtom(openModalAtom);
+  const [, openIndexModal] = useAtom(openIndexModalAtom);
 
   const { data: collection, isLoading } = useRAGCollectionDetail(
     collectionId || "",
   );
   const { mutate: updateCollection, isPending } = useUpdateRAGCollection();
 
-  const [documents, setDocuments] = useState<SelectedDoc[]>([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -144,10 +132,10 @@ function DetailCollectionForm({
         <div className="flex flex-col rounded-xl border border-dashed border-white/10 bg-white/5 px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-white">Tài liệu đã chọn</p>
+              <p className="text-sm font-medium text-white">Tài liệu đã gán</p>
               <p className="text-xs text-gray-400">
-                {documents.length > 0
-                  ? `Đã chọn ${documents.length} tài liệu`
+                {collection?.documents?.length
+                  ? `Tổng cộng ${collection.documents.length} tài liệu`
                   : "Chưa có tài liệu nào"}
               </p>
             </div>
@@ -155,7 +143,7 @@ function DetailCollectionForm({
             <button
               type="button"
               onClick={() => {
-                openModal("index");
+                if (collectionId) openIndexModal(collectionId);
               }}
               className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
             >
@@ -163,33 +151,31 @@ function DetailCollectionForm({
               Thêm tài liệu
             </button>
           </div>
-          {documents.length > 0 && (
-            <div className="mt-4 max-h-100 space-y-2 overflow-y-auto pr-1">
-              {documents.map((doc) => (
+
+          {collection?.documents && collection.documents.length > 0 && (
+            <div className="mt-4 max-h-120 space-y-2 overflow-y-auto pr-1 thin-scrollbar">
+              {collection.documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="flex items-center justify-between rounded-lg border border-white/10 bg-black/20 px-3 py-2"
+                  className="flex items-center justify-between rounded-lg border border-white/10 bg-black/20 px-3 py-2 hover:border-white/20 transition-all"
                 >
-                  {/* Left */}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-white">
-                      {doc.name}
-                    </p>
-                    <p className="text-xs text-gray-400">{doc.size}</p>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded bg-white/5 text-gray-400">
+                      {doc.type === "pdf" ? (
+                        <AiOutlineFilePdf className="text-lg text-red-400" />
+                      ) : (
+                        <FiFileText className="text-lg text-blue-400" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-white">
+                        {doc.doc_name}
+                      </p>
+                      <p className="text-[10px] text-gray-500">
+                        {new Date(doc.created_at).toLocaleDateString("vi-VN")}
+                      </p>
+                    </div>
                   </div>
-
-                  {/* Right */}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setDocuments((prev) =>
-                        prev.filter((item) => item.id !== doc.id),
-                      )
-                    }
-                    className="ml-3 text-xs text-gray-400 transition hover:text-red-400"
-                  >
-                    Xoá
-                  </button>
                 </div>
               ))}
             </div>

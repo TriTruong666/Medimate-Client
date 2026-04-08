@@ -1,9 +1,12 @@
+import type { RAGDocument } from "./RAGDocument";
+
 export interface RAGCollection {
   id: string;
   created_at: string;
   description: string;
   is_active: boolean;
   name: string;
+  documents: RAGDocument[];
 }
 
 export interface CreateCollectionRequest {

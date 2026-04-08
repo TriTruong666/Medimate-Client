@@ -1,4 +1,9 @@
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useQuery,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 import { toast } from "../useToast";
 import { getApiErrorMessage } from "@/common/api.error";
 import * as RAGDocumentService from "@/apis/rag_document.service";
@@ -36,6 +41,31 @@ export function useBulkUploadRAGDocuments() {
     },
     onError: (err) => {
       toast.error("Lỗi", getApiErrorMessage(err));
+    },
+  });
+}
+
+/**
+ * Hook lấy danh sách tài liệu theo kiểu Infinite Scroll
+ */
+export function useRAGDocumentsInfinite(params: { limit: number; q?: string }) {
+  return useInfiniteQuery({
+    queryKey: ["rag", "documents", "infinite", params],
+    queryFn: async ({ pageParam = 1 }) => {
+      const res = await RAGDocumentService.getDocumentList({
+        page: pageParam as number,
+        limit: params.limit,
+        q: params.q,
+      });
+      if (!res.success) {
+        throw new Error(res.message || "Không thể lấy danh sách tài liệu");
+      }
+      return res; // Trả về RAGApiPaginatedResponse<RAGDocument>
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const { current_page, total_pages } = lastPage.data.pagination;
+      return current_page < total_pages ? current_page + 1 : undefined;
     },
   });
 }
