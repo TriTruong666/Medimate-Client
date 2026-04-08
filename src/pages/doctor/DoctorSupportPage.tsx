@@ -18,7 +18,7 @@ import {
 } from "@/hooks/data/useSessionHooks";
 import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
 import { toast } from "@/hooks/useToast";
-import { formatDate, formatTime } from "@/common/format";
+import { formatDate } from "@/common/format";
 import { useNavigate } from "react-router-dom";
 import type {
   AppointmentStatus,
@@ -51,7 +51,28 @@ function toShortId(value: string, length = 6): string {
   return value.replace(/-/g, "").toUpperCase().slice(0, length);
 }
 
-function mapAppointment(raw: DoctorAppointment): Appointment {
+function formatAppointmentTime(value?: string | null): string {
+  if (!value) return "--:--";
+
+  const trimmed = value.trim();
+  const timeMatch = trimmed.match(/^(\d{2}):(\d{2})/);
+  if (timeMatch) {
+    return `${timeMatch[1]}:${timeMatch[2]}`;
+  }
+
+  const parsed = new Date(trimmed);
+  if (!Number.isNaN(parsed.getTime())) {
+    return parsed.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  }
+
+  return trimmed;
+}
+
+function mapAppointment(raw: DoctorAppointment): Appointment {  
   return {
     id: raw.appointmentId,
     patientName: getPatientLabel(raw),
@@ -60,7 +81,7 @@ function mapAppointment(raw: DoctorAppointment): Appointment {
     type: "online",
     dateKey: raw.appointmentDate,
     date: formatDate(raw.appointmentDate),
-    time: formatTime(raw.appointmentDate),
+    time: formatAppointmentTime(raw.appointmentTime),
     status: raw.status,
     symptoms:
       raw.cancelReason?.trim() || "Chưa có ghi chú cho lịch hẹn này.",

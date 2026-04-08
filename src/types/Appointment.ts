@@ -15,6 +15,7 @@ export interface DoctorAppointment {
   memberName?: string;
   availabilityId: string;
   appointmentDate: string;
+  appointmentTime: string;
   status: AppointmentStatus;
   cancelReason: string | null;
   createdAt: string;

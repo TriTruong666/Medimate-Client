@@ -55,8 +55,13 @@ export default function GlassSelect({
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-white/10 bg-neutral-900/90 shadow-[0_20px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl">
-          <ul className="max-h-60 overflow-auto">
+        <div
+          data-lenis-prevent
+          onWheel={(event) => event.stopPropagation()}
+          onTouchMove={(event) => event.stopPropagation()}
+          className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-white/10 bg-neutral-900/90 shadow-[0_20px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl"
+        >
+          <ul className="max-h-60 overflow-y-auto overscroll-contain">
             {options.map((opt) => {
               const active = opt.value === value;
 

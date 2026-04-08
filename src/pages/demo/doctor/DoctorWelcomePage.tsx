@@ -7,8 +7,13 @@ import SplitText from "@/components/animations-ui/SplitText";
 import Typewriter from "@/components/animations-ui/Typewriter";
 import DotGrid from "@/components/animations-ui/DotGrid";
 import { Spinner } from "@/components/custom-ui/Spinner";
+import GlassSelect from "@/components/custom-ui/Select";
 import { toast } from "@/hooks/useToast";
 import { getApiErrorMessage } from "@/common/api.error";
+import {
+  getDoctorSpecialtyOptions,
+  toDoctorSpecialtyDbValue,
+} from "@/common/mappers";
 import {
   useChangeMyPassword,
   useDoctorMe,
@@ -19,6 +24,8 @@ import { useLogout } from "@/hooks/data/useAuthHooks";
 
 const DEFAULT_OLD_PASSWORD =
   import.meta.env.VITE_DOCTOR_INITIAL_PASSWORD ?? "12345678aA@";
+
+const DOCTOR_SPECIALTY_OPTIONS = getDoctorSpecialtyOptions();
 
 export default function DoctorWelcomePage() {
   const [currentStep, setCurrentStep] = useState<
@@ -920,7 +927,8 @@ function SetupLayout({
 
   const doctorRecord = (doctorProfile ?? {}) as Record<string, unknown>;
   const defaultName = doctorProfile?.fullName ?? "";
-  const defaultSpecialty = doctorProfile?.specialty ?? "";
+  const defaultSpecialty =
+    toDoctorSpecialtyDbValue(doctorProfile?.specialty) ?? "";
   const defaultCurrentHospitalName = doctorProfile?.currentHospitalName ?? "";
   const defaultLicenseNumber = doctorProfile?.licenseNumber ?? "";
   const defaultAvatar =
@@ -951,8 +959,10 @@ function SetupLayout({
       ? undefined
       : "Vui lòng nhập họ và tên bác sĩ.",
     specialty: displaySpecialty.trim()
-      ? undefined
-      : "Vui lòng nhập chuyên khoa.",
+      ? toDoctorSpecialtyDbValue(displaySpecialty)
+        ? undefined
+        : "Vui lòng chọn chuyên khoa trong danh sách."
+      : "Vui lòng chọn chuyên khoa.",
     currentHospitalName: displayCurrentHospitalName.trim()
       ? undefined
       : "Vui lòng nhập bệnh viện hiện tại.",
@@ -999,10 +1009,23 @@ function SetupLayout({
     const target = fieldRefs.current[firstInvalidKey];
     target?.scrollIntoView({ behavior: "smooth", block: "center" });
     if (
-      typeof (target as HTMLInputElement | HTMLTextAreaElement | null)
+      typeof (
+        target as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | HTMLSelectElement
+          | HTMLDivElement
+          | null
+      )
         ?.focus === "function"
     ) {
-      (target as HTMLInputElement | HTMLTextAreaElement).focus();
+      (
+        target as
+          | HTMLInputElement
+          | HTMLTextAreaElement
+          | HTMLSelectElement
+          | HTMLDivElement
+      ).focus();
     }
   };
 
@@ -1115,9 +1138,16 @@ function SetupLayout({
     }
 
     try {
+      const mappedSpecialty = toDoctorSpecialtyDbValue(displaySpecialty);
+      if (!mappedSpecialty) {
+        setSetupProgress("name");
+        focusFirstInvalidField({ specialty: "Vui lòng chọn chuyên khoa hợp lệ." });
+        return;
+      }
+
       const response = await submitDoctorMeMutation.mutateAsync({
         fullName: displayName.trim(),
-        specialty: displaySpecialty.trim(),
+        specialty: mappedSpecialty,
         currentHospitalName: displayCurrentHospitalName.trim(),
         avatarImage: draft.avatarImage || undefined,
         licenseNumber: displayLicenseNumber.trim(),
@@ -1224,6 +1254,7 @@ function SetupLayout({
                 currentHospitalNameRef={registerFieldRef("currentHospitalName")}
                 licenseNumberRef={registerFieldRef("licenseNumber")}
                 yearsOfExperienceRef={registerFieldRef("yearsOfExperience")}
+                specialtyOptions={DOCTOR_SPECIALTY_OPTIONS}
               />
             </SetupItem>
           </motion.div>
@@ -1499,6 +1530,7 @@ function NameUpdate({
   currentHospitalNameRef,
   licenseNumberRef,
   yearsOfExperienceRef,
+  specialtyOptions,
 }: {
   fullName: string;
   specialty: string;
@@ -1512,10 +1544,11 @@ function NameUpdate({
   onYearsOfExperienceChange(value: string): void;
   errors?: SetupFieldErrors;
   fullNameRef?: React.Ref<HTMLInputElement>;
-  specialtyRef?: React.Ref<HTMLInputElement>;
+  specialtyRef?: React.Ref<HTMLDivElement>;
   currentHospitalNameRef?: React.Ref<HTMLInputElement>;
   licenseNumberRef?: React.Ref<HTMLInputElement>;
   yearsOfExperienceRef?: React.Ref<HTMLInputElement>;
+  specialtyOptions: Array<{ value: string; label: string }>;
 }) {
   return (
     <div className="grid w-130 grid-cols-1 gap-4 md:grid-cols-2">
@@ -1534,14 +1567,18 @@ function NameUpdate({
       </div>
 
       <div className="space-y-1">
-        <input
+        <div
           ref={specialtyRef}
-          className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
-          placeholder="Chuyên khoa"
-          value={specialty}
-          onChange={(e) => onSpecialtyChange(e.target.value)}
-          type="text"
-        />
+          tabIndex={-1}
+          className="rounded-xl"
+        >
+          <GlassSelect
+            value={specialty}
+            options={specialtyOptions}
+            placeholder="Chọn chuyên khoa"
+            onChange={onSpecialtyChange}
+          />
+        </div>
         {errors?.specialty && (
           <p className="px-1 text-xs text-red-400">* {errors.specialty}</p>
         )}
