@@ -3,6 +3,21 @@ import * as SessionService from "@/apis/session.service";
 import { toast } from "../useToast";
 import { getApiErrorMessage, translateErrorMessage } from "@/common/api.error";
 
+export function useMyConsultationSessions(enabled = true) {
+  return useQuery({
+    queryKey: ["my-consultation-sessions"],
+    queryFn: async () => {
+      const res = await SessionService.getMyConsultationSessions();
+      if (!res.success) {
+        throw new Error(res.message || "Failed to fetch sessions");
+      }
+      return res.data || [];
+    },
+    enabled,
+    retry: false,
+  });
+}
+
 export function useAppointmentSession(appointmentId: string, enabled: boolean) {
   return useQuery({
     queryKey: ["appointment-session", appointmentId],

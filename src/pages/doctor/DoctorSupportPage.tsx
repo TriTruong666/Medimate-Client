@@ -32,6 +32,7 @@ import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityExce
 
 interface Appointment {
   id: string;
+  memberId: string;
   patientName: string;
   patientShortId: string;
   appointmentShortId: string;
@@ -140,6 +141,7 @@ function formatAppointmentTime(value?: string | null): string {
 function mapAppointment(raw: DoctorAppointment): Appointment {  
   return {
     id: raw.appointmentId,
+    memberId: raw.memberId,
     patientName: getPatientLabel(raw),
     patientShortId: toShortId(raw.memberId),
     appointmentShortId: toShortId(raw.appointmentId),

@@ -6,6 +6,8 @@ export * from "./EditPackageModal";
 export * from "./IndexDocumentModal";
 export * from "./LockModal";
 export * from "./PaymentQRModal";
+export * from "./PrescriptionDetailModal";
+export * from "./PrescriptionSessionModal";
 export * from "./PreviewPdfModal";
 export * from "./UnlockModal";
 export * from "./UploadDocumentModal";

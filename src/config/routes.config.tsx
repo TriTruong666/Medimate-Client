@@ -107,6 +107,12 @@ const APIKeysSettingDashboardPage = lazy(() =>
     default: m.APIKeysSettingDashboardPage,
   })),
 );
+const PrescriptionRootPage = lazy(
+  () => import("../pages/doctor/PrescriptionRootPage"),
+);
+const PrescriptionInProgressPage = lazy(
+  () => import("@/pages/doctor/PrescriptionInProgressPage"),
+);
 
 export const ROUTES_CONFIG: RouteConfig[] = [
   {
@@ -239,6 +245,28 @@ export const ROUTES_CONFIG: RouteConfig[] = [
         path: PATHS.DASHBOARD.DOCTOR_SUPPORT.HISTORY,
         element: <DoctorSupportPage filter="history" title="Lịch sử công việc" />,
         label: "Lịch sử",
+      },
+    ],
+  },
+  {
+    path: PATHS.DASHBOARD.PRESCRIPTIONS.ROOT,
+    layout: "dashboard",
+    label: "Phiên và Đơn thuốc",
+    icon: FiFileText,
+    showInSidebar: true,
+    roles: ["Doctor"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.PRESCRIPTIONS.ROOT,
+        element: <PrescriptionRootPage />,
+        label: "Phiên tư vấn",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.PRESCRIPTIONS.IN_PROGRESS,
+        element: <PrescriptionInProgressPage />,
+        label: "Đang khám",
+        showInSidebar: false,
       },
     ],
   },

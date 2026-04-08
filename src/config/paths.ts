@@ -52,6 +52,10 @@ export const PATHS = {
     },
     DOCTOR_PROFILES: "/dashboard/doctor-profiles",
     NOTIFICATIONS: "/dashboard/notifications",
+    PRESCRIPTIONS: {
+      ROOT: "/dashboard/prescriptions",
+      IN_PROGRESS: "/dashboard/prescriptions/in-progress",
+    },
     ASSETS: {
       PRESCRIPTION: "/dashboard/assets/prescription",
       CERTIFICATE: "/dashboard/assets/certificate",

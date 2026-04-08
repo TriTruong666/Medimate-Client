@@ -5,10 +5,16 @@ export interface SessionData {
   consultanSessionId: string;
   appointmentId: string;
   doctorId: string;
+  doctorName?: string | null;
   memberId: string;
+  memberName?: string | null;
+  startedAt?: string | null;
+  endedAt?: string | null;
   status: string;
   userJoined: boolean;
   doctorJoined: boolean;
+  note?: string | null;
+  doctorNote?: string | null;
 }
 
 export interface VideoCallTokenData {
@@ -22,6 +28,13 @@ export async function getSessionByAppointment(
   const res = await axiosNETClient.get(
     `/api/v1/sessions/by-appointment/${appointmentId}`,
   );
+  return res.data;
+}
+
+export async function getMyConsultationSessions(): Promise<
+  BaseResponse<SessionData[]>
+> {
+  const res = await axiosNETClient.get(`/api/v1/sessions/me`);
   return res.data;
 }
 
