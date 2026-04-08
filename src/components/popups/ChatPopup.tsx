@@ -1,18 +1,58 @@
+import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAtom } from "jotai";
-import { chatPopupAtom, closePopupAtom } from "../../stores/chatPopupStore";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { FiPaperclip } from "react-icons/fi";
 import { HiXMark } from "react-icons/hi2";
-import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
-import { useState } from "react";
-import clsx from "clsx";
 import { IoSend } from "react-icons/io5";
+import { useChatIdentity, useChatSessionDetails, useChatSessionMessages, useMarkChatSessionMessagesRead, useSendChatSessionMessage } from "@/hooks/data/useChatDoctorHooks";
+import { toast } from "@/hooks/useToast";
+import { chatPopupAtom, closePopupAtom } from "../../stores/chatPopupStore";
+import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
+import { Spinner } from "../custom-ui/Spinner";
+import type { ChatDoctorMessageResponse } from "@/types/ChatDoctor";
 
 type ChatPopupProps = {
-  chatId: string;
+  sessionId: string;
 };
 
-export function ChatPopup({ chatId }: ChatPopupProps) {
+export function ChatPopup({ sessionId }: ChatPopupProps) {
   const [, closePopup] = useAtom(closePopupAtom);
+  const { doctorId } = useChatIdentity();
+  const {
+    data: sessionDetails,
+    isLoading: isDetailsLoading,
+    isError: isDetailsError,
+    error: detailsError,
+    refetch: refetchDetails,
+  } = useChatSessionDetails(sessionId);
+  const {
+    data: messages,
+    isLoading: isMessagesLoading,
+    isError: isMessagesError,
+    error: messagesError,
+    refetch: refetchMessages,
+  } = useChatSessionMessages(sessionId);
+  const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
+  const hasMarkedReadRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!sessionId || !doctorId) return;
+    if (isMessagesLoading || isMessagesError) return;
+    if (hasMarkedReadRef.current === sessionId) return;
+
+    hasMarkedReadRef.current = sessionId;
+    void markReadMutation.mutateAsync().catch(() => {
+      // Allow retry on next render tick if mark-read fails.
+      hasMarkedReadRef.current = null;
+    });
+  }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
+
+  const displayName = sessionDetails?.partnerName || "Phòng chat";
+  const displayStatus = sessionDetails?.status || "Đang kết nối";
+  const partnerAvatar = sessionDetails?.partnerAvatar || null;
+  const messageItems = useMemo(() => messages || [], [messages]);
+
   return (
     <motion.div
       layout
@@ -20,78 +60,255 @@ export function ChatPopup({ chatId }: ChatPopupProps) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 40, scale: 0.95 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="flex h-105 w-85 flex-col rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl"
+      className="flex h-105 w-92 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl"
     >
-      {/* Header */}
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-linear-to-br from-purple-500 to-pink-500" />
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold text-white">
-              User {chatId}
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
+            {partnerAvatar ? (
+              <img
+                src={partnerAvatar}
+                alt={displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              displayName.charAt(0).toUpperCase()
+            )}
+          </div>
+          <div className="min-w-0">
+            <span className="block truncate text-sm font-semibold text-white">
+              {displayName}
             </span>
-            <span className="text-xs text-green-400">Online</span>
+            <span className="text-xs text-green-400">{displayStatus}</span>
           </div>
         </div>
 
         <button
-          onClick={() => closePopup(chatId)}
+          onClick={() => closePopup(sessionId)}
           className="rounded-lg p-1 text-white/60 hover:bg-white/10 hover:text-white"
         >
           <HiXMark size={18} />
         </button>
       </div>
 
-      {/* Body (fake messages) */}
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-4">
-        <ChatBubble sender="other" message="Hello tụi mày" />
-        <ChatBubble sender="other" message="Tao test cái UI mới nè" />
-
-        <ChatBubble sender="me" message="Nhìn 6 quá má" />
-
-        <ChatBubble sender="me" message="..." />
-        <TypingBubble />
-      </div>
-
-      <div className="border-t border-white/10">
-        <ChatInput />
+      <div className="flex-1 overflow-hidden">
+        {isDetailsLoading || isMessagesLoading ? (
+          <div className="flex h-full items-center justify-center">
+            <Spinner size="lg" />
+          </div>
+        ) : isDetailsError || isMessagesError ? (
+          <ChatErrorState
+            message={detailsError?.message || messagesError?.message || "Không thể tải phòng chat."}
+            onRetry={() => {
+              void refetchDetails();
+              void refetchMessages();
+            }}
+          />
+        ) : (
+          <ChatThread sessionId={sessionId} messages={messageItems} />
+        )}
       </div>
     </motion.div>
   );
 }
 
-function ChatInput() {
-  const [value, setValue] = useState("");
+function ChatThread({
+  sessionId,
+  messages,
+}: {
+  sessionId: string;
+  messages: ChatDoctorMessageResponse[];
+}) {
+  const [content, setContent] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isComposerFocused, setIsComposerFocused] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const sendMutation = useSendChatSessionMessage(sessionId);
+
+  useEffect(() => {
+    endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, sessionId]);
+
+  function handlePickFile() {
+    fileInputRef.current?.click();
+  }
+
+  async function handleSendMessage() {
+    const trimmedContent = content.trim();
+
+    if (!trimmedContent && !selectedFile) {
+      toast.error("Tin nhắn không được để trống", "Vui lòng nhập nội dung hoặc đính kèm tệp.");
+      return;
+    }
+
+    await sendMutation.mutateAsync({
+      content: trimmedContent,
+      attachmentFile: selectedFile,
+    });
+
+    setContent("");
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
 
   return (
-    <div className="relative flex items-center gap-2 px-3 py-2">
-      <div
-        className={clsx(
-          "flex flex-1 items-center rounded-xl border border-white/10 bg-white/5 px-3 transition-all",
-          "focus-within:border-white/20 focus-within:bg-white/10",
-        )}
-      >
-        <input
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="Aa"
-          className="h-8 w-full bg-transparent text-[13px] text-white outline-none placeholder:text-white/40"
-        />
+    <div className="flex h-full flex-col">
+      <div className="flex-1 overflow-y-auto px-3 py-3">
+        <div className="space-y-3">
+          {messages.map((message) => (
+            <ChatMessageItem key={message.messageId} message={message} />
+          ))}
+
+          {sendMutation.isPending && <TypingBubble />}
+          <div ref={endOfMessagesRef} />
+        </div>
       </div>
 
-      <button
-        disabled={!value.trim()}
-        className={clsx(
-          "flex h-9 w-9 items-center justify-center rounded-full transition-all",
-          value.trim()
-            ? "bg-linear-to-br from-purple-500 to-pink-500 text-white hover:opacity-90"
-            : "bg-white/5 text-white/30",
+      <div className="border-t border-white/10 bg-white/2 px-3 py-2 backdrop-blur-md">
+        {selectedFile && (
+          <div className="mb-2 flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+            <span className="truncate">{selectedFile.name}</span>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFile(null);
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
+              className="ml-3 rounded-md px-1 text-white/50 transition hover:bg-white/10 hover:text-white"
+            >
+              <HiXMark size={14} />
+            </button>
+          </div>
         )}
+
+        <div
+          className={clsx(
+            "flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 transition-all",
+            isComposerFocused && "border-white/20 bg-white/10",
+          )}
+        >
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={(event) => {
+              const file = event.target.files?.[0] || null;
+              setSelectedFile(file);
+            }}
+          />
+
+          <button
+            type="button"
+            onClick={handlePickFile}
+            className="mb-0.5 rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-white"
+            title="Đính kèm file"
+          >
+            <FiPaperclip size={15} />
+          </button>
+
+          <textarea
+            value={content}
+            onChange={(event) => setContent(event.target.value)}
+            onFocus={() => setIsComposerFocused(true)}
+            onBlur={() => setIsComposerFocused(false)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                void handleSendMessage();
+              }
+            }}
+            placeholder="Aa"
+            rows={1}
+            className="max-h-24 min-h-8 flex-1 resize-none bg-transparent py-1 text-[13px] leading-5 text-white outline-none placeholder:text-white/40"
+          />
+
+          <button
+            type="button"
+            onClick={() => void handleSendMessage()}
+            disabled={sendMutation.isPending || (!content.trim() && !selectedFile)}
+            className={clsx(
+              "mb-0.5 flex h-9 w-9 items-center justify-center rounded-full transition-all",
+              content.trim() || selectedFile
+                ? "bg-linear-to-br from-purple-500 to-pink-500 text-white hover:opacity-90"
+                : "bg-white/5 text-white/30",
+            )}
+          >
+            <IoSend size={14} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChatMessageItem({ message }: { message: ChatDoctorMessageResponse }) {
+  const isMine = message.senderType === 2;
+  const body = message.content?.trim() || (message.attachmentUrl ? "Tệp đính kèm" : "");
+  const timeLabel = formatMessageTime(message.createdAt);
+
+  return (
+    <div className={clsx("flex w-full flex-col gap-1", isMine ? "items-end" : "items-start")}> 
+      <ChatBubble sender={isMine ? "me" : "other"} message={body || "..."} />
+
+      {message.attachmentUrl && (
+        <a
+          href={message.attachmentUrl}
+          target="_blank"
+          rel="noreferrer"
+          className={clsx(
+            "max-w-[75%] rounded-lg border px-3 py-2 text-[11px] transition hover:opacity-90",
+            isMine
+              ? "border-pink-400/20 bg-pink-500/10 text-pink-100"
+              : "border-white/10 bg-white/5 text-white/70",
+          )}
+        >
+          {message.attachmentFileName || "Mở tệp đính kèm"}
+        </a>
+      )}
+
+      <span className="text-[10px] text-white/30">{timeLabel}</span>
+    </div>
+  );
+}
+
+function ChatErrorState({
+  message,
+  onRetry,
+}: {
+  message: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+      <h3 className="text-sm font-semibold text-white">Không thể tải cuộc trò chuyện</h3>
+      <p className="mt-2 text-xs text-white/50">{message}</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/10"
       >
-        <IoSend size={14} />
+        Thử lại
       </button>
     </div>
   );
+}
+
+function formatMessageTime(value?: string | null): string {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 export function ChatContainer() {
@@ -102,7 +319,7 @@ export function ChatContainer() {
       <div className="flex items-end gap-4">
         <AnimatePresence>
           {popupKeys.map((id) => (
-            <ChatPopup key={id} chatId={id} />
+            <ChatPopup key={id} sessionId={id} />
           ))}
         </AnimatePresence>
       </div>
