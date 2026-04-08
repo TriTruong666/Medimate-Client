@@ -77,6 +77,34 @@ function formatTimeLabel(value?: string | null): string {
   return value.slice(0, 5);
 }
 
+const APPOINTMENT_PRIORITY: Record<AppointmentStatus, number> = {
+  InProgress: 0,
+  Pending: 1,
+  Approved: 2,
+  Completed: 3,
+  Cancelled: 4,
+  Rejected: 5,
+};
+
+function getTimeInMinutes(value: string): number {
+  const match = value.match(/(\d{2}):(\d{2})/);
+  if (!match) return Number.MAX_SAFE_INTEGER;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  return hour * 60 + minute;
+}
+
+function sortAppointmentsForCalendar(items: Appointment[]): Appointment[] {
+  return [...items].sort((a, b) => {
+    const priorityDiff =
+      (APPOINTMENT_PRIORITY[a.status] ?? 999) -
+      (APPOINTMENT_PRIORITY[b.status] ?? 999);
+    if (priorityDiff !== 0) return priorityDiff;
+
+    return getTimeInMinutes(a.time) - getTimeInMinutes(b.time);
+  });
+}
+
 function getPatientLabel(raw: DoctorAppointment): string {
   const memberName = raw.memberName?.trim();
   if (memberName) return memberName;
@@ -581,6 +609,10 @@ function MonthlyCalendarView({
   approvedExceptions: DoctorAvailabilityException[];
   onOpenDetail: (appointmentId: string) => void;
 }) {
+  const [expandedDay, setExpandedDay] = useState<{
+    dateLabel: string;
+    appointments: Appointment[];
+  } | null>(null);
   const daysOfWeek = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
   const today = new Date();
@@ -611,7 +643,7 @@ function MonthlyCalendarView({
     });
 
     const dayExceptions = exceptionByDate.get(dayDateKey) ?? [];
-    const dayAppointments = data.filter((apt) => {
+    const dayAppointments = sortAppointmentsForCalendar(data.filter((apt) => {
       const aptDate = new Date(apt.dateKey);
       return (
         !Number.isNaN(aptDate.getTime()) &&
@@ -619,11 +651,12 @@ function MonthlyCalendarView({
         aptDate.getMonth() === currentMonth &&
         aptDate.getDate() === day
       );
-    });
+    }));
 
     return {
       day,
       date: dayDate.toISOString(),
+      dateLabel: dayDate.toLocaleDateString("vi-VN"),
       availabilities: dayAvailabilities,
       exceptions: dayExceptions,
       appointments: dayAppointments,
@@ -659,9 +692,11 @@ function MonthlyCalendarView({
             }`}
           />
         ))}
-        {days.map(({ day, availabilities: dayAvailabilities, exceptions, appointments, isToday }, i) => {
+        {days.map(({ day, dateLabel, availabilities: dayAvailabilities, exceptions, appointments, isToday }, i) => {
           const gridIndex = emptyPreDays.length + i;
           const hasApprovedDayOff = exceptions.length > 0;
+          const visibleAppointments = appointments.slice(0, 2);
+          const hiddenAppointmentsCount = Math.max(appointments.length - visibleAppointments.length, 0);
           return (
             <div
               key={i}
@@ -715,13 +750,28 @@ function MonthlyCalendarView({
                   </div>
                 )}
 
-                {appointments.map((apt) => (
+                {visibleAppointments.map((apt) => (
                   <CalendarAppointmentItem
                     key={apt.id}
                     apt={apt}
                     onOpenDetail={onOpenDetail}
                   />
                 ))}
+
+                {hiddenAppointmentsCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExpandedDay({
+                        dateLabel,
+                        appointments,
+                      });
+                    }}
+                    className="w-full rounded-md border border-white/10 bg-white/5 px-1.5 py-1 text-left text-[10px] font-semibold text-gray-600 transition hover:bg-white/10 dark:text-gray-200"
+                  >
+                    +{hiddenAppointmentsCount} lịch hẹn
+                  </button>
+                )}
               </div>
             </div>
           );
@@ -742,6 +792,70 @@ function MonthlyCalendarView({
           Lịch hẹn bệnh nhân
         </div>
       </div>
+
+      <AnimatePresence>
+        {expandedDay && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-120 flex items-center justify-center bg-black/60 p-4"
+            onClick={() => setExpandedDay(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              onClick={(event) => event.stopPropagation()}
+              className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#17181d] p-4 shadow-2xl"
+            >
+              <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-white">Lịch hẹn trong ngày</h3>
+                  <p className="text-xs text-gray-400">{expandedDay.dateLabel}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedDay(null)}
+                  className="rounded-md border border-white/10 px-2 py-1 text-xs text-gray-300 transition hover:bg-white/10"
+                >
+                  Đóng
+                </button>
+              </div>
+
+              <div className="max-h-90 space-y-2 overflow-y-auto pr-1">
+                {expandedDay.appointments.map((apt) => (
+                  <div
+                    key={apt.id}
+                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-white">
+                        {apt.time} • {apt.patientName}
+                      </p>
+                      <p className="text-[11px] text-gray-400">APT #{apt.appointmentShortId}</p>
+                    </div>
+                    <div className="ml-3 flex items-center gap-2">
+                      <StatusBadge status={apt.status} />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenDetail(apt.id);
+                          setExpandedDay(null);
+                        }}
+                        className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-gray-200 transition hover:bg-white/10"
+                      >
+                        Chi tiết
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
