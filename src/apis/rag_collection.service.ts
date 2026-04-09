@@ -6,6 +6,7 @@ import { axiosRAGClient } from "./client";
 import type {
   AssignDocumentToCollectionRequest,
   CreateCollectionRequest,
+  ProcessCollectionRequest,
   RAGCollection,
   UpdateCollectionRequest,
 } from "@/types/RAGCollection";
@@ -38,7 +39,7 @@ export const assignDocumentToCollection = async (
   data: AssignDocumentToCollectionRequest,
 ): Promise<RAGApiResponse<null>> => {
   const res = await axiosRAGClient.post(
-      `api/v1/collections/${collectionId}/assign-documents/`,
+    `api/v1/collections/${collectionId}/assign-documents/`,
     data,
   );
   return res.data;
@@ -46,11 +47,13 @@ export const assignDocumentToCollection = async (
 
 export const processCollection = async (
   collectionId: string,
+  data: ProcessCollectionRequest,
   params: { client_id: string },
 ): Promise<RAGApiResponse<null>> => {
   const res = await axiosRAGClient.post(
-      `api/v1/collections/${collectionId}/process/`,
-    params,
+    `api/v1/collections/${collectionId}/process/`,
+    data,
+    { params },
   );
   return res.data;
 };
@@ -60,7 +63,7 @@ export const updateCollection = async (
   data: UpdateCollectionRequest,
 ): Promise<RAGApiResponse<null>> => {
   const res = await axiosRAGClient.patch(
-      `api/v1/collections/${collectionId}/`,
+    `api/v1/collections/${collectionId}/`,
     data,
   );
   return res.data;

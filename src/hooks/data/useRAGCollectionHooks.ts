@@ -6,6 +6,7 @@ import type {
   CreateCollectionRequest,
   AssignDocumentToCollectionRequest,
   UpdateCollectionRequest,
+  ProcessCollectionRequest,
 } from "@/types/RAGCollection";
 
 /**
@@ -103,11 +104,13 @@ export function useProcessRAGCollection() {
   return useMutation({
     mutationFn: ({
       collectionId,
+      data,
       params,
     }: {
       collectionId: string;
+      data: ProcessCollectionRequest;
       params: { client_id: string };
-    }) => RAGCollectionService.processCollection(collectionId, params),
+    }) => RAGCollectionService.processCollection(collectionId, data, params),
     onSuccess: (res) => {
       if (res.success) {
         toast.info(

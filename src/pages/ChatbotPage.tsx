@@ -1,7 +1,6 @@
 import { IoArrowUp } from "react-icons/io5";
 import SplitText from "../components/animations-ui/SplitText";
 import { HiOutlineArrowUpRight } from "react-icons/hi2";
-import GlassSelect from "../components/custom-ui/Select";
 import { useEffect, useState, useRef } from "react";
 import { useAutoResizeTextarea } from "../hooks/useResize";
 import { useAllAIModels } from "../hooks/data/useRAGAIModelHooks";
@@ -9,6 +8,7 @@ import { useRAGChat } from "../hooks/data/useRAGChatHooks";
 import { HiChevronDown, HiOutlineTemplate } from "react-icons/hi";
 import { AnimatePresence, motion } from "framer-motion";
 import ChatResponseMarkdown from "../components/custom-ui/ChatMarkdown";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function ChatbotPage() {
   const [phase, setPhase] = useState<"welcome" | "main">("welcome");
@@ -22,10 +22,7 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div
-      className="page-layout relative flex min-h-[calc(100vh-64px)] flex-col"
-      data-lenis-prevent
-    >
+    <div className="page-layout relative flex min-h-[calc(100vh-64px)] flex-col">
       {phase === "welcome" && (
         <div className="flex flex-1 items-center justify-center px-4">
           <WelcomeChatbot
@@ -161,6 +158,7 @@ function WelcomeChatbot({
 }) {
   const { data: models } = useAllAIModels();
   const [text, setText] = useState("");
+  const { user } = useAuth();
 
   // Tự động chọn model đầu tiên nếu chưa có
   useEffect(() => {
@@ -173,7 +171,7 @@ function WelcomeChatbot({
     <div className="flex flex-col space-y-8">
       <div className="flex flex-col space-y-3 select-none">
         <SplitText
-          text="Xin chào Tri Truong"
+          text={`Xin chào ${user?.fullName}`}
           className="font-sans text-[32px]"
           delay={50}
           duration={1.25}
@@ -278,8 +276,8 @@ function MainChat({
     let i = 0;
     setStreamingText("");
     const interval = setInterval(() => {
-      // Tốc độ và chunk size ngẫu nhiên để tạo cảm giác giống Gemini
-      const chunkSize = Math.floor(Math.random() * 20) + 10;
+      // Tốc độ và chunk size nhỏ hơn để tạo cảm giác tự nhiên và dễ đọc hơn
+      const chunkSize = Math.floor(Math.random() * 3) + 1;
       if (i < text.length) {
         setStreamingText(text.slice(0, i + chunkSize));
         i += chunkSize;
@@ -288,7 +286,7 @@ function MainChat({
         setMessages((prev) => [...prev, { role: "assistant", content: text }]);
         setStreamingText("");
       }
-    }, 25);
+    }, 20);
   };
 
   const handleChat = (content: string) => {
@@ -317,7 +315,7 @@ function MainChat({
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto pb-52 md:pb-60">
+      <div className="flex-1 pb-52 md:pb-60">
         <div className="flex flex-col space-y-6 px-4 pt-10 pb-10">
           {messages.map((msg, idx) => (
             <ChatMessage key={idx} role={msg.role} content={msg.content} />
@@ -328,9 +326,9 @@ function MainChat({
             <div className="flex justify-start">
               <div className="max-w-[70%] rounded-2xl bg-white/5 px-4 py-3">
                 <div className="flex gap-1.5 py-1">
-                  <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60 [animation-delay:-0.3s]"></div>
-                  <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60 [animation-delay:-0.15s]"></div>
-                  <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60"></div>
+                  <div className="bg-primary/60 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:-0.3s]"></div>
+                  <div className="bg-primary/60 h-1.5 w-1.5 animate-bounce rounded-full [animation-delay:-0.15s]"></div>
+                  <div className="bg-primary/60 h-1.5 w-1.5 animate-bounce rounded-full"></div>
                 </div>
               </div>
             </div>
@@ -397,7 +395,7 @@ function ChatMessage({ role, content }: ChatMessageProps) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[85%] rounded-2xl px-4 py-3 md:max-w-[70%] ${
           isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"
         } `}
       >

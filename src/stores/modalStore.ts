@@ -20,6 +20,7 @@ export type ModalKey =
   | "delete"
   | "transaction"
   | "confirm_update_profile"
+  | "process_rag"
   | null;
 
 export const modalAtom = atom<ModalKey>(null);
@@ -102,3 +103,11 @@ export const openIndexModalAtom = atom(null, (_, set, collectionId: string) => {
   set(collectionIdAtom, collectionId);
   set(modalAtom, "index");
 });
+
+export const openProcessRAGModalAtom = atom(
+  null,
+  (_, set, collectionId: string) => {
+    set(collectionIdAtom, collectionId);
+    set(modalAtom, "process_rag");
+  },
+);

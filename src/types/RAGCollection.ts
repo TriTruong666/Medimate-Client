@@ -24,3 +24,7 @@ export interface UpdateCollectionRequest {
   description?: string;
   is_active?: boolean;
 }
+
+export interface ProcessCollectionRequest {
+  document_ids: string[];
+}

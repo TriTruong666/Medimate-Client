@@ -4,32 +4,31 @@ import { HiOutlineX, HiOutlineSearch, HiOutlineCheck } from "react-icons/hi";
 import { AiOutlineFilePdf } from "react-icons/ai";
 import { FiFileText } from "react-icons/fi";
 import { closeModalAtom, collectionIdAtom } from "../../stores/modalStore";
-import { useRAGUncollectedDocumentsInfinite } from "@/hooks/data/useRAGDocumentHooks";
-import { useAssignDocumentsToCollection } from "@/hooks/data/useRAGCollectionHooks";
+import { useRAGPendingDocumentsInfinite } from "@/hooks/data/useRAGDocumentHooks";
+import { useProcessRAGCollection } from "@/hooks/data/useRAGCollectionHooks";
+import { useAuth } from "@/hooks/useAuth";
 
-type AddDocumentModalProps = {
+type ProcessDocumentModalProps = {
   onConfirm?: () => void;
 };
 
-export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
+export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
   const [search, setSearch] = useState("");
   const [, closeModal] = useAtom(closeModalAtom);
   const [collectionId] = useAtom(collectionIdAtom);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // API Hooks
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useRAGUncollectedDocumentsInfinite({
-    limit: 20,
-    q: search,
-  });
+  const { user } = useAuth();
 
-  const { mutate: assignDocs, isPending: isAssigning } = useAssignDocumentsToCollection();
+  // API Hooks
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useRAGPendingDocumentsInfinite({
+      limit: 20,
+      q: search,
+    });
+
+  const { mutate: processDocs, isPending: isProcessing } =
+    useProcessRAGCollection();
 
   // Documents processing
   const allLoadedDocs = useMemo(() => {
@@ -50,20 +49,24 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
       setSelectedIds((prev) => Array.from(new Set([...prev, ...allIds])));
     } else {
       const currentPageIds = allLoadedDocs.map((doc) => doc.id);
-      setSelectedIds((prev) => prev.filter((id) => !currentPageIds.includes(id)));
+      setSelectedIds((prev) =>
+        prev.filter((id) => !currentPageIds.includes(id)),
+      );
     }
   };
 
-  const isAllSelected = allLoadedDocs.length > 0 && 
+  const isAllSelected =
+    allLoadedDocs.length > 0 &&
     allLoadedDocs.every((doc) => selectedIds.includes(doc.id));
 
   const handleConfirm = () => {
-    if (!collectionId || selectedIds.length === 0) return;
+    if (!collectionId || selectedIds.length === 0 || !user?.userId) return;
 
-    assignDocs(
+    processDocs(
       {
         collectionId,
         data: { document_ids: selectedIds },
+        params: { client_id: user.userId },
       },
       {
         onSuccess: () => {
@@ -83,10 +86,10 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl max-w-lg w-full">
+    <div className="flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
       <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6 shadow-sm">
         <h2 className="text-base font-semibold text-white">
-          Thêm tài liệu vào Collection
+          Xử lý tài liệu (Indexing)
         </h2>
 
         <button
@@ -98,51 +101,55 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
       </div>
 
       <div className="space-y-5 p-6 pb-2">
+        <p className="text-primary/60 text-xs italic">
+          * Chỉ những tài liệu đang ở trạng thái 'pending' mới hiển thị ở đây
+        </p>
+
         {/* Search */}
         <div className="relative">
           <HiOutlineSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm kiếm tài liệu..."
+            placeholder="Tìm kiếm tài liệu pending..."
             className="h-9 w-full rounded-xl border border-white/10 bg-white/5 pr-4 pl-11 text-sm text-gray-200 backdrop-blur-md transition-all placeholder:text-gray-500 hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-2 focus:ring-white/10 focus:outline-none"
           />
         </div>
 
         {/* Action Header */}
         <div className="flex items-center justify-between px-1">
-           <button 
-             onClick={() => handleSelectAll(!isAllSelected)}
-             className="text-xs font-medium text-primary hover:underline transition-all"
-           >
-             {isAllSelected ? "Bỏ chọn tất cả" : "Chọn tất cả đang tải"}
-           </button>
-           {hasNextPage && (
-             <button
-               onClick={() => fetchNextPage()}
-               disabled={isFetchingNextPage}
-               className="text-xs font-medium text-gray-400 hover:text-white transition-all disabled:opacity-50"
-             >
-               {isFetchingNextPage ? "Đang tải..." : "Tải thêm"}
-             </button>
-           )}
+          <button
+            onClick={() => handleSelectAll(!isAllSelected)}
+            className="text-primary text-xs font-medium transition-all hover:underline"
+          >
+            {isAllSelected ? "Bỏ chọn tất cả" : "Chọn tất cả đang tải"}
+          </button>
+          {hasNextPage && (
+            <button
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="text-xs font-medium text-gray-400 transition-all hover:text-white disabled:opacity-50"
+            >
+              {isFetchingNextPage ? "Đang tải..." : "Tải thêm"}
+            </button>
+          )}
         </div>
 
-        <div className="max-h-80 min-h-40 space-y-2 overflow-y-auto pr-1 thin-scrollbar">
+        <div className="thin-scrollbar max-h-80 min-h-40 space-y-2 overflow-y-auto pr-1">
           {isLoading ? (
             <div className="flex h-32 flex-col items-center justify-center gap-2">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                <p className="text-xs text-gray-400">Đang tải tài liệu...</p>
+              <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
+              <p className="text-xs text-gray-400">Đang tải tài liệu...</p>
             </div>
           ) : allLoadedDocs.length === 0 ? (
             <div className="flex h-32 flex-col items-center justify-center text-gray-500">
-               <FiFileText className="text-3xl mb-2" />
-               <p className="text-sm">Không tìm thấy tài liệu</p>
+              <FiFileText className="mb-2 text-3xl" />
+              <p className="text-sm">Không thấy tài liệu chờ xử lý</p>
             </div>
           ) : (
             allLoadedDocs.map((doc) => {
               const isSelected = selectedIds.includes(doc.id);
-  
+
               return (
                 <button
                   key={doc.id}
@@ -160,14 +167,16 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
                       <FiFileText className="text-xl text-blue-400" />
                     )}
                   </div>
-  
+
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-white">
                       {doc.doc_name}
                     </p>
-                    <p className="text-xs text-gray-400">{formatFileSize(doc.file_size)}</p>
+                    <p className="text-xs text-gray-400">
+                      {formatFileSize(doc.file_size)}
+                    </p>
                   </div>
-  
+
                   {isSelected && (
                     <HiOutlineCheck className="text-primary text-lg" />
                   )}
@@ -193,10 +202,10 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
 
           <button
             onClick={handleConfirm}
-            disabled={selectedIds.length === 0 || isAssigning}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-white/10 disabled:text-white/40"
+            disabled={selectedIds.length === 0 || isProcessing || !user}
+            className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-white/10 disabled:text-white/40"
           >
-            {isAssigning ? "Đang gán..." : "Thêm tài liệu"}
+            {isProcessing ? "Đang gửi..." : "Bắt đầu xử lý"}
           </button>
         </div>
       </div>
