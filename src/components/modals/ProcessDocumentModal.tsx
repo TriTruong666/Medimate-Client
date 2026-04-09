@@ -25,6 +25,7 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
     useRAGPendingDocumentsInfinite({
       limit: 20,
       q: search,
+      collection_id: collectionId || undefined,
     });
 
   const { mutate: processDocs, isPending: isProcessing } =

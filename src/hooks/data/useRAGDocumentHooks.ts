@@ -150,6 +150,7 @@ export function useRAGUncollectedDocumentsInfinite(params: {
 export function useRAGPendingDocumentsInfinite(params: {
   limit: number;
   q?: string;
+  collection_id?: string;
 }) {
   return useInfiniteQuery({
     queryKey: ["rag", "documents", "pending", "infinite", params],
@@ -158,6 +159,7 @@ export function useRAGPendingDocumentsInfinite(params: {
         page: pageParam as number,
         limit: params.limit,
         q: params.q,
+        collection_id: params.collection_id,
       });
       if (!res.success) {
         throw new Error(

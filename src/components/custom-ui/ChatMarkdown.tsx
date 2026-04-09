@@ -10,7 +10,7 @@ export default function ChatResponseMarkdown({
   content,
 }: ChatResponseMarkdownProps) {
   return (
-    <div className="prose prose-invert max-w-none text-sm leading-relaxed">
+    <div className="prose prose-invert max-w-none text-sm leading-loose">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{

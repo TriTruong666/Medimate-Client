@@ -44,6 +44,7 @@ export const getPendingDocuments = async (params: {
   page: number;
   limit: number;
   q?: string;
+  collection_id?: string;
 }): Promise<RAGApiPaginatedResponse<RAGDocument>> => {
   const res = await axiosRAGClient.get(`api/v1/documents/pending/`, { params });
   return res.data;
