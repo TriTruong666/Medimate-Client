@@ -17,13 +17,13 @@ export default function GlobalSSEHandler({ clientId }: { clientId?: string }) {
       const type = (alert_type || "info").toLowerCase();
 
       if (type === "success") {
-        toast.success(title, body);
+        toast.success(title, body, { duration: 8000 });
       } else if (type === "warning" || type === "warn") {
-        toast.warn(title, body);
+        toast.warn(title, body, { duration: 8000 });
       } else if (type === "error") {
-        toast.error(title, body);
+        toast.error(title, body, { duration: 8000 });
       } else {
-        toast.info(title, body);
+        toast.info(title, body, { duration: 8000 });
       }
     }
   }, [lastNotification]);

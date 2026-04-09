@@ -116,6 +116,7 @@ export function useProcessRAGCollection() {
         toast.info(
           "Đã bắt đầu xử lý",
           "Server đang xử lý dữ liệu, vui lòng chờ trong giây lát...",
+          { duration: 8000 }
         );
       } else {
         toast.error("Thất bại", res.message || "Yêu cầu xử lý thất bại");

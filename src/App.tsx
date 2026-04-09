@@ -16,7 +16,7 @@ export default function App() {
     void listenToForegroundMessages((payload) => {
       const title = payload.notification?.title || "Thông báo mới";
       const message = payload.notification?.body || "Bạn vừa nhận thông báo.";
-      toast.success(title, message);
+      toast.success(title, message, { duration: 8000 });
     }).then((cleanup) => {
       unsubscribe = cleanup;
     });
