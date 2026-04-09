@@ -4,13 +4,19 @@ import { HiOutlineArrowUpRight } from "react-icons/hi2";
 import GlassSelect from "../components/custom-ui/Select";
 import { useEffect, useState, useRef } from "react";
 import { useAutoResizeTextarea } from "../hooks/useResize";
+import { useAllAIModels } from "../hooks/data/useRAGAIModelHooks";
+import { useRAGChat } from "../hooks/data/useRAGChatHooks";
+import { HiChevronDown, HiOutlineTemplate } from "react-icons/hi";
+import { AnimatePresence, motion } from "framer-motion";
 import ChatResponseMarkdown from "../components/custom-ui/ChatMarkdown";
 
 export default function ChatbotPage() {
   const [phase, setPhase] = useState<"welcome" | "main">("welcome");
   const [initialValue, setInitialValue] = useState("");
+  const [selectedModelId, setSelectedModelId] = useState("");
 
   const handleStartChat = (val: string) => {
+    if (!val.trim()) return;
     setInitialValue(val);
     setPhase("main");
   };
@@ -22,13 +28,20 @@ export default function ChatbotPage() {
     >
       {phase === "welcome" && (
         <div className="flex flex-1 items-center justify-center px-4">
-          <WelcomeChatbot onStart={handleStartChat} />
+          <WelcomeChatbot
+            onStart={handleStartChat}
+            selectedModelId={selectedModelId}
+            onModelChange={setSelectedModelId}
+          />
         </div>
       )}
 
       {phase === "main" && (
         <div className="flex flex-1 flex-col">
-          <MainChat initialValue={initialValue} />
+          <MainChat
+            initialValue={initialValue}
+            selectedModelId={selectedModelId}
+          />
         </div>
       )}
     </div>
@@ -59,9 +72,102 @@ const suggestions: Suggestion[] = [
   },
 ];
 
-function WelcomeChatbot({ onStart }: { onStart?(val: string): void }) {
-  const [type, setType] = useState("local");
+function ModelSelector({
+  value,
+  onModelChange,
+}: {
+  value: string;
+  onModelChange(id: string): void;
+}) {
+  const { data: models } = useAllAIModels();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const selected = models?.find((m) => m.id === value);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-white/5 py-1.5 pr-2 pl-2.5 transition-all hover:border-white/20 hover:bg-white/10 active:scale-95"
+      >
+        <HiOutlineTemplate className="text-primary text-sm" />
+        <span className="max-w-[120px] truncate text-[11px] font-medium text-white/90">
+          {selected?.name || "Chọn AI Model"}
+        </span>
+        <HiChevronDown
+          className={`text-xs text-white/40 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute right-0 bottom-full z-50 mb-2 w-56 overflow-hidden rounded-xl border border-white/10 bg-[#121212]/95 p-1 shadow-2xl backdrop-blur-xl"
+          >
+            <div className="max-h-60 overflow-y-auto overscroll-contain px-1 py-1">
+              {models?.map((model) => (
+                <button
+                  key={model.id}
+                  onClick={() => {
+                    onModelChange(model.id);
+                    setOpen(false);
+                  }}
+                  className={`group flex w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left transition-all ${
+                    model.id === value
+                      ? "bg-primary/10 text-primary"
+                      : "text-white/60 hover:bg-white/5 hover:text-white"
+                  }`}
+                >
+                  <div className="flex w-full items-center justify-between">
+                    <span className="truncate text-[13px] font-medium">
+                      {model.name}
+                    </span>
+                  </div>
+                  <span className="text-[10px] opacity-40">
+                    Max tokens: {model.max_output_tokens}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function WelcomeChatbot({
+  onStart,
+  selectedModelId,
+  onModelChange,
+}: {
+  onStart?(val: string): void;
+  selectedModelId: string;
+  onModelChange(id: string): void;
+}) {
+  const { data: models } = useAllAIModels();
   const [text, setText] = useState("");
+
+  // Tự động chọn model đầu tiên nếu chưa có
+  useEffect(() => {
+    if (models && models.length > 0 && !selectedModelId) {
+      onModelChange(models[0].id);
+    }
+  }, [models, selectedModelId, onModelChange]);
 
   return (
     <div className="flex flex-col space-y-8">
@@ -93,19 +199,14 @@ function WelcomeChatbot({ onStart }: { onStart?(val: string): void }) {
             className="w-full resize-none pr-4 text-sm text-white outline-none placeholder:text-gray-400"
           ></textarea>
           <div className="absolute right-16 bottom-2.5">
-            <GlassSelect
-              value={type}
-              onChange={setType}
-              placeholder="Chọn Model AI"
-              options={[
-                { label: "Qwen 2.5 - 1.5B", value: "local" },
-                { label: "Gemini 2.5 Fast", value: "api" },
-              ]}
+            <ModelSelector
+              value={selectedModelId}
+              onModelChange={onModelChange}
             />
           </div>
           <button
             onClick={() => onStart?.(text)}
-            className="absolute right-3.5 bottom-2.5 z-2 flex h-10.5 w-10.5 cursor-pointer items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
+            className="absolute right-3.5 bottom-2.5 z-2 flex h-9.5 w-9.5 cursor-pointer items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
           >
             <IoArrowUp className="text-[16px]" />
           </button>
@@ -143,34 +244,135 @@ function WelcomeChatbot({ onStart }: { onStart?(val: string): void }) {
   );
 }
 
-function MainChat({ initialValue }: { initialValue: string }) {
-  const [value, setValue] = useState(initialValue);
+function MainChat({
+  initialValue,
+  selectedModelId,
+}: {
+  initialValue: string;
+  selectedModelId: string;
+}) {
+  const [value, setValue] = useState("");
+  const [messages, setMessages] = useState<ChatMessageProps[]>([]);
+  const [streamingText, setStreamingText] = useState("");
   const textareaRef = useAutoResizeTextarea(value, 160);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const chatbotMutation = useRAGChat();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, streamingText]);
+
+  // Handle initial message
+  useEffect(() => {
+    if (initialValue) {
+      handleChat(initialValue);
+    }
+  }, []);
+
+  const simulateStreaming = (text: string) => {
+    let i = 0;
+    setStreamingText("");
+    const interval = setInterval(() => {
+      // Tốc độ và chunk size ngẫu nhiên để tạo cảm giác giống Gemini
+      const chunkSize = Math.floor(Math.random() * 20) + 10;
+      if (i < text.length) {
+        setStreamingText(text.slice(0, i + chunkSize));
+        i += chunkSize;
+      } else {
+        clearInterval(interval);
+        setMessages((prev) => [...prev, { role: "assistant", content: text }]);
+        setStreamingText("");
+      }
+    }, 25);
+  };
+
+  const handleChat = (content: string) => {
+    if (!content.trim() || chatbotMutation.isPending) return;
+
+    // Thêm tin nhắn user vào UI
+    const userMsg: ChatMessageProps = { role: "user", content };
+    setMessages((prev) => [...prev, userMsg]);
+    setValue("");
+
+    // Gọi API
+    chatbotMutation.mutate(
+      {
+        question: content,
+        ai_model_id: selectedModelId,
+      },
+      {
+        onSuccess: (res) => {
+          if (res.success && res.data) {
+            simulateStreaming(res.data.answer);
+          }
+        },
+      },
+    );
+  };
+
   return (
     <>
-      {/* Messages Area - Increased padding bottom to avoid being hidden by fixed input */}
       <div className="flex-1 overflow-y-auto pb-52 md:pb-60">
-        <ChatMessages initialUserMessage={initialValue} />
+        <div className="flex flex-col space-y-6 px-4 pt-10 pb-10">
+          {messages.map((msg, idx) => (
+            <ChatMessage key={idx} role={msg.role} content={msg.content} />
+          ))}
+
+          {/* Hiệu ứng loading khi chờ response */}
+          {chatbotMutation.isPending && !streamingText && (
+            <div className="flex justify-start">
+              <div className="max-w-[70%] rounded-2xl bg-white/5 px-4 py-3">
+                <div className="flex gap-1.5 py-1">
+                  <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60 [animation-delay:-0.3s]"></div>
+                  <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60 [animation-delay:-0.15s]"></div>
+                  <div className="h-1.5 w-1.5 animate-bounce rounded-full bg-primary/60"></div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Streaming result */}
+          {streamingText && (
+            <ChatMessage role="assistant" content={streamingText} />
+          )}
+
+          <div ref={messagesEndRef} className="h-0" />
+        </div>
       </div>
 
-      {/* Input Area - Fixed at the bottom of the viewport */}
       <div className="fixed inset-x-0 bottom-0 z-20 md:left-64">
-        {/* Background gradient & Blur */}
-        <div className="pointer-events-none absolute inset-0 -top-16" />
-
         <div className="relative mx-auto max-w-5xl px-4 pb-6 md:pb-8">
           <div className="relative w-full rounded-xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-xl transition focus-within:border-white/20 focus-within:bg-white/10">
             <textarea
               ref={textareaRef}
               value={value}
               onChange={(e) => setValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleChat(value);
+                }
+              }}
               placeholder="Hỏi gì đó cho Medimate..."
               rows={2}
               className="max-h-40 w-full resize-none bg-transparent pr-12 text-sm text-white outline-none placeholder:text-white/40"
             />
 
-            <button className="absolute right-2 bottom-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 active:scale-95">
-              <IoArrowUp className="text-[16px]" />
+            <button
+              onClick={() => handleChat(value)}
+              disabled={chatbotMutation.isPending || !value.trim()}
+              className="absolute right-2 bottom-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 active:scale-95 disabled:opacity-40"
+            >
+              {chatbotMutation.isPending ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white"></div>
+              ) : (
+                <IoArrowUp className="text-[16px]" />
+              )}
             </button>
           </div>
 
@@ -189,147 +391,13 @@ type ChatMessageProps = {
   content: string;
 };
 
-const demoMessages: ChatMessageProps[] = [
-  { role: "user", content: "Hello" },
-  {
-    role: "assistant",
-    content: `Xin chào! Tôi là Medimate, chatbot hỗ trợ phân tích và tóm tắt tài liệu.
-Tôi có thể giúp bạn:
-- Tóm tắt tài liệu
-- So sánh nhiều tài liệu
-- Sinh câu hỏi từ dữ liệu
-- Giải thích thuật ngữ chuyên ngành
-
-Welcome from Medimate Team <3
-`,
-  },
-  { role: "user", content: "Tóm tắt tài liệu này cho tôi." },
-  {
-    role: "assistant",
-    content: `Dưới đây là tóm tắt tài liệu:
-1. Chuẩn hoá dữ liệu
-2. Tạo embedding
-3. Lưu vector vào database
-
-RAG giúp mô hình trả lời chính xác hơn dựa trên dữ liệu riêng.`,
-  },
-  { role: "user", content: "So sánh 2 tài liệu này với nhau." },
-  {
-    role: "assistant",
-    content: `So sánh 2 tài liệu:
-- Tài liệu 1 tập trung vào cơ chế RAG.
-- Tài liệu 2 tập trung vào ứng dụng RAG cho chatbot.
-Kết luận: Tài liệu 1 nền tảng, tài liệu 2 ứng dụng thực tiễn.`,
-  },
-  { role: "user", content: "So sánh 2 tài liệu này với nhau." },
-  {
-    role: "assistant",
-    content: `
-## Tóm tắt tài liệu
-
-Tài liệu mô tả **kiến trúc RAG** gồm các bước:
-
-1. Chuẩn hoá dữ liệu
-2. Tạo embedding
-3. Lưu vector vào database
-
-### Ví dụ code
-
-\`\`\`python
-index = VectorStoreIndex.from_documents(docs)
-query_engine = index.as_query_engine()
-response = query_engine.query("RAG là gì?")
-\`\`\`
-
-> RAG giúp mô hình trả lời chính xác hơn dựa trên dữ liệu riêng.
-`,
-  },
-];
-
-function ChatMessages({ initialUserMessage }: { initialUserMessage?: string }) {
-  const [messages, setMessages] = useState<ChatMessageProps[]>([]);
-  const [streamingText, setStreamingText] = useState("");
-  const [demoStep, setDemoStep] = useState(0);
-
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  // Auto scroll disabled as requested
-  useEffect(() => {
-    // Scroll logic removed
-  }, [messages, streamingText]);
-
-  // Sync initial message
-  useEffect(() => {
-    if (initialUserMessage && messages.length === 0) {
-      setMessages([{ role: "user", content: initialUserMessage }]);
-      setDemoStep(1); // Skip the first demo user message
-    }
-  }, [initialUserMessage]);
-
-  useEffect(() => {
-    if (demoStep >= demoMessages.length) return;
-
-    const current = demoMessages[demoStep];
-
-    if (current.role === "user") {
-      // If we already have an initial message, and this is the first demo step, skip it
-      if (demoStep === 0 && messages.length > 0) {
-        setDemoStep(1);
-        return;
-      }
-      setMessages((prev) => [...prev, current]);
-      setDemoStep((prev) => prev + 1);
-    } else {
-      // Streaming bot
-      let i = 0;
-      const fullText = current.content;
-      setStreamingText("");
-
-      const interval = setInterval(() => {
-        if (i < fullText.length) {
-          setStreamingText(fullText.slice(0, i + 1));
-          i++;
-        } else {
-          clearInterval(interval);
-          setMessages((prev) => [
-            ...prev,
-            { role: "assistant", content: fullText },
-          ]);
-          setStreamingText("");
-          setDemoStep((prev) => prev + 1);
-        }
-      }, 30);
-      return () => clearInterval(interval);
-    }
-  }, [demoStep, messages.length]);
-  return (
-    <div className="flex flex-col space-y-6">
-      {messages.map((msg, idx) => (
-        <ChatMessage key={idx} role={msg.role} content={msg.content} />
-      ))}
-
-      {/* Streaming bot */}
-      {streamingText && (
-        <ChatMessage
-          key="streaming-bot"
-          role="assistant"
-          content={streamingText}
-        />
-      )}
-
-      {/* Ref to track the bottom of the messages */}
-      <div ref={messagesEndRef} className="h-0" />
-    </div>
-  );
-}
-
 function ChatMessage({ role, content }: ChatMessageProps) {
   const isUser = role === "user";
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+        className={`max-w-[85%] md:max-w-[70%] rounded-2xl px-4 py-3 ${
           isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"
         } `}
       >

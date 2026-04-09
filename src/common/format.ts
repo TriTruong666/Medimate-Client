@@ -95,3 +95,44 @@ export const formatRelativeTime = (
 
   return "";
 };
+
+export const formatDateDistance = (dateString: string): string => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "Invalid Date";
+
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+
+  // Future dates
+  if (diffSec < 0) {
+    return "Sắp tới";
+  }
+
+  if (diffSec < 60) {
+    return "Vừa xong";
+  }
+
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) {
+    return `${diffMin} phút trước`;
+  }
+
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) {
+    return `${diffHour} giờ trước`;
+  }
+
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay < 30) {
+    return `${diffDay} ngày trước`;
+  }
+
+  // Older than 30 days, show full date
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+};

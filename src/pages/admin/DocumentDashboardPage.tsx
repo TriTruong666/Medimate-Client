@@ -2,10 +2,7 @@
 import { motion } from "framer-motion";
 import { PiExport } from "react-icons/pi";
 import { MdOutlineDriveFolderUpload } from "react-icons/md";
-import {
-  HiOutlineDownload,
-  HiOutlineTrash,
-} from "react-icons/hi";
+import { HiOutlineDownload, HiOutlineTrash } from "react-icons/hi";
 import {
   BsFiletypeJson,
   BsFiletypeDocx,
@@ -25,7 +22,7 @@ import { cardContainer, cardItem } from "@/motions/cardMotion";
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
-import { formatRelativeTime } from "@/common/format";
+import { formatDateTime, formatDateDistance } from "@/common/format";
 import type { RAGDocument } from "@/types/RAGDocument";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { useEffect } from "react";
@@ -103,9 +100,9 @@ export default function DocumentDashboardPage() {
   });
 
   const total = response?.data.pagination.total_records || 0;
-  
+
   // Dữ liệu hiển thị cho Card view (Infinity)
-  const cardDocuments = page === 1 ? (response?.data.items || []) : allDocuments;
+  const cardDocuments = page === 1 ? response?.data.items || [] : allDocuments;
   const hasMore = cardDocuments.length < total;
 
   // Xử lý nạp thêm dữ liệu vào allDocuments khi page > 1
@@ -118,7 +115,9 @@ export default function DocumentDashboardPage() {
         setAllDocuments((prev) => {
           const combined = [...prev, ...response.data.items];
           // Simple deduplication by ID
-          const unique = Array.from(new Map(combined.map(item => [item.id, item])).values());
+          const unique = Array.from(
+            new Map(combined.map((item) => [item.id, item])).values(),
+          );
           return unique;
         });
       }
@@ -225,7 +224,9 @@ export default function DocumentDashboardPage() {
               <div className="mb-4 rounded-full bg-red-500/10 p-4 text-red-500">
                 <FiRefreshCcw className="text-3xl" />
               </div>
-              <h3 className="text-lg font-semibold text-white">Đã xảy ra lỗi</h3>
+              <h3 className="text-lg font-semibold text-white">
+                Đã xảy ra lỗi
+              </h3>
               <p className="mt-2 text-sm text-white/50">
                 Không thể tải danh sách tài liệu vào lúc này.
               </p>
@@ -295,7 +296,7 @@ const columns: TableColumn[] = [
   },
   {
     key: "type",
-    label: "Loại",
+    label: "Định dạng",
     width: "w-[15%]",
     align: "center",
   },
@@ -351,8 +352,8 @@ function DocumentCard({ data }: DocumentCardProps) {
           <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
             {data.doc_name}
           </h4>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {formatRelativeTime(data.created_at)}
+          <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">
+            {formatDateDistance(data.created_at)}
           </p>
         </div>
       </div>
@@ -420,14 +421,14 @@ function DocumentTable({
         >
           {/* Name */}
           <td className="dark:border-border-dark border-r border-gray-100 p-4">
-            <div className="flex items-center gap-3 min-w-0">
+            <div className="flex min-w-0 items-center gap-3">
               <FileIcon type={row.type as any} />
-              <div className="flex flex-col min-w-0">
+              <div className="flex min-w-0 flex-col">
                 <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                   {row.doc_name}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {formatRelativeTime(row.created_at)}
+                <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                  {formatDateDistance(row.created_at)}
                 </span>
               </div>
             </div>
@@ -477,17 +478,17 @@ function FileIcon({
   type,
 }: {
   type:
-  | "pdf"
-  | "json"
-  | "text"
-  | "docx"
-  | "doc"
-  | "txt"
-  | "csv"
-  | "xls"
-  | "xlsx"
-  | "html"
-  | "md";
+    | "pdf"
+    | "json"
+    | "text"
+    | "docx"
+    | "doc"
+    | "txt"
+    | "csv"
+    | "xls"
+    | "xlsx"
+    | "html"
+    | "md";
 }) {
   const map: Record<string, { icon: React.ReactNode; className: string }> = {
     pdf: {
