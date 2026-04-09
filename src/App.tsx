@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./hooks/useAuth";
 import { listenToForegroundMessages } from "@/lib/fcm";
 import { toast } from "@/hooks/useToast";
+import GlobalSSEHandler from "./components/GlobalSSEHandler";
 
 export default function App() {
   useEffect(() => {
@@ -30,6 +31,8 @@ export default function App() {
   return (
     <QueryProvider>
       <AuthProvider>
+        <GlobalSSEHandler />
+        <GlobalSSEHandler clientId="all" />
         <BrowserRouter>
           <Routes>
             {/* Dashboard & Private pages */}

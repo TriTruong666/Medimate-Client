@@ -1,7 +1,4 @@
-import type {
-  RAGApiPaginatedResponse,
-  RAGApiResponse,
-} from "@/types/APIResponse";
+import type { RAGApiResponse } from "@/types/APIResponse";
 import type { AIModel } from "@/types/RAGAIModel";
 import { axiosRAGClient } from "./client";
 
