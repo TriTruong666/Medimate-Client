@@ -231,22 +231,33 @@ export const ROUTES_CONFIG: RouteConfig[] = [
       },
       {
         path: PATHS.DASHBOARD.DOCTOR_SUPPORT.PENDING,
-        element: <DoctorSupportPage filter="pending" title="Công việc cần duyệt" />,
+        element: (
+          <DoctorSupportPage filter="pending" title="Công việc cần duyệt" />
+        ),
         label: "Cần duyệt",
       },
       {
         path: PATHS.DASHBOARD.DOCTOR_SUPPORT.APPROVED,
-        element: <DoctorSupportPage filter="approved" title="Công việc sắp diễn ra" />,
+        element: (
+          <DoctorSupportPage filter="approved" title="Công việc sắp diễn ra" />
+        ),
         label: "Sắp diễn ra",
       },
       {
         path: PATHS.DASHBOARD.DOCTOR_SUPPORT.IN_PROGRESS,
-        element: <DoctorSupportPage filter="inprogress" title="Công việc đến giờ hẹn" />,
+        element: (
+          <DoctorSupportPage
+            filter="inprogress"
+            title="Công việc đến giờ hẹn"
+          />
+        ),
         label: "Đến giờ hẹn",
       },
       {
         path: PATHS.DASHBOARD.DOCTOR_SUPPORT.HISTORY,
-        element: <DoctorSupportPage filter="history" title="Lịch sử công việc" />,
+        element: (
+          <DoctorSupportPage filter="history" title="Lịch sử công việc" />
+        ),
         label: "Lịch sử",
       },
     ],
@@ -379,7 +390,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Chatbot",
     icon: AiOutlineRobot,
     showInSidebar: true,
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin"],
   },
   {
     path: PATHS.DASHBOARD.DOCTOR_CONTRACT,
