@@ -195,7 +195,7 @@ function PackageOwnerTable() {
                 </span>
                 
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  OCR còn: <span className="text-gray-300 font-medium">{row.remainingOcrCount}</span> | Bác sĩ: <span className="text-gray-300 font-medium">{row.remainingConsultantCount}</span>
+                  OCR còn: <span className="text-gray-300 font-medium">{row.remainingOcrCount}</span> | Tư vấn: <span className="text-gray-300 font-medium">{row.remainingConsultantCount}</span>
                 </span>
               </div>
             </td>

@@ -79,6 +79,9 @@ const PackageDashboardPage = lazy(() =>
 const PackageOwnerDashboardPage = lazy(
   () => import("@/pages/admin/PackageOwnerDashboardPage"),
 );
+const DoctorPayoutPage = lazy(
+  () => import("@/pages/admin/DoctorPayoutPage"),
+);
 
 const ProfileSettingDashboardPage = lazy(() =>
   import("../pages/SettingDashboardPage").then((m) => ({
@@ -302,12 +305,25 @@ export const ROUTES_CONFIG: RouteConfig[] = [
   },
   {
     path: PATHS.DASHBOARD.TRANSACTION,
-    element: <TransactionDashboardPage />,
     layout: "dashboard",
     label: "Giao dịch",
     icon: GrTransaction,
     showInSidebar: true,
     roles: ["Admin", "User", "Doctor"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.TRANSACTION,
+        element: <TransactionDashboardPage />,
+        label: "Lịch sử giao dịch",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.PAYOUTS?.ROOT || "/dashboard/transaction/payouts",
+        element: <DoctorPayoutPage />,
+        label: "Thanh toán Bác sĩ",
+        roles: ["Admin"],
+      },
+    ],
   },
   {
     path: PATHS.DASHBOARD.DOCUMENTS,

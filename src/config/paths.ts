@@ -61,6 +61,9 @@ export const PATHS = {
       PRESCRIPTION: "/dashboard/assets/prescription",
       CERTIFICATE: "/dashboard/assets/certificate",
     },
+    PAYOUTS: {
+      ROOT: "/dashboard/transaction/payouts",
+    },
     REPORT_DOCTOR: "/dashboard/report-doctor",
     SETTINGS: {
       ROOT: "/dashboard/settings",
