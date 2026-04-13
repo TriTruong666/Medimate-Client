@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { type ReactNode, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../components/custom-ui/Breadcrumb";
 import { HiOutlineArrowRight, HiOutlinePlus } from "react-icons/hi";
 import {  FiPlus, FiShield } from "react-icons/fi";
@@ -143,6 +144,7 @@ function DataSourceCard({
   isActive,
   footerLeft,
 }: DataSourceCardProps) {
+  const navigate = useNavigate();
   const { mutate: updateCollection, isPending } = useUpdateRAGCollection();
 
   const handleToggleActive = (checked: boolean) => {
@@ -161,7 +163,8 @@ function DataSourceCard({
   return (
     <motion.div
       variants={cardItem}
-      className="group dark:border-border-dark relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white/80 backdrop-blur transition-all hover:border-white/20 hover:bg-white/10 dark:bg-white/5"
+      onClick={() => navigate(`/dashboard/rag/${collectionId}`)}
+      className="group dark:border-border-dark relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white/80 backdrop-blur transition-all hover:border-white/20 hover:bg-white/10 dark:bg-white/5"
     >
       {/* Body */}
       <div className="relative space-y-5 p-6">
@@ -172,11 +175,13 @@ function DataSourceCard({
           </div>
 
           {/* Toggle */}
-          <Toggle
-            checked={isActive}
-            onChange={handleToggleActive}
-            disabled={isPending}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <Toggle
+              checked={isActive}
+              onChange={handleToggleActive}
+              disabled={isPending}
+            />
+          </div>
         </div>
 
         {/* Title */}
@@ -208,13 +213,10 @@ function DataSourceCard({
           {footerLeft}
         </div>
 
-        <a
-          href={`/dashboard/rag/${collectionId}`}
-          className="text-primary flex items-center gap-1 text-sm font-medium transition hover:gap-2"
-        >
+        <div className="text-primary flex items-center gap-1 text-sm font-medium transition group-hover:gap-2">
           Chi tiết
           <HiOutlineArrowRight className="text-base" />
-        </a>
+        </div>
       </div>
     </motion.div>
   );

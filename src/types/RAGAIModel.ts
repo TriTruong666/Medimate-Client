@@ -11,3 +11,12 @@ export interface AIModel {
     model_name: string;
   };
 }
+
+export interface AIModelUpdate {
+  name: string;
+  provider: string;
+  config: Record<string, any>;
+  context_window: number;
+  max_output_tokens: number;
+  is_active: boolean;
+}

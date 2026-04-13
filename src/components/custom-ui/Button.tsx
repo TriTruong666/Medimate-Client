@@ -6,6 +6,7 @@ type ButtonProps = {
   size?: "sm" | "md";
   className?: string;
   onClick?: () => void;
+  disabled?: boolean;
   // special for hover-opacity effect
   hoverParent?: boolean;
 };
@@ -16,6 +17,7 @@ export function Button({
   size = "sm",
   className = "",
   onClick,
+  disabled = false,
   hoverParent = false,
 }: ButtonProps) {
   const colors = {
@@ -35,7 +37,8 @@ export function Button({
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl ${colors[color]} ${sizes[size]} ${opacityClass} transition ${className}`}
+      disabled={disabled}
+      className={`rounded-xl ${colors[color]} ${sizes[size]} ${opacityClass} transition disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
     >
       {children}
     </button>

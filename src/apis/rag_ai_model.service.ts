@@ -1,5 +1,5 @@
 import type { RAGApiResponse } from "@/types/APIResponse";
-import type { AIModel } from "@/types/RAGAIModel";
+import type { AIModel, AIModelUpdate } from "@/types/RAGAIModel";
 import { axiosRAGClient } from "./client";
 
 export const getAIModelList = async (params: {
@@ -9,5 +9,13 @@ export const getAIModelList = async (params: {
   const res = await axiosRAGClient.get("api/v1/ai-models", {
     params: { ...params, limit: 10 },
   });
+  return res.data;
+};
+
+export const updateAIModel = async (
+  model_id: string,
+  data: AIModelUpdate,
+): Promise<RAGApiResponse<AIModel>> => {
+  const res = await axiosRAGClient.patch(`api/v1/ai-models/${model_id}`, data);
   return res.data;
 };

@@ -21,6 +21,8 @@ import { toast } from "@/hooks/useToast";
 import { useQuery } from "@tanstack/react-query";
 import { getRagServerHealth } from "@/apis/system.service";
 import { getAIModelList } from "@/apis/rag_ai_model.service";
+import { useUpdateAIModel } from "@/hooks/data/useRAGAIModelHooks";
+import type { AIModel } from "@/types/RAGAIModel";
 
 type SettingCardProps = {
   label: string;
@@ -945,65 +947,108 @@ export function SystemSettingDashboardPage() {
   );
 }
 
-type ApiKeyItemProps = {
-  service: string;
-  value: string;
+type AIModelConfigItemProps = {
+  model: AIModel;
 };
 
-function ApiKeyItem({ service, value }: ApiKeyItemProps) {
+function AIModelConfigItem({ model }: AIModelConfigItemProps) {
   const [editing, setEditing] = useState(false);
-  const [keyValue, setKeyValue] = useState(value);
+  const [config, setConfig] = useState({
+    apiKey: model.config?.api_key || "",
+    modelName: model.config?.model_name || "",
+  });
   const [masked, setMasked] = useState(true);
+
+  const updateMutation = useUpdateAIModel();
+
+  const handleSave = async () => {
+    try {
+      await updateMutation.mutateAsync({
+        model_id: model.id,
+        data: {
+          name: model.name,
+          provider: model.provider,
+          context_window: model.context_window,
+          max_output_tokens: model.max_output_tokens,
+          is_active: model.is_active,
+          config: {
+            api_key: config.apiKey,
+            model_name: config.modelName,
+          },
+        },
+      });
+      setEditing(false);
+    } catch {
+      // Error handled by hook
+    }
+  };
 
   return (
     <div className="group relative flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-6 py-4 transition hover:bg-white/10">
       {/* Key info */}
-      <div className="flex flex-col">
-        <p className="text-sm font-medium text-white">{service}</p>
+      <div className="flex flex-1 flex-col gap-1">
+        <p className="text-sm font-medium text-white">{model.name}</p>
         {!editing ? (
-          <p className="mt-2 text-xs tracking-widest text-white/40">
-            {masked ? "•••••••••••••••••••••••••••" : keyValue}
-          </p>
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[10px] text-white/30 truncate">
+              Model Name: <span className="text-white/50">{config.modelName || "N/A"}</span>
+            </p>
+            <p className="text-[10px] tracking-widest text-white/40">
+              API Key: {masked ? "•••••••••••••••••••••••••••" : config.apiKey}
+            </p>
+          </div>
         ) : (
-          <input
-            className="input-primary mt-2 w-80 text-white"
-            value={keyValue}
-            onChange={(e) => setKeyValue(e.target.value)}
-          />
+          <div className="mt-2 flex max-w-md flex-col gap-2">
+            <input
+              className="input-primary text-xs text-white"
+              value={config.modelName}
+              placeholder="Model Name (VD: models/gemini-pro)"
+              onChange={(e) => setConfig({ ...config, modelName: e.target.value })}
+            />
+            <input
+              className="input-primary text-xs text-white"
+              value={config.apiKey}
+              placeholder="API Key"
+              onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
+            />
+          </div>
         )}
       </div>
 
-      <div className="absolute top-1/2 right-6 flex -translate-y-1/2 items-center gap-2 opacity-0 transition group-hover:opacity-100">
+      <div className="flex items-center gap-2 opacity-0 transition group-hover:opacity-100">
         {!editing ? (
           <>
             <Button
               color="white"
               onClick={() => {
-                navigator.clipboard.writeText(keyValue);
+                navigator.clipboard.writeText(config.apiKey);
                 toast.success(
                   "Đã sao chép",
-                  `Khóa của mẫu ${service} đã được lưu vào bộ nhớ tạm.`,
+                  `Khóa của mẫu ${model.name} đã được lưu vào bộ nhớ tạm.`,
                 );
               }}
             >
               Sao chép
             </Button>
             <Button onClick={() => setMasked(!masked)}>
-              {masked ? "Hiển thị" : "Ẩn"}
+              {masked ? "Hiện" : "Ẩn"}
             </Button>
             <Button color="green" onClick={() => setEditing(true)}>
-              Thay đổi
+              Sửa
             </Button>
           </>
         ) : (
           <>
-            <Button color="green" onClick={() => setEditing(false)}>
-              Lưu
+            <Button color="green" onClick={handleSave} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? "Đang lưu..." : "Lưu"}
             </Button>
             <Button
               color="red"
               onClick={() => {
-                setKeyValue(value);
+                setConfig({
+                  apiKey: model.config?.api_key || "",
+                  modelName: model.config?.model_name || "",
+                });
                 setEditing(false);
               }}
             >
@@ -1046,10 +1091,9 @@ export function APIKeysSettingDashboardPage() {
               <p className="text-sm text-gray-400">Chưa có model nào được cấu hình.</p>
             ) : (
               models.map((model) => (
-                <ApiKeyItem
+                <AIModelConfigItem
                   key={model.id}
-                  service={model.name}
-                  value={model.config?.api_key || ""}
+                  model={model}
                 />
               ))
             )}
