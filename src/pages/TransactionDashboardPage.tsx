@@ -106,7 +106,7 @@ export default function TransactionDashboardPage() {
 
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
-    pageSize: 5,
+    pageSize: 10,
   });
 
   const allTransactionsQuery = useTransactionList(pagination, {
@@ -123,7 +123,7 @@ export default function TransactionDashboardPage() {
 
   const total = data?.totalCount ?? 0;
   const page = data?.pageNumber ?? pagination.pageNumber ?? 1;
-  const pageSize = data?.pageSize ?? pagination.pageSize ?? 5;
+  const pageSize = data?.pageSize ?? pagination.pageSize ?? 10;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const tableData = useMemo(() => data?.items ?? [], [data?.items]);
@@ -135,13 +135,6 @@ export default function TransactionDashboardPage() {
       ...prev,
       pageNumber: nextPage,
     }));
-  };
-
-  const handlePageSizeChange = (nextPageSize: number) => {
-    setPagination({
-      pageNumber: 1,
-      pageSize: nextPageSize,
-    });
   };
 
   return (
@@ -169,7 +162,6 @@ export default function TransactionDashboardPage() {
           pageSize={pageSize}
           total={total}
           onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
         />
       </div>
     </div>
@@ -186,8 +178,7 @@ function TransactionTable({
   pageSize,
   total,
   onPageChange,
-  onPageSizeChange,
-}: TransactionTableProps) {
+}: Omit<TransactionTableProps, "onPageSizeChange">) {
   const [, openPaymentModal] = useAtom(openTransactionModalAtom);
   const openDrawer = useSetAtom(openDrawerAtom);
   const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
@@ -221,7 +212,6 @@ function TransactionTable({
         pageSize,
         total,
         onPageChange,
-        onPageSizeChange,
       }}
     >
       {data.map((row, i) => {

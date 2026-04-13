@@ -42,7 +42,7 @@ export async function getPendingPayouts(
   params: GetPayoutsParams,
 ): Promise<BasePaginatedResponse<PendingPayout[]>> {
   const res = await axiosNETClient.get("/api/v1/transactions/payouts/pending", {
-    params: cleanQueryParams<GetPayoutsParams>(params),
+    params: cleanQueryParams<GetPayoutsParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }
@@ -51,7 +51,7 @@ export async function getPaidPayouts(
   params: GetPayoutsParams,
 ): Promise<BasePaginatedResponse<PaidPayout[]>> {
   const res = await axiosNETClient.get("/api/v1/transactions/payouts/paid", {
-    params: cleanQueryParams<GetPayoutsParams>(params),
+    params: cleanQueryParams<GetPayoutsParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }

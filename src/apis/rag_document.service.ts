@@ -25,7 +25,9 @@ export const getDocumentList = async (params: {
   limit: number;
   q?: string;
 }): Promise<RAGApiPaginatedResponse<RAGDocument>> => {
-  const res = await axiosRAGClient.get(`api/v1/documents/`, { params });
+  const res = await axiosRAGClient.get(`api/v1/documents/`, {
+    params: { ...params, limit: 10 },
+  });
   return res.data;
 };
 
@@ -35,7 +37,7 @@ export const getUncollectedDocuments = async (params: {
   q?: string;
 }): Promise<RAGApiPaginatedResponse<RAGDocument>> => {
   const res = await axiosRAGClient.get(`api/v1/documents/uncollected/`, {
-    params,
+    params: { ...params, limit: 10 },
   });
   return res.data;
 };
@@ -46,6 +48,8 @@ export const getPendingDocuments = async (params: {
   q?: string;
   collection_id?: string;
 }): Promise<RAGApiPaginatedResponse<RAGDocument>> => {
-  const res = await axiosRAGClient.get(`api/v1/documents/pending/`, { params });
+  const res = await axiosRAGClient.get(`api/v1/documents/pending/`, {
+    params: { ...params, limit: 10 },
+  });
   return res.data;
 };

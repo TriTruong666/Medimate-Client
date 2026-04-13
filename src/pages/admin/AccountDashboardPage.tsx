@@ -129,14 +129,14 @@ export default function AccountDashboardPage() {
 function AccountTable({ sortType }: { sortType: SortType }) {
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
-    pageSize: 5,
+    pageSize: 10,
   });
   const { data, isLoading, error, isError, refetch } = useUserList(pagination);
 
   const users = data?.items ?? [];
   const total = data?.totalCount ?? 0;
   const pageNumber = data?.pageNumber ?? pagination.pageNumber ?? 1;
-  const pageSize = data?.pageSize ?? pagination.pageSize ?? 5;
+  const pageSize = data?.pageSize ?? pagination.pageSize ?? 10;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const [, openLockModal] = useAtom(openLockModalAtom);
@@ -164,13 +164,6 @@ function AccountTable({ sortType }: { sortType: SortType }) {
     }));
   };
 
-  const handlePageSizeChange = (nextPageSize: number) => {
-    setPagination({
-      pageNumber: 1,
-      pageSize: nextPageSize,
-    });
-  };
-
   return (
     <>
       <DataTableShell
@@ -189,7 +182,6 @@ function AccountTable({ sortType }: { sortType: SortType }) {
           pageSize,
           total,
           onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
         }}
       >
         {sortedUsers.map((row) => (

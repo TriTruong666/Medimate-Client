@@ -24,7 +24,7 @@ export async function getRatings(
   params: GetRatingsParams,
 ): Promise<BasePaginatedResponse<Rating[]>> {
   const res = await axiosNETClient.get("/api/v1/ratings", {
-    params: cleanQueryParams<GetRatingsParams>(params),
+    params: cleanQueryParams<GetRatingsParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }

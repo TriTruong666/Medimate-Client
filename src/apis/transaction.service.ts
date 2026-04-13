@@ -11,7 +11,7 @@ export async function getTransactions(
   params: GetTransactionsParams,
 ): Promise<BasePaginatedResponse<Transaction[]>> {
   const res = await axiosNETClient.get("/api/v1/transactions", {
-    params: cleanQueryParams<GetTransactionsParams>(params),
+    params: cleanQueryParams<GetTransactionsParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }
@@ -28,7 +28,7 @@ export async function getUserTransactions(
   params: GetTransactionsParams
 ): Promise<BasePaginatedResponse<Transaction[]>> {
   const res = await axiosNETClient.get(`/api/v1/transactions/user/${userId}`, {
-    params: cleanQueryParams<GetTransactionsParams>(params),
+    params: cleanQueryParams<GetTransactionsParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }

@@ -12,7 +12,7 @@ export async function getPrescriptionImages(
   params: GetPrescriptionImagesParams,
 ): Promise<BasePaginatedResponse<PrescriptionImage[]>> {
   const res = await axiosNETClient.get("/api/cloudinary/images", {
-    params: cleanQueryParams<GetPrescriptionImagesParams>(params),
+    params: cleanQueryParams<GetPrescriptionImagesParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }
@@ -21,7 +21,7 @@ export async function getDoctorCertificates(
   params: GetDoctorCertificatesParams,
 ): Promise<BasePaginatedResponse<DoctorCertificate[]>> {
   const res = await axiosNETClient.get("/api/cloudinary/document", {
-    params: cleanQueryParams<GetDoctorCertificatesParams>(params),
+    params: cleanQueryParams<GetDoctorCertificatesParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }

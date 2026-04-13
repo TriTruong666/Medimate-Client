@@ -23,7 +23,9 @@ export const getCollectionList = async (params: {
   limit: number;
   q?: string;
 }): Promise<RAGApiPaginatedResponse<RAGCollection>> => {
-  const res = await axiosRAGClient.get(`api/v1/collections/`, { params });
+  const res = await axiosRAGClient.get(`api/v1/collections/`, {
+    params: { ...params, limit: 10 },
+  });
   return res.data;
 };
 

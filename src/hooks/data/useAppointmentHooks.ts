@@ -5,9 +5,14 @@ import { toast } from "../useToast";
 import { getApiErrorMessage, translateErrorMessage } from "@/common/api.error";
 import type { AppointmentStatus } from "@/types/Appointment";
 
+import { useAuth } from "../useAuth";
+
 export function useDoctorAppointments() {
-  return useFetch(["doctor-appointments"], async () =>
-    AppointmentService.getDoctorAppointments(),
+  const { user } = useAuth();
+  return useFetch(
+    ["doctor-appointments"],
+    async () => AppointmentService.getDoctorAppointments(),
+    { enabled: user?.role === "Doctor" },
   );
 }
 

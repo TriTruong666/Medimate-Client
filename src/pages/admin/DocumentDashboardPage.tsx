@@ -84,7 +84,7 @@ export default function DocumentDashboardPage() {
   ];
 
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12); // Tăng size cho card view
+  const [pageSize] = useState(10);
   const [searchQuery] = useState("");
   const [allDocuments, setAllDocuments] = useState<RAGDocument[]>([]);
 
@@ -131,10 +131,6 @@ export default function DocumentDashboardPage() {
   }, [searchQuery]);
 
   const handlePageChange = (newPage: number) => setPage(newPage);
-  const handlePageSizeChange = (newSize: number) => {
-    setPageSize(newSize);
-    setPage(1);
-  };
 
   const handleLoadMore = () => {
     if (!isLoading && hasMore) {
@@ -203,7 +199,6 @@ export default function DocumentDashboardPage() {
             pageSize={pageSize}
             total={total}
             onPageChange={handlePageChange}
-            onPageSizeChange={handlePageSizeChange}
             isLoading={isLoading}
             isError={isError}
             onRetry={refetch}
@@ -398,18 +393,17 @@ function DocumentTable({
   pageSize,
   total,
   onPageChange,
-  onPageSizeChange,
   isLoading,
   isError,
   onRetry,
-}: DocumentTableProps & { isError?: boolean; onRetry?: () => void }) {
+}: Omit<DocumentTableProps, "onPageSizeChange"> & { isError?: boolean; onRetry?: () => void }) {
   const [, openDeleteModal] = useAtom(openDeleteModalAtom);
   return (
     <DataTableShell
       columns={columns}
       isEmpty={total === 0}
       emptyMessage="Không tìm thấy dữ liệu tài liệu."
-      pagination={{ page, pageSize, total, onPageChange, onPageSizeChange }}
+      pagination={{ page, pageSize, total, onPageChange }}
       isLoading={isLoading}
       isError={isError}
       onRetry={onRetry}

@@ -42,7 +42,7 @@ export async function getFamilySubscriptions(
   params: GetFamilySubscriptionsParams,
 ): Promise<BasePaginatedResponse<FamilySubscription[]>> {
   const res = await axiosNETClient.get("/api/v1/admin/family-subscriptions", {
-    params: cleanQueryParams<GetFamilySubscriptionsParams>(params),
+    params: cleanQueryParams<GetFamilySubscriptionsParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }

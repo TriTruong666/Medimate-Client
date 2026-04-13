@@ -5,9 +5,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "../useToast";
 import { useFetch } from "../useFetch";
 
+import { useAuth } from "../useAuth";
+
 export function useDoctorMe(enabled: boolean) {
+  const { user } = useAuth();
+  const isDoctor = user?.role === "Doctor";
+
   return useFetch(["doctor", "me"], async () => DoctorService.getDoctorMe(), {
-    enabled,
+    enabled: enabled && isDoctor,
   });
 }
 

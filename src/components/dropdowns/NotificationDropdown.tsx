@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { AnimatePresence, motion } from "framer-motion";
 import { HiBell } from "react-icons/hi";
 import { formatRelativeTime } from "../../common/format";
@@ -30,14 +31,25 @@ export function NotificationDropdown() {
   );
   const unreadCount = sortedNotifications.filter((item) => !item.isRead).length;
 
+  const { user } = useAuth();
+  const roleTitleMap: Record<string, string> = {
+    Admin: "Quản trị viên",
+    Doctor: "Bác sĩ",
+    DoctorManager: "Kiểm soát viên",
+    User: "Khách hàng",
+  };
+
   useEffect(() => {
+    const roleTitle = (user?.role && roleTitleMap[user.role]) || "Dashboard";
+    const baseTitle = `Medimate - ${roleTitle}`;
+
     if (unreadCount > 0) {
-      document.title = `(${unreadCount}) Medimate - Bác Sĩ`;
+      document.title = `(${unreadCount}) ${baseTitle}`;
       return;
     }
 
-    document.title = "Medimate - Bác Sĩ";
-  }, [unreadCount]);
+    document.title = baseTitle;
+  }, [unreadCount, user?.role]);
 
   useClickOutside(ref, () => setOpen(false));
   useEscapeKey(() => setOpen(false));

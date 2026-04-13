@@ -11,7 +11,7 @@ export type ChangeMyPasswordRequest = {
 
 export async function getUsers(params: PaginationParams): Promise<BasePaginatedResponse<User[]>> {
   const res = await axiosNETClient.get("/api/v1/users", {
-    params: cleanQueryParams<PaginationParams>(params),
+    params: cleanQueryParams<PaginationParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }
