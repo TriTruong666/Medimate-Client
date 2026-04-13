@@ -2,9 +2,11 @@ import clsx from "clsx";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiPaperclip } from "react-icons/fi";
 import { HiXMark } from "react-icons/hi2";
 import { IoSend } from "react-icons/io5";
+import { PATHS } from "@/config/paths";
 import { useChatIdentity, useChatSessionDetails, useChatSessionMessages, useMarkChatSessionMessagesRead, useSendChatSessionMessage } from "@/hooks/data/useChatDoctorHooks";
 import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "@/hooks/useToast";
@@ -19,9 +21,10 @@ type ChatPopupProps = {
 
 export function ChatPopup({ sessionId }: ChatPopupProps) {
   const [, closePopup] = useAtom(closePopupAtom);
+  const navigate = useNavigate();
   const { doctorId } = useChatIdentity();
-    const [chatExpiryMap] = useAtom(chatSessionExpiryAtom);
-    const expiredAt = chatExpiryMap[sessionId];
+  const [chatExpiryMap] = useAtom(chatSessionExpiryAtom);
+  const expiredAt = chatExpiryMap[sessionId];
   const {
     data: sessionDetails,
     isLoading: isDetailsLoading,
@@ -57,6 +60,12 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   const partnerAvatar = sessionDetails?.partnerAvatar || null;
   const messageItems = useMemo(() => messages || [], [messages]);
 
+  function handleOpenConsultationSession() {
+    const params = new URLSearchParams({ sessionId });
+    navigate(`${PATHS.DASHBOARD.PRESCRIPTIONS.ROOT}?${params.toString()}`);
+    closePopup(sessionId);
+  }
+
   return (
     <motion.div
       layout
@@ -67,7 +76,12 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
       className="flex h-105 w-92 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl"
     >
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <div className="flex min-w-0 flex-1 items-center gap-3">
+        <button
+          type="button"
+          onClick={handleOpenConsultationSession}
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 text-left transition hover:bg-white/5"
+          title="Mở chi tiết phiên tư vấn"
+        >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
             {partnerAvatar ? (
               <img
@@ -97,7 +111,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
               </span>
             </div>
           )}
-        </div>
+        </button>
 
         <button
           onClick={() => closePopup(sessionId)}

@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { HiOutlineEye, HiOutlineCalendar, HiOutlineClipboardCheck, HiOutlineInformationCircle } from "react-icons/hi";
+import { useSearchParams } from "react-router-dom";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
@@ -15,6 +16,7 @@ import { PrescriptionSessionModal } from "@/components/modals/PrescriptionSessio
 import { PATHS } from "@/config/paths";
 
 export default function PrescriptionRootPage() {
+  const [searchParams] = useSearchParams();
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
     string | null
   >(null);
@@ -24,7 +26,10 @@ export default function PrescriptionRootPage() {
   const [selectedSessionDetail, setSelectedSessionDetail] = useState<SessionData | null>(
     null,
   );
+  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const hasAutoScrolledRef = useRef(false);
   const { data, isLoading, isError, refetch } = useMyConsultationSessions();
+  const highlightedSessionId = searchParams.get("sessionId") || "";
 
   const sessions = useMemo(
     () =>
@@ -35,6 +40,22 @@ export default function PrescriptionRootPage() {
       }),
     [data],
   );
+
+  useEffect(() => {
+    hasAutoScrolledRef.current = false;
+  }, [highlightedSessionId]);
+
+  useEffect(() => {
+    if (!highlightedSessionId) return;
+    if (hasAutoScrolledRef.current) return;
+    if (sessions.length === 0) return;
+
+    const target = cardRefs.current[highlightedSessionId];
+    if (!target) return;
+
+    target.scrollIntoView({ behavior: "smooth", block: "center" });
+    hasAutoScrolledRef.current = true;
+  }, [highlightedSessionId, sessions]);
 
   function handleOpenSessionModal(session: SessionData) {
     setSelectedSession(session);
@@ -93,10 +114,20 @@ export default function PrescriptionRootPage() {
         </div>
       ) : (
         <div className="grid gap-4 xl:grid-cols-2">
-          {sessions.map((session) => (
+          {sessions.map((session) => {
+            const isHighlighted = highlightedSessionId === session.consultanSessionId;
+
+            return (
             <div
               key={session.consultanSessionId}
-              className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:bg-white/10"
+              ref={(node) => {
+                cardRefs.current[session.consultanSessionId] = node;
+              }}
+              className={`flex flex-col gap-4 rounded-2xl border p-5 transition hover:bg-white/10 ${
+                isHighlighted
+                  ? "border-red-400/70 bg-red-500/10 ring-1 ring-red-400/50"
+                  : "border-white/10 bg-white/5"
+              }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="space-y-2">
@@ -164,7 +195,8 @@ export default function PrescriptionRootPage() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
