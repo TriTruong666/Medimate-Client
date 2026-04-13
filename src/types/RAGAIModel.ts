@@ -6,4 +6,8 @@ export interface AIModel {
   context_window: number;
   max_output_tokens: number;
   created_at: string;
+  config: {
+    api_key: string;
+    model_name: string;
+  };
 }

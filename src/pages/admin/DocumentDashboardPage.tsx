@@ -12,7 +12,7 @@ import {
   BsFiletypeHtml,
 } from "react-icons/bs";
 import { LuGrid3X3, LuPlus, LuTable2 } from "react-icons/lu";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAtom } from "jotai";
 import { AiOutlineFileMarkdown, AiOutlineFilePdf } from "react-icons/ai";
 import { openDeleteModalAtom, openModalAtom } from "@/stores/modalStore";
@@ -25,10 +25,9 @@ import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { formatDateTime, formatDateDistance } from "@/common/format";
 import type { RAGDocument } from "@/types/RAGDocument";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
-import { useEffect } from "react";
-import { FiPlus, FiRefreshCcw } from "react-icons/fi";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { useRAGDocuments } from "@/hooks/data/useRAGDocumentHooks";
+import { FiPlus, FiRefreshCcw, FiSearch } from "react-icons/fi";
 
 type ColumnKey = "name" | "type" | "size" | "status" | "actions";
 
@@ -85,7 +84,8 @@ export default function DocumentDashboardPage() {
 
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
-  const [searchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [allDocuments, setAllDocuments] = useState<RAGDocument[]>([]);
 
   const {
@@ -130,6 +130,15 @@ export default function DocumentDashboardPage() {
     setAllDocuments([]);
   }, [searchQuery]);
 
+  // Handle search input with debounce
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchQuery(searchInput);
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchInput]);
+
   const handlePageChange = (newPage: number) => setPage(newPage);
 
   const handleLoadMore = () => {
@@ -170,6 +179,7 @@ export default function DocumentDashboardPage() {
               Thẻ
             </button>
           </div>
+
           <div className="ml-2">
             <GlassSelect
               value={type}
@@ -191,6 +201,18 @@ export default function DocumentDashboardPage() {
           </button>
         </div>
       </div>
+
+      {/* Search Bar Area */}
+      <div className="mt-6 flex max-w-sm items-center">
+        <input
+          type="text"
+          placeholder="Tìm kiếm tài liệu..."
+          value={searchInput}
+          onChange={(e) => setSearchInput(e.target.value)}
+          className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-[13px] text-white backdrop-blur-md outline-hidden transition duration-300 focus:border-white/20 focus:bg-white/8 focus:ring-1 focus:ring-white/10 placeholder:text-white/20"
+        />
+      </div>
+
       {tableLayout === "table" && (
         <div className="my-8">
           <DocumentTable

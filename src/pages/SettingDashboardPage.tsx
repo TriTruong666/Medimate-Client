@@ -1,10 +1,9 @@
 import type React from "react";
-import { BsShieldLock } from "react-icons/bs";
 import { IoIosInformationCircleOutline } from "react-icons/io";
-import { RxDesktop } from "react-icons/rx";
-import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
+
 import { Badge, IconBadge } from "../components/custom-ui/Badge";
 import { HiOutlineCog, HiOutlineServer, HiOutlineTrash } from "react-icons/hi";
+import { FiUser } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import { Button } from "../components/custom-ui/Button";
 import Toggle from "@/components/custom-ui/Toggle";
@@ -19,6 +18,9 @@ import {
 import { useAtom } from "jotai";
 import { openConfirmUpdateProfileModalAtom } from "@/stores/modalStore";
 import { toast } from "@/hooks/useToast";
+import { useQuery } from "@tanstack/react-query";
+import { getRagServerHealth } from "@/apis/system.service";
+import { getAIModelList } from "@/apis/rag_ai_model.service";
 
 type SettingCardProps = {
   label: string;
@@ -221,7 +223,7 @@ export function ProfileSettingDashboardPage() {
   };
 
   const handleEditBankAccount = (id: string) => {
-    const selected = bankAccounts.find((item) => item.bankAccountId === id);
+    const selected = bankAccounts?.find((item) => item.bankAccountId === id);
     if (!selected) return;
 
     setBankForm({
@@ -287,7 +289,7 @@ export function ProfileSettingDashboardPage() {
     (doctorProfile as any)?.avatarUrl;
   const avatarPreview = form.avatarImage
     ? URL.createObjectURL(form.avatarImage)
-    : fetchedAvatar || user?.avatarUrl || "https://i.pravatar.cc/300";
+    : fetchedAvatar || user?.avatarUrl;
 
   return (
     <div className="w-full space-y-6 px-12 py-4">
@@ -394,12 +396,18 @@ export function ProfileSettingDashboardPage() {
           <div className="flex flex-col items-center py-8">
             <div className="group relative cursor-pointer">
               <div className="relative h-48 w-48 rounded-full bg-linear-to-br from-white/20 to-white/5 p-0.5 transition">
-                <div className="h-full w-full overflow-hidden rounded-full border border-white/10 bg-neutral-900">
-                  <img
-                    src={avatarPreview}
-                    alt="avatar"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
-                  />
+                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-white/10 bg-neutral-900">
+                  {avatarPreview ? (
+                    <img
+                      src={avatarPreview}
+                      alt="avatar"
+                      className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-white/30">
+                      <FiUser className="mb-2 text-5xl" />
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-full bg-black/60 opacity-0 backdrop-blur-sm transition duration-300 group-hover:opacity-100">
@@ -493,11 +501,11 @@ export function ProfileSettingDashboardPage() {
               <div className="rounded-xl border border-white/10 bg-white/5 p-3">
                 {isBankAccountsLoading ? (
                   <p className="text-sm text-gray-400">Đang tải tài khoản ngân hàng...</p>
-                ) : bankAccounts.length === 0 ? (
+                ) : bankAccounts?.length === 0 ? (
                   <p className="text-sm text-gray-400">Chưa có tài khoản ngân hàng nào.</p>
                 ) : (
                   <div className="space-y-2">
-                    {bankAccounts.map((account) => (
+                    {bankAccounts?.map((account) => (
                       <div
                         key={account.bankAccountId}
                         className="flex flex-col gap-3 rounded-lg border border-white/10 bg-black/30 p-3 md:flex-row md:items-center md:justify-between"
@@ -675,105 +683,7 @@ export function SecuritySettingDashboardPage() {
             />
           </form>
         </SettingCard>
-        <SettingCard
-          label="Xác thực 2 bước (2FA)"
-          description="Thêm một lớp bảo mật bổ sung khi đăng nhập"
-          helper={
-            <span className="helper-setting-card">
-              Khuyến nghị bật để bảo vệ tài khoản tốt hơn
-            </span>
-          }
-          disable
-        >
-          <div className="flex max-w-3xl items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5 transition hover:bg-white/6">
-            <div className="flex items-start gap-4">
-              {/* Icon */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
-                <BsShieldLock />
-              </div>
 
-              <div>
-                <div className="flex items-center gap-3">
-                  <p className="text-sm font-medium text-white">
-                    Xác thực bằng ứng dụng
-                  </p>
-
-                  {/* Status badge */}
-                  <span className="rounded-full bg-red-500/10 px-3 py-1 text-xs text-red-400">
-                    Chưa bật
-                  </span>
-                </div>
-
-                <p className="mt-1 text-xs text-white/40">
-                  Hỗ trợ Google Authenticator hoặc ứng dụng tương tự
-                </p>
-              </div>
-            </div>
-
-            {/* Toggle button style */}
-            <Button color="green" onClick={() => alert("Đã bật 2FA")}>
-              Bật 2FA
-            </Button>
-          </div>
-        </SettingCard>
-        <SettingCard
-          label="Phiên đăng nhập"
-          description="Quản lý các thiết bị đang truy cập tài khoản"
-          helper={
-            <span className="helper-setting-card">
-              Nếu phát hiện thiết bị lạ, hãy đăng xuất ngay
-            </span>
-          }
-          disable
-        >
-          <div className="flex max-w-3xl flex-col gap-4">
-            {/* Current session */}
-            <div className="group flex items-center justify-between rounded-2xl border border-green-500/20 bg-green-500/5 px-6 py-5 transition hover:bg-green-500/10">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-                  <RxDesktop />
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-3">
-                    <p className="text-sm font-medium text-white">
-                      Windows • Chrome
-                    </p>
-                    <span className="rounded-full bg-green-500/10 px-3 py-1 text-xs text-green-400">
-                      Thiết bị hiện tại
-                    </span>
-                  </div>
-
-                  <p className="mt-1 text-xs text-white/40">
-                    Hồ Chí Minh, Việt Nam • Hoạt động 5 phút trước
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Other session */}
-            <div className="group flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5 transition hover:bg-white/6">
-              <div className="flex items-start gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10">
-                  <HiOutlineDevicePhoneMobile />
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-white">
-                    iPhone 15 • Safari
-                  </p>
-                  <p className="mt-1 text-xs text-white/40">
-                    Hà Nội, Việt Nam • 2 ngày trước
-                  </p>
-                </div>
-              </div>
-
-              <Button color="red" onClick={() => alert("Đăng xuất")}>
-                Đăng xuất
-              </Button>
-            </div>
-          </div>
-        </SettingCard>
       </div>
     </div>
   );
@@ -938,6 +848,19 @@ export function MessageSettingDashboardPage() {
 }
 
 export function SystemSettingDashboardPage() {
+  const { data: pyHealth, isLoading, isError } = useQuery({
+    queryKey: ["rag-server-health"],
+    queryFn: async () => {
+      const res = await getRagServerHealth();
+      if (!res.success) throw new Error("Fetch failed");
+      return res.data;
+    },
+    refetchInterval: 30000,
+    retry: 1,
+  });
+
+  const isPyActive = !!pyHealth && !isError;
+
   return (
     <div className="w-full space-y-6 px-12 py-4">
       <div className="flex flex-col space-y-6">
@@ -959,13 +882,6 @@ export function SystemSettingDashboardPage() {
               </div>
               <Badge value="Mới nhất" type="info" />
             </div>
-
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4">
-              <div>
-                <p className="text-sm font-medium text-white">Uptime</p>
-                <p className="text-xs text-white/40">72 giờ liên tục</p>
-              </div>
-            </div>
           </div>
         </SettingCard>
         <SettingCard
@@ -979,28 +895,18 @@ export function SystemSettingDashboardPage() {
           disable
         >
           <div className="flex max-w-3xl flex-col gap-4">
-            {/* .NET server */}
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4">
-              <div className="flex items-center gap-4">
-                <IconBadge icon={<HiOutlineServer />} type="success" />
-                <div>
-                  <p className="text-sm font-medium text-white">Server 1</p>
-                  <p className="text-xs text-white/40">Hoạt động bình thường</p>
-                </div>
-              </div>
-              <Badge value="Ổn định" type="success" />
-            </div>
-
             {/* Python server */}
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4">
               <div className="flex items-center gap-4">
-                <IconBadge icon={<HiOutlineServer />} type="error" />
+                <IconBadge icon={<HiOutlineServer />} type={isLoading ? "info" : isPyActive ? "success" : "error"} />
                 <div>
-                  <p className="text-sm font-medium text-white">Server 2</p>
-                  <p className="text-xs text-white/40">Đang tạm dừng</p>
+                  <p className="text-sm font-medium text-white">AI / Python Server (RAG)</p>
+                  <p className="text-xs text-white/40">
+                    {isLoading ? "Đang kiểm tra..." : isPyActive ? `Hoạt động bình thường (v${pyHealth?.version})` : "Không phản hồi"}
+                  </p>
                 </div>
               </div>
-              <Badge value="Lỗi cục bộ" type="error" />
+              <Badge value={isLoading ? "Đang tải" : isPyActive ? "Ổn định" : "Lỗi kết nối"} type={isLoading ? "info" : isPyActive ? "success" : "error"} />
             </div>
           </div>
         </SettingCard>
@@ -1053,7 +959,7 @@ function ApiKeyItem({ service, value }: ApiKeyItemProps) {
     <div className="group relative flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-6 py-4 transition hover:bg-white/10">
       {/* Key info */}
       <div className="flex flex-col">
-        <p className="text-sm font-medium text-white">{service} API Key</p>
+        <p className="text-sm font-medium text-white">{service}</p>
         {!editing ? (
           <p className="mt-2 text-xs tracking-widest text-white/40">
             {masked ? "•••••••••••••••••••••••••••" : keyValue}
@@ -1072,7 +978,13 @@ function ApiKeyItem({ service, value }: ApiKeyItemProps) {
           <>
             <Button
               color="white"
-              onClick={() => navigator.clipboard.writeText(keyValue)}
+              onClick={() => {
+                navigator.clipboard.writeText(keyValue);
+                toast.success(
+                  "Đã sao chép",
+                  `Khóa của mẫu ${service} đã được lưu vào bộ nhớ tạm.`,
+                );
+              }}
             >
               Sao chép
             </Button>
@@ -1105,31 +1017,42 @@ function ApiKeyItem({ service, value }: ApiKeyItemProps) {
 }
 
 export function APIKeysSettingDashboardPage() {
+  const { data: modelsResponse, isLoading, isError } = useQuery({
+    queryKey: ["ai-models-list"],
+    queryFn: () => getAIModelList({ skip: 0, limit: 100 }),
+  });
+
+  const models = modelsResponse?.data || [];
+
   return (
     <div className="w-full space-y-6 px-12 py-4">
       <div className="flex flex-col space-y-6">
         <SettingCard
-          label="API Keys"
-          description="Quản lý các khóa API của bạn cho Cloudinary, ChatGPT, Resend..."
+          label="LLM Keys"
+          description="Quản lý các khóa API cho các mô hình ngôn ngữ lớn (Gemini, ChatGPT...)"
           helper={
             <span className="helper-setting-card">
-              Không chia sẻ khóa với người khác để bảo mật
+              Không chia sẻ khóa với người khác để đảm bảo an toàn cho hệ thống
             </span>
           }
           disable
         >
           <div className="flex max-w-3xl flex-col gap-4">
-            {[
-              { service: "Cloudinary", value: "cloudinary-secret-key" },
-              { service: "ChatGPT", value: "chatgpt-secret-key" },
-              { service: "Resend", value: "resend-secret-key" },
-            ].map((item) => (
-              <ApiKeyItem
-                key={item.service}
-                service={item.service}
-                value={item.value}
-              />
-            ))}
+            {isLoading ? (
+              <p className="text-sm text-gray-400">Đang tải danh sách model...</p>
+            ) : isError ? (
+              <p className="text-sm text-red-400">Không thể tải danh sách model.</p>
+            ) : models.length === 0 ? (
+              <p className="text-sm text-gray-400">Chưa có model nào được cấu hình.</p>
+            ) : (
+              models.map((model) => (
+                <ApiKeyItem
+                  key={model.id}
+                  service={model.name}
+                  value={model.config?.api_key || ""}
+                />
+              ))
+            )}
           </div>
         </SettingCard>
       </div>

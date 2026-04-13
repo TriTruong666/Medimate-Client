@@ -15,10 +15,7 @@ export function useLogin() {
   >({
     mutationFn: AuthService.login,
 
-    onSuccess: (data) => {
-      if (data.success) {
-        toast.success("Đăng nhập thành công", "Chào mừng bạn quay trở lại.");
-      }
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
     },
 
