@@ -4,6 +4,7 @@ import { HiOutlineX, HiOutlineSearch, HiOutlineCheck } from "react-icons/hi";
 import { AiOutlineFilePdf } from "react-icons/ai";
 import { FiFileText } from "react-icons/fi";
 import { closeModalAtom, collectionIdAtom } from "../../stores/modalStore";
+import { processUpdateAtom, processLogAtom } from "@/stores/sseStore";
 import { useRAGPendingDocumentsInfinite } from "@/hooks/data/useRAGDocumentHooks";
 import { useProcessRAGCollection } from "@/hooks/data/useRAGCollectionHooks";
 import { useAuth } from "@/hooks/useAuth";
@@ -17,6 +18,8 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
   const [, closeModal] = useAtom(closeModalAtom);
   const [collectionId] = useAtom(collectionIdAtom);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [, setProcessUpdate] = useAtom(processUpdateAtom);
+  const [, setProcessLog] = useAtom(processLogAtom);
 
   const { user } = useAuth();
 
@@ -63,6 +66,9 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
   const handleConfirm = () => {
     if (!collectionId || selectedIds.length === 0 || !user?.userId) return;
 
+    setProcessUpdate(null);
+    setProcessLog(null);
+
     processDocs(
       {
         collectionId,
@@ -71,6 +77,11 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
       },
       {
         onSuccess: () => {
+          setProcessLog({
+            message: "Đang chuẩn bị dữ liệu...",
+            status: "info",
+            progress: 0,
+          });
           onConfirm?.();
           closeModal();
         },

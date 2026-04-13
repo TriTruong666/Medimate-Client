@@ -38,24 +38,63 @@ export default function KnowledgeDetailCollectionPage() {
   const { id: collectionId } = useParams();
   const [isIndexing, setIsIndexing] = useState(false);
   const [currentStep, setCurrentStep] = useState<IndexingStep>("parse");
-  
+
   const queryClient = useQueryClient();
-  const { processUpdate } = useRagSse();
+  const { processUpdate, processLog } = useRagSse();
+  const [progress, setProgress] = useState(0);
+  const [logMessage, setLogMessage] = useState("");
 
   // Tự động refresh dữ liệu khi có cập nhật từ SSE
   useEffect(() => {
     if (processUpdate && processUpdate.collection_id === collectionId) {
       console.log("SSE process_update received, invalidating queries...");
-      queryClient.invalidateQueries({ queryKey: ["rag", "collections", collectionId] });
-      
+      queryClient.invalidateQueries({
+        queryKey: ["rag", "collections", collectionId],
+      });
+
       if (processUpdate.status === "indexing") {
         setIsIndexing(true);
-        // Map status to step if needed
-      } else if (processUpdate.status === "indexed" || processUpdate.status === "failed") {
-        setIsIndexing(false);
+      } else if (
+        processUpdate.status === "indexed" ||
+        processUpdate.status === "failed"
+      ) {
+        // Delay 3s để user thấy 100% trước khi chuyển phase
+        setTimeout(() => {
+          setIsIndexing(false);
+          setProgress(0);
+          setLogMessage("");
+        }, 3000);
       }
     }
   }, [processUpdate, collectionId, queryClient]);
+
+  useEffect(() => {
+    if (processLog) {
+      console.log("SSE processLog received:", processLog);
+
+      // Handle error status: Tự động thoát sau 3s để user kịp đọc lỗi
+      if (processLog.status === "error") {
+        setLogMessage(processLog.message);
+        setTimeout(() => {
+          setIsIndexing(false);
+          setProgress(0);
+          setLogMessage("");
+        }, 3000);
+        return;
+      }
+
+      // Khi có log nạp tài liệu, tự động chuyển sang giao diện Indexing nếu chưa bật
+      if (!isIndexing) {
+        console.log("Switching to Indexing UI because processLog is present");
+        setIsIndexing(true);
+      }
+
+      if (processLog.progress !== null && processLog.progress !== undefined) {
+        setProgress(processLog.progress);
+      }
+      setLogMessage(processLog.message);
+    }
+  }, [processLog, isIndexing]);
 
   return (
     <div className="page-layout">
@@ -76,7 +115,11 @@ export default function KnowledgeDetailCollectionPage() {
         </>
       ) : (
         <div className="min-h-screen place-content-center">
-          <IndexingCollectionUI currentStep={currentStep} />
+          <IndexingCollectionUI
+            progress={progress}
+            logMessage={logMessage}
+            onBack={() => setIsIndexing(false)}
+          />
         </div>
       )}
     </div>
@@ -92,7 +135,8 @@ function DetailCollectionForm() {
     collectionId || "",
   );
   const { mutate: updateCollection, isPending } = useUpdateRAGCollection();
-  const { mutate: removeDocs, isPending: isRemoving } = useRemoveDocumentsFromCollection();
+  const { mutate: removeDocs, isPending: isRemoving } =
+    useRemoveDocumentsFromCollection();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -195,13 +239,13 @@ function DetailCollectionForm() {
           </div>
 
           {collection?.documents && collection.documents.length > 0 && (
-            <div className="thin-scrollbar mt-4 max-h-120 space-y-2 overflow-y-auto pr-1">
+            <div className="thin-scrollbar mt-4 space-y-2 overflow-y-auto pr-1">
               {collection.documents.map((doc) => (
                 <div
                   key={doc.id}
                   className={`group relative flex items-center justify-between rounded-xl border p-3 transition-all ${
                     doc.status === "indexing"
-                      ? "border-green-500/30 bg-green-500/5 animate-pulse-slow"
+                      ? "animate-pulse-slow border-green-500/30 bg-green-500/5"
                       : doc.status === "indexed"
                         ? "border-primary/20 bg-primary/5"
                         : doc.status === "failed"
@@ -234,7 +278,9 @@ function DetailCollectionForm() {
                     <div className="min-w-0 flex-1">
                       <p
                         className={`truncate text-sm font-semibold ${
-                          doc.status === "failed" ? "text-red-200" : "text-white"
+                          doc.status === "failed"
+                            ? "text-red-200"
+                            : "text-white"
                         }`}
                       >
                         {doc.doc_name}
@@ -257,14 +303,14 @@ function DetailCollectionForm() {
                             data: { document_ids: [doc.id] },
                           });
                       }}
-                      className="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-500 opacity-0 transition-all hover:bg-red-500/20 group-hover:opacity-100 disabled:opacity-30"
+                      className="mr-2 flex h-6 w-6 items-center justify-center rounded-lg bg-red-500/10 text-red-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/20 disabled:opacity-30"
                       title="Gỡ khỏi collection"
                     >
                       <IoClose className="text-lg" />
                     </button>
 
                     {doc.status === "indexed" ? (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <div className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full">
                         <svg
                           className="h-4 w-4"
                           fill="none"
@@ -281,7 +327,7 @@ function DetailCollectionForm() {
                       </div>
                     ) : doc.status === "indexing" ? (
                       <div className="flex h-5 w-5 items-center justify-center">
-                        <div className="h-2 w-2 rounded-full bg-green-400 animate-ping" />
+                        <div className="h-2 w-2 animate-ping rounded-full bg-green-400" />
                       </div>
                     ) : doc.status === "failed" ? (
                       <div className="text-red-400">
@@ -358,48 +404,18 @@ const steps: {
 ];
 
 function IndexingCollectionUI({
-  currentStep = "chunk",
+  progress,
+  logMessage,
+  onBack,
 }: {
-  currentStep: IndexingStep;
+  progress: number;
+  logMessage: string;
+  onBack: () => void;
 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-
-  useEffect(() => {
-    if (currentIndex >= steps.length) return;
-
-    const stepTarget = steps[currentIndex].percent;
-
-    // random duration 2s → 4s
-    const duration = 2000 + Math.random() * 2000;
-    const startTime = Date.now();
-
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const ratio = Math.min(elapsed / duration, 1);
-
-      const newProgress =
-        (currentIndex === 0 ? 0 : steps[currentIndex - 1].percent) +
-        ratio *
-          (stepTarget -
-            (currentIndex === 0 ? 0 : steps[currentIndex - 1].percent));
-
-      setProgress(Math.floor(newProgress));
-
-      if (ratio === 1) {
-        clearInterval(interval);
-
-        setCompletedSteps((prev) => [...prev, currentIndex]);
-
-        setTimeout(() => {
-          setCurrentIndex((prev) => prev + 1);
-        }, 2000); // delay chút cho đẹp
-      }
-    }, 16);
-
-    return () => clearInterval(interval);
-  }, [currentIndex]);
+  const currentIndex = steps.findIndex((s) => progress <= s.percent);
+  const completedSteps = steps
+    .map((s, i) => (progress > s.percent ? i : -1))
+    .filter((i) => i !== -1);
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center text-white">
@@ -408,7 +424,8 @@ function IndexingCollectionUI({
         Đang nạp dữ liệu
       </h2>
       <p className="mt-2 max-w-xl text-center text-sm text-white/60">
-        Hệ thống đang xử lý tài liệu và xây dựng dữ liệu tìm kiếm.
+        {logMessage ||
+          "Hệ thống đang xử lý tài liệu và xây dựng dữ liệu tìm kiếm."}
       </p>
 
       {/* Progress */}
@@ -424,8 +441,9 @@ function IndexingCollectionUI({
       {/* Steps – LEFT ALIGNED */}
       <div className="mt-8 w-full max-w-xl space-y-3 text-sm">
         {steps.map((step, index) => {
-          const isActive = index === currentIndex;
-          const isDone = completedSteps.includes(index);
+          const isActive =
+            index === (currentIndex === -1 ? steps.length - 1 : currentIndex);
+          const isDone = completedSteps.includes(index) || progress === 100;
 
           return (
             <div key={step.key} className="flex items-center justify-between">
@@ -466,12 +484,12 @@ function IndexingCollectionUI({
         gian
       </div>
       <div className="mt-5">
-        <a
-          href="/dashboard/rag"
+        <button
+          onClick={onBack}
           className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10"
         >
           Quay lại <IoArrowBack />
-        </a>
+        </button>
       </div>
     </div>
   );
