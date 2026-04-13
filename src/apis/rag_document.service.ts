@@ -53,3 +53,10 @@ export const getPendingDocuments = async (params: {
   });
   return res.data;
 };
+
+export const deleteDocument = async (
+  documentId: string,
+): Promise<RAGApiResponse<null>> => {
+  const res = await axiosRAGClient.delete(`api/v1/documents/${documentId}/`);
+  return res.data;
+};

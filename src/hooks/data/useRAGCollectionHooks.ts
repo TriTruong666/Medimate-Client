@@ -7,6 +7,7 @@ import type {
   AssignDocumentToCollectionRequest,
   UpdateCollectionRequest,
   ProcessCollectionRequest,
+  RemoveDocumentFromCollectionRequest,
 } from "@/types/RAGCollection";
 
 /**
@@ -150,6 +151,35 @@ export function useUpdateRAGCollection() {
         });
       } else {
         toast.error("Thất bại", res.message || "Cập nhật thất bại");
+      }
+    },
+    onError: (err) => {
+      toast.error("Lỗi", getApiErrorMessage(err));
+    },
+  });
+}
+
+/**
+ * Hook gỡ tài liệu khỏi collection
+ */
+export function useRemoveDocumentsFromCollection() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
+      collectionId,
+      data,
+    }: {
+      collectionId: string;
+      data: RemoveDocumentFromCollectionRequest;
+    }) => RAGCollectionService.removeDocumentFromCollection(collectionId, data),
+    onSuccess: (res, variables) => {
+      if (res.success) {
+        toast.success("Thành công", "Đã gỡ tài liệu khỏi collection");
+        queryClient.invalidateQueries({
+          queryKey: ["rag", "collections", variables.collectionId],
+        });
+      } else {
+        toast.error("Thất bại", res.message || "Gỡ tài liệu thất bại");
       }
     },
     onError: (err) => {

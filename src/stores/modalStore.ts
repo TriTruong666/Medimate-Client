@@ -40,6 +40,7 @@ export const unlockTypeAtom = atom<UnlockType>(null);
 export const cancelTypeAtom = atom<CancelType>(null);
 
 export const deleteTypeAtom = atom<DeleteType>(null);
+export const deleteIdAtom = atom<string | null>(null);
 
 export const collectionIdAtom = atom<string | null>(null);
 
@@ -55,6 +56,7 @@ export const closeModalAtom = atom(null, (_, set) => {
   set(unlockTypeAtom, null);
   set(cancelTypeAtom, null);
   set(deleteTypeAtom, null);
+  set(deleteIdAtom, null);
   set(paymentAtom, null);
   set(confirmSubmitDataAtom, null);
 });
@@ -81,10 +83,14 @@ export const openCancelModalAtom = atom(null, (_, set, type: CancelType) => {
   set(modalAtom, "cancel");
 });
 
-export const openDeleteModalAtom = atom(null, (_, set, type: DeleteType) => {
-  set(deleteTypeAtom, type);
-  set(modalAtom, "delete");
-});
+export const openDeleteModalAtom = atom(
+  null,
+  (_, set, type: DeleteType, id: string) => {
+    set(deleteIdAtom, id);
+    set(deleteTypeAtom, type);
+    set(modalAtom, "delete");
+  },
+);
 
 export const openTransactionModalAtom = atom(
   null,

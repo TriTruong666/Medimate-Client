@@ -175,3 +175,24 @@ export function useRAGPendingDocumentsInfinite(params: {
     },
   });
 }
+
+/**
+ * Hook xóa tài liệu vĩnh viễn
+ */
+export function useDeleteRAGDocument() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (documentId: string) => RAGDocumentService.deleteDocument(documentId),
+    onSuccess: (res) => {
+      if (res.success) {
+        toast.success("Thành công", "Đã xóa tài liệu vĩnh viễn");
+        queryClient.invalidateQueries({ queryKey: ["rag", "documents"] });
+      } else {
+        toast.error("Thất bại", res.message || "Xóa tài liệu thất bại");
+      }
+    },
+    onError: (err) => {
+      toast.error("Lỗi", getApiErrorMessage(err));
+    },
+  });
+}

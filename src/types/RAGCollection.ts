@@ -19,6 +19,10 @@ export interface AssignDocumentToCollectionRequest {
   document_ids: string[];
 }
 
+export interface RemoveDocumentFromCollectionRequest {
+  document_ids: string[];
+}
+
 export interface UpdateCollectionRequest {
   name?: string;
   description?: string;

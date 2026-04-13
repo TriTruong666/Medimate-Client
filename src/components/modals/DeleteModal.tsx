@@ -1,10 +1,13 @@
 import { useAtom } from "jotai";
 import { HiOutlineX, HiOutlineInformationCircle } from "react-icons/hi";
-import { closeModalAtom, deleteTypeAtom } from "../../stores/modalStore";
+import { closeModalAtom, deleteTypeAtom, deleteIdAtom } from "../../stores/modalStore";
+import { useDeleteRAGDocument } from "@/hooks/data/useRAGDocumentHooks";
 
 export function DeleteModal() {
   const [deleteType] = useAtom(deleteTypeAtom);
+  const [deleteId] = useAtom(deleteIdAtom);
   const [, closeModal] = useAtom(closeModalAtom);
+  const deleteMutation = useDeleteRAGDocument();
 
   const title = deleteType === "document" ? "Xoá tài liệu" : "Xoá";
 
@@ -57,13 +60,21 @@ export function DeleteModal() {
         </button>
 
         <button
-          className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400"
+          disabled={deleteMutation.isPending}
+          className="flex min-w-[80px] items-center justify-center rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-400 disabled:opacity-50"
           onClick={() => {
-            console.log("Xoá:", deleteType);
-            closeModal();
+            if (deleteType === "document" && deleteId) {
+              deleteMutation.mutate(deleteId, {
+                onSuccess: () => {
+                  closeModal();
+                },
+              });
+            } else {
+              closeModal();
+            }
           }}
         >
-          Xoá
+          {deleteMutation.isPending ? "Đang xoá..." : "Xoá"}
         </button>
       </div>
     </div>

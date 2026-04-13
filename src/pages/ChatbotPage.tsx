@@ -52,20 +52,20 @@ type Suggestion = {
 
 const suggestions: Suggestion[] = [
   {
-    title: "Tóm tắt tài liệu",
-    description: "Giải thích nội dung chính của collection",
+    title: "Chế độ ăn cho người tiểu đường",
+    description: "Gợi ý thực phẩm nên và không nên ăn để kiểm soát đường huyết.",
   },
   {
-    title: "Tìm thông tin",
-    description: "Trả lời câu hỏi dựa trên dữ liệu đã index",
+    title: "Cách giảm căng thẳng hiệu quả",
+    description: "Cung cấp các bài tập và thói quen giúp cải thiện tinh thần.",
   },
   {
-    title: "So sánh nội dung",
-    description: "So sánh nhiều tài liệu với nhau",
+    title: "Triệu chứng cúm mùa là gì?",
+    description: "Phân biệt cúm mùa với cảm lạnh và cách phòng ngừa cơ bản.",
   },
   {
-    title: "Sinh câu hỏi",
-    description: "Tạo bộ câu hỏi từ tài liệu",
+    title: "Tư vấn sức khỏe tim mạch",
+    description: "Lời khuyên về lối sống và dinh dưỡng để bảo vệ trái tim.",
   },
 ];
 
@@ -220,6 +220,7 @@ function WelcomeChatbot({
           {suggestions.map((item) => (
             <button
               key={item.title}
+              onClick={() => onStart?.(item.title)}
               className="group cursor-pointer rounded-xl border border-white/10 px-4 py-3 text-left transition hover:border-white/30"
             >
               <div className="flex items-center justify-between">

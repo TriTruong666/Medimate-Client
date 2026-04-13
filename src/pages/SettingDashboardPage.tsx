@@ -941,7 +941,7 @@ export function SystemSettingDashboardPage() {
                     {isLoading
                       ? "Đang kiểm tra..."
                       : isPyActive
-                        ? `Hoạt động bình thường (v${pyHealth?.version})`
+                        ? `Hoạt động bình thường (v${pyHealth?.version}) - Uptime: ${pyHealth?.uptime_human}`
                         : "Không phản hồi"}
                   </p>
                 </div>

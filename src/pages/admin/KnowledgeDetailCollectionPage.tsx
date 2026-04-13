@@ -4,11 +4,13 @@ import { IoArrowBack } from "react-icons/io5";
 import { HiOutlinePlus, HiOutlinePlay } from "react-icons/hi";
 import { AiOutlineFilePdf } from "react-icons/ai";
 import { FiFileText } from "react-icons/fi";
+import { IoClose } from "react-icons/io5";
 import { useNavigate, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import {
   useRAGCollectionDetail,
   useUpdateRAGCollection,
+  useRemoveDocumentsFromCollection,
 } from "@/hooks/data/useRAGCollectionHooks";
 import {
   openIndexModalAtom,
@@ -16,6 +18,7 @@ import {
 } from "@/stores/modalStore";
 import { useRagSse } from "@/hooks/sse/useRagSseHooks";
 import { useQueryClient } from "@tanstack/react-query";
+import { Spinner } from "@/components/custom-ui/Spinner";
 
 const breadcrumbItems = [
   {
@@ -89,6 +92,7 @@ function DetailCollectionForm() {
     collectionId || "",
   );
   const { mutate: updateCollection, isPending } = useUpdateRAGCollection();
+  const { mutate: removeDocs, isPending: isRemoving } = useRemoveDocumentsFromCollection();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -115,8 +119,8 @@ function DetailCollectionForm() {
 
   if (isLoading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-t-2 border-white" />
+      <div className="flex h-64 w-full items-center justify-center">
+        <Spinner />
       </div>
     );
   }
@@ -195,7 +199,7 @@ function DetailCollectionForm() {
               {collection.documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className={`flex items-center justify-between rounded-xl border p-3 transition-all ${
+                  className={`group relative flex items-center justify-between rounded-xl border p-3 transition-all ${
                     doc.status === "indexing"
                       ? "border-green-500/30 bg-green-500/5 animate-pulse-slow"
                       : doc.status === "indexed"
@@ -206,21 +210,33 @@ function DetailCollectionForm() {
                   }`}
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
-                      doc.status === "indexing" ? "bg-green-500/20" : 
-                      doc.status === "indexed" ? "bg-primary/20" : 
-                      doc.status === "failed" ? "bg-red-500/20" : "bg-white/5"
-                    }`}>
+                    <div
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                        doc.status === "indexing"
+                          ? "bg-green-500/20"
+                          : doc.status === "indexed"
+                            ? "bg-primary/20"
+                            : doc.status === "failed"
+                              ? "bg-red-500/20"
+                              : "bg-white/5"
+                      }`}
+                    >
                       {doc.type === "pdf" ? (
-                        <AiOutlineFilePdf className={`text-xl ${doc.status === "failed" ? "text-red-400" : "text-red-400/80"}`} />
+                        <AiOutlineFilePdf
+                          className={`text-xl ${doc.status === "failed" ? "text-red-400" : "text-red-400/80"}`}
+                        />
                       ) : (
-                        <FiFileText className={`text-xl ${doc.status === "failed" ? "text-blue-400" : "text-blue-400/80"}`} />
+                        <FiFileText
+                          className={`text-xl ${doc.status === "failed" ? "text-blue-400" : "text-blue-400/80"}`}
+                        />
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm font-semibold ${
-                        doc.status === "failed" ? "text-red-200" : "text-white"
-                      }`}>
+                      <p
+                        className={`truncate text-sm font-semibold ${
+                          doc.status === "failed" ? "text-red-200" : "text-white"
+                        }`}
+                      >
                         {doc.doc_name}
                       </p>
                       <p className="mt-0.5 text-[10px] text-gray-500">
@@ -230,10 +246,37 @@ function DetailCollectionForm() {
                   </div>
 
                   <div className="flex shrink-0 items-center pl-4">
+                    {/* Hover remove button */}
+                    <button
+                      type="button"
+                      disabled={isRemoving}
+                      onClick={() => {
+                        if (collectionId)
+                          removeDocs({
+                            collectionId,
+                            data: { document_ids: [doc.id] },
+                          });
+                      }}
+                      className="mr-2 flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 text-red-500 opacity-0 transition-all hover:bg-red-500/20 group-hover:opacity-100 disabled:opacity-30"
+                      title="Gỡ khỏi collection"
+                    >
+                      <IoClose className="text-lg" />
+                    </button>
+
                     {doc.status === "indexed" ? (
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary">
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={3}
+                            d="M5 13l4 4L19 7"
+                          />
                         </svg>
                       </div>
                     ) : doc.status === "indexing" ? (
@@ -242,9 +285,19 @@ function DetailCollectionForm() {
                       </div>
                     ) : doc.status === "failed" ? (
                       <div className="text-red-400">
-                         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                         </svg>
+                        <svg
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
                       </div>
                     ) : null}
                   </div>

@@ -398,7 +398,7 @@ function DocumentCard({ data }: DocumentCardProps) {
           </Tooltip>
           <Tooltip content="Xoá tài liệu">
             <IconAction
-              onClick={() => openDeleteModal("document")}
+              onClick={() => openDeleteModal("document", data.id)}
               icon={<HiOutlineTrash />}
               danger
             />
@@ -477,7 +477,7 @@ function DocumentTable({
               </Tooltip>
               <Tooltip content="Xoá tài liệu">
                 <IconAction
-                  onClick={() => openDeleteModal("document")}
+                  onClick={() => openDeleteModal("document", row.id)}
                   icon={<HiOutlineTrash />}
                   danger
                 />

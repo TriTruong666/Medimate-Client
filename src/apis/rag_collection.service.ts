@@ -8,6 +8,7 @@ import type {
   CreateCollectionRequest,
   ProcessCollectionRequest,
   RAGCollection,
+  RemoveDocumentFromCollectionRequest,
   UpdateCollectionRequest,
 } from "@/types/RAGCollection";
 
@@ -42,6 +43,17 @@ export const assignDocumentToCollection = async (
 ): Promise<RAGApiResponse<null>> => {
   const res = await axiosRAGClient.post(
     `api/v1/collections/${collectionId}/assign-documents/`,
+    data,
+  );
+  return res.data;
+};
+
+export const removeDocumentFromCollection = async (
+  collectionId: string,
+  data: RemoveDocumentFromCollectionRequest,
+): Promise<RAGApiResponse<null>> => {
+  const res = await axiosRAGClient.post(
+    `api/v1/collections/${collectionId}/remove-documents/`,
     data,
   );
   return res.data;

@@ -4,6 +4,8 @@ import type { RAGApiResponse } from "@/types/APIResponse";
 export type SystemHealthData = {
   version: string;
   author: string;
+  uptime_seconds: number;
+  uptime_human: string;
 };
 
 export const getRagServerHealth = async (): Promise<RAGApiResponse<SystemHealthData>> => {
