@@ -21,8 +21,17 @@ import { toast } from "@/hooks/useToast";
 import { useQuery } from "@tanstack/react-query";
 import { getRagServerHealth } from "@/apis/system.service";
 import { getAIModelList } from "@/apis/rag_ai_model.service";
-import { useUpdateAIModel } from "@/hooks/data/useRAGAIModelHooks";
+import {
+  useUpdateAIModel,
+  useAllAIModels,
+} from "@/hooks/data/useRAGAIModelHooks";
+import {
+  useRAGConfig,
+  useUpdateRAGConfig,
+} from "@/hooks/data/useRAGConfigHooks";
 import type { AIModel } from "@/types/RAGAIModel";
+import GlassSelect from "../components/custom-ui/Select";
+import { Spinner } from "../components/custom-ui/Spinner";
 
 type SettingCardProps = {
   label: string;
@@ -87,10 +96,8 @@ export function ProfileSettingDashboardPage() {
   const [, openConfirm] = useAtom(openConfirmUpdateProfileModalAtom);
   const doctorId = doctorProfile?.doctorId || "";
 
-  const {
-    data: bankAccounts = [],
-    isLoading: isBankAccountsLoading,
-  } = useDoctorBankAccounts(doctorId);
+  const { data: bankAccounts = [], isLoading: isBankAccountsLoading } =
+    useDoctorBankAccounts(doctorId);
   const createBankAccountMutation = useCreateDoctorBankAccount(doctorId);
   const updateBankAccountMutation = useUpdateDoctorBankAccount(doctorId);
   const deleteBankAccountMutation = useDeleteDoctorBankAccount(doctorId);
@@ -238,12 +245,18 @@ export function ProfileSettingDashboardPage() {
 
   const handleSubmitBankAccount = async () => {
     if (user?.role !== "Doctor") {
-      toast.warn("Tính năng giới hạn", "Chỉ bác sĩ mới có thể quản lý tài khoản ngân hàng.");
+      toast.warn(
+        "Tính năng giới hạn",
+        "Chỉ bác sĩ mới có thể quản lý tài khoản ngân hàng.",
+      );
       return;
     }
 
     if (!doctorId) {
-      toast.warn("Thiếu thông tin", "Không tìm thấy thông tin bác sĩ để lưu tài khoản ngân hàng.");
+      toast.warn(
+        "Thiếu thông tin",
+        "Không tìm thấy thông tin bác sĩ để lưu tài khoản ngân hàng.",
+      );
       return;
     }
 
@@ -254,7 +267,10 @@ export function ProfileSettingDashboardPage() {
     };
 
     if (!payload.bankName || !payload.accountNumber || !payload.accountHolder) {
-      toast.warn("Thiếu thông tin", "Vui lòng nhập đầy đủ tên ngân hàng, số tài khoản và chủ tài khoản.");
+      toast.warn(
+        "Thiếu thông tin",
+        "Vui lòng nhập đầy đủ tên ngân hàng, số tài khoản và chủ tài khoản.",
+      );
       return;
     }
 
@@ -502,9 +518,13 @@ export function ProfileSettingDashboardPage() {
 
               <div className="rounded-xl border border-white/10 bg-white/5 p-3">
                 {isBankAccountsLoading ? (
-                  <p className="text-sm text-gray-400">Đang tải tài khoản ngân hàng...</p>
+                  <p className="text-sm text-gray-400">
+                    Đang tải tài khoản ngân hàng...
+                  </p>
                 ) : bankAccounts?.length === 0 ? (
-                  <p className="text-sm text-gray-400">Chưa có tài khoản ngân hàng nào.</p>
+                  <p className="text-sm text-gray-400">
+                    Chưa có tài khoản ngân hàng nào.
+                  </p>
                 ) : (
                   <div className="space-y-2">
                     {bankAccounts?.map((account) => (
@@ -523,14 +543,20 @@ export function ProfileSettingDashboardPage() {
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => handleEditBankAccount(account.bankAccountId)}
+                            onClick={() =>
+                              handleEditBankAccount(account.bankAccountId)
+                            }
                             className="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-gray-200 transition hover:bg-white/10"
                           >
                             Sửa
                           </button>
                           <button
                             type="button"
-                            onClick={() => void handleDeleteBankAccount(account.bankAccountId)}
+                            onClick={() =>
+                              void handleDeleteBankAccount(
+                                account.bankAccountId,
+                              )
+                            }
                             disabled={deleteBankAccountMutation.isPending}
                             className="rounded-lg border border-red-500/30 px-3 py-1.5 text-xs text-red-300 transition hover:bg-red-500/10"
                           >
@@ -685,7 +711,6 @@ export function SecuritySettingDashboardPage() {
             />
           </form>
         </SettingCard>
-
       </div>
     </div>
   );
@@ -850,7 +875,11 @@ export function MessageSettingDashboardPage() {
 }
 
 export function SystemSettingDashboardPage() {
-  const { data: pyHealth, isLoading, isError } = useQuery({
+  const {
+    data: pyHealth,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["rag-server-health"],
     queryFn: async () => {
       const res = await getRagServerHealth();
@@ -900,15 +929,33 @@ export function SystemSettingDashboardPage() {
             {/* Python server */}
             <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4">
               <div className="flex items-center gap-4">
-                <IconBadge icon={<HiOutlineServer />} type={isLoading ? "info" : isPyActive ? "success" : "error"} />
+                <IconBadge
+                  icon={<HiOutlineServer />}
+                  type={isLoading ? "info" : isPyActive ? "success" : "error"}
+                />
                 <div>
-                  <p className="text-sm font-medium text-white">AI / Python Server (RAG)</p>
+                  <p className="text-sm font-medium text-white">
+                    AI / Python Server (RAG)
+                  </p>
                   <p className="text-xs text-white/40">
-                    {isLoading ? "Đang kiểm tra..." : isPyActive ? `Hoạt động bình thường (v${pyHealth?.version})` : "Không phản hồi"}
+                    {isLoading
+                      ? "Đang kiểm tra..."
+                      : isPyActive
+                        ? `Hoạt động bình thường (v${pyHealth?.version})`
+                        : "Không phản hồi"}
                   </p>
                 </div>
               </div>
-              <Badge value={isLoading ? "Đang tải" : isPyActive ? "Ổn định" : "Lỗi kết nối"} type={isLoading ? "info" : isPyActive ? "success" : "error"} />
+              <Badge
+                value={
+                  isLoading
+                    ? "Đang tải"
+                    : isPyActive
+                      ? "Ổn định"
+                      : "Lỗi kết nối"
+                }
+                type={isLoading ? "info" : isPyActive ? "success" : "error"}
+              />
             </div>
           </div>
         </SettingCard>
@@ -990,8 +1037,9 @@ function AIModelConfigItem({ model }: AIModelConfigItemProps) {
         <p className="text-sm font-medium text-white">{model.name}</p>
         {!editing ? (
           <div className="flex flex-col gap-0.5">
-            <p className="text-[10px] text-white/30 truncate">
-              Model Name: <span className="text-white/50">{config.modelName || "N/A"}</span>
+            <p className="truncate text-[10px] text-white/30">
+              Model Name:{" "}
+              <span className="text-white/50">{config.modelName || "N/A"}</span>
             </p>
             <p className="text-[10px] tracking-widest text-white/40">
               API Key: {masked ? "•••••••••••••••••••••••••••" : config.apiKey}
@@ -1003,7 +1051,9 @@ function AIModelConfigItem({ model }: AIModelConfigItemProps) {
               className="input-primary text-xs text-white"
               value={config.modelName}
               placeholder="Model Name (VD: models/gemini-pro)"
-              onChange={(e) => setConfig({ ...config, modelName: e.target.value })}
+              onChange={(e) =>
+                setConfig({ ...config, modelName: e.target.value })
+              }
             />
             <input
               className="input-primary text-xs text-white"
@@ -1039,7 +1089,11 @@ function AIModelConfigItem({ model }: AIModelConfigItemProps) {
           </>
         ) : (
           <>
-            <Button color="green" onClick={handleSave} disabled={updateMutation.isPending}>
+            <Button
+              color="green"
+              onClick={handleSave}
+              disabled={updateMutation.isPending}
+            >
               {updateMutation.isPending ? "Đang lưu..." : "Lưu"}
             </Button>
             <Button
@@ -1062,7 +1116,11 @@ function AIModelConfigItem({ model }: AIModelConfigItemProps) {
 }
 
 export function APIKeysSettingDashboardPage() {
-  const { data: modelsResponse, isLoading, isError } = useQuery({
+  const {
+    data: modelsResponse,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["ai-models-list"],
     queryFn: () => getAIModelList({ skip: 0, limit: 100 }),
   });
@@ -1084,19 +1142,187 @@ export function APIKeysSettingDashboardPage() {
         >
           <div className="flex max-w-3xl flex-col gap-4">
             {isLoading ? (
-              <p className="text-sm text-gray-400">Đang tải danh sách model...</p>
+              <p className="text-sm text-gray-400">
+                Đang tải danh sách model...
+              </p>
             ) : isError ? (
-              <p className="text-sm text-red-400">Không thể tải danh sách model.</p>
+              <p className="text-sm text-red-400">
+                Không thể tải danh sách model.
+              </p>
             ) : models.length === 0 ? (
-              <p className="text-sm text-gray-400">Chưa có model nào được cấu hình.</p>
+              <p className="text-sm text-gray-400">
+                Chưa có model nào được cấu hình.
+              </p>
             ) : (
               models.map((model) => (
-                <AIModelConfigItem
-                  key={model.id}
-                  model={model}
-                />
+                <AIModelConfigItem key={model.id} model={model} />
               ))
             )}
+          </div>
+        </SettingCard>
+      </div>
+    </div>
+  );
+}
+
+export function SystemConfigSettingDashboardPage() {
+  const { data: config, isLoading: isConfigLoading } = useRAGConfig();
+  const { data: models = [] } = useAllAIModels();
+  const updateMutation = useUpdateRAGConfig();
+
+  const [form, setForm] = useState({
+    name: "",
+    top_k: 5,
+    threshold: 0.4,
+    temperature: 0.1,
+    prompt_template: "",
+    default_llm_id: "",
+  });
+
+  useEffect(() => {
+    if (config) {
+      setForm({
+        name: config.name || "",
+        top_k: config.top_k || 5,
+        threshold: config.threshold || 0.4,
+        temperature: config.temperature || 0.1,
+        prompt_template: config.prompt_template || "",
+        default_llm_id: config.default_llm_id || "",
+      });
+    }
+  }, [config]);
+
+  const handleSubmit = async () => {
+    try {
+      await updateMutation.mutateAsync(form);
+    } catch {
+      // Error handled by hook
+    }
+  };
+
+  const modelOptions =
+    models?.map((m) => ({
+      label: m.name,
+      value: m.id,
+    })) || [];
+
+  if (isConfigLoading) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full space-y-6 px-12 py-4 pb-20">
+      <div className="flex flex-col space-y-6">
+        <SettingCard
+          label="Cấu hình tìm kiếm (RAG)"
+          description="Tinh chỉnh các tham số truy xuất dữ liệu từ Kho kiến thức"
+          onSubmit={handleSubmit}
+          buttonTitle={
+            updateMutation.isPending ? "Đang lưu..." : "Lưu cấu hình"
+          }
+          helper={
+            <span className="helper-setting-card">
+              Các thay đổi sẽ áp dụng ngay lập tức cho các cuộc hội thoại mới
+            </span>
+          }
+        >
+          <div className="flex max-w-3xl flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
+                Tên hệ thống
+              </label>
+              <input
+                className="input-primary w-full text-white"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="Ví dụ: Medimate RAG Core"
+              />
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
+                  Top K
+                </label>
+                <input
+                  type="number"
+                  className="input-primary w-full text-white"
+                  value={form.top_k}
+                  onChange={(e) =>
+                    setForm({ ...form, top_k: Number(e.target.value) })
+                  }
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
+                  Threshold
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  className="input-primary w-full text-white"
+                  value={form.threshold}
+                  onChange={(e) =>
+                    setForm({ ...form, threshold: Number(e.target.value) })
+                  }
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
+                  Temperature
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  className="input-primary w-full text-white"
+                  value={form.temperature}
+                  onChange={(e) =>
+                    setForm({ ...form, temperature: Number(e.target.value) })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
+                AI Model mặc định
+              </label>
+              <GlassSelect
+                value={form.default_llm_id}
+                onChange={(val) => setForm({ ...form, default_llm_id: val })}
+                options={modelOptions}
+                placeholder="Chọn AI Model mặc định cho hệ thống"
+              />
+            </div>
+          </div>
+        </SettingCard>
+
+        <SettingCard
+          label="Prompt Template"
+          description="Định nghĩa phong cách và hướng dẫn trả lời cho AI"
+          onSubmit={handleSubmit}
+          buttonTitle={
+            updateMutation.isPending ? "Đang lưu..." : "Lưu Template"
+          }
+          helper={
+            <span className="helper-setting-card">
+              Sử dụng {"{context_str}"} và {"{query_str}"} để truyền dữ liệu
+            </span>
+          }
+        >
+          <div className="flex max-w-5xl flex-col gap-4">
+            <textarea
+              className="input-primary min-h-[500px] w-full resize-none p-6 text-sm leading-relaxed text-white thin-scrollbar"
+              value={form.prompt_template}
+              onChange={(e) =>
+                setForm({ ...form, prompt_template: e.target.value })
+              }
+              placeholder="Nhập System Prompt Template..."
+            />
           </div>
         </SettingCard>
       </div>

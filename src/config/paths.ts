@@ -68,10 +68,9 @@ export const PATHS = {
     SETTINGS: {
       ROOT: "/dashboard/settings",
       SECURITY: "/dashboard/settings/security",
-      NOTIFICATION: "/dashboard/settings/notification",
-      MESSAGE: "/dashboard/settings/message",
       SYSTEM: "/dashboard/settings/system",
       KEYS: "/dashboard/settings/keys",
+      CONFIG: "/dashboard/settings/configs",
     },
   },
 };

@@ -113,6 +113,11 @@ const APIKeysSettingDashboardPage = lazy(() =>
     default: m.APIKeysSettingDashboardPage,
   })),
 );
+const SystemConfigSettingDashboardPage = lazy(() =>
+  import("../pages/SettingDashboardPage").then((m) => ({
+    default: m.SystemConfigSettingDashboardPage,
+  })),
+);
 const PrescriptionRootPage = lazy(
   () => import("../pages/doctor/PrescriptionRootPage"),
 );
@@ -444,18 +449,6 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     roles: ["Admin", "User", "Doctor"],
   },
   {
-    path: PATHS.DASHBOARD.SETTINGS.NOTIFICATION,
-    element: <NotificationSettingDashboardPage />,
-    layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
-  },
-  {
-    path: PATHS.DASHBOARD.SETTINGS.MESSAGE,
-    element: <MessageSettingDashboardPage />,
-    layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
-  },
-  {
     path: PATHS.DASHBOARD.SETTINGS.SYSTEM,
     element: <SystemSettingDashboardPage />,
     layout: "settings",
@@ -464,6 +457,12 @@ export const ROUTES_CONFIG: RouteConfig[] = [
   {
     path: PATHS.DASHBOARD.SETTINGS.KEYS,
     element: <APIKeysSettingDashboardPage />,
+    layout: "settings",
+    roles: ["Admin", "User", "Doctor"],
+  },
+  {
+    path: PATHS.DASHBOARD.SETTINGS.CONFIG,
+    element: <SystemConfigSettingDashboardPage />,
     layout: "settings",
     roles: ["Admin", "User", "Doctor"],
   },
