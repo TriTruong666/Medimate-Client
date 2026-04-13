@@ -69,16 +69,13 @@ export function useRagSse(options: useRagSseOptions = {}) {
     const baseUrl = RAG_URL.endsWith("/") ? RAG_URL : `${RAG_URL}/`;
     const url = `${baseUrl}api/v1/sse/stream/${finalClientId}`;
 
-    console.log(`Connecting to SSE stream for client: ${finalClientId}`);
     const es = new EventSource(url, { withCredentials: true });
 
     es.onopen = () => {
-      console.log(`✅ SSE connected (Client: ${finalClientId})`);
       setIsConnected(true);
     };
 
     es.onerror = (err) => {
-      console.error("❌ SSE error", err);
       setIsConnected(false);
       es.close();
 
@@ -115,16 +112,13 @@ export function useRagSse(options: useRagSseOptions = {}) {
           if (handlersRef.current && handlersRef.current[type]) {
             handlersRef.current[type](data);
           }
-        } catch (e) {
-          console.error(`Failed to parse SSE ${type}`, e);
-        }
+        } catch (e) {}
       });
     });
 
     es.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("📩 SSE message received:", data);
 
         // Deduplicate globally using the timestamp and type
         if (isDuplicate(data.timestamp, data.type)) {
@@ -148,7 +142,6 @@ export function useRagSse(options: useRagSseOptions = {}) {
           handlersRef.current["message"](data);
         }
       } catch (e) {
-        console.log("📩 SSE message received (raw):", event.data);
         if (handlersRef.current && handlersRef.current["message"]) {
           handlersRef.current["message"](event.data);
         }
@@ -165,7 +158,6 @@ export function useRagSse(options: useRagSseOptions = {}) {
 
     return () => {
       if (eventSourceRef.current) {
-        console.log("Closing SSE connection");
         eventSourceRef.current.close();
       }
     };

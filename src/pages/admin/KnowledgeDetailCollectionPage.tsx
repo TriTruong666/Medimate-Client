@@ -47,7 +47,6 @@ export default function KnowledgeDetailCollectionPage() {
   // Tự động refresh dữ liệu khi có cập nhật từ SSE
   useEffect(() => {
     if (processUpdate && processUpdate.collection_id === collectionId) {
-      console.log("SSE process_update received, invalidating queries...");
       queryClient.invalidateQueries({
         queryKey: ["rag", "collections", collectionId],
       });
@@ -70,8 +69,6 @@ export default function KnowledgeDetailCollectionPage() {
 
   useEffect(() => {
     if (processLog) {
-      console.log("SSE processLog received:", processLog);
-
       // Handle error status: Tự động thoát sau 3s để user kịp đọc lỗi
       if (processLog.status === "error") {
         setLogMessage(processLog.message);
@@ -85,7 +82,6 @@ export default function KnowledgeDetailCollectionPage() {
 
       // Khi có log nạp tài liệu, tự động chuyển sang giao diện Indexing nếu chưa bật
       if (!isIndexing) {
-        console.log("Switching to Indexing UI because processLog is present");
         setIsIndexing(true);
       }
 
