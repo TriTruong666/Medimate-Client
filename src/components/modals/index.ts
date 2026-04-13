@@ -12,4 +12,5 @@ export * from "./PreviewPdfModal";
 export * from "./UnlockModal";
 export * from "./UploadDocumentModal";
 export * from "./ConfirmUpdateProfileModal";
+export * from "./ConsultationSessionDetailModal";
 export * from "./ProcessDocumentModal";

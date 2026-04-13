@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { HiOutlineEye, HiOutlineCalendar, HiOutlineClipboardCheck } from "react-icons/hi";
+import { HiOutlineEye, HiOutlineCalendar, HiOutlineClipboardCheck, HiOutlineInformationCircle } from "react-icons/hi";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
@@ -10,6 +10,7 @@ import { Spinner } from "@/components/custom-ui/Spinner";
 import { useMyConsultationSessions } from "@/hooks/data/useSessionHooks";
 import { formatDate } from "@/common/format";
 import type { SessionData } from "@/apis/session.service";
+import { ConsultationSessionDetailModal } from "@/components/modals/ConsultationSessionDetailModal";
 import { PrescriptionSessionModal } from "@/components/modals/PrescriptionSessionModal";
 import { PATHS } from "@/config/paths";
 
@@ -18,6 +19,9 @@ export default function PrescriptionRootPage() {
     string | null
   >(null);
   const [selectedSession, setSelectedSession] = useState<SessionData | null>(
+    null,
+  );
+  const [selectedSessionDetail, setSelectedSessionDetail] = useState<SessionData | null>(
     null,
   );
   const { data, isLoading, isError, refetch } = useMyConsultationSessions();
@@ -137,6 +141,12 @@ export default function PrescriptionRootPage() {
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-2">
+                <Tooltip content="Xem chi tiết session tư vấn">
+                  <IconAction
+                    icon={<HiOutlineInformationCircle />}
+                    onClick={() => setSelectedSessionDetail(session)}
+                  />
+                </Tooltip>
                 <Tooltip content="Xem chi tiết appointment">
                   <IconAction
                     icon={<HiOutlineEye />}
@@ -170,6 +180,12 @@ export default function PrescriptionRootPage() {
         open={!!selectedAppointmentId}
         appointmentId={selectedAppointmentId}
         onClose={() => setSelectedAppointmentId(null)}
+      />
+
+      <ConsultationSessionDetailModal
+        open={!!selectedSessionDetail}
+        session={selectedSessionDetail}
+        onClose={() => setSelectedSessionDetail(null)}
       />
 
       <PrescriptionSessionModal

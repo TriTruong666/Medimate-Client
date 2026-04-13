@@ -13,6 +13,8 @@ export interface SessionData {
   status: string;
   userJoined: boolean;
   doctorJoined: boolean;
+  guardianUserId?: string | null;
+  guardianJoined?: boolean;
   note?: string | null;
   doctorNote?: string | null;
 }
