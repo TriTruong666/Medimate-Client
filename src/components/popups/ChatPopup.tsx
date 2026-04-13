@@ -6,8 +6,9 @@ import { FiPaperclip } from "react-icons/fi";
 import { HiXMark } from "react-icons/hi2";
 import { IoSend } from "react-icons/io5";
 import { useChatIdentity, useChatSessionDetails, useChatSessionMessages, useMarkChatSessionMessagesRead, useSendChatSessionMessage } from "@/hooks/data/useChatDoctorHooks";
+import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "@/hooks/useToast";
-import { chatPopupAtom, closePopupAtom } from "../../stores/chatPopupStore";
+import { chatPopupAtom, closePopupAtom, chatSessionExpiryAtom } from "../../stores/chatPopupStore";
 import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
 import { Spinner } from "../custom-ui/Spinner";
 import type { ChatDoctorMessageResponse } from "@/types/ChatDoctor";
@@ -19,6 +20,8 @@ type ChatPopupProps = {
 export function ChatPopup({ sessionId }: ChatPopupProps) {
   const [, closePopup] = useAtom(closePopupAtom);
   const { doctorId } = useChatIdentity();
+    const [chatExpiryMap] = useAtom(chatSessionExpiryAtom);
+    const expiredAt = chatExpiryMap[sessionId];
   const {
     data: sessionDetails,
     isLoading: isDetailsLoading,
@@ -33,6 +36,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     error: messagesError,
     refetch: refetchMessages,
   } = useChatSessionMessages(sessionId);
+  const { isExpired, displayText: countdownText } = useCountdown(expiredAt);
   const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
   const hasMarkedReadRef = useRef<string | null>(null);
 
@@ -49,7 +53,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
 
   const displayName = sessionDetails?.partnerName || "Phòng chat";
-  const displayStatus = sessionDetails?.status || "Đang kết nối";
+  const displayStatus = isExpired ? "Hết hạn" : (sessionDetails?.status || "Đang kết nối");
   const partnerAvatar = sessionDetails?.partnerAvatar || null;
   const messageItems = useMemo(() => messages || [], [messages]);
 
@@ -63,7 +67,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
       className="flex h-105 w-92 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl"
     >
       <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
             {partnerAvatar ? (
               <img
@@ -75,17 +79,29 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
               displayName.charAt(0).toUpperCase()
             )}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <span className="block truncate text-sm font-semibold text-white">
               {displayName}
             </span>
-            <span className="text-xs text-green-400">{displayStatus}</span>
+            <span className={clsx(
+              "text-xs",
+              isExpired ? "text-red-400" : "text-green-400"
+            )}>
+              {displayStatus}
+            </span>
           </div>
+          {!isExpired && countdownText && (
+            <div className="flex shrink-0 items-center gap-1 rounded-lg bg-orange-500/20 px-2 py-1">
+              <span className="text-xs font-semibold text-orange-300">
+                {countdownText}
+              </span>
+            </div>
+          )}
         </div>
 
         <button
           onClick={() => closePopup(sessionId)}
-          className="rounded-lg p-1 text-white/60 hover:bg-white/10 hover:text-white"
+          className="ml-2 rounded-lg p-1 text-white/60 hover:bg-white/10 hover:text-white"
         >
           <HiXMark size={18} />
         </button>
@@ -105,7 +121,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
             }}
           />
         ) : (
-          <ChatThread sessionId={sessionId} messages={messageItems} />
+          <ChatThread sessionId={sessionId} messages={messageItems} isExpired={isExpired} />
         )}
       </div>
     </motion.div>
@@ -115,9 +131,11 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
 function ChatThread({
   sessionId,
   messages,
+  isExpired,
 }: {
   sessionId: string;
   messages: ChatDoctorMessageResponse[];
+  isExpired: boolean;
 }) {
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -167,7 +185,16 @@ function ChatThread({
         </div>
       </div>
 
-      <div className="border-t border-white/10 bg-white/2 px-3 py-2 backdrop-blur-md">
+      <div className={clsx(
+        "border-t border-white/10 bg-white/2 px-3 py-2 backdrop-blur-md transition-all",
+        isExpired && "bg-red-500/10"
+      )}>
+        {isExpired && (
+          <div className="mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            Hết hạn chat. Bạn chỉ có thể xem lại tin nhắn.
+          </div>
+        )}
+
         {selectedFile && (
           <div className="mb-2 flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
             <span className="truncate">{selectedFile.name}</span>
@@ -180,6 +207,7 @@ function ChatThread({
                 }
               }}
               className="ml-3 rounded-md px-1 text-white/50 transition hover:bg-white/10 hover:text-white"
+              disabled={isExpired}
             >
               <HiXMark size={14} />
             </button>
@@ -189,7 +217,8 @@ function ChatThread({
         <div
           className={clsx(
             "flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 transition-all",
-            isComposerFocused && "border-white/20 bg-white/10",
+            isComposerFocused && !isExpired && "border-white/20 bg-white/10",
+            isExpired && "opacity-50 cursor-not-allowed",
           )}
         >
           <input
@@ -200,13 +229,15 @@ function ChatThread({
               const file = event.target.files?.[0] || null;
               setSelectedFile(file);
             }}
+            disabled={isExpired}
           />
 
           <button
             type="button"
             onClick={handlePickFile}
-            className="mb-0.5 rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-white"
-            title="Đính kèm file"
+            className="mb-0.5 rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            title={isExpired ? "Phiên đã hết hạn" : "Đính kèm file"}
+            disabled={isExpired}
           >
             <FiPaperclip size={15} />
           </button>
@@ -217,25 +248,27 @@ function ChatThread({
             onFocus={() => setIsComposerFocused(true)}
             onBlur={() => setIsComposerFocused(false)}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
+              if (event.key === "Enter" && !event.shiftKey && !isExpired) {
                 event.preventDefault();
                 void handleSendMessage();
               }
             }}
-            placeholder="Aa"
+            placeholder={isExpired ? "Hết hạn chat" : "Aa"}
             rows={1}
-            className="max-h-24 min-h-8 flex-1 resize-none bg-transparent py-1 text-[13px] leading-5 text-white outline-none placeholder:text-white/40"
+            disabled={isExpired}
+            className="max-h-24 min-h-8 flex-1 resize-none bg-transparent py-1 text-[13px] leading-5 text-white outline-none placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed"
           />
 
           <button
             type="button"
             onClick={() => void handleSendMessage()}
-            disabled={sendMutation.isPending || (!content.trim() && !selectedFile)}
+            disabled={sendMutation.isPending || (!content.trim() && !selectedFile) || isExpired}
             className={clsx(
               "mb-0.5 flex h-9 w-9 items-center justify-center rounded-full transition-all",
-              content.trim() || selectedFile
+              !isExpired && (content.trim() || selectedFile)
                 ? "bg-linear-to-br from-purple-500 to-pink-500 text-white hover:opacity-90"
                 : "bg-white/5 text-white/30",
+              isExpired && "opacity-50 cursor-not-allowed"
             )}
           >
             <IoSend size={14} />

@@ -6,6 +6,8 @@ import { useAtom } from "jotai";
 import { openPopupAtom } from "../../stores/chatPopupStore";
 import { Spinner } from "../custom-ui/Spinner";
 import { useCurrentChatSessions } from "@/hooks/data/useChatDoctorHooks";
+import { useCountdown } from "@/hooks/useCountdown";
+import { formatDateTime } from "@/common/format";
 import type { ChatSessionSummaryResponse } from "@/types/ChatDoctor";
 
 export function ChatUserDropdown() {
@@ -58,7 +60,7 @@ export function ChatUserDropdown() {
             <div className="flex items-center justify-between px-4 py-3">
               <div>
                 <p className="text-sm font-medium text-white">Tin nhắn</p>
-                <p className="text-xs text-white/40">Mở cuộc trò chuyện từ header</p>
+                <p className="text-xs text-white/40">Trò chuyện cùng bệnh nhân tại đây</p>
               </div>
               <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] text-white/70">
                 {sortedSessions.length}
@@ -109,6 +111,7 @@ function ChatUserItem({
   session: ChatSessionSummaryResponse;
 }) {
   const [, openPopup] = useAtom(openPopupAtom);
+  const { isExpired } = useCountdown(session.expiredAt);
   const initials = session.partnerName
     .trim()
     .split(/\s+/)
@@ -118,9 +121,11 @@ function ChatUserItem({
     .join("")
     .toUpperCase();
 
+  const expiredAtText = session.expiredAt ? formatDateTime(session.expiredAt) : null;
+
   return (
-    <div
-      onClick={() => openPopup(session.sessionId)}
+      <div
+        onClick={() => openPopup(session.sessionId, session.expiredAt)}
       className={`group relative flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-white/5`}
     >
       <div className="relative h-10 w-10 shrink-0">
@@ -149,7 +154,9 @@ function ChatUserItem({
           ) : null}
         </div>
         <p className="mt-0.5 line-clamp-1 text-xs text-white/40 group-hover:text-white/60">
-          {session.lastMessage || session.status || "Chưa có tin nhắn"}
+          {isExpired && expiredAtText
+            ? `Hết hạn chat vào lúc ${expiredAtText}`
+            : session.lastMessage || session.status || "Chưa có tin nhắn"}
         </p>
       </div>
     </div>

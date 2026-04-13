@@ -6,6 +6,7 @@ export interface ChatSessionSummaryResponse {
   lastMessage?: string | null;
   unreadCount?: number;
   updatedAt?: string;
+  expiredAt?: string | null;
 }
 
 export interface ChatDoctorMessageResponse {
