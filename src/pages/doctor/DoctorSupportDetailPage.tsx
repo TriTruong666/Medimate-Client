@@ -2,6 +2,7 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { formatDate, formatTime } from "@/common/format";
 import { getGenderDisplay } from "@/common/mappers";
 import { useAppointmentDetail } from "@/hooks/data/useAppointmentHooks";
+import { useMemberHealthProfile } from "@/hooks/data/useHealthHooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
 import { FiCalendar, FiClock } from "react-icons/fi";
@@ -114,6 +115,10 @@ export function DoctorSupportDetailPage({
   const { data, isLoading, isError, error, refetch } = useAppointmentDetail(
     appointmentId || "",
     open,
+  );
+
+  const { data: healthProfile, isLoading: isLoadingHealth } = useMemberHealthProfile(
+    data?.memberId
   );
 
   useEffect(() => {
@@ -279,6 +284,66 @@ export function DoctorSupportDetailPage({
                     </div>
                   </section>
                 </div>
+
+                {/* Phần thông tin sức khoẻ */}
+                <section className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <h3 className="mb-4 text-lg font-semibold text-white">Hồ sơ sức khỏe</h3>
+                  {isLoadingHealth ? (
+                    <div className="flex animate-pulse flex-col space-y-3">
+                      <div className="h-4 w-1/3 rounded bg-white/10"></div>
+                      <div className="h-4 w-1/2 rounded bg-white/10"></div>
+                    </div>
+                  ) : healthProfile ? (
+                    <div className="space-y-6">
+                      {/* Chỉ số cơ bản */}
+                      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
+                        <div className="rounded-xl border border-white/5 bg-black/20 p-3">
+                          <p className="text-xs text-gray-400 uppercase">Nhóm máu</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{healthProfile.bloodType || "N/A"}</p>
+                        </div>
+                        <div className="rounded-xl border border-white/5 bg-black/20 p-3">
+                          <p className="text-xs text-gray-400 uppercase">Chiều cao</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{healthProfile.height ? `${healthProfile.height} cm` : "N/A"}</p>
+                        </div>
+                        <div className="rounded-xl border border-white/5 bg-black/20 p-3">
+                          <p className="text-xs text-gray-400 uppercase">Cân nặng</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{healthProfile.weight ? `${healthProfile.weight} kg` : "N/A"}</p>
+                        </div>
+                        <div className="rounded-xl border border-white/5 bg-black/20 p-3">
+                          <p className="text-xs text-gray-400 uppercase">BMI</p>
+                          <p className="mt-1 text-sm font-semibold text-white">{healthProfile.bmi ? healthProfile.bmi.toFixed(1) : "N/A"}</p>
+                        </div>
+                      </div>
+
+                      {/* BHYT */}
+                      {healthProfile.insuranceNumber && (
+                        <InfoRow label="Bảo hiểm y tế" value={healthProfile.insuranceNumber} />
+                      )}
+
+                      {/* Bệnh lý nền */}
+                      {healthProfile.conditions && healthProfile.conditions.length > 0 && (
+                        <div>
+                          <p className="mb-3 text-sm font-semibold text-gray-300">Bệnh lý nền</p>
+                          <div className="grid gap-3 sm:grid-cols-2">
+                            {healthProfile.conditions.map((condition) => (
+                              <div key={condition.conditionId} className="rounded-xl border border-white/10 bg-white/5 p-3">
+                                <h4 className="text-sm font-medium text-white">{condition.conditionName}</h4>
+                                <p className="mt-1 text-xs text-gray-400">{condition.description}</p>
+                                <span className={`mt-2 inline-block rounded-md px-2 py-1 text-[10px] uppercase tracking-wider ${
+                                  condition.status === 'Active' ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'
+                                }`}>
+                                  {condition.status}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">Bệnh nhân chưa cập nhật hồ sơ sức khỏe.</p>
+                  )}
+                </section>
               </div>
             ) : (
               <div className="flex min-h-90 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
