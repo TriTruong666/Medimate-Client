@@ -6,12 +6,16 @@ import {
   HiOutlineCalendar,
   HiOutlineCheck,
   HiOutlineTrash,
+  HiOutlineExternalLink,
+  HiOutlineOfficeBuilding,
+  HiOutlineBriefcase,
+  HiOutlineIdentification,
 } from "react-icons/hi";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoctorDocumentsByDoctorId } from "@/hooks/data/useDoctorDocumentHooks";
 import { formatRelativeTime } from "@/common/format";
-import { doctorDocumentTypeLabelMap } from "@/types/DoctorDocument";
+import { doctorDocumentTypeLabelMap, type DoctorDocumentType } from "@/types/DoctorDocument";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import {
@@ -27,10 +31,12 @@ import {
 import { toast } from "@/hooks/useToast";
 import type {
   CreateDoctorAvailabilityBody,
+  DayOfWeek,
   DoctorAvailability,
   UpdateDoctorAvailabilityBody,
 } from "@/types/DoctorAvailability";
 import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityException";
+import { Tooltip } from "@/components/custom-ui/Tooltip";
 
 const dayOfWeekOptions = [
   { value: "Monday", label: "Thứ 2" },
@@ -64,7 +70,7 @@ function validateAvailabilitySlot(slot: {
   endTime: string;
 }): boolean {
   if (!slot.dayOfWeek || !slot.startTime || !slot.endTime) {
-    toast.error("Thiếu thông tin", "Vui lòng nhập đủ thứ, giờ bắt đầu và giờ kết thúc.");
+    toast.error("Thiếu thông tin", "Vui lòng nhập đầy đủ thứ, giờ bắt đầu và giờ kết thúc.");
     return false;
   }
 
@@ -99,91 +105,81 @@ export function DoctorProfileDetailModal({
         <div className="absolute inset-0" onClick={onClose} />
         <motion.div
           data-lenis-prevent
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="z-10 flex h-[90vh] min-h-0 max-h-[800px] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl shadow-2xl"
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          className="z-10 flex h-[90vh] min-h-0 max-h-[850px] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
         >
           {/* Header */}
-          <div className="flex flex-col border-b border-white/10 bg-white/5">
-            <div className="flex items-center justify-between p-4 md:px-6">
-              <h2 className="text-lg font-semibold text-white">Hồ sơ Bác sĩ</h2>
+          <div className="flex flex-col border-b border-gray-400 bg-gray-50/50 dark:border-white/10 dark:bg-white/5">
+            <div className="flex items-center justify-between p-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Hồ sơ Bác sĩ
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Xem và quản lý thông tin chi tiết của bác sĩ {account.fullName}
+                </p>
+              </div>
               <button
                 onClick={onClose}
-                className="rounded-lg p-2 text-gray-400 hover:bg-white/10 hover:text-white"
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
               >
-                <HiOutlineX className="h-5 w-5" />
+                <HiOutlineX className="h-6 w-6" />
               </button>
             </div>
             
             {/* Tabs */}
-            <div className="flex gap-6 px-4 md:px-6">
-              <button
-                onClick={() => setActiveTab("profile")}
-                className={`flex items-center gap-2 border-b-2 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "profile"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-400 hover:text-gray-200"
-                }`}
-              >
-                <HiOutlineUser className="h-5 w-5" />
-                Thông tin cá nhân
-              </button>
-              <button
-                onClick={() => setActiveTab("documents")}
-                className={`flex items-center gap-2 border-b-2 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "documents"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-400 hover:text-gray-200"
-                }`}
-              >
-                <HiOutlineDocumentText className="h-5 w-5" />
-                Chứng chỉ y tế
-              </button>
-              <button
-                onClick={() => setActiveTab("availabilities")}
-                className={`flex items-center gap-2 border-b-2 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "availabilities"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-400 hover:text-gray-200"
-                }`}
-              >
-                <HiOutlineCalendar className="h-5 w-5" />
-                Lịch làm việc
-              </button>
-              <button
-                onClick={() => setActiveTab("exceptions")}
-                className={`flex items-center gap-2 border-b-2 py-3 text-sm font-medium transition-colors ${
-                  activeTab === "exceptions"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-gray-400 hover:text-gray-200"
-                }`}
-              >
-                <HiOutlineCalendar className="h-5 w-5" />
-                Lịch nghỉ
-              </button>
+            <div className="flex gap-8 px-6 overflow-x-auto no-scrollbar">
+              {([
+                { id: "profile", label: "Thông tin cá nhân", icon: HiOutlineUser },
+                { id: "documents", label: "Chứng chỉ y tế", icon: HiOutlineDocumentText },
+                { id: "availabilities", label: "Lịch làm việc", icon: HiOutlineCalendar },
+                { id: "exceptions", label: "Lịch nghỉ", icon: HiOutlineCalendar },
+              ] as const).map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 border-b-2 py-4 text-sm font-bold transition-all whitespace-nowrap ${
+                    activeTab === tab.id
+                      ? "border-primary text-primary"
+                      : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                  }`}
+                >
+                  <tab.icon className="h-5 w-5" />
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </div>
 
           {/* Content */}
           <div
             data-lenis-prevent
-            className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-6"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 custom-scrollbar"
           >
-            {activeTab === "profile" && <ProfileTab account={account} />}
-            {activeTab === "documents" && <DocumentsTab doctorId={account.doctorId} />}
-            {activeTab === "availabilities" && (
-              <DoctorAvailabilitiesTab doctorId={account.doctorId} />
-            )}
-            {activeTab === "exceptions" && (
-              <DoctorAvailabilityExceptionsTab doctorId={account.doctorId} />
-            )}
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              {activeTab === "profile" && <ProfileTab account={account} />}
+              {activeTab === "documents" && <DocumentsTab doctorId={account.doctorId} />}
+              {activeTab === "availabilities" && (
+                <DoctorAvailabilitiesTab doctorId={account.doctorId} />
+              )}
+              {activeTab === "exceptions" && (
+                <DoctorAvailabilityExceptionsTab doctorId={account.doctorId} />
+              )}
+            </motion.div>
           </div>
 
-          <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+          {/* Footer */}
+          <div className="flex justify-end gap-3 border-t border-gray-400 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5">
             <button
               onClick={onClose}
-              className="rounded-lg px-6 py-2 text-sm font-medium text-gray-300 transition hover:bg-white/10"
+              className="rounded-lg px-6 py-2.5 text-sm font-bold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
             >
               Đóng
             </button>
@@ -196,85 +192,114 @@ export function DoctorProfileDetailModal({
 
 function ProfileTab({ account }: { account: DoctorAccount }) {
   return (
-    <div className="grid gap-6 md:grid-cols-2 text-sm text-gray-300">
-      <div className="space-y-4">
-        <div className="rounded-lg bg-white/5 p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Thông tin cá nhân
-          </p>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Họ và tên:</span>
-            <span className="font-medium text-white">{account.fullName || "Chưa cập nhật"}</span>
+    <div className="grid gap-6 md:grid-cols-2">
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-gray-300 bg-gray-50/30 p-6 space-y-5 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <HiOutlineUser className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Thông tin cơ bản
+            </h3>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Chuyên khoa:</span>
-            <span className="font-medium text-white">{account.specialty || "Chưa cập nhật"}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Kinh nghiệm:</span>
-            <span className="font-medium text-white">{account.yearsOfExperience} năm</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Đơn vị công tác:</span>
-            <span className="font-medium text-white">
-              {account.currentHospitalName || "Chưa cập nhật"}
-            </span>
+          
+          <div className="grid gap-4">
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-white/5">
+              <span className="text-gray-500 font-medium">Họ và tên</span>
+              <span className="font-bold text-gray-900 dark:text-white">
+                {account.fullName || "Chưa cập nhật"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-white/5">
+              <span className="text-gray-500 font-medium whitespace-nowrap">Chuyên khoa</span>
+              <Badge type="info" value={account.specialty || "N/A"} />
+            </div>
+            <div className="flex justify-between items-center py-2 border-b border-gray-200 dark:border-white/5">
+              <span className="text-gray-500 font-medium">Kinh nghiệm</span>
+              <span className="font-bold text-gray-900 dark:text-white">
+                {account.yearsOfExperience} năm
+              </span>
+            </div>
+            <div className="flex justify-between items-start py-2">
+              <span className="text-gray-500 font-medium">Đơn vị công tác</span>
+              <span className="font-bold text-gray-900 dark:text-white text-right max-w-[200px]">
+                {account.currentHospitalName || "Chưa cập nhật"}
+              </span>
+            </div>
           </div>
         </div>
-        <div className="rounded-lg bg-white/5 p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Giới thiệu (Bio)
+
+        <div className="rounded-2xl border border-gray-300 bg-gray-50/30 p-6 space-y-4 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <HiOutlineBriefcase className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Giới thiệu
+            </h3>
+          </div>
+          <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-300 whitespace-pre-wrap">
+            {account.bio || "Bác sĩ chưa có thông tin giới thiệu."}
           </p>
-          <p className="whitespace-pre-wrap">{account.bio || "Không có giới thiệu"}</p>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="rounded-lg bg-white/5 p-4 space-y-3">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-            Chứng chỉ hành nghề
-          </p>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Mã CCHN:</span>
-            <span className="font-medium text-white">{account.licenseNumber || "Chưa có"}</span>
+      <div className="space-y-6">
+        <div className="rounded-2xl border border-gray-300 bg-gray-50/30 p-6 space-y-5 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+              <HiOutlineIdentification className="h-5 w-5" />
+            </div>
+            <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Chứng chỉ hành nghề
+            </h3>
           </div>
+          
+          <div className="flex justify-between items-center">
+            <span className="text-gray-500 font-medium">Mã CCHN</span>
+            <span className="font-mono font-bold text-gray-900 dark:text-white bg-gray-100 dark:bg-white/10 px-2 py-1 rounded">
+              {account.licenseNumber || "N/A"}
+            </span>
+          </div>
+
           {account.licenseImage ? (
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-3">
               {account.licenseImage.split(/[\n,;]+/).map((url, i) => {
-                if (!url.trim()) return null;
-                const isPdf = url.toLowerCase().includes(".pdf");
+                const trimmedUrl = url.trim();
+                if (!trimmedUrl) return null;
+                const isPdf = trimmedUrl.toLowerCase().includes(".pdf");
+                
                 return (
                   <a
                     key={i}
-                    href={url.trim()}
+                    href={trimmedUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="block relative aspect-square overflow-hidden rounded border border-white/10 group bg-black"
+                    className="group relative flex items-center gap-4 p-3 rounded-xl border border-gray-300 bg-white transition-all hover:border-primary/50 hover:shadow-md dark:border-white/10 dark:bg-black/20"
                   >
-                    {isPdf ? (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/5 group-hover:bg-white/10 transition">
-                        <span className="text-2xl mb-1">📄</span>
-                        <span className="text-xs text-white">Xem PDF</span>
-                      </div>
-                    ) : (
-                      <>
-                        <img
-                          src={url.trim()}
-                          className="object-cover w-full h-full group-hover:scale-110 transition"
-                          alt="License"
-                        />
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center transition">
-                          <span className="text-xs text-white mt-1">Xem ảnh đầy đủ</span>
-                        </div>
-                      </>
-                    )}
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/5 overflow-hidden">
+                      {isPdf ? (
+                        <span className="text-2xl">📄</span>
+                      ) : (
+                        <img src={trimmedUrl} className="h-full w-full object-cover" alt="License" />
+                      )}
+                    </div>
+                    <div className="flex flex-1 flex-col truncate">
+                      <span className="text-xs font-bold text-gray-900 dark:text-white truncate">
+                        {isPdf ? "Chứng chỉ (PDF)" : "Ảnh chứng chỉ"}
+                      </span>
+                      <span className="text-[10px] text-gray-500 uppercase">Nhấn để xem chi tiết</span>
+                    </div>
+                    <HiOutlineExternalLink className="h-4 w-4 text-gray-400 group-hover:text-primary transition-colors" />
                   </a>
                 );
               })}
             </div>
           ) : (
-            <div className="h-32 flex items-center justify-center rounded border border-dashed border-white/10 bg-white/5 text-gray-500">
-              Không có hình ảnh
+            <div className="flex h-32 flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 text-gray-400 dark:border-white/10 dark:bg-white/5">
+              <HiOutlineDocumentText className="h-8 w-8 mb-2 opacity-20" />
+              <span className="text-xs font-medium">Không có hình ảnh chứng chỉ</span>
             </div>
           )}
         </div>
@@ -284,8 +309,7 @@ function ProfileTab({ account }: { account: DoctorAccount }) {
 }
 
 function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
-  const { data, isLoading, isError, error, refetch } =
-    useDoctorAvailabilities(doctorId);
+  const { data, isLoading, isError, error, refetch } = useDoctorAvailabilities(doctorId);
   const createMutation = useCreateDoctorAvailabilities(doctorId);
   const updateMutation = useUpdateDoctorAvailability(doctorId);
   const deleteMutation = useDeleteDoctorAvailability(doctorId);
@@ -296,17 +320,12 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
     endTime: "12:00",
   });
   const [queue, setQueue] = useState<CreateDoctorAvailabilityBody[]>([]);
-  const [edits, setEdits] = useState<Record<string, UpdateDoctorAvailabilityBody>>(
-    {},
-  );
+  const [edits, setEdits] = useState<Record<string, UpdateDoctorAvailabilityBody>>({});
 
   const availabilities = data ?? [];
 
   function handleAddToQueue() {
-    if (!validateAvailabilitySlot(newSlot)) {
-      return;
-    }
-
+    if (!validateAvailabilitySlot(newSlot)) return;
     setQueue((prev) => [...prev, { ...newSlot }]);
   }
 
@@ -316,7 +335,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
 
   async function handleCreateQueue() {
     if (!queue.length) {
-      toast.error("Chưa có lịch", "Vui lòng thêm ít nhất một khung giờ để tạo.");
+      toast.error("Trống danh sách", "Vui lòng thêm ít nhất một khung giờ vào danh sách tạo.");
       return;
     }
 
@@ -329,17 +348,13 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
     try {
       await createMutation.mutateAsync(payload);
       setQueue([]);
-    } catch {
-      // Toast is handled in mutation onError.
-    }
+    } catch {}
   }
 
   function getRowDraft(row: DoctorAvailability): UpdateDoctorAvailabilityBody {
     const rowId = getAvailabilityId(row);
     const cached = edits[rowId];
-    if (cached) {
-      return cached;
-    }
+    if (cached) return cached;
 
     return {
       dayOfWeek: row.dayOfWeek,
@@ -349,37 +364,22 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
     };
   }
 
-  function patchRowDraft(
-    row: DoctorAvailability,
-    patch: Partial<UpdateDoctorAvailabilityBody>,
-  ) {
+  function patchRowDraft(row: DoctorAvailability, patch: Partial<UpdateDoctorAvailabilityBody>) {
     const rowId = getAvailabilityId(row);
-
-    if (!rowId) {
-      toast.error("Thiếu ID lịch", "Không tìm thấy ID lịch làm việc để cập nhật.");
-      return;
-    }
+    if (!rowId) return;
 
     setEdits((prev) => ({
       ...prev,
-      [rowId]: {
-        ...getRowDraft(row),
-        ...patch,
-      },
+      [rowId]: { ...getRowDraft(row), ...patch },
     }));
   }
 
   async function handleSaveRow(row: DoctorAvailability) {
     const rowId = getAvailabilityId(row);
-    if (!rowId) {
-      toast.error("Thiếu ID lịch", "Không tìm thấy ID lịch làm việc để lưu.");
-      return;
-    }
+    if (!rowId) return;
 
     const draft = getRowDraft(row);
-    if (!validateAvailabilitySlot(draft)) {
-      return;
-    }
+    if (!validateAvailabilitySlot(draft)) return;
 
     try {
       await updateMutation.mutateAsync({
@@ -391,227 +391,170 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
           isActive: draft.isActive,
         },
       });
-
       setEdits((prev) => {
         const next = { ...prev };
         delete next[rowId];
         return next;
       });
-    } catch {
-      // Toast is handled in mutation onError.
-    }
+    } catch {}
   }
 
   async function handleDeleteRow(id: string) {
-    if (!window.confirm("Bạn có chắc muốn xóa lịch làm việc này?")) {
-      return;
-    }
-
+    if (!window.confirm("Bạn có chắc chắn muốn xóa khung giờ này không?")) return;
     try {
       await deleteMutation.mutateAsync(id);
-    } catch {
-      // Toast is handled in mutation onError.
-    }
+    } catch {}
   }
 
   return (
-    <div className="min-h-full space-y-6">
-      <section className="rounded-xl border border-white/10 bg-white/5 p-4">
-        <h3 className="text-sm font-semibold text-white">Thêm lịch làm việc</h3>
-        <p className="mt-1 text-xs text-gray-400">
-          Tạo nhiều khung giờ trước, sau đó gửi một lần.
-        </p>
+    <div className="space-y-8">
+      {/* Create Section */}
+      <section className="rounded-2xl border border-gray-400 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5">
+        <h3 className="text-base font-bold text-gray-900 dark:text-white">Thêm lịch làm việc mới</h3>
+        <p className="text-xs text-gray-500 mt-1">Cấu hình khung giờ cố định lặp lại hàng tuần.</p>
 
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <label className="text-xs text-gray-400">
-            Thứ
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Thứ</p>
             <select
               value={newSlot.dayOfWeek}
-              onChange={(event) =>
-                setNewSlot((prev) => ({
-                  ...prev,
-                  dayOfWeek: event.target.value,
-                }))
-              }
-              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-hidden focus:border-primary"
+              onChange={(e) => setNewSlot((prev) => ({ ...prev, dayOfWeek: e.target.value as DayOfWeek }))}
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/40 dark:text-white"
             >
-              {dayOfWeekOptions.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
+              {dayOfWeekOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-          </label>
-
-          <label className="text-xs text-gray-400">
-            Bắt đầu
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Bắt đầu</p>
             <input
               type="time"
               value={newSlot.startTime}
-              onChange={(event) =>
-                setNewSlot((prev) => ({ ...prev, startTime: event.target.value }))
-              }
-              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-hidden focus:border-primary"
+              onChange={(e) => setNewSlot((prev) => ({ ...prev, startTime: e.target.value }))}
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/40 dark:text-white"
             />
-          </label>
-
-          <label className="text-xs text-gray-400">
-            Kết thúc
+          </div>
+          <div className="space-y-2">
+            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Kết thúc</p>
             <input
               type="time"
               value={newSlot.endTime}
-              onChange={(event) =>
-                setNewSlot((prev) => ({ ...prev, endTime: event.target.value }))
-              }
-              className="mt-1 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white outline-hidden focus:border-primary"
+              onChange={(e) => setNewSlot((prev) => ({ ...prev, endTime: e.target.value }))}
+              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/40 dark:text-white"
             />
-          </label>
+          </div>
         </div>
 
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-6 flex items-center justify-between">
           <button
             onClick={handleAddToQueue}
-            type="button"
-            className="rounded-lg bg-primary px-4 py-2 text-xs font-medium text-white transition hover:brightness-110"
+            className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
           >
-            Thêm vào danh sách tạo
+            Thêm vào danh sách chờ
           </button>
-          <button
-            onClick={() => setQueue([])}
-            type="button"
-            className="rounded-lg border border-white/10 bg-transparent px-4 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10"
-          >
-            Xóa danh sách
-          </button>
+          {queue.length > 0 && (
+            <button
+              onClick={() => setQueue([])}
+              className="text-xs font-bold text-red-500 hover:text-red-600 transition-colors"
+            >
+              Xóa tất cả ({queue.length})
+            </button>
+          )}
         </div>
 
         {queue.length > 0 && (
-          <div className="mt-4 space-y-2 rounded-lg border border-white/10 bg-black/20 p-3">
-            {queue.map((item, index) => (
-              <div
-                key={`${item.dayOfWeek}-${item.startTime}-${item.endTime}-${index}`}
-                className="flex items-center justify-between rounded-lg bg-white/5 px-3 py-2 text-xs text-gray-200"
-              >
-                <span>
-                  {getDayLabel(item.dayOfWeek)}: {item.startTime} - {item.endTime}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveFromQueue(index)}
-                  className="rounded-md p-1 text-red-300 transition hover:bg-red-500/20 hover:text-red-200"
-                >
-                  <HiOutlineTrash className="h-4 w-4" />
-                </button>
+          <div className="mt-4 flex flex-wrap gap-2 p-3 rounded-xl bg-white border border-gray-300 shadow-inner dark:bg-black/20 dark:border-white/5">
+            {queue.map((item, idx) => (
+              <div key={idx} className="flex items-center gap-2 rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-bold dark:bg-white/5">
+                <span>{getDayLabel(item.dayOfWeek)}: {item.startTime} - {item.endTime}</span>
+                <HiOutlineX onClick={() => handleRemoveFromQueue(idx)} className="cursor-pointer hover:text-red-500 transition-colors" />
               </div>
             ))}
           </div>
         )}
 
-        <button
-          onClick={() => void handleCreateQueue()}
-          type="button"
-          disabled={createMutation.isPending}
-          className="mt-4 rounded-lg bg-emerald-500/20 px-4 py-2 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {createMutation.isPending ? "Đang tạo..." : "Tạo lịch làm việc"}
-        </button>
+        {queue.length > 0 && (
+          <button
+            onClick={() => void handleCreateQueue()}
+            disabled={createMutation.isPending}
+            className="mt-6 w-full rounded-xl bg-emerald-500 py-3 text-xs font-bold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+          >
+            {createMutation.isPending ? "Đang xử lý..." : `Xác nhận tạo ${queue.length} khung giờ`}
+          </button>
+        )}
       </section>
 
-      <section className="rounded-xl border border-white/10 bg-white/5 p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-white">Lịch làm việc hiện tại</h3>
+      {/* List Section */}
+      <section className="rounded-2xl border border-gray-400 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-base font-bold text-gray-900 dark:text-white">Lịch làm việc hiện tại</h3>
           <button
-            type="button"
             onClick={() => void refetch()}
-            className="rounded-lg border border-white/10 bg-transparent px-3 py-1.5 text-xs text-gray-300 transition hover:bg-white/10"
+            className="text-xs font-bold text-primary hover:underline transition-all"
           >
             Làm mới
           </button>
         </div>
 
         {isLoading ? (
-          <div className="flex h-40 items-center justify-center">
-            <Spinner size="lg" />
-          </div>
+          <div className="flex h-40 items-center justify-center"><Spinner size="lg" /></div>
         ) : isError ? (
-          <div className="rounded-lg border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-            {error?.message || "Không thể tải lịch làm việc."}
+          <div className="rounded-xl bg-red-50 p-4 text-center dark:bg-red-500/10">
+            <p className="text-sm text-red-600">{error?.message || "Lỗi tải dữ liệu"}</p>
           </div>
         ) : availabilities.length === 0 ? (
-          <div className="flex h-30 items-center justify-center text-sm text-gray-400">
-            Bác sĩ chưa có lịch làm việc nào.
+          <div className="flex h-32 flex-col items-center justify-center text-gray-400 opacity-50">
+            <HiOutlineCalendar className="h-10 w-10 mb-2" />
+            <p className="text-sm">Chưa có khung giờ làm việc nào</p>
           </div>
         ) : (
           <div className="space-y-3">
-            {availabilities.map((item, index) => {
+            {availabilities.map((item, idx) => {
               const rowId = getAvailabilityId(item);
               const draft = getRowDraft(item);
+              const isEdited = !!edits[rowId];
 
               return (
-                <div
-                  key={rowId || `${item.dayOfWeek}-${item.startTime}-${item.endTime}-${index}`}
-                  className="grid gap-3 rounded-lg border border-white/10 bg-black/20 p-3 md:grid-cols-[1.2fr_1fr_1fr_auto_auto_auto] md:items-center"
-                >
+                <div key={rowId || idx} className="grid grid-cols-1 sm:grid-cols-[1.5fr_1fr_1fr_auto] items-center gap-4 rounded-xl border border-gray-300 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-black/20">
                   <select
                     value={draft.dayOfWeek}
-                    onChange={(event) =>
-                      patchRowDraft(item, { dayOfWeek: event.target.value })
-                    }
-                    className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-hidden focus:border-primary"
+                    onChange={(e) => patchRowDraft(item, { dayOfWeek: e.target.value as DayOfWeek })}
+                    className="rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-bold outline-none dark:bg-white/5"
                   >
-                    {dayOfWeekOptions.map((day) => (
-                      <option key={day.value} value={day.value}>
-                        {day.label}
-                      </option>
+                    {dayOfWeekOptions.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-
                   <input
                     type="time"
                     value={draft.startTime}
-                    onChange={(event) =>
-                      patchRowDraft(item, { startTime: event.target.value })
-                    }
-                    className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-hidden focus:border-primary"
+                    onChange={(e) => patchRowDraft(item, { startTime: e.target.value })}
+                    className="rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-bold outline-none dark:bg-white/5"
                   />
-
                   <input
                     type="time"
                     value={draft.endTime}
-                    onChange={(event) =>
-                      patchRowDraft(item, { endTime: event.target.value })
-                    }
-                    className="rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-xs text-white outline-hidden focus:border-primary"
+                    onChange={(e) => patchRowDraft(item, { endTime: e.target.value })}
+                    className="rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-bold outline-none dark:bg-white/5"
                   />
-
-                  <label className="flex items-center gap-2 text-xs text-gray-300">
-                    <input
-                      type="checkbox"
-                      checked={draft.isActive}
-                      onChange={(event) =>
-                        patchRowDraft(item, { isActive: event.target.checked })
-                      }
-                    />
-                    Hoạt động
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={() => void handleSaveRow(item)}
-                    disabled={updateMutation.isPending}
-                    className="rounded-lg bg-primary/20 px-3 py-2 text-xs text-primary-light transition hover:bg-primary/30 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Lưu
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => rowId && void handleDeleteRow(rowId)}
-                    disabled={deleteMutation.isPending || !rowId}
-                    className="rounded-lg bg-red-500/20 px-3 py-2 text-xs text-red-200 transition hover:bg-red-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Xóa
-                  </button>
+                  <div className="flex items-center gap-2">
+                    {isEdited ? (
+                      <button
+                        onClick={() => void handleSaveRow(item)}
+                        className="p-2 rounded-lg bg-emerald-100 text-emerald-600 hover:bg-emerald-200 transition dark:bg-emerald-500/20 dark:text-emerald-400"
+                      >
+                        <HiOutlineCheck className="h-4 w-4" />
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => void handleDeleteRow(rowId)}
+                        className="p-2 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 transition dark:bg-red-500/20 dark:text-red-400"
+                      >
+                        <HiOutlineTrash className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -623,8 +566,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
 }
 
 function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
-  const { data, isLoading, isError, error, refetch } =
-    useDoctorAvailabilityExceptions(doctorId);
+  const { data, isLoading, isError, error, refetch } = useDoctorAvailabilityExceptions(doctorId);
   const updateMutation = useUpdateDoctorAvailabilityException(doctorId);
   const [view, setView] = useState<"pending" | "approved">("pending");
 
@@ -634,102 +576,62 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
   const visibleItems = view === "pending" ? pending : approved;
 
   async function handleApprove(item: DoctorAvailabilityException) {
-    if (!item.exceptionId) {
-      toast.error("Thiếu ID", "Không tìm thấy ID lịch nghỉ để duyệt.");
-      return;
-    }
-
+    if (!item.exceptionId) return;
     try {
       await updateMutation.mutateAsync({
         id: item.exceptionId,
-        data: {
-          date: item.date,
-          startTime: item.startTime,
-          endTime: item.endTime,
-          reason: item.reason,
-          isAvailableOverride: true,
-        },
+        data: { ...item, isAvailableOverride: true },
       });
-    } catch {
-      // Toast handled by mutation onError.
-    }
+    } catch {}
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex gap-2 rounded-lg bg-white/5 p-1">
+        <div className="flex p-1 rounded-xl bg-gray-100 dark:bg-white/5">
           <button
             onClick={() => setView("pending")}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
-              view === "pending"
-                ? "bg-primary text-white"
-                : "text-gray-400 hover:bg-white/5 hover:text-white"
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              view === "pending" ? "bg-white text-primary shadow-sm dark:bg-primary dark:text-white" : "text-gray-400"
             }`}
           >
-            Chưa duyệt ({pending.length})
+            Chờ duyệt ({pending.length})
           </button>
           <button
             onClick={() => setView("approved")}
-            className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
-              view === "approved"
-                ? "bg-primary text-white"
-                : "text-gray-400 hover:bg-white/5 hover:text-white"
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              view === "approved" ? "bg-white text-primary shadow-sm dark:bg-primary dark:text-white" : "text-gray-400"
             }`}
           >
             Đã duyệt ({approved.length})
           </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => void refetch()}
-          className="rounded-lg border border-white/10 bg-transparent px-3 py-1.5 text-xs text-gray-300 transition hover:bg-white/10"
-        >
-          Làm mới
-        </button>
+        <button onClick={() => void refetch()} className="text-xs font-bold text-primary">Làm mới</button>
       </div>
 
       {isLoading ? (
-        <div className="flex h-36 items-center justify-center">
-          <Spinner size="lg" />
-        </div>
-      ) : isError ? (
-        <div className="rounded-lg border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-          {error?.message || "Không thể tải lịch nghỉ của bác sĩ."}
-        </div>
+        <Spinner size="lg" className="mx-auto my-12" />
       ) : visibleItems.length === 0 ? (
-        <div className="flex h-30 items-center justify-center rounded-lg border border-dashed border-white/10 text-sm text-gray-400">
-          Không có lịch nghỉ trong nhóm này.
-        </div>
+        <div className="py-20 text-center text-gray-400">Không có yêu cầu nào</div>
       ) : (
-        <div className="space-y-3">
-          {visibleItems.map((item, index) => (
-            <div
-              key={item.exceptionId || `${item.date}-${item.startTime}-${item.endTime}-${index}`}
-              className="flex flex-col gap-3 rounded-lg border border-white/10 bg-black/20 p-3 md:flex-row md:items-center md:justify-between"
-            >
-              <div className="text-xs text-gray-300">
-                <p className="font-medium text-white">{formatRelativeTime(item.date)}</p>
-                <p className="mt-1">
+        <div className="space-y-4">
+          {visibleItems.map((item, i) => (
+            <div key={item.exceptionId || i} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 rounded-2xl border border-gray-300 bg-white dark:border-white/10 dark:bg-black/20">
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{formatRelativeTime(item.date)}</p>
+                <p className="text-xs text-gray-500 font-medium">
                   {item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}
                 </p>
-                <p className="mt-1 text-gray-400">Lý do: {item.reason || "Không có"}</p>
+                <p className="text-xs italic text-gray-600 dark:text-gray-400">Lý do: {item.reason || "Không có"}</p>
               </div>
-
-              {view === "pending" ? (
+              {view === "pending" && (
                 <button
-                  type="button"
                   onClick={() => void handleApprove(item)}
                   disabled={updateMutation.isPending}
-                  className="inline-flex items-center gap-1 self-start rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs text-emerald-300 transition hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-4 sm:mt-0 flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-110"
                 >
-                  <HiOutlineCheck className="h-4 w-4" /> Duyệt lịch nghỉ
+                  <HiOutlineCheck className="h-4 w-4" /> Duyệt đơn
                 </button>
-              ) : (
-                <span className="self-start rounded-full bg-emerald-500/20 px-2 py-1 text-[11px] text-emerald-300">
-                  Đã duyệt
-                </span>
               )}
             </div>
           ))}
@@ -742,29 +644,16 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
 function DocumentsTab({ doctorId }: { doctorId: string }) {
   const { data, isLoading, isError } = useDoctorDocumentsByDoctorId(doctorId);
 
-  if (isLoading) {
-    return (
-      <div className="flex h-full items-center justify-center pb-12">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="flex h-full items-center justify-center text-red-400">
-        Không thể tải danh sách chứng chỉ lúc này.
-      </div>
-    );
-  }
+  if (isLoading) return <Spinner size="lg" className="mx-auto my-20" />;
+  if (isError) return <div className="text-center text-red-500 py-10">Lỗi tải danh sách chứng chỉ</div>;
 
   const documents = data || [];
 
   if (documents.length === 0) {
     return (
-      <div className="flex h-full flex-col items-center justify-center text-gray-400">
-        <HiOutlineDocumentText className="mb-2 h-12 w-12 opacity-20" />
-        <p>Bác sĩ này chưa tải lên chứng chỉ nào.</p>
+      <div className="py-20 flex flex-col items-center text-gray-400">
+        <HiOutlineDocumentText className="h-16 w-16 mb-4 opacity-10" />
+        <p>Bác sĩ này chưa tải lên chứng chỉ nào</p>
       </div>
     );
   }
@@ -772,70 +661,26 @@ function DocumentsTab({ doctorId }: { doctorId: string }) {
   return (
     <div className="space-y-4">
       {documents.map((doc) => {
-        const typeLabel =
-          doctorDocumentTypeLabelMap[
-            (doc.documentType || doc.documentName || doc.type) as keyof typeof doctorDocumentTypeLabelMap
-          ] || "Chứng chỉ khác";
+        const typeLabel = doctorDocumentTypeLabelMap[doc.documentType as DoctorDocumentType] || "Chứng chỉ y tế";
         const isPdf = doc.fileUrl?.toLowerCase().includes(".pdf");
-        
-        const rawStatus = (doc.status || "").toLowerCase();
-        const isApproved = rawStatus === "approved";
-        const isRejected = rawStatus === "rejected";
+        const status = (doc.status || "pending").toLowerCase();
 
         return (
-          <div
-            key={doc.documentId}
-            className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 rounded-xl border border-white/10 bg-white/5 p-4"
-          >
-            <div className="flex items-start gap-4">
-              <a
-                href={doc.fileUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/10 bg-black transition hover:border-primary"
-              >
-                {isPdf ? (
-                  <span className="text-2xl">📄</span>
-                ) : (
-                  <img src={doc.fileUrl} alt="doc" className="h-full w-full object-cover" />
-                )}
-              </a>
-              <div className="flex flex-col">
-                <span className="font-medium text-white">{typeLabel}</span>
-                <span className="text-xs text-gray-400 mt-1">
-                  Đã nộp: {doc.submittedAt ? formatRelativeTime(doc.submittedAt) : "N/A"}
-                </span>
-                {doc.reviewBy && (
-                  <span className="text-xs text-gray-500 mt-0.5">
-                    Duyệt bởi: {doc.reviewBy} ({doc.reviewAt ? formatRelativeTime(doc.reviewAt) : ""})
-                  </span>
-                )}
-              </div>
+          <div key={doc.documentId} className="flex items-center gap-5 p-5 rounded-2xl border border-gray-300 bg-white dark:border-white/10 dark:bg-black/20">
+            <a
+              href={doc.fileUrl} target="_blank" rel="noreferrer"
+              className="h-16 w-16 shrink-0 flex items-center justify-center rounded-xl bg-gray-100 overflow-hidden hover:scale-105 transition dark:bg-white/5"
+            >
+              {isPdf ? <span className="text-2xl">📄</span> : <img src={doc.fileUrl} className="h-full w-full object-cover" />}
+            </a>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-gray-900 truncate dark:text-white">{typeLabel}</p>
+              <p className="text-xs text-gray-500 mt-1">Nộp lúc: {doc.submittedAt ? formatRelativeTime(doc.submittedAt) : "N/A"}</p>
             </div>
-
-            <div className="flex flex-col items-end gap-2">
-              <Badge
-                type={
-                  isApproved
-                    ? "success"
-                    : isRejected
-                    ? "error"
-                    : "warning"
-                }
-                value={
-                  isApproved
-                    ? "Đã duyệt"
-                    : isRejected
-                    ? "Bị từ chối"
-                    : "Chờ duyệt"
-                }
-              />
-              {doc.note && isRejected && (
-                <span className="text-[11px] text-red-400 max-w-[200px] truncate" title={doc.note}>
-                  Lý do: {doc.note}
-                </span>
-              )}
-            </div>
+            <Badge
+              type={status === "approved" ? "success" : status === "rejected" ? "error" : "warning"}
+              value={status === "approved" ? "Đã duyệt" : status === "rejected" ? "Bị từ chối" : "Đang chờ"}
+            />
           </div>
         );
       })}

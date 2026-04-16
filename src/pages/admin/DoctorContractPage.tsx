@@ -72,7 +72,7 @@ export default function DoctorContractPage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             Lưu trữ Hợp đồng
           </h1>
         </div>
@@ -110,7 +110,7 @@ function ContractTable() {
         loadingMessage="Đang tải danh sách hợp đồng..."
         emptyTitle="Chưa có dữ liệu"
         emptyMessage="Không tìm thấy hợp đồng y tế nào vào lúc này."
-        tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
+        tbodyClassName="divide-y divide-gray-400 bg-white/50 dark:divide-border-dark dark:bg-transparent"
         pagination={{
           page,
           pageSize,
@@ -122,10 +122,10 @@ function ContractTable() {
         {pagedData.map((row) => (
           <tr
             key={row.id}
-            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+            className="transition-colors hover:bg-gray-50/80 dark:hover:bg-white/5"
           >
                 {/* 1. Thông tin bác sĩ */}
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                <td className="border-r border-gray-400 p-4 dark:border-border-dark">
                   <div className="flex items-center gap-3">
                     <div className="from-primary/20 to-primary/5 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br text-sm font-bold shadow-inner">
                       {row.doctorName.charAt(4)}
@@ -151,7 +151,7 @@ function ContractTable() {
                 </td>
 
                 {/* 2. Contact Info */}
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                <td className="border-r border-gray-400 p-4 dark:border-border-dark">
                   <div className="flex flex-col space-y-2 text-xs">
                     <p className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
                       <FiPhone className="text-gray-400" /> {row.phone}
@@ -166,7 +166,7 @@ function ContractTable() {
                 </td>
 
                 {/* 3. Contract Info & Status */}
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
+                <td className="border-r border-gray-400 p-4 dark:border-border-dark">
                   <div className="flex flex-col text-xs">
                     <p className="mb-1 text-gray-500 dark:text-gray-400">
                       Ký ngày:{" "}

@@ -71,36 +71,36 @@ export function PrescriptionSessionModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 12 }}
             onClick={(event) => event.stopPropagation()}
-            className="z-10 flex h-[90vh] max-h-215 min-h-0 w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/90 shadow-2xl"
+            className="z-10 flex h-[90vh] max-h-215 min-h-0 w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/90"
           >
-            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-4 md:px-6">
+            <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-4 md:px-6 dark:border-white/10">
               <div>
-                <h2 className="text-lg font-semibold text-white">Đơn thuốc theo session</h2>
-                <p className="mt-1 text-xs text-gray-400">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Đơn thuốc theo session</h2>
+                <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                   Bệnh nhân: {session.memberName || `Bệnh nhân ${shortId(session.memberId)}`}
                 </p>
               </div>
               <button
                 onClick={onClose}
-                className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 <HiOutlineX className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
-              <div className="mb-4 grid gap-3 md:grid-cols-4">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6 thin-scrollbar">
+              <div className="mb-6 grid gap-4 md:grid-cols-4">
                 <MetaCard label="Session" value={shortId(sessionId, 12)} />
                 <MetaCard label="Appointment" value={shortId(session.appointmentId, 12)} />
                 <MetaCard label="Trạng thái" value={session.status || "N/A"} />
                 <MetaCard label="Bắt đầu" value={session.startedAt ? formatDate(session.startedAt) : "--"} />
               </div>
 
-              <div className="mb-4 flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="mb-6 flex items-center justify-between rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5 transition-colors">
                 <div>
-                  <h3 className="text-sm font-semibold text-white">Danh sách đơn thuốc</h3>
-                  <p className="mt-1 text-xs text-gray-400">
-                    Chỉ phiên tư vấn đang <span className="text-white">diễn ra</span> mới được tạo đơn mới.
+                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Danh sách đơn thuốc</h3>
+                  <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                    Chỉ phiên tư vấn đang <span className="text-emerald-600 font-bold dark:text-emerald-400">diễn ra</span> mới được tạo đơn mới.
                   </p>
                 </div>
 
@@ -108,7 +108,7 @@ export function PrescriptionSessionModal({
                   type="button"
                   onClick={openCreate}
                   disabled={!canCreate}
-                  className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-white/10 disabled:text-white/40"
+                  className="active:scale-95 inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-500/20 transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none dark:disabled:bg-white/10 dark:disabled:text-white/40"
                 >
                   <HiOutlinePlus className="h-5 w-5" />
                   Tạo đơn
@@ -116,24 +116,24 @@ export function PrescriptionSessionModal({
               </div>
 
               {isLoading ? (
-                <div className="flex min-h-100 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                <div className="flex min-h-100 items-center justify-center rounded-2xl border border-gray-400 bg-gray-50 dark:border-white/10 dark:bg-white/5">
                   <Spinner size="lg" />
                 </div>
               ) : isError ? (
-                <div className="flex min-h-100 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 text-center">
-                  <p className="text-sm text-red-400">
+                <div className="flex min-h-100 flex-col items-center justify-center rounded-2xl border border-gray-400 bg-gray-50 p-6 text-center dark:border-white/10 dark:bg-white/5">
+                  <p className="text-sm font-bold text-red-600 dark:text-red-400">
                     {error?.message || "Không thể tải danh sách đơn thuốc."}
                   </p>
                   <button
                     type="button"
                     onClick={() => void refetch()}
-                    className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white"
+                    className="mt-6 rounded-xl border border-gray-300 bg-white px-5 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   >
                     Thử lại
                   </button>
                 </div>
               ) : list.length === 0 ? (
-                <div className="flex min-h-100 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
+                <div className="flex min-h-100 items-center justify-center rounded-2xl border border-dashed border-gray-400 bg-gray-50 p-6 text-sm font-bold text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
                   Chưa có đơn thuốc cho phiên tư vấn này.
                 </div>
               ) : (
@@ -144,23 +144,23 @@ export function PrescriptionSessionModal({
                     return (
                     <div
                       key={prescriptionId || `${item.memberId}-${item.createdDate}`}
-                      className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5"
+                      className="flex flex-col gap-5 rounded-2xl border border-gray-400 bg-white p-5 shadow-sm transition-all hover:border-primary/30 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="text-sm font-semibold text-white">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white">
                             Bệnh nhân: {item.memberName || item.memberId}
                           </p>
-                          <p className="mt-1 text-xs text-white/60">{item.diagnosis}</p>
-                          <p className="mt-1 text-xs text-white/50">
+                          <p className="mt-1 text-xs font-bold text-gray-900 dark:text-white">{item.diagnosis}</p>
+                          <p className="mt-1 text-xs font-medium text-gray-500 dark:text-white/50">
                             {formatDate(item.createdDate)}
                           </p>
                         </div>
                         <Badge type="info" value={item.status || "Active"} />
                       </div>
 
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-white/60">
+                      <div className="flex items-center justify-between border-t border-gray-100 dark:border-white/5 pt-4">
+                        <p className="text-xs font-bold text-gray-500 dark:text-white/60">
                           {item.medicines.length} thuốc
                         </p>
                         <div className="flex items-center gap-2">
@@ -222,9 +222,9 @@ export function PrescriptionSessionModal({
 
 function MetaCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{value}</p>
+    <div className="rounded-2xl border border-gray-400 bg-gray-50 p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+      <p className="text-[10px] font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">{label}</p>
+      <p className="mt-2 text-sm font-bold text-gray-900 dark:text-white">{value}</p>
     </div>
   );
 }

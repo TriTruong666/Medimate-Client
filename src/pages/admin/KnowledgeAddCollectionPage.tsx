@@ -21,7 +21,7 @@ export default function KnowledgeAddCollectionPage() {
       <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             Thêm Collection
           </h1>
         </div>
@@ -70,7 +70,7 @@ function AddCollectionForm() {
       <form className="w-full space-y-6">
         {/* Name */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-300">
+          <label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
             Tên collection
           </label>
           <input
@@ -82,7 +82,7 @@ function AddCollectionForm() {
         </div>
         {/* Description */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-300">
+          <label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
             Mô tả
           </label>
           <textarea

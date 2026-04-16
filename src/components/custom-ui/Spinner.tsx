@@ -3,9 +3,11 @@ import { motion } from "framer-motion";
 export const Spinner = ({
   size = "md",
   color = "primary",
+  className = "",
 }: {
   size?: "sm" | "md" | "lg";
   color?: "primary" | "white";
+  className?: string;
 }) => {
   const sizeClasses = {
     sm: "h-4 w-4 border",
@@ -20,7 +22,7 @@ export const Spinner = ({
 
   return (
     <motion.div
-      className={`animate-spin rounded-full ${sizeClasses[size]} ${colorClasses[color]}`}
+      className={`animate-spin rounded-full ${sizeClasses[size]} ${colorClasses[color]} ${className}`}
     />
   );
 };

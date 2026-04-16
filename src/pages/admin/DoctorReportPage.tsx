@@ -31,14 +31,16 @@ export default function DoctorReportPage() {
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             Phản hồi về Bác sĩ
           </h1>
         </div>
       </div>
 
       {isLoading && (
-        <div className="flex justify-center p-8 text-white">Đang tải phản hồi...</div>
+          <div className="flex justify-center p-8 text-gray-900 dark:text-white">
+            Đang tải phản hồi...
+          </div>
       )}
 
       {isError && (
@@ -82,7 +84,7 @@ function ReportCard({ data }: { data: Rating }) {
   return (
     <motion.div
       variants={cardItem}
-      className="relative rounded-2xl border border-gray-100 bg-white/80 p-6 backdrop-blur transition-all hover:border-white/20 dark:border-white/10 dark:bg-white/5"
+      className="relative rounded-2xl border border-gray-400 bg-white p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md dark:border-white/10 dark:bg-white/5"
     >
       {/* Header: User & Meta */}
       <div className="mb-4 flex items-start justify-between gap-4">
@@ -123,8 +125,8 @@ function ReportCard({ data }: { data: Rating }) {
 
         {/* Reason */}
         {data.comment && (
-          <div className="mb-4 rounded-r-lg border-l-2 border-red-400 bg-red-50/50 p-3 dark:bg-red-500/5">
-            <p className="text-sm text-gray-700 italic dark:text-gray-300">
+          <div className="mb-4 rounded-r-xl border-l-4 border-red-400 bg-red-50 px-4 py-3 dark:bg-red-500/5">
+            <p className="text-[13px] leading-relaxed text-gray-700 italic dark:text-gray-300">
               "{data.comment}"
             </p>
           </div>
@@ -137,7 +139,7 @@ function ReportCard({ data }: { data: Rating }) {
               Hình ảnh bằng chứng
             </p>
             <div className="no-scrollbar flex gap-2 overflow-x-auto pb-2">
-              <div className="relative h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-gray-200 transition hover:border-primary/50 dark:border-white/10">
+              <div className="relative h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-400 transition hover:border-primary/50 dark:border-white/10">
                 <img
                   src={data.imageUrl}
                   alt="Bằng chứng"
@@ -150,9 +152,9 @@ function ReportCard({ data }: { data: Rating }) {
         )}
 
         {/* Actions */}
-        <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-4 dark:border-white/5">
+        <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-gray-400 pt-5 dark:border-white/5">
           <div className="flex-1" />
-          <button className="flex items-center gap-2 rounded-lg border border-gray-200 px-4 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-100 dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5">
+          <button className="flex items-center gap-2 rounded-xl border border-gray-400 bg-white px-5 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10">
             <FiMessageCircle /> Nhắn tin bác sĩ
           </button>
         </div>

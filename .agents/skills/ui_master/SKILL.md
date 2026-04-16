@@ -148,22 +148,21 @@ For dashboard grids, use **Skeleton Cards** (pulse effects) for loading and **Mi
 
 ### A. Modals (High-End Dark & Light)
 Modals are managed via `src/stores/modalStore.ts` using Jotai.
-- **Container**: `flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl`. Standard width is often `w-150`.
+- **Container**: `flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl`.
 - **Header**:
-  - **Styles**: `flex items-center justify-between border-b border-gray-300 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5`.
-  - **Title**: `text-base font-semibold tracking-tight text-gray-900 dark:text-white`.
-  - **Close Button**: `rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white`. Use `HiOutlineX`.
+  - **Styles**: `flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10`.
+  - **Title**: `text-base font-semibold text-gray-900 dark:text-white`.
+  - **Close Button**: `rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white`.
 - **Footer**: 
-  - **Styles**: `flex items-center justify-end gap-3 border-t border-gray-300 bg-gray-50/20 p-6 dark:border-white/10 dark:bg-white/2 dark:backdrop-blur-md`.
-  - **Secondary Button (Exit/Cancel)**: `rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10`.
-  - **Primary Button (Next/Submit)**: `bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40`.
-- **Animations**: Modals automatically fade and scale via `AnimatePresence` in `ModalContainer.tsx`.
+  - **Styles**: `flex items-center justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10`.
+  - **Secondary Button**: `rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10`.
+  - **Primary Button**: `bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40`.
 - **Patterns**:
-  - **Multi-step Selection (Phase Pattern)**: Use a `step` or `phase` state. Start with a selection screen using large cards.
-    - **Selection Card Style**: `rounded-xl border p-6 transition-all duration-300`.
-    - **Active State**: `border-primary bg-primary/10 shadow-lg shadow-primary/20`.
-    - **Hover State**: `border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10`.
-    - **Footer Logic**: In Step 1, the primary button is "Tiếp theo" (Next) and is `disabled` until a selection is made. In Step 2, show a "Quay lại" (Back) button on the left to return to the selection phase.
+  - **Selection Card (Phase Pattern)**:
+    - **Base**: `rounded-xl border border-gray-400 bg-white p-6 transition-all duration-200 dark:border-white/10 dark:bg-white/5`.
+    - **Active**: `border-primary bg-primary/10 shadow-lg shadow-primary/20`.
+    - **Hover**: `hover:bg-gray-50 dark:hover:bg-white/10`.
+    - **Text**: Title (`text-gray-900 dark:text-white`), Description (`text-gray-500 dark:text-gray-400`).
   - **Confirm/Sync Modal**: Highlight warnings with `border-yellow-500/20 bg-yellow-500/5`. Use `isModalLockedAtom` to prevent closing during async tasks.
 
 ### B. Analytics & Charts
