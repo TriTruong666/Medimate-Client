@@ -99,40 +99,7 @@ function RolePhase({
   );
 }
 
-function Input({
-  label,
-  type = "text",
-  className,
-  placeholder = "Input here",
-  disabled = false,
-  value,
-  error,
-  onChange,
-}: {
-  label: string;
-  type?: string;
-  className?: string;
-  placeholder?: string;
-  disabled?: boolean;
-  value?: string;
-  error?: string;
-  onChange?: (value: string) => void;
-}) {
-  return (
-    <div className={clsx("flex flex-col gap-1", className)}>
-      <label className="text-xs text-gray-500 dark:text-gray-400">{label}</label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="input-primary text-[13px]!"
-        value={value ?? ""}
-        onChange={(e) => onChange?.(e.target.value)}
-      />
-      {error && <p className="text-[12px] text-red-500 italic">{error}</p>}
-    </div>
-  );
-}
+import { Input } from "@/components/custom-ui/Input";
 
 function InfoPhase({
   value,

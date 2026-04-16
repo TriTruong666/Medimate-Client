@@ -35,6 +35,8 @@ export default function KnowledgeAddCollectionPage() {
 }
 
 
+import { Input, Textarea } from "@/components/custom-ui/Input";
+
 function AddCollectionForm() {
   const navigate = useNavigate();
   const { mutate: createCollection, isPending } = useCreateRAGCollection();
@@ -68,31 +70,19 @@ function AddCollectionForm() {
     <div className="flex w-full flex-col items-center space-y-10">
       {/* Form fields */}
       <form className="w-full space-y-6">
-        {/* Name */}
-        <div>
-          <label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
-            Tên collection
-          </label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Ví dụ: Tài liệu pháp lý 2024"
-            className="input-primary w-full"
-          />
-        </div>
-        {/* Description */}
-        <div>
-          <label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
-            Mô tả
-          </label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            placeholder="Mô tả ngắn gọn mục đích collection..."
-            className="input-primary w-full resize-none"
-          />
-        </div>
+        <Input
+          label="Tên collection"
+          value={name}
+          onChange={setName}
+          placeholder="Ví dụ: Tài liệu pháp lý 2024"
+        />
+        <Textarea
+          label="Mô tả"
+          value={description}
+          onChange={setDescription}
+          rows={4}
+          placeholder="Mô tả ngắn gọn mục đích collection..."
+        />
       </form>
 
       {/* Actions */}
