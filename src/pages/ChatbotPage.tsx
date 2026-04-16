@@ -96,14 +96,14 @@ function ModelSelector({
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex h-9 items-center gap-2 rounded-lg border border-white/10 bg-white/5 py-1.5 pr-2 pl-2.5 transition-all hover:border-white/20 hover:bg-white/10 active:scale-95"
+        className="flex h-9 items-center gap-2 rounded-lg border border-gray-400 bg-white py-1.5 pr-2 pl-2.5 transition-all hover:border-primary/40 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
       >
         <HiOutlineTemplate className="text-primary text-sm" />
-        <span className="max-w-[120px] truncate text-[11px] font-medium text-white/90">
+        <span className="max-w-[120px] truncate text-[11px] font-bold text-gray-700 dark:text-white/90">
           {selected?.name || "Chọn AI Model"}
         </span>
         <HiChevronDown
-          className={`text-xs text-white/40 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+          className={`text-xs text-gray-400 transition-transform duration-300 ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -113,7 +113,7 @@ function ModelSelector({
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute right-0 bottom-full z-50 mb-2 w-56 overflow-hidden rounded-xl border border-white/10 bg-[#121212]/95 p-1 shadow-2xl backdrop-blur-xl"
+            className="absolute right-0 bottom-full z-50 mb-2 w-56 overflow-hidden rounded-xl border border-gray-400 bg-white p-1 shadow-2xl backdrop-blur-xl dark:border-white/10 dark:bg-[#121212]/95"
           >
             <div className="max-h-60 overflow-y-auto overscroll-contain px-1 py-1">
               {models?.map((model) => (
@@ -126,7 +126,7 @@ function ModelSelector({
                   className={`group flex w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left transition-all ${
                     model.id === value
                       ? "bg-primary/10 text-primary"
-                      : "text-white/60 hover:bg-white/5 hover:text-white"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/5 dark:hover:text-white"
                   }`}
                 >
                   <div className="flex w-full items-center justify-between">
@@ -172,7 +172,7 @@ function WelcomeChatbot({
       <div className="flex flex-col space-y-3 select-none">
         <SplitText
           text={`Xin chào ${user?.fullName}`}
-          className="font-sans text-[32px]"
+          className="font-sans text-[32px] font-bold text-gray-900 dark:text-white"
           delay={50}
           duration={1.25}
           ease="power3.out"
@@ -182,19 +182,18 @@ function WelcomeChatbot({
           threshold={0.1}
           textAlign="center"
         />
-        <span className="truncate text-center text-[14px] text-white/40">
-          Đây chỉ là phiên bản nhằm mục đích debug, test và cấu hình cho bản
-          trên diện thoại{" "}
+        <span className="truncate text-center text-[14px] font-medium text-gray-500 dark:text-white/40">
+          Đây chỉ là phiên bản nhằm mục đích debug, test và cấu hình cho bản trên điện thoại
         </span>
       </div>
       <div className="w-full lg:w-150 xl:w-220">
-        <div className="relative h-40 max-h-40 w-full rounded-xl border border-white/10 bg-white/5 px-4 py-4 transition duration-300 focus-within:border-white/20 focus-within:bg-white/10 focus-within:ring-1 focus-within:ring-white/10 focus-within:outline-none">
+        <div className="relative h-40 max-h-40 w-full rounded-2xl border border-gray-400 bg-white px-4 py-4 shadow-sm transition duration-300 focus-within:border-primary/40 focus-within:bg-white focus-within:ring-4 focus-within:ring-primary/5 dark:border-white/10 dark:bg-white/5 dark:focus-within:border-white/20 dark:focus-within:bg-white/10">
           <textarea
             value={text}
             rows={4}
             onChange={(e) => setText(e.target.value)}
             placeholder="Hỏi gì đó cho Medimate..."
-            className="w-full resize-none pr-4 text-sm text-white outline-none placeholder:text-gray-400"
+            className="w-full resize-none pr-4 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
           ></textarea>
           <div className="absolute right-16 bottom-2.5">
             <ModelSelector
@@ -204,15 +203,15 @@ function WelcomeChatbot({
           </div>
           <button
             onClick={() => onStart?.(text)}
-            className="absolute right-3.5 bottom-2.5 z-2 flex h-9.5 w-9.5 cursor-pointer items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20"
+            className="absolute right-3.5 bottom-2.5 z-2 flex h-9.5 w-9.5 cursor-pointer items-center justify-center rounded-full bg-primary text-white shadow-lg transition hover:scale-105 active:scale-95 dark:bg-white dark:text-black"
           >
-            <IoArrowUp className="text-[16px]" />
+            <IoArrowUp className="text-[18px]" />
           </button>
         </div>
       </div>
       {/* Suggestions */}
       <div className="w-full lg:w-150 xl:w-220">
-        <p className="mb-4 text-xs font-medium tracking-wide text-white/40 uppercase">
+        <p className="mb-4 text-[11px] font-bold tracking-widest text-gray-400 uppercase dark:text-white/40">
           Gợi ý
         </p>
 
@@ -221,22 +220,25 @@ function WelcomeChatbot({
             <button
               key={item.title}
               onClick={() => onStart?.(item.title)}
-              className="group cursor-pointer rounded-xl border border-white/10 px-4 py-3 text-left transition hover:border-white/30"
+              className="group cursor-pointer rounded-2xl border border-gray-400 bg-white px-4 py-4 text-left transition-all duration-300 hover:border-primary/50 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-white/30"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">{item.title}</span>
-                <HiOutlineArrowUpRight className="text-sm opacity-0 transition group-hover:opacity-100" />
+                <span className="text-[13px] font-bold text-gray-900 group-hover:text-primary transition-colors dark:text-white dark:group-hover:text-primary">
+                  {item.title}
+                </span>
+                <HiOutlineArrowUpRight className="text-primary text-sm opacity-0 transition group-hover:opacity-100" />
               </div>
 
-              <p className="mt-1 text-xs text-white/50">{item.description}</p>
+              <p className="mt-2 text-[11px] leading-relaxed text-gray-500 font-medium dark:text-white/50">
+                {item.description}
+              </p>
             </button>
           ))}
         </div>
       </div>
       <div className="w-full text-center">
-        <span className="truncate text-xs text-white/40">
-          Medimate có thể mắc sai sót và không thể thay thế chuyên gia trong
-          lĩnh vực y tế
+        <span className="truncate text-xs font-medium text-gray-400 dark:text-white/40">
+          Medimate có thể mắc sai sót và không thể thay thế chuyên gia trong lĩnh vực y tế
         </span>
       </div>
     </div>
@@ -346,7 +348,7 @@ function MainChat({
 
       <div className="fixed inset-x-0 bottom-0 z-20 md:left-64">
         <div className="relative mx-auto max-w-5xl px-4 pb-6 md:pb-8">
-          <div className="relative w-full rounded-xl border border-white/10 bg-white/5 px-4 py-4 backdrop-blur-xl transition focus-within:border-white/20 focus-within:bg-white/10">
+          <div className="relative w-full rounded-2xl border border-gray-400 bg-white/80 p-4 shadow-xl backdrop-blur-xl transition focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5 dark:border-white/10 dark:bg-white/5 dark:focus-within:border-white/20 dark:focus-within:bg-white/10">
             <textarea
               ref={textareaRef}
               value={value}
@@ -359,25 +361,24 @@ function MainChat({
               }}
               placeholder="Hỏi gì đó cho Medimate..."
               rows={2}
-              className="max-h-40 w-full resize-none bg-transparent pr-12 text-sm text-white outline-none placeholder:text-white/40"
+              className="max-h-40 w-full resize-none bg-transparent pr-12 text-[14px] font-medium text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/40"
             />
 
             <button
               onClick={() => handleChat(value)}
               disabled={chatbotMutation.isPending || !value.trim()}
-              className="absolute right-2 bottom-2 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/20 active:scale-95 disabled:opacity-40"
+              className="absolute right-3.5 bottom-3.5 flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white shadow-lg transition hover:scale-105 active:scale-95 disabled:opacity-40 dark:bg-white dark:text-black"
             >
               {chatbotMutation.isPending ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white"></div>
               ) : (
-                <IoArrowUp className="text-[16px]" />
+                <IoArrowUp className="text-[18px]" />
               )}
             </button>
           </div>
 
-          <p className="mt-2 text-center text-[10px] text-white/30">
-            Medimate có thể mắc sai sót và không thể thay thế chuyên gia trong
-            lĩnh vực y tế
+          <p className="mt-3 text-center text-[10px] font-bold tracking-tight text-gray-400 dark:text-white/30">
+            Medimate có thể mắc sai sót và không thể thay thế chuyên gia trong lĩnh vực y tế
           </p>
         </div>
       </div>
@@ -396,14 +397,18 @@ function ChatMessage({ role, content }: ChatMessageProps) {
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 md:max-w-[70%] ${
-          isUser ? "bg-white/10 text-white" : "bg-white/5 text-white/90"
+        className={`max-w-[85%] rounded-2xl px-5 py-3.5 shadow-sm md:max-w-[75%] ${
+          isUser
+            ? "bg-primary font-medium text-white shadow-primary/20"
+            : "border border-gray-200 bg-white text-gray-900 dark:border-white/10 dark:bg-white/5 dark:text-white/90"
         } `}
       >
         {isUser ? (
-          <p className="text-sm leading-relaxed">{content}</p>
+          <p className="text-[14px] leading-relaxed">{content}</p>
         ) : (
-          <ChatResponseMarkdown content={content} />
+          <div className="text-[14px] leading-relaxed">
+            <ChatResponseMarkdown content={content} />
+          </div>
         )}
       </div>
     </div>

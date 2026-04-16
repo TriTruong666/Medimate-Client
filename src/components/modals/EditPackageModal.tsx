@@ -30,21 +30,24 @@ export function EditPackageModal({
   onSubmit,
 }: EditPackageModalProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
-      <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6 shadow-sm">
-          <h2 className="text-base font-semibold text-white">{title}</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm transition-all duration-300">
+      <div className="flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-gray-300 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5">
+          <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
+            {title}
+          </h2>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
           >
             <HiOutlineX className="h-5 w-5" />
           </button>
         </div>
 
         <div className="p-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <InputField
               label="Tên gói"
               value={value.packageName}
@@ -93,22 +96,27 @@ export function EditPackageModal({
               onChange={(next) => onChange("consultantLimit", Number(next))}
             />
             <div className="md:col-span-2">
-              <label className="mb-1 block text-xs text-gray-400">Mô tả</label>
+              <label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
+                Mô tả
+              </label>
               <textarea
                 value={value.description}
-                onChange={(event) => onChange("description", event.target.value)}
+                onChange={(event) =>
+                  onChange("description", event.target.value)
+                }
                 rows={3}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none transition focus:border-white/20"
+                placeholder="Nhập mô tả gói dịch vụ..."
+                className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/10 dark:border-gray-700 dark:bg-white/5 dark:text-white"
               />
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+        <div className="flex items-center justify-end gap-3 border-t border-gray-300 bg-gray-50/20 p-6 dark:border-white/10 dark:bg-white/2">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+            className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
           >
             Huỷ
           </button>
@@ -116,7 +124,7 @@ export function EditPackageModal({
             type="button"
             onClick={onSubmit}
             disabled={isPending}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-white/10 disabled:text-white/40"
+            className="rounded-xl bg-primary px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:opacity-90 active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
           >
             {isPending ? "Đang lưu..." : submitLabel}
           </button>
@@ -140,19 +148,25 @@ function InputField({
   type?: "text" | "number";
 }) {
   return (
-    <div>
-      <label className="mb-1 block text-xs text-gray-400">{label}</label>
+    <div className="space-y-1.5">
+      <label className="block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
+        {label}
+      </label>
       <input
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={`w-full rounded-xl border bg-white/5 px-3 py-2 text-sm text-white outline-none transition ${
+        className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition ${
           error
-            ? "border-red-500/50 focus:border-red-400"
-            : "border-white/10 focus:border-white/20"
+            ? "border-red-500 bg-red-50 text-red-900 focus:ring-2 focus:ring-red-100 dark:border-red-500/50 dark:bg-red-500/5 dark:text-red-200"
+            : "border-gray-300 bg-gray-50 text-gray-900 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 dark:border-gray-700 dark:bg-white/5 dark:text-white"
         }`}
       />
-      {error && <p className="mt-1 text-[11px] italic text-red-500">{error}</p>}
+      {error && (
+        <p className="text-[11px] font-medium text-red-500 dark:text-red-400">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

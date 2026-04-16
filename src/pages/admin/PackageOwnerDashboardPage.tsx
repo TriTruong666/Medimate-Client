@@ -13,7 +13,10 @@ import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { useFamilySubscriptions } from "@/hooks/data/useFamilySubscriptionHooks";
-import type { FamilySubscription, FamilySubscriptionStatus } from "@/apis/family-subscription.service";
+import type {
+  FamilySubscription,
+  FamilySubscriptionStatus,
+} from "@/apis/family-subscription.service";
 
 type ColumnKey =
   | "info"
@@ -90,7 +93,7 @@ export default function PackageOwnerDashboardPage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Quản lý hội viên
           </h1>
         </div>
@@ -135,26 +138,32 @@ function PackageOwnerTable() {
         pageSize,
         total,
         onPageChange: setPage,
-        onPageSizeChange: (next) => { setPageSize(next); setPage(1); },
+        onPageSizeChange: (next) => {
+          setPageSize(next);
+          setPage(1);
+        },
       }}
     >
       {rows.map((row: FamilySubscription) => {
-        // Mapping Trạng thái Suspended -> Blocked (khoá tạm), Expired -> Quá hạn... 
+        // Mapping Trạng thái Suspended -> Blocked (khoá tạm), Expired -> Quá hạn...
         // tuỳ theo định nghĩa logic. Ở đây hiển thị dựa trên status API trả về.
         return (
           <tr
             key={row.subscriptionId}
-            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+            className="transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
           >
             {/* Info */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <div className="flex items-center gap-3">
-                <OwnerAvatar url={row.familyAvatarUrl} name={row.userName || "?"} />
-                <div className="flex flex-col min-w-0">
+                <OwnerAvatar
+                  url={row.familyAvatarUrl}
+                  name={row.userName || "?"}
+                />
+                <div className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                     {row.userName}
                   </span>
-                  <span className="truncate dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
+                  <span className="text-primary/80 dark:text-primary/90 truncate text-[12px] font-semibold italic">
                     {row.userEmail}
                   </span>
                 </div>
@@ -162,46 +171,65 @@ function PackageOwnerTable() {
             </td>
 
             {/* Created at / Start Date */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
-                {row.startDate ? new Date(row.startDate).toLocaleDateString("vi-VN") : "—"}
+                {row.startDate
+                  ? new Date(row.startDate).toLocaleDateString("vi-VN")
+                  : "—"}
               </span>
             </td>
 
             {/* Expired At */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
-              <span className={`text-sm ${
-                new Date(row.endDate) < new Date() ? "text-red-500" : "text-gray-600 dark:text-gray-300"
-              }`}>
-                {row.endDate ? new Date(row.endDate).toLocaleDateString("vi-VN") : "—"}
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
+              <span
+                className={`text-sm ${
+                  new Date(row.endDate) < new Date()
+                    ? "text-red-500"
+                    : "text-gray-600 dark:text-gray-300"
+                }`}
+              >
+                {row.endDate
+                  ? new Date(row.endDate).toLocaleDateString("vi-VN")
+                  : "—"}
               </span>
             </td>
 
             {/* Package Type */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <div className="flex flex-col gap-1">
-                <span
-                  className={`text-sm font-semibold ${
-                    row.packageName === "Premium" || row.packageName === "Pro"
-                      ? "text-white"
-                      : "text-gray-200"
-                  } `}
-                >
-                  {row.packageName} <span className="text-xs font-normal text-gray-400">({row.price === 0 ? "Miễn phí" : `${row.price.toLocaleString()} VND`})</span>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  {row.packageName}{" "}
+                  <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                    (
+                    {row.price === 0
+                      ? "Miễn phí"
+                      : `${row.price.toLocaleString()} VND`}
+                    )
+                  </span>
                 </span>
 
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  Gia đình: <span className="font-medium text-gray-300">{row.familyName}</span>
+                  Gia đình:{" "}
+                  <span className="font-semibold text-gray-600 dark:text-gray-300">
+                    {row.familyName}
+                  </span>
                 </span>
-                
+
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  OCR còn: <span className="text-gray-300 font-medium">{row.remainingOcrCount}</span> | Tư vấn: <span className="text-gray-300 font-medium">{row.remainingConsultantCount}</span>
+                  OCR:{" "}
+                  <span className="text-primary/80 dark:text-primary/90 font-semibold">
+                    {row.remainingOcrCount}
+                  </span>{" "}
+                  | Tư vấn:{" "}
+                  <span className="text-primary/80 dark:text-primary/90 font-semibold">
+                    {row.remainingConsultantCount}
+                  </span>
                 </span>
               </div>
             </td>
 
             {/* Status */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <StatusBadge status={row.status} />
             </td>
 
@@ -212,7 +240,9 @@ function PackageOwnerTable() {
                   <>
                     <Tooltip content="Khoá tạm thời">
                       <IconAction
-                        onClick={() => openLockModal("owner_package", row.userEmail)}
+                        onClick={() =>
+                          openLockModal("owner_package", row.userEmail)
+                        }
                         danger
                         icon={<IoLockClosedOutline />}
                       />
@@ -232,7 +262,9 @@ function PackageOwnerTable() {
                   <>
                     <Tooltip content="Mở khoá">
                       <IconAction
-                        onClick={() => openUnlockModal("owner_package", row.userEmail)}
+                        onClick={() =>
+                          openUnlockModal("owner_package", row.userEmail)
+                        }
                         icon={<IoLockOpenOutline />}
                       />
                     </Tooltip>
@@ -278,7 +310,11 @@ function PackageOwnerTable() {
   );
 }
 
-function StatusBadge({ status }: { status: FamilySubscriptionStatus | string }) {
+function StatusBadge({
+  status,
+}: {
+  status: FamilySubscriptionStatus | string;
+}) {
   const normalizedStatus = (status || "").toLowerCase();
 
   const map: Record<string, React.ReactNode> = {
@@ -290,14 +326,22 @@ function StatusBadge({ status }: { status: FamilySubscriptionStatus | string }) 
     inactive: <Badge type="info" value="Chưa kích hoạt" />,
   };
 
-  return map[normalizedStatus] || <Badge type="info" value={status || "Unknown"} />;
+  return (
+    map[normalizedStatus] || <Badge type="info" value={status || "Unknown"} />
+  );
 }
 
 function OwnerAvatar({ name, url }: { name: string; url?: string | null }) {
   return (
     <div className="relative h-10 w-10 shrink-0">
-      <div className="flex h-full w-full overflow-hidden items-center justify-center rounded-full bg-gradient-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
-        {url ? <img src={url} alt={name} className="h-full w-full object-cover" /> : (name ? name.charAt(0).toUpperCase() : "?")}
+      <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-gray-100 to-gray-200 text-sm font-bold text-gray-700 dark:from-white/20 dark:to-white/5 dark:text-white">
+        {url ? (
+          <img src={url} alt={name} className="h-full w-full object-cover" />
+        ) : name ? (
+          name.charAt(0).toUpperCase()
+        ) : (
+          "?"
+        )}
       </div>
     </div>
   );
