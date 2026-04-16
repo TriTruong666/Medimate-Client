@@ -100,12 +100,12 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
       <div className="space-y-5 p-6 pb-2">
         {/* Search */}
         <div className="relative">
-          <HiOutlineSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+          <HiOutlineSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm tài liệu..."
-            className="h-9 w-full rounded-xl border border-gray-400 bg-gray-50 pr-4 pl-11 text-sm text-gray-900 transition-all placeholder:text-gray-400 hover:bg-white focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary/10 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:bg-white/10 dark:focus:border-white/20 dark:focus:bg-white/10 dark:focus:ring-white/10"
+            className="input-primary h-10 w-full pl-11"
           />
         </div>
 
@@ -186,7 +186,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
         <div className="flex gap-3">
           <button
             onClick={closeModal}
-            className="rounded-lg px-4 py-2 text-sm font-bold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+            className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
           >
             Huỷ
           </button>
@@ -194,7 +194,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
           <button
             onClick={handleConfirm}
             disabled={selectedIds.length === 0 || isAssigning}
-            className="rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white shadow-lg transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40 active:scale-95"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
           >
             {isAssigning ? "Đang gán..." : "Thêm tài liệu"}
           </button>

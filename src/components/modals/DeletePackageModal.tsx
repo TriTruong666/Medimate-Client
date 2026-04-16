@@ -51,12 +51,12 @@ export function DeletePackageModal({
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-gray-400 bg-gray-50/20 p-6 dark:border-white/10 dark:bg-white/2">
+            <div className="flex items-center justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isPending}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+                className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
               >
                 Hủy
               </button>
@@ -64,7 +64,7 @@ export function DeletePackageModal({
                 type="button"
                 onClick={onConfirm}
                 disabled={isPending}
-                className="rounded-xl bg-red-500 px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:bg-red-600 active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
                 {isPending ? "Đang xóa..." : "Xóa gói"}
               </button>

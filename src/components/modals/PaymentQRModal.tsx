@@ -98,7 +98,7 @@ export function PaymentQRModal({
 
             <button
               onClick={() => handleCopy(bankAccount, "account")}
-              className="flex shrink-0 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
+              className="flex shrink-0 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
             >
               {copied === "account" ? (
                 <IoMdCheckmark className="h-4 w-4 shrink-0 text-emerald-600" />
@@ -119,7 +119,7 @@ export function PaymentQRModal({
 
             <button
               onClick={() => handleCopy(transferContent, "content")}
-              className="flex shrink-0 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
+              className="flex shrink-0 items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10"
             >
               {copied === "content" ? (
                 <IoMdCheckmark className="h-4 w-4 shrink-0 text-emerald-600" />
@@ -159,14 +159,14 @@ export function PaymentQRModal({
       <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 px-6 py-5 dark:border-white/10">
         <button
           onClick={closeModal}
-          className="rounded-lg px-4 py-2 text-sm font-bold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+          className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
         >
           Đóng
         </button>
 
         <button
           onClick={handleCheckPayment}
-          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700"
         >
           Kiểm tra giao dịch
         </button>

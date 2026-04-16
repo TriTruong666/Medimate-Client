@@ -162,7 +162,7 @@ export function UploadDocumentModal() {
         <button
           onClick={handleUpload}
           disabled={selectedFiles.length === 0 || uploadMutation.isPending}
-          className="bg-primary flex items-center gap-2 rounded-lg px-6 py-2 text-sm font-bold text-white transition hover:opacity-90 disabled:opacity-50"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
         >
           {uploadMutation.isPending ? "Đang tải lên..." : "Tải lên"}
         </button>

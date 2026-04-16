@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { HiOutlineX } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 import type { UpdatePackageRequest } from "@/types/Package";
@@ -105,8 +106,8 @@ export function EditPackageModal({
                   error={errors.consultantLimit}
                   onChange={(next) => onChange("consultantLimit", Number(next))}
                 />
-                <div className="md:col-span-2">
-                  <label className="mb-1.5 block text-[13px] font-bold text-gray-700 dark:text-gray-300">
+                <div className="md:col-span-2 space-y-1.5">
+                  <label className="block text-[12px] font-medium text-gray-500 dark:text-gray-400">
                     Mô tả
                   </label>
                   <textarea
@@ -116,17 +117,17 @@ export function EditPackageModal({
                     }
                     rows={3}
                     placeholder="Nhập mô tả gói dịch vụ..."
-                    className="w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/10 dark:border-gray-700 dark:bg-white/5 dark:text-white shadow-sm"
+                    className="input-primary min-h-[100px] w-full"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-gray-400 bg-gray-50/20 p-6 dark:border-white/10 dark:bg-white/2">
+            <div className="flex items-center justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-xl px-4 py-2 text-sm font-semibold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+                className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
               >
                 Huỷ
               </button>
@@ -134,7 +135,7 @@ export function EditPackageModal({
                 type="button"
                 onClick={onSubmit}
                 disabled={isPending}
-                className="rounded-xl bg-primary px-6 py-2 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
                 {isPending ? "Đang lưu..." : submitLabel}
               </button>
@@ -160,25 +161,20 @@ function InputField({
   type?: "text" | "number";
 }) {
   return (
-    <div className="space-y-1.5 px-1">
-      <label className="block text-[13px] font-bold text-gray-700 dark:text-gray-300">
+    <div className="flex flex-col gap-1.5">
+      <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
         {label}
       </label>
       <input
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className={`w-full rounded-xl border px-4 py-2.5 text-sm outline-none transition shadow-sm ${
-          error
-            ? "border-red-500 bg-red-50 text-red-900 focus:ring-2 focus:ring-red-100 dark:border-red-500/50 dark:bg-red-500/5 dark:text-red-200"
-            : "border-gray-300 bg-gray-50 text-gray-900 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 dark:border-gray-700 dark:bg-white/5 dark:text-white"
-        }`}
+        className={clsx(
+          "input-primary w-full",
+          error && "border-red-500! dark:border-red-500/50!"
+        )}
       />
-      {error && (
-        <p className="px-1 text-[11px] font-bold text-red-500 dark:text-red-400">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-[12px] text-red-500 italic">{error}</p>}
     </div>
   );
 }

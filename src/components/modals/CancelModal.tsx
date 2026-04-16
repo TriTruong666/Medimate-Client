@@ -44,13 +44,19 @@ export function CancelModal() {
 
       <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
         <button
+          onClick={closeModal}
+          className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+        >
+          Đóng
+        </button>
+        <button
           className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
           onClick={() => {
             console.log("Huỷ:", cancelType);
             closeModal();
           }}
         >
-          Huỷ gói
+          Xác nhận Huỷ
         </button>
       </div>
     </div>

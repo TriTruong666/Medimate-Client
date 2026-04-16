@@ -154,20 +154,20 @@ export function DoctorExceptionModal({
               <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">Thêm lịch nghỉ</h3>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <label className="text-[11px] font-bold text-gray-500 uppercase dark:text-gray-400">
-                    Ngày nghỉ
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Ngày nghỉ</label>
                     <input
                       type="datetime-local"
                       value={form.date}
                       onChange={(event) =>
                         setForm((prev) => ({ ...prev, date: event.target.value }))
                       }
-                      className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/30 dark:text-white"
+                      className="input-primary w-full"
                     />
-                  </label>
+                  </div>
 
-                  <label className="text-[11px] font-bold text-gray-500 uppercase dark:text-gray-400">
-                    Lý do nghỉ
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Lý do nghỉ</label>
                     <input
                       type="text"
                       value={form.reason}
@@ -175,40 +175,40 @@ export function DoctorExceptionModal({
                         setForm((prev) => ({ ...prev, reason: event.target.value }))
                       }
                       placeholder="Ví dụ: Nghỉ phép cá nhân"
-                      className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/30 dark:text-white"
+                      className="input-primary w-full"
                     />
-                  </label>
+                  </div>
 
-                  <label className="text-[11px] font-bold text-gray-500 uppercase dark:text-gray-400">
-                    Giờ bắt đầu
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Giờ bắt đầu</label>
                     <input
                       type="time"
                       value={form.startTime}
                       onChange={(event) =>
                         setForm((prev) => ({ ...prev, startTime: event.target.value }))
                       }
-                      className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/30 dark:text-white"
+                      className="input-primary w-full"
                     />
-                  </label>
+                  </div>
 
-                  <label className="text-[11px] font-bold text-gray-500 uppercase dark:text-gray-400">
-                    Giờ kết thúc
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Giờ kết thúc</label>
                     <input
                       type="time"
                       value={form.endTime}
                       onChange={(event) =>
                         setForm((prev) => ({ ...prev, endTime: event.target.value }))
                       }
-                      className="mt-1.5 w-full rounded-xl border border-gray-300 bg-white px-3 py-2 text-sm font-bold text-gray-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/30 dark:text-white"
+                      className="input-primary w-full"
                     />
-                  </label>
+                  </div>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => void handleCreate()}
                   disabled={createMutation.isPending}
-                  className="mt-5 rounded-xl bg-primary px-5 py-2.5 text-xs font-bold text-white shadow-lg transition hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
                 >
                   {createMutation.isPending ? "Đang tạo..." : "Gửi lịch nghỉ chờ duyệt"}
                 </button>
@@ -220,7 +220,7 @@ export function DoctorExceptionModal({
                   <button
                     type="button"
                     onClick={() => void refetch()}
-                    className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-transparent dark:text-gray-300 dark:hover:bg-white/10"
+                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-transparent dark:text-gray-300 dark:hover:bg-white/10"
                   >
                     Làm mới
                   </button>
@@ -253,10 +253,10 @@ export function DoctorExceptionModal({
               </section>
             </div>
 
-            <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10 dark:bg-white/5">
+            <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
               <button
                 onClick={onClose}
-                className="rounded-lg px-6 py-2.5 text-sm font-bold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+                className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
               >
                 Đóng
               </button>
@@ -307,7 +307,7 @@ function ExceptionList({
                 <button
                   type="button"
                   onClick={() => onDelete(item)}
-                  className="inline-flex items-center gap-2 self-start rounded-xl bg-red-100 px-4 py-2 text-xs font-bold text-red-600 shadow-sm transition hover:bg-red-200 dark:bg-red-500/20 dark:text-red-200 dark:hover:bg-red-500/30 active:scale-95"
+                  className="inline-flex items-center gap-2 self-start rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-100 dark:bg-red-500/20 dark:text-red-200 dark:hover:bg-red-500/30"
                 >
                   <HiOutlineTrash className="h-4 w-4" /> Xóa
                 </button>

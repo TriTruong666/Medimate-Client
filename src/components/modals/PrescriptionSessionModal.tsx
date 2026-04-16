@@ -108,7 +108,7 @@ export function PrescriptionSessionModal({
                   type="button"
                   onClick={openCreate}
                   disabled={!canCreate}
-                  className="active:scale-95 inline-flex items-center gap-2 rounded-xl bg-red-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-red-500/20 transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                  className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
                 >
                   <HiOutlinePlus className="h-5 w-5" />
                   Tạo đơn
@@ -127,7 +127,7 @@ export function PrescriptionSessionModal({
                   <button
                     type="button"
                     onClick={() => void refetch()}
-                    className="mt-6 rounded-xl border border-gray-300 bg-white px-5 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    className="mt-6 rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
                   >
                     Thử lại
                   </button>

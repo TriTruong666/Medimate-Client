@@ -209,26 +209,26 @@ export function PrescriptionModal({
 
             <div className="max-h-[70vh] space-y-5 overflow-y-auto p-5 thin-scrollbar">
               <div className="grid gap-4 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-xs font-bold text-gray-500 uppercase dark:text-white/70">
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
                     Chẩn đoán
                   </label>
                   <input
                     value={diagnosis}
                     onChange={(event) => setDiagnosis(event.target.value)}
                     placeholder="Ví dụ: Viêm họng cấp"
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-primary focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-white/20"
+                    className="input-primary w-full"
                   />
                 </div>
-                <div>
-                  <label className="mb-2 block text-xs font-bold text-gray-500 uppercase dark:text-white/70">
+                <div className="space-y-1.5 flex flex-col">
+                  <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
                     Lời dặn
                   </label>
                   <input
                     value={advice}
                     onChange={(event) => setAdvice(event.target.value)}
                     placeholder="Ví dụ: Uống nhiều nước ấm"
-                    className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-primary focus:bg-white dark:border-white/10 dark:bg-white/5 dark:text-white dark:focus:border-white/20"
+                    className="input-primary w-full"
                   />
                 </div>
               </div>
@@ -251,7 +251,7 @@ export function PrescriptionModal({
                   <button
                     type="button"
                     onClick={addMedicine}
-                    className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 active:scale-95"
+                    className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   >
                     <HiOutlinePlus className="h-4 w-4" />
                     Thêm thuốc
@@ -302,32 +302,32 @@ export function PrescriptionModal({
                     </div>
 
                     <div className="grid gap-3 md:grid-cols-2">
-                      <label className="space-y-1 text-xs font-bold text-gray-500 dark:text-white/70">
-                        <span className="block uppercase tracking-wide">Tên thuốc</span>
+                      <div className="space-y-1 flex flex-col">
+                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Tên thuốc</span>
                         <input
                           value={medicine.medicineName}
                           onChange={(event) =>
                             updateMedicineField(idx, "medicineName", event.target.value)
                           }
                           placeholder="Paracetamol"
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary outline-none transition dark:border-white/10 dark:bg-white/5 dark:text-white"
+                          className="input-primary w-full"
                         />
-                      </label>
+                      </div>
 
-                      <label className="space-y-1 text-xs font-bold text-gray-500 dark:text-white/70">
-                        <span className="block uppercase tracking-wide">Liều lượng</span>
+                      <div className="space-y-1 flex flex-col">
+                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Liều lượng</span>
                         <input
                           value={medicine.dosage}
                           onChange={(event) =>
                             updateMedicineField(idx, "dosage", event.target.value)
                           }
                           placeholder="500mg hoặc 1 viên/lần"
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary outline-none transition dark:border-white/10 dark:bg-white/5 dark:text-white"
+                          className="input-primary w-full"
                         />
-                      </label>
+                      </div>
 
-                      <label className="space-y-1 text-xs font-bold text-gray-500 dark:text-white/70">
-                        <span className="block uppercase tracking-wide">Số lượng</span>
+                      <div className="space-y-1 flex flex-col">
+                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Số lượng</span>
                         <input
                           type="number"
                           min={1}
@@ -336,33 +336,33 @@ export function PrescriptionModal({
                             updateMedicineField(idx, "quantity", Number(event.target.value) || 1)
                           }
                           placeholder="10"
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary outline-none transition dark:border-white/10 dark:bg-white/5 dark:text-white"
+                          className="input-primary w-full"
                         />
-                      </label>
+                      </div>
 
-                      <label className="space-y-1 text-xs font-bold text-gray-500 dark:text-white/70">
-                        <span className="block uppercase tracking-wide">Đơn vị</span>
+                      <div className="space-y-1 flex flex-col">
+                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Đơn vị</span>
                         <input
                           value={medicine.unit}
                           onChange={(event) =>
                             updateMedicineField(idx, "unit", event.target.value)
                           }
                           placeholder="Viên, Gói, Ống"
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary outline-none transition dark:border-white/10 dark:bg-white/5 dark:text-white"
+                          className="input-primary w-full"
                         />
-                      </label>
+                      </div>
 
-                      <label className="space-y-1 text-xs font-bold text-gray-500 dark:text-white/70 md:col-span-2">
-                        <span className="block uppercase tracking-wide">Hướng dẫn sử dụng</span>
+                      <div className="space-y-1 flex flex-col md:col-span-2">
+                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Hướng dẫn sử dụng</span>
                         <input
                           value={medicine.instructions}
                           onChange={(event) =>
                             updateMedicineField(idx, "instructions", event.target.value)
                           }
                           placeholder="Ngày 2 lần sau ăn, sáng và tối"
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary outline-none transition dark:border-white/10 dark:bg-white/5 dark:text-white"
+                          className="input-primary w-full"
                         />
-                      </label>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -373,7 +373,7 @@ export function PrescriptionModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg border border-gray-300 bg-white px-5 py-2 text-sm font-bold text-gray-500 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
               >
                 Hủy
               </button>
@@ -381,7 +381,7 @@ export function PrescriptionModal({
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="rounded-lg bg-red-500 px-6 py-2 text-sm font-bold text-white shadow-lg transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40 active:scale-95"
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
                 {isSubmitting ? "Đang lưu..." : isEdit ? "Cập nhật" : "Tạo đơn"}
               </button>

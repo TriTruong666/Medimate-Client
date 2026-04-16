@@ -59,9 +59,9 @@ export function ConfirmUpdateProfileModal() {
           Hủy bỏ
         </button>
         <button
-          className="btn-primary px-6 font-bold"
           onClick={handleConfirm}
           disabled={isPending || isLoggingOut}
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
         >
           {isPending || isLoggingOut ? "Đang xử lý..." : "Tôi hiểu, tiếp tục"}
         </button>

@@ -124,13 +124,13 @@ export function AccountDetailReviewModal({
 
             {/* Reject prompt */}
             {showRejectInput && (account.status === "Pending") && (
-              <div className="mt-6 rounded-lg border border-red-500/20 bg-red-50 p-4 dark:bg-red-500/5">
-                <label className="mb-2 block text-sm font-bold text-red-600 dark:text-red-200">
+              <div className="mt-6 flex flex-col gap-1.5">
+                <label className="text-[12px] font-medium text-red-500 dark:text-red-400">
                   Lý do từ chối duyệt:
                 </label>
                 <textarea
                   autoFocus
-                  className="w-full rounded-xl border border-red-500/30 bg-white p-3 text-sm text-gray-900 placeholder-red-300 transition-all focus:border-red-500 focus:outline-none dark:bg-black/50 dark:text-white dark:placeholder-red-500/50"
+                  className="input-primary w-full shadow-sm"
                   rows={3}
                   placeholder="Ví dụ: CCHN không khớp tên..."
                   value={rejectReason}
@@ -148,7 +148,7 @@ export function AccountDetailReviewModal({
                 else onClose();
               }}
               disabled={isSubmitting}
-              className="rounded-lg px-4 py-2.5 text-sm font-bold text-gray-500 hover:bg-gray-100 hover:text-gray-900 transition dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+              className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
             >
               Đóng
             </button>
@@ -158,7 +158,7 @@ export function AccountDetailReviewModal({
                   <button
                     onClick={() => onReject(account.doctorId, rejectReason)}
                     disabled={isSubmitting || !rejectReason.trim()}
-                    className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-red-500 px-6 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-red-600 disabled:opacity-50 transition active:scale-95"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
                   >
                     {isSubmitting ? <Spinner size="sm" color="white" /> : "Xác nhận từ chối"}
                   </button>
@@ -166,7 +166,7 @@ export function AccountDetailReviewModal({
                   <button
                     onClick={() => setShowRejectInput(true)}
                     disabled={isSubmitting}
-                    className="flex items-center gap-2 rounded-lg border border-gray-400 bg-white px-5 py-2.5 text-sm font-bold text-red-500 shadow-sm hover:bg-red-50 hover:border-red-500/30 transition dark:border-white/10 dark:bg-white/5 dark:text-red-400 dark:hover:bg-white/10 dark:hover:text-red-300"
+                    className="flex items-center justify-center gap-2 rounded-lg border border-gray-400 bg-white px-4 py-2 text-sm font-medium text-red-500 transition hover:bg-red-50 hover:border-red-500/30 dark:border-white/10 dark:bg-white/5 dark:text-red-400 dark:hover:bg-white/10"
                   >
                     <HiOutlineXCircle className="h-5 w-5" />
                     Từ chối
@@ -177,7 +177,7 @@ export function AccountDetailReviewModal({
                   <button
                     onClick={() => onApprove(account.doctorId)}
                     disabled={isSubmitting}
-                    className="flex min-w-[140px] items-center justify-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-700 disabled:opacity-50 transition active:scale-95"
+                    className="flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
                   >
                     {isSubmitting ? <Spinner size="sm" color="white" /> : <><HiOutlineCheckCircle className="h-5 w-5" /> Duyệt thông tin</>}
                   </button>

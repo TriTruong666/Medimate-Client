@@ -54,14 +54,14 @@ export function DeleteModal() {
       <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
         <button
           onClick={closeModal}
-          className="rounded-lg px-6 py-2 text-sm font-bold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+          className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
         >
           Huỷ
         </button>
 
         <button
           disabled={deleteMutation.isPending}
-          className="flex min-w-[80px] items-center justify-center rounded-lg bg-red-600 px-6 py-2 text-sm font-bold text-white shadow-lg transition hover:bg-red-700 disabled:opacity-50 active:scale-95"
+          className="flex items-center justify-center rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
           onClick={() => {
             if (deleteType === "document" && deleteId) {
               deleteMutation.mutate(deleteId, {

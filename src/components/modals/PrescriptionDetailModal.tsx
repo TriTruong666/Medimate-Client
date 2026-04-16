@@ -49,12 +49,10 @@ export function PrescriptionDetailModal({
                   <button
                     type="button"
                     onClick={() => setIsEditOpen(true)}
-                    className="rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <HiOutlinePencil className="h-4 w-4" />
-                      Sửa
-                    </span>
+                    <HiOutlinePencil className="h-4 w-4" />
+                    Sửa
                   </button>
                 )}
                 <button
@@ -80,7 +78,7 @@ export function PrescriptionDetailModal({
                   <button
                     type="button"
                     onClick={() => void refetch()}
-                    className="bg-primary active:scale-95 mt-6 rounded-lg px-6 py-2.5 text-sm font-bold text-white shadow-lg transition hover:brightness-110"
+                    className="mt-6 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
                   >
                     Thử lại
                   </button>

@@ -146,14 +146,14 @@ export function CertificateDetailReviewModal({
               </div>
             ) : null}
 
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700 dark:text-white">Lý do từ chối</label>
+            <div className="space-y-1.5 flex flex-col">
+              <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Lý do từ chối</label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 disabled={isSubmitting}
                 placeholder="Nhập lý do từ chối (bắt buộc nếu Reject)"
-                className="h-24 w-full resize-none rounded-xl border border-gray-400 bg-gray-50 px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-primary dark:border-white/10 dark:bg-black/50 dark:text-white dark:focus:border-white/30"
+                className="input-primary h-24 w-full resize-none"
               />
             </div>
 
@@ -167,17 +167,17 @@ export function CertificateDetailReviewModal({
                   onReject(row, rejectReason.trim());
                 }}
                 disabled={!canSubmitReject || isSubmitting}
-                className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
-                {isSubmitting ? "Đang xử lý..." : "Reject"}
+                {isSubmitting ? "Đang xử lý..." : "Từ chối"}
               </button>
 
               <button
                 onClick={() => onApprove(row)}
                 disabled={isSubmitting}
-                className="rounded-lg bg-emerald-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
-                {isSubmitting ? "Đang xử lý..." : "Approve"}
+                {isSubmitting ? "Đang xử lý..." : "Duyệt"}
               </button>
             </div>
           </div>

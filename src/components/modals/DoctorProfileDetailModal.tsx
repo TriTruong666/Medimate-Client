@@ -179,7 +179,7 @@ export function DoctorProfileDetailModal({
           <div className="flex justify-end gap-3 border-t border-gray-400 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5">
             <button
               onClick={onClose}
-              className="rounded-lg px-6 py-2.5 text-sm font-bold text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+              className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
             >
               Đóng
             </button>
@@ -414,34 +414,34 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
         <p className="text-xs text-gray-500 mt-1">Cấu hình khung giờ cố định lặp lại hàng tuần.</p>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <div className="space-y-2">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Thứ</p>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Thứ</label>
             <select
               value={newSlot.dayOfWeek}
               onChange={(e) => setNewSlot((prev) => ({ ...prev, dayOfWeek: e.target.value as DayOfWeek }))}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/40 dark:text-white"
+              className="input-primary w-full"
             >
               {dayOfWeekOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
           </div>
-          <div className="space-y-2">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Bắt đầu</p>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Bắt đầu</label>
             <input
               type="time"
               value={newSlot.startTime}
               onChange={(e) => setNewSlot((prev) => ({ ...prev, startTime: e.target.value }))}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/40 dark:text-white"
+              className="input-primary w-full"
             />
           </div>
-          <div className="space-y-2">
-            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Kết thúc</p>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Kết thúc</label>
             <input
               type="time"
               value={newSlot.endTime}
               onChange={(e) => setNewSlot((prev) => ({ ...prev, endTime: e.target.value }))}
-              className="w-full rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-black/40 dark:text-white"
+              className="input-primary w-full"
             />
           </div>
         </div>
@@ -449,7 +449,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
         <div className="mt-6 flex items-center justify-between">
           <button
             onClick={handleAddToQueue}
-            className="rounded-xl bg-primary px-6 py-2.5 text-xs font-bold text-white shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
           >
             Thêm vào danh sách chờ
           </button>
@@ -478,7 +478,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
           <button
             onClick={() => void handleCreateQueue()}
             disabled={createMutation.isPending}
-            className="mt-6 w-full rounded-xl bg-emerald-500 py-3 text-xs font-bold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+            className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
           >
             {createMutation.isPending ? "Đang xử lý..." : `Xác nhận tạo ${queue.length} khung giờ`}
           </button>
@@ -491,7 +491,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
           <h3 className="text-base font-bold text-gray-900 dark:text-white">Lịch làm việc hiện tại</h3>
           <button
             onClick={() => void refetch()}
-            className="text-xs font-bold text-primary hover:underline transition-all"
+            className="text-xs font-medium text-primary hover:opacity-80 transition-all"
           >
             Làm mới
           </button>
@@ -520,7 +520,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
                   <select
                     value={draft.dayOfWeek}
                     onChange={(e) => patchRowDraft(item, { dayOfWeek: e.target.value as DayOfWeek })}
-                    className="rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-bold outline-none dark:bg-white/5"
+                    className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   >
                     {dayOfWeekOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -530,13 +530,13 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
                     type="time"
                     value={draft.startTime}
                     onChange={(e) => patchRowDraft(item, { startTime: e.target.value })}
-                    className="rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-bold outline-none dark:bg-white/5"
+                    className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   />
                   <input
                     type="time"
                     value={draft.endTime}
                     onChange={(e) => patchRowDraft(item, { endTime: e.target.value })}
-                    className="rounded-lg bg-gray-100 px-2 py-1.5 text-xs font-bold outline-none dark:bg-white/5"
+                    className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   />
                   <div className="flex items-center gap-2">
                     {isEdited ? (
@@ -606,7 +606,7 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
             Đã duyệt ({approved.length})
           </button>
         </div>
-        <button onClick={() => void refetch()} className="text-xs font-bold text-primary">Làm mới</button>
+        <button onClick={() => void refetch()} className="text-xs font-medium text-primary hover:opacity-80 transition-all">Làm mới</button>
       </div>
 
       {isLoading ? (
@@ -628,7 +628,7 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
                 <button
                   onClick={() => void handleApprove(item)}
                   disabled={updateMutation.isPending}
-                  className="mt-4 sm:mt-0 flex items-center gap-2 rounded-xl bg-emerald-500 px-4 py-2 text-xs font-bold text-white transition hover:brightness-110"
+                  className="mt-4 sm:mt-0 flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
                 >
                   <HiOutlineCheck className="h-4 w-4" /> Duyệt đơn
                 </button>
