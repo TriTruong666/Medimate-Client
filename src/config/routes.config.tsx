@@ -428,13 +428,13 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Cài đặt hồ sơ",
     icon: FiSettings,
     showInSidebar: false,
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin", "User", "Doctor", "DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.SECURITY,
     element: <SecuritySettingDashboardPage />,
     layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin", "User", "Doctor", "DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.SYSTEM,
