@@ -3,9 +3,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiPaperclip } from "react-icons/fi";
+import { FiPaperclip, FiUser } from "react-icons/fi";
 import { HiXMark } from "react-icons/hi2";
 import { IoSend } from "react-icons/io5";
+import { LuCalendar, LuClock } from "react-icons/lu";
 import { PATHS } from "@/config/paths";
 import { useChatIdentity, useChatSessionDetails, useChatSessionMessages, useMarkChatSessionMessagesRead, useSendChatSessionMessage } from "@/hooks/data/useChatDoctorHooks";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -14,10 +15,18 @@ import { chatPopupAtom, closePopupAtom, chatSessionExpiryAtom } from "../../stor
 import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
 import { Spinner } from "../custom-ui/Spinner";
 import type { ChatDoctorMessageResponse } from "@/types/ChatDoctor";
+import { DoctorSupportDetailPage } from "@/pages/doctor/DoctorSupportDetailPage";
 
 type ChatPopupProps = {
   sessionId: string;
 };
+
+function formatAppointmentDate(value?: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
 
 export function ChatPopup({ sessionId }: ChatPopupProps) {
   const [, closePopup] = useAtom(closePopupAtom);
@@ -25,6 +34,8 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   const { doctorId } = useChatIdentity();
   const [chatExpiryMap] = useAtom(chatSessionExpiryAtom);
   const expiredAt = chatExpiryMap[sessionId];
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
   const {
     data: sessionDetails,
     isLoading: isDetailsLoading,
@@ -50,14 +61,18 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
 
     hasMarkedReadRef.current = sessionId;
     void markReadMutation.mutateAsync().catch(() => {
-      // Allow retry on next render tick if mark-read fails.
       hasMarkedReadRef.current = null;
     });
   }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
 
-  const displayName = sessionDetails?.partnerName || "Phòng chat";
+  // Normalize các field name khác nhau từ API
+  const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || "Phòng chat";
   const displayStatus = isExpired ? "Hết hạn" : (sessionDetails?.status || "Đang kết nối");
-  const partnerAvatar = sessionDetails?.partnerAvatar || null;
+  const partnerAvatar = sessionDetails?.memberAvatar || sessionDetails?.partnerAvatar || null;
+  const appointmentDate = sessionDetails?.appointmentDate;
+  const appointmentTime = sessionDetails?.appointmentTime;
+  const appointmentId = sessionDetails?.appointmentId;
+
   const messageItems = useMemo(() => messages || [], [messages]);
 
   function handleOpenConsultationSession() {
@@ -67,78 +82,128 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   }
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 40, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 40, scale: 0.95 }}
-      transition={{ duration: 0.25, ease: "easeOut" }}
-      className="flex h-105 w-92 flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl"
-    >
-      <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-        <button
-          type="button"
-          onClick={handleOpenConsultationSession}
-          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg p-1 -m-1 text-left transition hover:bg-white/5"
-          title="Mở chi tiết phiên tư vấn"
-        >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
-            {partnerAvatar ? (
-              <img
-                src={partnerAvatar}
-                alt={displayName}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              displayName.charAt(0).toUpperCase()
-            )}
-          </div>
-          <div className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-semibold text-white">
-              {displayName}
-            </span>
-            <span className={clsx(
-              "text-xs",
-              isExpired ? "text-red-400" : "text-green-400"
-            )}>
-              {displayStatus}
-            </span>
-          </div>
-          {!isExpired && countdownText && (
-            <div className="flex shrink-0 items-center gap-1 rounded-lg bg-orange-500/20 px-2 py-1">
-              <span className="text-xs font-semibold text-orange-300">
-                {countdownText}
-              </span>
+    <>
+      <motion.div
+        layout
+        initial={{ opacity: 0, y: 40, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 40, scale: 0.95 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="flex h-[460px] w-[360px] flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl shadow-2xl"
+      >
+        {/* ── Header ── */}
+        <div className="border-b border-white/10 px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            {/* Avatar + click to open session */}
+            <button
+              type="button"
+              onClick={handleOpenConsultationSession}
+              title="Mở chi tiết phiên tư vấn"
+              className="flex-shrink-0 rounded-full transition hover:ring-2 hover:ring-white/20"
+            >
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
+                {partnerAvatar ? (
+                  <img
+                    src={partnerAvatar}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  displayName.charAt(0).toUpperCase()
+                )}
+              </div>
+            </button>
+
+            {/* Name + date/time + status */}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <span className="truncate text-sm font-semibold text-white">{displayName}</span>
+                <span className={clsx(
+                  "flex-shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
+                  isExpired
+                    ? "bg-red-500/20 text-red-400"
+                    : "bg-green-500/20 text-green-400"
+                )}>
+                  {displayStatus}
+                </span>
+              </div>
+              {/* Appointment info row */}
+              {(appointmentDate || appointmentTime) && (
+                <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-400">
+                  {appointmentDate && (
+                    <span className="flex items-center gap-1">
+                      <LuCalendar className="h-3 w-3" />
+                      {formatAppointmentDate(appointmentDate)}
+                    </span>
+                  )}
+                  {appointmentTime && (
+                    <span className="flex items-center gap-1">
+                      <LuClock className="h-3 w-3" />
+                      {appointmentTime}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
-          )}
-        </button>
 
-        <button
-          onClick={() => closePopup(sessionId)}
-          className="ml-2 rounded-lg p-1 text-white/60 hover:bg-white/10 hover:text-white"
-        >
-          <HiXMark size={18} />
-        </button>
-      </div>
+            {/* Countdown */}
+            {!isExpired && countdownText && (
+              <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-orange-500/20 px-2 py-1">
+                <span className="text-xs font-semibold text-orange-300">{countdownText}</span>
+              </div>
+            )}
 
-      <div className="flex-1 overflow-hidden">
-        {isDetailsLoading || isMessagesLoading ? (
-          <div className="flex h-full items-center justify-center">
-            <Spinner size="lg" />
+            {/* View patient profile button */}
+            {appointmentId && (
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen(true)}
+                title="Xem hồ sơ bệnh nhân"
+                className="flex-shrink-0 rounded-lg p-1.5 text-gray-400 transition hover:bg-white/10 hover:text-blue-400"
+              >
+                <FiUser size={15} />
+              </button>
+            )}
+
+            {/* Close button */}
+            <button
+              onClick={() => closePopup(sessionId)}
+              className="flex-shrink-0 rounded-lg p-1 text-white/60 hover:bg-white/10 hover:text-white"
+            >
+              <HiXMark size={18} />
+            </button>
           </div>
-        ) : isDetailsError || isMessagesError ? (
-          <ChatErrorState
-            message={detailsError?.message || messagesError?.message || "Không thể tải phòng chat."}
-            onRetry={() => {
-              void refetchDetails();
-              void refetchMessages();
-            }}
-          />
-        ) : (
-          <ChatThread sessionId={sessionId} messages={messageItems} isExpired={isExpired} />
-        )}
-      </div>
-    </motion.div>
+        </div>
+
+        {/* ── Body ── */}
+        <div className="flex-1 overflow-hidden">
+          {isDetailsLoading || isMessagesLoading ? (
+            <div className="flex h-full items-center justify-center">
+              <Spinner size="lg" />
+            </div>
+          ) : isDetailsError || isMessagesError ? (
+            <ChatErrorState
+              message={detailsError?.message || messagesError?.message || "Không thể tải phòng chat."}
+              onRetry={() => {
+                void refetchDetails();
+                void refetchMessages();
+              }}
+            />
+          ) : (
+            <ChatThread sessionId={sessionId} messages={messageItems} isExpired={isExpired} />
+          )}
+        </div>
+      </motion.div>
+
+      {/* Patient profile modal */}
+      {appointmentId && (
+        <DoctorSupportDetailPage
+          open={isProfileOpen}
+          appointmentId={appointmentId}
+          onClose={() => setIsProfileOpen(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -373,3 +438,4 @@ export function ChatContainer() {
     </div>
   );
 }
+

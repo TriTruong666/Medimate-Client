@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* =========================================
+   VIEW TRANSITIONS — Circular Reveal
+   New layer luôn nằm trên, expand circle
+========================================= */
+::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
+}
+
 @theme {
   --color-primary: #EC4899;
   --color-background-light: #f3f4f6;
@@ -36,8 +52,7 @@
 
 @layer components {
   .input-primary {
-    @apply rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 pr-4 text-sm text-gray-200 placeholder-gray-500 backdrop-blur-md outline-none hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none disabled:bg-white/10 disabled:text-gray-400 disabled:placeholder-gray-400 disabled:cursor-not-allowed;
-
+    @apply rounded-xl border border-gray-400 bg-white px-4 py-2.5 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all outline-none hover:bg-gray-50 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/10 focus:outline-none disabled:bg-gray-100 disabled:text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:bg-white/10 dark:focus:border-white/20 dark:focus:bg-white/10 dark:focus:ring-white/10;
   }
 
   .btn-primary {
@@ -49,7 +64,7 @@
   }
 
   .card-primary {
-    @apply dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-100 bg-white/80 p-4 backdrop-blur transition-colors duration-300 hover:border-white/20 hover:bg-white/10 dark:bg-white/5
+    @apply dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-400 bg-white p-4 transition-colors duration-300 hover:border-primary/40 hover:shadow-lg dark:bg-white/5 dark:hover:border-white/20 dark:shadow-none
   }
 
   .setting-card {
@@ -101,7 +116,13 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background-color: var(--color-background-light);
+  color: #1f2937;
+}
+
+.dark body {
   background-color: var(--color-background-dark);
+  color: #f9fafb;
 }
 
 
