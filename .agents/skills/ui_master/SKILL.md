@@ -12,23 +12,26 @@ This document is the single source of truth for the **UI/UX** of the Medimate ec
 
 ---
 
-## 🌑 1. Core Aesthetic & Design Standards
+## 🌓 1. Core Aesthetic & Multi-theme Support
 
-Maintain a "Simple & Black" aesthetic. Our goal is a premium, high-end dark SaaS feel.
+Maintain a premium, high-end feel in both themes. Use `dark:` variants strictly to ensure parity.
 
-### 🎨 Design Palette & Tokens
-- **Backgrounds**: Main (`#EC4899`), Surface (`#202022`), Glass (`bg-white/5` or `bg-white/2` with `backdrop-blur`).
+### 🌑 Dark Mode (Default)
+- **Backgrounds**: Main (`#050505`), Surface (`#202022`), Glass (`bg-white/5` with `backdrop-blur`).
 - **Borders**: Thin and subtle (`border-white/10` or `border-white/5`).
-- **Primary Color**: `#de3c3c` (Red) for primary actions.
-- **Accent Purple**: `#E1A3F1` for branding and decorative elements.
-- **Typography**: Display/Headings (`OverusedGrotesk`), Body (`Manrope`).
-- **Text**: White for headings, `text-gray-400` or `white/40` for secondary/helper text. Avoid pure bright white for large blocks of text.
+- **Text**: Heading (`text-white`), Secondary (`text-gray-400`).
 
-### 📐 Principles of Minimalism
-- **No Decorative Clutter**: Do NOT add icons next to every label. Only use icons for primary navigation or critical buttons.
-- **Badge Usage**: Avoid colorful status badges everywhere. Use subtle text colors or dot indicators where possible.
-- **Tabular Numerals**: Always use `tabular-nums` for any numbers to prevent layout jitter during data updates.
-- **Micro-interactions**: Use `hover:scale-[1.02]` or `transition-all` instead of heavy shadows or glows.
+### ☀️ Light Mode
+- **Backgrounds**: Main (`bg-white`), Surface (`bg-gray-50`).
+- **Borders**: More pronounced to define structure. Main Container (`border-gray-400`), Dividers/Cells (`border-gray-300`).
+- **Text**: Heading (`text-gray-900`), Secondary (`text-gray-600`), Helper (`text-gray-500`).
+- **Interaction**: Use `hover:bg-gray-50` for rows and items.
+
+### 🎨 Shared Design Tokens
+- **Primary Color**: `#EC4899` (Primary Pink) for highlights.
+- **Action Color**: `#de3c3c` (Red) for critical buttons.
+- **Typography**: Display/Headings (`OverusedGrotesk`), Body (`Manrope`).
+- **Micro-interactions**: Use `hover:scale-[1.02]` or `transition-all`. Theme toggle uses **Circular Reveal Animation** (View Transitions API).
 
 ---
 
@@ -52,7 +55,7 @@ export default function PageLayoutTemplate() {
       {/* 1. Header with Breadcrumb */}
       <div className="mb-6 flex flex-col">
         <Breadcrumb items={[{ label: "Home", path: "/" }, { label: "Current" }]} />
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
           Tiêu đề trang
         </h1>
       </div>
@@ -86,10 +89,11 @@ For list-heavy pages, provide a switcher in the header between Table (`LuTable2`
 ### B. Table Component Layout
 Tables must follow a consistent layout for a clean "Simple & Black" look.
 - **Container**: Wrap in `div.overflow-x-auto`.
-- **Table**: `dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left`.
-- **Header**: `dark:bg-border-dark/30 bg-gray-50/50` with uppercase, small text for `<th>`.
+- **Table**: `dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-y border-gray-400 text-left`. Always include `border-y` for bottom sealing.
+- **Cells (`td`)**: Use `dark:border-border-dark border-r border-gray-300 p-4` for all columns, including the last one, to create a solid grid.
+- **Header**: `dark:bg-border-dark/30 bg-gray-50/50` with uppercase, small text for `<th>`. Headers must also have `border-r border-gray-300`.
 - **Loading State**: Render `<tr><td colSpan={N}><Spinner size="lg" />...</td></tr>` inside `<tbody>`.
-- **Pagination**: Every table MUST be accompanied by the `@/components/custom-ui/Pagination` component. The pagination must be **connected** directly to the bottom of the table (no top margin) to shared the border system, creating a unified data block.
+- **Pagination**: Every table MUST be accompanied by the `@/components/custom-ui/Pagination` component. The pagination must be **connected** directly to the bottom of the table using `border-x border-b border-gray-400` (no top border) to share the table's border system.
 
 ### C. Grid/Card Layout Strategy (Skeletons & Minimalist Blocks)
 For dashboard grids, use **Skeleton Cards** (pulse effects) for loading and **Minimalist Blocks** (transparent/no background) for error/empty states.
@@ -142,17 +146,17 @@ For dashboard grids, use **Skeleton Cards** (pulse effects) for loading and **Mi
 
 ## 🧩 4. Specialized Component Patterns
 
-### A. Modals (High-End Dark)
+### A. Modals (High-End Dark & Light)
 Modals are managed via `src/stores/modalStore.ts` using Jotai.
-- **Container**: `flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl`. Standard width is often `w-150` for forms.
+- **Container**: `flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl`. Standard width is often `w-150`.
 - **Header**:
-  - **Styles**: `flex items-center justify-between border-b border-white/10 bg-white/5 p-6`.
-  - **Title**: `text-base font-semibold tracking-tight text-white`.
-  - **Close Button**: `rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white`. Use `HiOutlineX` (h-5 w-5).
+  - **Styles**: `flex items-center justify-between border-b border-gray-300 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5`.
+  - **Title**: `text-base font-semibold tracking-tight text-gray-900 dark:text-white`.
+  - **Close Button**: `rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white`. Use `HiOutlineX`.
 - **Footer**: 
-  - **Styles**: `flex items-center justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md`.
-  - **Secondary Button (Exit/Cancel)**: `rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10`.
-  - **Primary Button (Next/Submit)**: `bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-white/10 disabled:text-white/40`.
+  - **Styles**: `flex items-center justify-end gap-3 border-t border-gray-300 bg-gray-50/20 p-6 dark:border-white/10 dark:bg-white/2 dark:backdrop-blur-md`.
+  - **Secondary Button (Exit/Cancel)**: `rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10`.
+  - **Primary Button (Next/Submit)**: `bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40`.
 - **Animations**: Modals automatically fade and scale via `AnimatePresence` in `ModalContainer.tsx`.
 - **Patterns**:
   - **Multi-step Selection (Phase Pattern)**: Use a `step` or `phase` state. Start with a selection screen using large cards.
@@ -166,7 +170,10 @@ Modals are managed via `src/stores/modalStore.ts` using Jotai.
 - **Dependencies**: `react-chartjs-2` + `framer-motion`.
 - **Colors**: Use exact Hex values (Green `#22c55e`, Orange `#f97316`, Pink `#EC4899`, Purple `#8b5cf6`).
 - **Charts**: Hide grids (`display: false`). Use `cutout: "70%"` for Doughnut charts and center the absolute label.
-- **Metric Card**: Keep them simple (`rounded-lg border border-white/10 bg-white/5`) with `tabular-nums` for the main value.
+- **Metric Card**: Keep them simple and structured.
+  - **Styles**: `rounded-xl border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10`.
+  - **Typography**: Use `tabular-nums` for the main value (`text-3xl font-semibold text-gray-900 dark:text-white`).
+  - **Information Balance**: Heading on top (`text-sm text-gray-500`), main value in middle, helper text at bottom.
 
 ### C. Terminal / Command Console
 Used for background tasks (e.g. Syncing).
@@ -175,9 +182,9 @@ Used for background tasks (e.g. Syncing).
 - **Body**: `font-mono text-[11px]`. Prepend `>` to lines. Slice logs array so it doesn't overflow infinitely. Add `text-primary inline-block animate-pulse` for the `_` cursor.
 
 ### D. Item Card Pattern
-A structured layout for grid lists.
-- **Layout**: `flex flex-col rounded-2xl border border-white/5 bg-white/5 p-4 backdrop-blur`. Interaction via `whileHover={{ y: -4 }}`.
-- **Separator**: Use `h-px bg-white/5` between sections.
+A structured layout for grid lists (e.g. Products, Users).
+- **Layout**: `flex flex-col rounded-2xl border border-gray-400 bg-white p-4 transition-colors hover:bg-gray-50 dark:border-white/5 dark:bg-white/5 dark:hover:bg-white/10`. Interaction via `whileHover={{ y: -4 }}`.
+- **Separator**: Use `h-px bg-gray-200 dark:bg-white/5` between sections.
 - **Footer**: A flex row containing a **Status Indicator** (left) and **Action Icons** (right) using `Tooltip` + `IconAction`. Hide actions until `group-hover:opacity-100`.
 
 ---

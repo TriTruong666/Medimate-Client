@@ -7,10 +7,7 @@ import IconAction from "../components/custom-ui/IconAction";
 import { openTransactionModalAtom } from "../stores/modalStore";
 import { useAtom, useSetAtom } from "jotai";
 import { useMemo, useState } from "react";
-import {
-  openDrawerAtom,
-  transactionDetailIdAtom,
-} from "../stores/drawerStore";
+import { openDrawerAtom, transactionDetailIdAtom } from "../stores/drawerStore";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import {
@@ -143,7 +140,7 @@ export default function TransactionDashboardPage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Quản lý giao dịch
           </h1>
         </div>
@@ -155,7 +152,8 @@ export default function TransactionDashboardPage() {
           isLoading={isLoading}
           isError={isError}
           errorMessage={
-            error?.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
+            error?.message ||
+            "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
           }
           onRetry={() => refetch()}
           page={page}
@@ -215,51 +213,53 @@ function TransactionTable({
       }}
     >
       {data.map((row, i) => {
-          const rowType: "in" | "out" = row.transactionType.toLowerCase() as "in" | "out";
-          const rowStatus = normalizeTransactionStatus(row.status);
+        const rowType: "in" | "out" = row.transactionType.toLowerCase() as
+          | "in"
+          | "out";
+        const rowStatus = normalizeTransactionStatus(row.status);
 
-          return (
+        return (
           <tr
             key={`${row.transactionId}-${i}`}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
             {/* ID */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
                 {row.transactionCode || row.transactionId || "N/A"}
               </span>
             </td>
 
             {/* Created At */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
                 {formatTransactionDate(row.transactionDate)}
               </span>
             </td>
 
             {/* Transaction Type */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <TransactionTypeBadge transaction_type={rowType} />
             </td>
 
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
                 {formatPrice(row.totalAmount ?? 0)}
               </span>
             </td>
 
             {/* Status */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <StatusBadge status={rowStatus} />
             </td>
 
             {/* Actions */}
-            <td className="p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               {rowType === "out" && rowStatus === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => openPaymentModal(demoPaymentData)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-all duration-200 hover:border-white/20 hover:bg-white/10 active:scale-95"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-400 bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition-all duration-200 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   >
                     <HiOutlineCreditCard size={14} />
                     Thanh toán
@@ -272,7 +272,9 @@ function TransactionTable({
                   </Tooltip>
                   <Tooltip content="Chi tiết">
                     <IconAction
-                      icon={<IoIosInformationCircleOutline />}
+                      icon={
+                        <IoIosInformationCircleOutline className="text-gray-600 dark:text-gray-300" />
+                      }
                       onClick={() => handleOpenDetailModal(row)}
                     />
                   </Tooltip>
@@ -280,8 +282,8 @@ function TransactionTable({
               )}
             </td>
           </tr>
-          );
-        })}
+        );
+      })}
     </DataTableShell>
   );
 }

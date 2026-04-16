@@ -40,9 +40,9 @@ export default function GlassSelect({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/3 px-4 py-2.5 text-[13px] text-gray-200 backdrop-blur-md transition hover:bg-white/6 focus:outline-none"
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-gray-400 bg-white px-4 py-2 text-[13px] text-gray-600 transition-all hover:bg-gray-50 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10"
       >
-        <span className={selected ? "text-white" : "text-gray-400"}>
+        <span className={selected ? "text-gray-900 dark:text-white" : "text-gray-400"}>
           {selected?.label ?? placeholder}
         </span>
 
@@ -59,7 +59,7 @@ export default function GlassSelect({
           data-lenis-prevent
           onWheel={(event) => event.stopPropagation()}
           onTouchMove={(event) => event.stopPropagation()}
-          className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-white/10 bg-neutral-900/90 shadow-[0_20px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl"
+          className="absolute z-50 mt-2 w-full overflow-hidden rounded-xl border border-gray-300 bg-white/95 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-neutral-900/95 dark:shadow-[0_20px_40px_rgba(0,0,0,0.6)]"
         >
           <ul className="max-h-60 overflow-y-auto overscroll-contain">
             {options.map((opt) => {
@@ -75,8 +75,8 @@ export default function GlassSelect({
                     }}
                     className={`flex w-full items-center px-4 py-2.5 text-sm transition ${
                       active
-                        ? "bg-primary/15 text-primary"
-                        : "text-gray-300 hover:bg-white/10 hover:text-white"
+                        ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary"
+                        : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
                     } `}
                   >
                     {opt.label}
