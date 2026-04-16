@@ -1,12 +1,19 @@
 export interface ChatSessionSummaryResponse {
-  sessionId: string;
-  partnerName: string;
+  sessionId?: string;
+  consultanSessionId?: string; // Tên property mới từ JSON
+  appointmentId?: string;
+  memberId?: string;
+  partnerName?: string;
+  memberName?: string; // Tên từ JSON
   partnerAvatar?: string | null;
+  memberAvatar?: string | null; // Tên từ JSON
   status: string;
   lastMessage?: string | null;
   unreadCount?: number;
   updatedAt?: string;
   expiredAt?: string | null;
+  appointmentDate?: string;
+  appointmentTime?: string;
 }
 
 export interface ChatDoctorMessageResponse {
