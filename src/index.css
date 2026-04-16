@@ -32,8 +32,8 @@
   --color-card-dark: #16111d;
 
 
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Manrope", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", ui-sans-serif, system-ui, sans-serif;
   --font-logo: "Zen Tokyo Zoo", system-ui;
   --font-over: "OverusedGrotesk", system-ui, sans-serif;
 

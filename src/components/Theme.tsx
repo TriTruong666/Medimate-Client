@@ -18,7 +18,7 @@ export function DarkModePillSwitch() {
   return (
     <button
       onClick={toggle}
-      className="relative h-9 w-16 rounded-full border border-gray-200 bg-white transition-all dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md"
+      className="relative h-9 w-16 rounded-full border border-gray-300 bg-white transition-all dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md"
     >
       {/* Thumb */}
       <span
@@ -98,7 +98,7 @@ export function DarkModeIconSwitch() {
           ],
         },
         {
-          duration: 500,
+          duration: 700,
           easing: "ease-in-out",
           pseudoElement: "::view-transition-new(root)",
         },
@@ -110,7 +110,7 @@ export function DarkModeIconSwitch() {
     <button
       ref={btnRef}
       onClick={toggleTheme}
-      className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-gray-400 bg-white transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md dark:hover:bg-white/10"
+      className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md dark:hover:bg-white/10"
     >
       {/* Glow dark mode */}
       <AnimatePresence>

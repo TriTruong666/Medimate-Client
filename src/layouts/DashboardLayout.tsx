@@ -123,7 +123,7 @@ function Navbar() {
         <div className="group relative w-112.5 max-md:block">
           <HiSearch
             size={18}
-            className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-white"
+            className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900 dark:group-focus-within:text-white"
           />
 
           <input
