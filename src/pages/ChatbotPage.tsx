@@ -192,6 +192,12 @@ function WelcomeChatbot({
             value={text}
             rows={4}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                onStart?.(text);
+              }
+            }}
             placeholder="Hỏi gì đó cho Medimate..."
             className="w-full resize-none pr-4 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-white"
           ></textarea>

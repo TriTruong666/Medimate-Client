@@ -7,6 +7,7 @@ import {
 } from "react-icons/hi";
 import { FiSettings } from "react-icons/fi";
 import medimateLogo from "../assets/medimate-logo.png";
+import medimateLogoLight from "../assets/medimate-logo-light.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState, useRef } from "react";
 import Lenis from "lenis";
@@ -157,8 +158,13 @@ function Sidebar() {
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-5 select-none">
           <img
+            src={medimateLogoLight}
+            className="h-9 w-9 rounded-lg dark:hidden"
+            alt="Logo"
+          />
+          <img
             src={medimateLogo}
-            className="flex h-9 w-9 items-center justify-center rounded-lg"
+            className="hidden h-9 w-9 rounded-lg dark:block"
             alt="Logo"
           />
           <span className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">

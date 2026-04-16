@@ -13,9 +13,7 @@ import {
   useDoctorAppointments,
   useUpdateAppointmentStatus,
 } from "@/hooks/data/useAppointmentHooks";
-import {
-  useAppointmentSession,
-} from "@/hooks/data/useSessionHooks";
+import { useAppointmentSession } from "@/hooks/data/useSessionHooks";
 import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
 import { useDoctorAvailabilities } from "@/hooks/data/useDoctorAvailabilityHooks";
 import { useDoctorAvailabilityExceptions } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
@@ -138,7 +136,7 @@ function formatAppointmentTime(value?: string | null): string {
   return trimmed;
 }
 
-function mapAppointment(raw: DoctorAppointment): Appointment {  
+function mapAppointment(raw: DoctorAppointment): Appointment {
   return {
     id: raw.appointmentId,
     memberId: raw.memberId,
@@ -150,8 +148,7 @@ function mapAppointment(raw: DoctorAppointment): Appointment {
     date: formatDate(raw.appointmentDate),
     time: formatAppointmentTime(raw.appointmentTime),
     status: raw.status,
-    symptoms:
-      raw.cancelReason?.trim() || "Chưa có ghi chú cho lịch hẹn này.",
+    symptoms: raw.cancelReason?.trim() || "Chưa có ghi chú cho lịch hẹn này.",
   };
 }
 
@@ -166,9 +163,9 @@ function AppointmentState({
 }) {
   if (type === "loading") {
     return (
-      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8">
+      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-gray-300 bg-gray-50/50 p-8 dark:border-white/10 dark:bg-white/5">
         <Spinner size="lg" />
-        <p className="mt-4 text-sm font-medium text-gray-400">
+        <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
           Đang tải lịch hẹn...
         </p>
       </div>
@@ -177,14 +174,16 @@ function AppointmentState({
 
   if (type === "error") {
     return (
-      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8">
-        <h3 className="text-lg font-semibold text-white">Đã xảy ra lỗi</h3>
-        <p className="mt-2 max-w-100 text-center text-sm text-gray-400">
+      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-gray-300 bg-gray-50/50 p-8 dark:border-white/10 dark:bg-white/5">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Đã xảy ra lỗi
+        </h3>
+        <p className="mt-2 max-w-100 text-center text-sm text-gray-500 dark:text-gray-400">
           {message || "Không thể tải dữ liệu lịch hẹn. Vui lòng thử lại."}
         </p>
         <button
           onClick={onRetry}
-          className="mt-6 rounded-lg bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/15"
+          className="mt-6 rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-300 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
         >
           Thử lại
         </button>
@@ -193,9 +192,11 @@ function AppointmentState({
   }
 
   return (
-    <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-8">
-      <h3 className="text-lg font-semibold text-white">Chưa có lịch hẹn</h3>
-      <p className="mt-2 text-center text-sm text-gray-400">
+    <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-gray-300 bg-gray-50/50 p-8 dark:border-white/10 dark:bg-white/5">
+      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+        Chưa có lịch hẹn
+      </h3>
+      <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
         Không tìm thấy lịch hẹn nào cho bác sĩ hiện tại.
       </p>
     </div>
@@ -204,11 +205,19 @@ function AppointmentState({
 
 type FilterTab = "all" | "pending" | "approved" | "inprogress" | "history";
 
-export default function DoctorSupportPage({ filter = "all", title = "Lịch khám bệnh nhân" }: { filter?: FilterTab; title?: string }) {
+export default function DoctorSupportPage({
+  filter = "all",
+  title = "Lịch khám bệnh nhân",
+}: {
+  filter?: FilterTab;
+  title?: string;
+}) {
   const [viewLayout, setViewLayout] = useState<"card" | "calendar">("card");
   const [isExceptionModalOpen, setIsExceptionModalOpen] = useState(false);
-  const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
-  
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
+    string | null
+  >(null);
+
   const {
     data: appointmentResponse,
     isLoading,
@@ -234,27 +243,35 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
   } = useDoctorAvailabilityExceptions(doctorId);
 
   const appointments = (appointmentResponse ?? []).map(mapAppointment);
-  const availabilities = (availabilityResponse ?? []).filter((item) => item.isActive);
+  const availabilities = (availabilityResponse ?? []).filter(
+    (item) => item.isActive,
+  );
   const approvedExceptions = (exceptionResponse ?? []).filter(
     (item) => item.isAvailableOverride,
   );
-  
+
   const filteredAppointments = appointments.filter((apt) => {
     switch (filter) {
-      case "all": return true;
-      case "pending": return apt.status === "Pending";
-      case "approved": return apt.status === "Approved";
-      case "inprogress": return apt.status === "InProgress";
-      case "history": return ["Completed", "Cancelled", "Rejected"].includes(apt.status);
-      default: return true;
+      case "all":
+        return true;
+      case "pending":
+        return apt.status === "Pending";
+      case "approved":
+        return apt.status === "Approved";
+      case "inprogress":
+        return apt.status === "InProgress";
+      case "history":
+        return ["Completed", "Cancelled", "Rejected"].includes(apt.status);
+      default:
+        return true;
     }
   });
 
   const hasAppointments = filteredAppointments.length > 0;
   const calendarLoading =
-    isLoading || (!doctorId ? false : isAvailabilityLoading || isExceptionLoading);
-  const calendarError =
-    isError || isAvailabilityError || isExceptionError;
+    isLoading ||
+    (!doctorId ? false : isAvailabilityLoading || isExceptionLoading);
+  const calendarError = isError || isAvailabilityError || isExceptionError;
   const calendarErrorMessage =
     error?.message ||
     availabilityError?.message ||
@@ -285,19 +302,19 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             {title}
           </h1>
         </div>
         <div className="flex items-center gap-3">
           {/* Layout Toggle - Apply dashboard_table_card skill */}
-          <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+          <div className="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5">
             <button
               onClick={() => setViewLayout("card")}
               className={`${
                 viewLayout === "card"
                   ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
-                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+                  : "text-gray-500 hover:bg-white/10 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
               } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
             >
               <LuGrid3X3 className="text-sm" />
@@ -308,7 +325,7 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
               className={`${
                 viewLayout === "calendar"
                   ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
-                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+                  : "text-gray-500 hover:bg-white/10 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
               } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
             >
               <LuCalendarDays className="text-sm" />
@@ -317,7 +334,7 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
           </div>
           <button
             onClick={handleOpenExceptionModal}
-            className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10"
+            className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-[13px] font-medium text-gray-700 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
           >
             Thêm lịch nghỉ <LuPlus />
           </button>
@@ -374,7 +391,9 @@ export default function DoctorSupportPage({ filter = "all", title = "Lịch khá
                     void refetchExceptions();
                   }}
                 />
-              ) : hasAppointments || availabilities.length > 0 || approvedExceptions.length > 0 ? (
+              ) : hasAppointments ||
+                availabilities.length > 0 ||
+                approvedExceptions.length > 0 ? (
                 <MonthlyCalendarView
                   data={filteredAppointments}
                   availabilities={availabilities}
@@ -439,11 +458,13 @@ function AppointmentCard({
   onOpenDetail: (appointmentId: string) => void;
 }) {
   const isNow = data.status === "InProgress";
-  const isCallReady = data.status === "InProgress" || data.status === "Approved";
+  const isCallReady =
+    data.status === "InProgress" || data.status === "Approved";
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
 
-  const { data: sessionData, isLoading: sessionLoading } = useAppointmentSession(data.id, isCallReady);
+  const { data: sessionData, isLoading: sessionLoading } =
+    useAppointmentSession(data.id, isCallReady);
   const sessionId = sessionData?.consultanSessionId;
   const canJoin = isCallReady && !!sessionId;
 
@@ -476,10 +497,10 @@ function AppointmentCard({
       }}
       variants={cardItem}
       whileHover={{ y: -4 }}
-      className={`group relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white/80 p-5 backdrop-blur transition-all duration-300 hover:z-50 dark:bg-white/5 ${
+      className={`group relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white p-5 shadow-sm backdrop-blur transition-all duration-300 hover:z-50 dark:bg-white/5 ${
         isNow
           ? "border-primary/50 dark:border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
-          : "border-gray-100 hover:border-white/20 hover:bg-white/10 dark:border-white/10"
+          : "border-gray-300 hover:border-gray-400 hover:bg-white dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
       }`}
     >
       {/* Header */}
@@ -584,7 +605,7 @@ function AppointmentCard({
                 className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
                   canJoin
                     ? "bg-primary/10 text-primary hover:bg-primary/20"
-                    : "bg-gray-100 text-gray-400 opacity-50 dark:bg-white/5"
+                    : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
                 } disabled:opacity-50`}
               >
                 {sessionLoading ? <Spinner size="sm" /> : <FiVideo />}
@@ -645,15 +666,17 @@ function MonthlyCalendarView({
     });
 
     const dayExceptions = exceptionByDate.get(dayDateKey) ?? [];
-    const dayAppointments = sortAppointmentsForCalendar(data.filter((apt) => {
-      const aptDate = new Date(apt.dateKey);
-      return (
-        !Number.isNaN(aptDate.getTime()) &&
-        aptDate.getFullYear() === currentYear &&
-        aptDate.getMonth() === currentMonth &&
-        aptDate.getDate() === day
-      );
-    }));
+    const dayAppointments = sortAppointmentsForCalendar(
+      data.filter((apt) => {
+        const aptDate = new Date(apt.dateKey);
+        return (
+          !Number.isNaN(aptDate.getTime()) &&
+          aptDate.getFullYear() === currentYear &&
+          aptDate.getMonth() === currentMonth &&
+          aptDate.getDate() === day
+        );
+      }),
+    );
 
     return {
       day,
@@ -669,14 +692,14 @@ function MonthlyCalendarView({
   const emptyPreDays = Array.from({ length: dayOffset });
 
   return (
-    <div className="dark:border-border-dark overflow-hidden rounded-xl border border-gray-100">
+    <div className="dark:border-border-dark overflow-hidden rounded-xl border border-gray-400">
       {/* Calendar Header */}
-      <div className="dark:border-border-dark dark:bg-border-dark/30 grid grid-cols-7 border-b border-gray-100 bg-gray-50/50">
+      <div className="dark:border-border-dark dark:bg-border-dark/30 grid grid-cols-7 border-b border-gray-300 bg-gray-100/80">
         {daysOfWeek.map((day, i) => (
           <div
             key={i}
             className={`p-3 text-center text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${
-              i < 6 ? "dark:border-border-dark border-r border-gray-100" : ""
+              i < 6 ? "dark:border-border-dark border-r border-gray-300" : ""
             }`}
           >
             {day}
@@ -689,98 +712,114 @@ function MonthlyCalendarView({
         {emptyPreDays.map((_, i) => (
           <div
             key={`empty-${i}`}
-            className={`dark:border-border-dark min-h-30 border-b border-gray-100 bg-transparent ${
+            className={`dark:border-border-dark min-h-30 border-b border-gray-300 bg-gray-50/30 dark:bg-transparent ${
               i % 7 < 6 ? "border-r" : ""
             }`}
           />
         ))}
-        {days.map(({ day, dateLabel, availabilities: dayAvailabilities, exceptions, appointments, isToday }, i) => {
-          const gridIndex = emptyPreDays.length + i;
-          const hasApprovedDayOff = exceptions.length > 0;
-          const visibleAppointments = appointments.slice(0, 2);
-          const hiddenAppointmentsCount = Math.max(appointments.length - visibleAppointments.length, 0);
-          return (
-            <div
-              key={i}
-              className={`group dark:border-border-dark relative flex min-h-30 flex-col gap-1 border-b border-gray-100 p-2 transition hover:bg-gray-50/50 dark:hover:bg-white/5 ${
-                hasApprovedDayOff
-                  ? "bg-rose-50/60 dark:bg-rose-500/8"
-                  : "bg-transparent"
-              } ${
-                gridIndex % 7 < 6
-                  ? "dark:border-border-dark border-r border-gray-100"
-                  : ""
-              }`}
-            >
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                  isToday
-                    ? "bg-primary text-white"
-                    : "text-gray-500 dark:text-gray-400"
-                }`}
+        {days.map(
+          (
+            {
+              day,
+              dateLabel,
+              availabilities: dayAvailabilities,
+              exceptions,
+              appointments,
+              isToday,
+            },
+            i,
+          ) => {
+            const gridIndex = emptyPreDays.length + i;
+            const hasApprovedDayOff = exceptions.length > 0;
+            const visibleAppointments = appointments.slice(0, 2);
+            const hiddenAppointmentsCount = Math.max(
+              appointments.length - visibleAppointments.length,
+              0,
+            );
+            return (
+              <div
+                key={i}
+                className={`group dark:border-border-dark relative flex min-h-30 flex-col gap-1 border-b border-gray-300 p-2 transition hover:bg-gray-100/50 dark:hover:bg-white/5 ${
+                  hasApprovedDayOff
+                    ? "bg-rose-50/60 dark:bg-rose-500/8"
+                    : "bg-transparent"
+                } ${gridIndex % 7 < 6 ? "dark:border-border-dark border-r border-gray-300" : ""}`}
               >
-                {day}
-              </span>
-              <div className="mt-1 flex-1 space-y-1">
-                {dayAvailabilities.slice(0, 2).map((slot) => (
-                  <div
-                    key={`${slot.id}-${slot.startTime}-${slot.endTime}`}
-                    className="rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-1 text-[10px] leading-tight text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
-                    title={`Lịch làm: ${formatTimeLabel(slot.startTime)} - ${formatTimeLabel(slot.endTime)}`}
-                  >
-                    Làm {formatTimeLabel(slot.startTime)}-{formatTimeLabel(slot.endTime)}
-                  </div>
-                ))}
-                {dayAvailabilities.length > 2 && (
-                  <div className="text-[10px] text-emerald-600 dark:text-emerald-300/90">
-                    +{dayAvailabilities.length - 2} khung giờ
-                  </div>
-                )}
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
+                    isToday
+                      ? "bg-primary text-white"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
+                >
+                  {day}
+                </span>
+                <div className="mt-1 flex-1 space-y-1">
+                  {dayAvailabilities.slice(0, 2).map((slot) => (
+                    <div
+                      key={`${slot.id}-${slot.startTime}-${slot.endTime}`}
+                      className="rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-1 text-[10px] leading-tight text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300"
+                      title={`Lịch làm: ${formatTimeLabel(slot.startTime)} - ${formatTimeLabel(slot.endTime)}`}
+                    >
+                      Làm {formatTimeLabel(slot.startTime)}-
+                      {formatTimeLabel(slot.endTime)}
+                    </div>
+                  ))}
+                  {dayAvailabilities.length > 2 && (
+                    <div className="text-[10px] text-emerald-600 dark:text-emerald-300/90">
+                      +{dayAvailabilities.length - 2} khung giờ
+                    </div>
+                  )}
 
-                {exceptions.slice(0, 2).map((item) => (
-                  <div
-                    key={item.exceptionId || `${item.date}-${item.startTime}-${item.endTime}`}
-                    className="rounded-md border border-rose-200 bg-rose-50 px-1.5 py-1 text-[10px] leading-tight text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"
-                    title={`Nghỉ đã duyệt: ${formatTimeLabel(item.startTime)} - ${formatTimeLabel(item.endTime)}${item.reason ? ` | ${item.reason}` : ""}`}
-                  >
-                    Nghỉ {formatTimeLabel(item.startTime)}-{formatTimeLabel(item.endTime)}
-                  </div>
-                ))}
-                {exceptions.length > 2 && (
-                  <div className="text-[10px] text-rose-600 dark:text-rose-300/90">
-                    +{exceptions.length - 2} lịch nghỉ
-                  </div>
-                )}
+                  {exceptions.slice(0, 2).map((item) => (
+                    <div
+                      key={
+                        item.exceptionId ||
+                        `${item.date}-${item.startTime}-${item.endTime}`
+                      }
+                      className="rounded-md border border-rose-200 bg-rose-50 px-1.5 py-1 text-[10px] leading-tight text-rose-700 dark:border-rose-500/25 dark:bg-rose-500/10 dark:text-rose-300"
+                      title={`Nghỉ đã duyệt: ${formatTimeLabel(item.startTime)} - ${formatTimeLabel(item.endTime)}${item.reason ? ` | ${item.reason}` : ""}`}
+                    >
+                      Nghỉ {formatTimeLabel(item.startTime)}-
+                      {formatTimeLabel(item.endTime)}
+                    </div>
+                  ))}
+                  {exceptions.length > 2 && (
+                    <div className="text-[10px] text-rose-600 dark:text-rose-300/90">
+                      +{exceptions.length - 2} lịch nghỉ
+                    </div>
+                  )}
 
-                {visibleAppointments.map((apt) => (
-                  <CalendarAppointmentItem
-                    key={apt.id}
-                    apt={apt}
-                    onOpenDetail={onOpenDetail}
-                  />
-                ))}
+                  {visibleAppointments.map((apt) => (
+                    <CalendarAppointmentItem
+                      key={apt.id}
+                      apt={apt}
+                      onOpenDetail={onOpenDetail}
+                    />
+                  ))}
 
-                {hiddenAppointmentsCount > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setExpandedDay({
-                        dateLabel,
-                        appointments,
-                      });
-                    }}
-                    className="w-full rounded-md border border-white/10 bg-white/5 px-1.5 py-1 text-left text-[10px] font-semibold text-gray-600 transition hover:bg-white/10 dark:text-gray-200"
-                  >
-                    +{hiddenAppointmentsCount} lịch hẹn
-                  </button>
-                )}
+                  {hiddenAppointmentsCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setExpandedDay({
+                          dateLabel,
+                          appointments,
+                        });
+                      }}
+                      className="w-full rounded-md border border-gray-300 bg-gray-100/80 px-1.5 py-1 text-left text-[10px] font-semibold text-gray-600 transition hover:bg-gray-200 dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:hover:bg-white/10"
+                    >
+                      +{hiddenAppointmentsCount} lịch hẹn
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          },
+        )}
       </div>
 
-      <div className="dark:border-border-dark flex flex-wrap items-center gap-4 border-t border-gray-100 bg-gray-50/40 px-3 py-2 text-[11px] text-gray-600 dark:bg-white/2 dark:text-gray-300">
+      <div className="dark:border-border-dark flex flex-wrap items-center gap-4 border-t border-gray-300 bg-gray-100/40 px-3 py-2 text-[11px] text-gray-600 dark:bg-white/2 dark:text-gray-300">
         <div className="flex items-center gap-2">
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
           Lịch làm việc
@@ -810,17 +849,21 @@ function MonthlyCalendarView({
               exit={{ opacity: 0, y: 10, scale: 0.98 }}
               transition={{ duration: 0.2 }}
               onClick={(event) => event.stopPropagation()}
-              className="w-full max-w-xl rounded-2xl border border-white/10 bg-[#17181d] p-4 shadow-2xl"
+              className="w-full max-w-xl rounded-2xl border border-gray-300 bg-white p-4 shadow-2xl dark:border-white/10 dark:bg-[#17181d]"
             >
-              <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-white/10">
                 <div>
-                  <h3 className="text-sm font-semibold text-white">Lịch hẹn trong ngày</h3>
-                  <p className="text-xs text-gray-400">{expandedDay.dateLabel}</p>
+                  <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                    Lịch hẹn trong ngày
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {expandedDay.dateLabel}
+                  </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setExpandedDay(null)}
-                  className="rounded-md border border-white/10 px-2 py-1 text-xs text-gray-300 transition hover:bg-white/10"
+                  className="rounded-md border border-gray-300 px-2 py-1 text-xs text-gray-600 transition hover:bg-gray-100 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/10"
                 >
                   Đóng
                 </button>
@@ -830,13 +873,15 @@ function MonthlyCalendarView({
                 {expandedDay.appointments.map((apt) => (
                   <div
                     key={apt.id}
-                    className="flex items-center justify-between rounded-lg border border-white/10 bg-white/5 p-2"
+                    className="flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 p-2 dark:border-white/10 dark:bg-white/5"
                   >
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-semibold text-white">
+                      <p className="truncate text-xs font-semibold text-gray-900 dark:text-white">
                         {apt.time} • {apt.patientName}
                       </p>
-                      <p className="text-[11px] text-gray-400">APT #{apt.appointmentShortId}</p>
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                        APT #{apt.appointmentShortId}
+                      </p>
                     </div>
                     <div className="ml-3 flex items-center gap-2">
                       <StatusBadge status={apt.status} />
@@ -846,7 +891,7 @@ function MonthlyCalendarView({
                           onOpenDetail(apt.id);
                           setExpandedDay(null);
                         }}
-                        className="rounded-md border border-white/10 px-2 py-1 text-[11px] text-gray-200 transition hover:bg-white/10"
+                        className="rounded-md border border-gray-300 px-2 py-1 text-[11px] text-gray-600 transition hover:bg-gray-100 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/10"
                       >
                         Chi tiết
                       </button>
@@ -876,7 +921,8 @@ function CalendarAppointmentItem({
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
 
-  const { data: sessionData, isLoading: sessionLoading } = useAppointmentSession(apt.id, isCallReady);
+  const { data: sessionData, isLoading: sessionLoading } =
+    useAppointmentSession(apt.id, isCallReady);
   const sessionId = sessionData?.consultanSessionId;
   const canJoin = isCallReady && !!sessionId;
 
