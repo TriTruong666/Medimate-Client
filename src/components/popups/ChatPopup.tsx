@@ -89,19 +89,19 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 40, scale: 0.95 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="flex h-[460px] w-[360px] flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl shadow-2xl"
+        className="flex h-[460px] w-[360px] flex-col overflow-hidden rounded-xl border border-gray-400 bg-white shadow-2xl dark:border-white/10 dark:bg-[#0b0b0b] dark:backdrop-blur-xl"
       >
         {/* ── Header ── */}
-        <div className="border-b border-white/10 px-3 py-2.5">
+        <div className="border-b border-gray-300 px-3 py-2.5 dark:border-white/10">
           <div className="flex items-center gap-2">
             {/* Avatar + click to open session */}
             <button
               type="button"
               onClick={handleOpenConsultationSession}
               title="Mở chi tiết phiên tư vấn"
-              className="flex-shrink-0 rounded-full transition hover:ring-2 hover:ring-white/20"
+              className="flex-shrink-0 rounded-full transition hover:ring-2 hover:ring-gray-300 dark:hover:ring-white/20"
             >
-              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-gray-200 to-gray-50 text-sm font-semibold text-gray-900 dark:from-white/20 dark:to-white/5 dark:text-white">
                 {partnerAvatar ? (
                   <img
                     src={partnerAvatar}
@@ -117,7 +117,9 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
             {/* Name + date/time + status */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-semibold text-white">{displayName}</span>
+                <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {displayName}
+                </span>
                 <span className={clsx(
                   "flex-shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
                   isExpired
@@ -168,7 +170,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
             {/* Close button */}
             <button
               onClick={() => closePopup(sessionId)}
-              className="flex-shrink-0 rounded-lg p-1 text-white/60 hover:bg-white/10 hover:text-white"
+              className="flex-shrink-0 rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
             >
               <HiXMark size={18} />
             </button>
@@ -264,10 +266,12 @@ function ChatThread({
         </div>
       </div>
 
-      <div className={clsx(
-        "border-t border-white/10 bg-white/2 px-3 py-2 backdrop-blur-md transition-all",
-        isExpired && "bg-red-500/10"
-      )}>
+      <div
+        className={clsx(
+          "border-t border-gray-300 bg-gray-50/50 px-3 py-2 backdrop-blur-md transition-all dark:border-white/10 dark:bg-white/2",
+          isExpired && "bg-red-500/10",
+        )}
+      >
         {isExpired && (
           <div className="mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
             Hết hạn chat. Bạn chỉ có thể xem lại tin nhắn.
@@ -275,7 +279,7 @@ function ChatThread({
         )}
 
         {selectedFile && (
-          <div className="mb-2 flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+          <div className="mb-2 flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-white/70">
             <span className="truncate">{selectedFile.name}</span>
             <button
               type="button"
@@ -285,7 +289,7 @@ function ChatThread({
                   fileInputRef.current.value = "";
                 }
               }}
-              className="ml-3 rounded-md px-1 text-white/50 transition hover:bg-white/10 hover:text-white"
+              className="ml-3 rounded-md px-1 text-gray-400 transition hover:bg-gray-200 hover:text-gray-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
               disabled={isExpired}
             >
               <HiXMark size={14} />
@@ -295,9 +299,11 @@ function ChatThread({
 
         <div
           className={clsx(
-            "flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 transition-all",
-            isComposerFocused && !isExpired && "border-white/20 bg-white/10",
-            isExpired && "opacity-50 cursor-not-allowed",
+            "flex items-end gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2 transition-all dark:border-white/10 dark:bg-white/5",
+            isComposerFocused &&
+              !isExpired &&
+              "border-gray-500 bg-gray-50 dark:border-white/20 dark:bg-white/10",
+            isExpired && "bg-gray-100 opacity-80 cursor-not-allowed dark:bg-white/5 dark:opacity-50",
           )}
         >
           <input
@@ -314,7 +320,7 @@ function ChatThread({
           <button
             type="button"
             onClick={handlePickFile}
-            className="mb-0.5 rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mb-0.5 rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
             title={isExpired ? "Phiên đã hết hạn" : "Đính kèm file"}
             disabled={isExpired}
           >
@@ -335,19 +341,21 @@ function ChatThread({
             placeholder={isExpired ? "Hết hạn chat" : "Aa"}
             rows={1}
             disabled={isExpired}
-            className="max-h-24 min-h-8 flex-1 resize-none bg-transparent py-1 text-[13px] leading-5 text-white outline-none placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="max-h-24 min-h-8 flex-1 resize-none bg-transparent py-1 text-[13px] leading-5 text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/40 disabled:opacity-70 disabled:cursor-not-allowed"
           />
 
           <button
             type="button"
             onClick={() => void handleSendMessage()}
-            disabled={sendMutation.isPending || (!content.trim() && !selectedFile) || isExpired}
+            disabled={
+              sendMutation.isPending || (!content.trim() && !selectedFile) || isExpired
+            }
             className={clsx(
               "mb-0.5 flex h-9 w-9 items-center justify-center rounded-full transition-all",
               !isExpired && (content.trim() || selectedFile)
-                ? "bg-linear-to-br from-purple-500 to-pink-500 text-white hover:opacity-90"
-                : "bg-white/5 text-white/30",
-              isExpired && "opacity-50 cursor-not-allowed"
+                ? "bg-linear-to-br from-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md shadow-pink-500/20"
+                : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-white/30",
+              isExpired && "opacity-50 cursor-not-allowed",
             )}
           >
             <IoSend size={14} />
@@ -383,7 +391,9 @@ function ChatMessageItem({ message }: { message: ChatDoctorMessageResponse }) {
         </a>
       )}
 
-      <span className="text-[10px] text-white/30">{timeLabel}</span>
+      <span className="text-[10px] text-gray-400 dark:text-white/30">
+        {timeLabel}
+      </span>
     </div>
   );
 }
@@ -397,12 +407,14 @@ function ChatErrorState({
 }) {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-      <h3 className="text-sm font-semibold text-white">Không thể tải cuộc trò chuyện</h3>
-      <p className="mt-2 text-xs text-white/50">{message}</p>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+        Không thể tải cuộc trò chuyện
+      </h3>
+      <p className="mt-2 text-xs text-gray-500 dark:text-white/50">{message}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/10"
+        className="mt-4 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-900 transition hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
       >
         Thử lại
       </button>

@@ -36,7 +36,6 @@ function getStatusBadge(status: string) {
   if (normalized === "pending" || normalized === "inprogress") {
     return <Badge type="warning" value={statusLabel(status)} />;
   }
-
   if (normalized === "cancelled" || normalized === "rejected") {
     return <Badge type="error" value={statusLabel(status)} />;
   }
