@@ -395,7 +395,12 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
     try {
       await createMutation.mutateAsync(payload);
       setQueue([]);
-    } catch {}
+    } catch {
+      // Vì API có thể lưu thành công một phần rồi mới quăng lỗi trùng lặp (Partial saving),
+      // ta cần xóa queue và tải lại danh sách để user có thông tin mới nhất và không nhấn tạo lại.
+      setQueue([]);
+      void refetch();
+    }
   }
 
   function getRowDraft(row: DoctorAvailability): UpdateDoctorAvailabilityBody {
