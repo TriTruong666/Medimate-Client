@@ -50,7 +50,13 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     error: messagesError,
     refetch: refetchMessages,
   } = useChatSessionMessages(sessionId);
-  const { isExpired, displayText: countdownText } = useCountdown(expiredAt);
+  // Backend: chatEndTime = startedAt + 125 phút (60 phút session + 60 phút chat dư)
+  // Chỉ block chat khi đồng hồ này hết — KHÔNG dùng session.status
+  const derivedExpiredAt = sessionDetails?.startedAt
+    ? new Date(new Date(sessionDetails.startedAt).getTime() + 125 * 60 * 1000).toISOString()
+    : expiredAt; // fallback khi chưa load xong sessionDetails
+
+  const { isExpired, displayText: countdownText } = useCountdown(derivedExpiredAt);
   const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
   const hasMarkedReadRef = useRef<string | null>(null);
 
@@ -65,13 +71,21 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     });
   }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
 
-  // Normalize các field name khác nhau từ API
+  // Map đúng field names từ API response thực tế
   const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || "Phòng chat";
-  const displayStatus = isExpired ? "Hết hạn" : (sessionDetails?.status || "Đang kết nối");
   const partnerAvatar = sessionDetails?.memberAvatar || sessionDetails?.partnerAvatar || null;
   const appointmentDate = sessionDetails?.appointmentDate;
   const appointmentTime = sessionDetails?.appointmentTime;
   const appointmentId = sessionDetails?.appointmentId;
+
+  // Status badge: chỉ "Hết hạn" khi đồng hồ thực sự hết, không dùng session.status
+  const displayStatus = isExpired
+    ? "Hết hạn"
+    : sessionDetails?.status === "Ended"
+      ? "Đang diễn ra"   // session Ended nhưng chat 125p vẫn còn
+      : sessionDetails?.status === "InProgress"
+        ? "Đang diễn ra"
+        : "Đang kết nối";
 
   const messageItems = useMemo(() => messages || [], [messages]);
 
@@ -301,8 +315,8 @@ function ChatThread({
           className={clsx(
             "flex items-end gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2 transition-all dark:border-white/10 dark:bg-white/5",
             isComposerFocused &&
-              !isExpired &&
-              "border-gray-500 bg-gray-50 dark:border-white/20 dark:bg-white/10",
+            !isExpired &&
+            "border-gray-500 bg-gray-50 dark:border-white/20 dark:bg-white/10",
             isExpired && "bg-gray-100 opacity-80 cursor-not-allowed dark:bg-white/5 dark:opacity-50",
           )}
         >
@@ -372,7 +386,7 @@ function ChatMessageItem({ message }: { message: ChatDoctorMessageResponse }) {
   const timeLabel = formatMessageTime(message.createdAt);
 
   return (
-    <div className={clsx("flex w-full flex-col gap-1", isMine ? "items-end" : "items-start")}> 
+    <div className={clsx("flex w-full flex-col gap-1", isMine ? "items-end" : "items-start")}>
       <ChatBubble sender={isMine ? "me" : "other"} message={body || "..."} />
 
       {message.attachmentUrl && (
@@ -450,4 +464,4 @@ export function ChatContainer() {
     </div>
   );
 }
-
+

@@ -48,14 +48,47 @@ const dayOfWeekOptions = [
   { value: "Sunday", label: "Chủ nhật" },
 ] as const;
 
+// Chuyển giờ từ API ("HH:MM:SS" hoặc bất kỳ) sang "HH:MM" cho input[type=time]
 function toInputTime(value: string): string {
   if (!value) return "";
+
+  // Đã đúng format HH:MM
+  if (/^\d{2}:\d{2}$/.test(value)) return value;
+
+  // HH:MM:SS → lấy 5 ký tự đầu
+  if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value.slice(0, 5);
+
+  // Fallback parse (xử lý AM/PM hoặc format lạ)
+  const parsed = new Date(`1970-01-01 ${value}`);
+  if (!isNaN(parsed.getTime())) {
+    return `${String(parsed.getHours()).padStart(2, "0")}:${String(parsed.getMinutes()).padStart(2, "0")}`;
+  }
+
   return value.slice(0, 5);
 }
 
+// Chuyển giờ từ bất kỳ format nào sang "HH:MM:SS" 24h để gửi API
 function toApiTime(value: string): string {
   if (!value) return value;
-  return value.length === 5 ? `${value}:00` : value;
+
+  // Đã đúng format HH:MM:SS
+  if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value;
+
+  // HH:MM → HH:MM:00
+  if (/^\d{2}:\d{2}$/.test(value)) return `${value}:00`;
+
+  // Xử lý AM/PM (ví dụ: "08:00 AM", "02:30 PM") — trường hợp browser trả sai
+  const parsed = new Date(`1970-01-01 ${value}`);
+  if (!isNaN(parsed.getTime())) {
+    const h = String(parsed.getHours()).padStart(2, "0");
+    const m = String(parsed.getMinutes()).padStart(2, "0");
+    return `${h}:${m}:00`;
+  }
+
+  // Fallback: thêm :00 nếu chưa có
+  return value.includes(":") && value.split(":").length === 2
+    ? `${value}:00`
+    : value;
 }
 
 function getDayLabel(dayOfWeek: string): string {

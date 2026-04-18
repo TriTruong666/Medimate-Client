@@ -1,19 +1,47 @@
 export interface ChatSessionSummaryResponse {
-  sessionId?: string;
-  consultanSessionId?: string; // Tên property mới từ JSON
-  appointmentId?: string;
+  consultanSessionId: string;
+  appointmentId: string;
+  doctorId?: string;
   memberId?: string;
-  partnerName?: string;
-  memberName?: string; // Tên từ JSON
+
+  // Tên người dùng (member)
+  memberName?: string | null;
+  memberAvatar?: string | null;
+
+  // Thông tin lịch hẹn
+  appointmentDate?: string | null;
+  appointmentTime?: string | null;
+  appointmentStatus?: string | null;
+
+  // Thông tin bác sĩ
+  doctorName?: string | null;
+  doctorAvatar?: string | null;
+
+  // Thời gian phiên
+  startedAt?: string | null;
+  endedAt?: string | null;
+  status: string; // "InProgress" | "Ended" | "Pending" ...
+
+  // Trạng thái tham gia
+  userJoined?: boolean;
+  doctorJoined?: boolean;
+
+  // Ghi chú
+  note?: string | null;
+  doctorNote?: string | null;
+
+  // Alias fields (backward compat với code cũ dùng partnerName/partnerAvatar)
+  /** @deprecated dùng memberName */
+  partnerName?: string | null;
+  /** @deprecated dùng memberAvatar */
   partnerAvatar?: string | null;
-  memberAvatar?: string | null; // Tên từ JSON
-  status: string;
+
+  // Fields cũ (giữ cho compat)
+  sessionId?: string;
   lastMessage?: string | null;
   unreadCount?: number;
   updatedAt?: string;
   expiredAt?: string | null;
-  appointmentDate?: string;
-  appointmentTime?: string;
 }
 
 export interface ChatDoctorMessageResponse {
