@@ -31,6 +31,13 @@ export default function PrescriptionRootPage() {
   const { data, isLoading, isError, refetch } = useMyConsultationSessions();
   const highlightedSessionId = searchParams.get("sessionId") || "";
 
+  // Tick mỗi 60 giây để re-evaluate trạng thái chat window
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
   const sessions = useMemo(
     () =>
       [...(data || [])].sort((a, b) => {
@@ -117,6 +124,12 @@ export default function PrescriptionRootPage() {
           {sessions.map((session) => {
             const isHighlighted = highlightedSessionId === session.consultanSessionId;
 
+            // Chat window = startedAt + 125 phút (backend: session 60p + chat dư 60p + 5p buffer)
+            const chatEndAt = session.startedAt
+              ? new Date(new Date(session.startedAt).getTime() + 125 * 60 * 1000)
+              : null;
+            const isChatExpired = chatEndAt ? now > chatEndAt : false;
+
             return (
             <div
               key={session.consultanSessionId}
@@ -186,13 +199,22 @@ export default function PrescriptionRootPage() {
                     }
                   />
                 </Tooltip>
-                <button
-                  type="button"
-                  onClick={() => handleOpenSessionModal(session)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
-                >
-                  Mở đơn thuốc
-                </button>
+
+                {isChatExpired ? (
+                  // Phiên chat đã hết hạn — không cho tạo đơn thuốc
+                  <div className="flex items-center gap-1.5 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+                    <HiOutlineClipboardCheck className="h-3.5 w-3.5" />
+                    Phiên khám đã kết thúc
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleOpenSessionModal(session)}
+                    className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                  >
+                    Mở đơn thuốc
+                  </button>
+                )}
               </div>
             </div>
             );
