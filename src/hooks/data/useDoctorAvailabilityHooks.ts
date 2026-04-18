@@ -73,7 +73,7 @@ export function useDeleteDoctorAvailability(doctorId: string) {
     mutationFn: (id: string) => DoctorAvailabilityService.deleteDoctorAvailability(id),
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Thành công", "Đã xóa lịch làm việc.");
+        toast.success("Thành công", data.message || "Đã xóa lịch làm việc.");
         void queryClient.invalidateQueries({
           queryKey: ["doctor-availabilities", doctorId],
         });
