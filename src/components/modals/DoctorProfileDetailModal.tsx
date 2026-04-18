@@ -169,20 +169,34 @@ export function DoctorProfileDetailModal({
                 { id: "documents", label: "Chứng chỉ y tế", icon: HiOutlineDocumentText },
                 { id: "availabilities", label: "Lịch làm việc", icon: HiOutlineCalendar },
                 { id: "exceptions", label: "Lịch nghỉ", icon: HiOutlineCalendar },
-              ] as const).map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 border-b-2 py-4 text-sm font-bold transition-all whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                  }`}
-                >
-                  <tab.icon className="h-5 w-5" />
-                  {tab.label}
-                </button>
-              ))}
+              ] as const).map((tab) => {
+                const isLocked =
+                  account.status !== "Verified" &&
+                  account.status !== "Active" &&
+                  (tab.id === "availabilities" || tab.id === "exceptions");
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      if (isLocked) {
+                        toast.error("Tài khoản chưa duyệt", "Chỉ có thể xem/chỉnh sửa lịch khi bác sĩ đã được duyệt.");
+                        return;
+                      }
+                      setActiveTab(tab.id);
+                    }}
+                    className={`flex items-center gap-2 border-b-2 py-4 text-sm font-bold transition-all whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    } ${isLocked ? "opacity-40 cursor-not-allowed hover:text-gray-400" : ""}`}
+                  >
+                    <tab.icon className="h-5 w-5" />
+                    {tab.label}
+                    {isLocked && <span className="text-[10px] bg-gray-200 dark:bg-white/10 px-1.5 py-0.5 rounded-md ml-1 font-medium">Khóa</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -381,7 +395,12 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
     try {
       await createMutation.mutateAsync(payload);
       setQueue([]);
-    } catch {}
+    } catch {
+      // Vì API có thể lưu thành công một phần rồi mới quăng lỗi trùng lặp (Partial saving),
+      // ta cần xóa queue và tải lại danh sách để user có thông tin mới nhất và không nhấn tạo lại.
+      setQueue([]);
+      void refetch();
+    }
   }
 
   function getRowDraft(row: DoctorAvailability): UpdateDoctorAvailabilityBody {

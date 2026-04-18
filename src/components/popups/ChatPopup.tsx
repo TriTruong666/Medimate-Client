@@ -11,10 +11,12 @@ import { PATHS } from "@/config/paths";
 import { useChatIdentity, useChatSessionDetails, useChatSessionMessages, useMarkChatSessionMessagesRead, useSendChatSessionMessage } from "@/hooks/data/useChatDoctorHooks";
 import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "@/hooks/useToast";
+import { useQueryClient } from "@tanstack/react-query";
+import type { BaseResponse } from "@/types/APIResponse";
 import { chatPopupAtom, closePopupAtom, chatSessionExpiryAtom } from "../../stores/chatPopupStore";
 import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
 import { Spinner } from "../custom-ui/Spinner";
-import type { ChatDoctorMessageResponse } from "@/types/ChatDoctor";
+import type { ChatDoctorMessageResponse, ChatSessionSummaryResponse } from "@/types/ChatDoctor";
 import { DoctorSupportDetailPage } from "@/pages/doctor/DoctorSupportDetailPage";
 
 type ChatPopupProps = {
@@ -59,6 +61,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   const { isExpired, displayText: countdownText } = useCountdown(derivedExpiredAt);
   const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
   const hasMarkedReadRef = useRef<string | null>(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!sessionId || !doctorId) return;
@@ -71,12 +74,23 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     });
   }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
 
-  // Map đúng field names từ API response thực tế
-  const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || "Phòng chat";
-  const partnerAvatar = sessionDetails?.memberAvatar || sessionDetails?.partnerAvatar || null;
-  const appointmentDate = sessionDetails?.appointmentDate;
-  const appointmentTime = sessionDetails?.appointmentTime;
-  const appointmentId = sessionDetails?.appointmentId;
+  // Tìm lại trong cache danh sách list session (vì API Detail có thể bị thiếu trả về Date/Time)
+  const cachedSessionsQueries = queryClient.getQueriesData<BaseResponse<ChatSessionSummaryResponse[]>>({ queryKey: ["chat-sessions"] });
+  let cachedSession: ChatSessionSummaryResponse | undefined;
+  for (const [, data] of cachedSessionsQueries) {
+    const found = data?.data?.find(s => s.consultanSessionId === sessionId);
+    if (found) {
+      cachedSession = found;
+      break;
+    }
+  }
+
+  // Map đúng field names từ API response thực tế hoặc lấy từ cache dự phòng
+  const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || cachedSession?.memberName || cachedSession?.partnerName || "Phòng chat";
+  const partnerAvatar = sessionDetails?.memberAvatar || sessionDetails?.partnerAvatar || cachedSession?.memberAvatar || cachedSession?.partnerAvatar || null;
+  const appointmentDate = sessionDetails?.appointmentDate || cachedSession?.appointmentDate;
+  const appointmentTime = sessionDetails?.appointmentTime || cachedSession?.appointmentTime;
+  const appointmentId = sessionDetails?.appointmentId || cachedSession?.appointmentId;
 
   // Status badge: chỉ "Hết hạn" khi đồng hồ thực sự hết, không dùng session.status
   const displayStatus = isExpired
