@@ -13,6 +13,8 @@ export function useDoctorMe(enabled: boolean) {
 
   return useFetch(["doctor", "me"], async () => DoctorService.getDoctorMe(), {
     enabled: enabled && isDoctor,
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 }
 
@@ -27,15 +29,9 @@ export function useSubmitDoctorMe() {
         queryClient.invalidateQueries({ queryKey: ["doctor", "me"] });
         return;
       }
-
-      toast.error(
-        "Cập nhật thất bại",
-        translateErrorMessage(data.error?.code, data.message),
-      );
+      toast.error("Cập nhật thất bại", translateErrorMessage(data.error?.code, data.message));
     },
-    onError: (error: unknown) => {
-      toast.error("Cập nhật thất bại", getApiErrorMessage(error));
-    },
+    onError: (error) => toast.error("Cập nhật thất bại", getApiErrorMessage(error)),
   });
 }
 
@@ -46,19 +42,13 @@ export function useUpdateDoctorMe() {
     mutationFn: DoctorService.updateDoctorMe,
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Cập nhật thành công", "Thông tin của bạn đã được gửi. Đang chờ duyệt.");
+        toast.success("Cập nhật thành công", "Thông tin đã được gửi. Đang chờ duyệt.");
         queryClient.invalidateQueries({ queryKey: ["doctor", "me"] });
         return;
       }
-
-      toast.error(
-        "Cập nhật thất bại",
-        translateErrorMessage(data.error?.code, data.message),
-      );
+      toast.error("Cập nhật thất bại", translateErrorMessage(data.error?.code, data.message));
     },
-    onError: (error: unknown) => {
-      toast.error("Cập nhật thất bại", getApiErrorMessage(error));
-    },
+    onError: (error) => toast.error("Cập nhật thất bại", getApiErrorMessage(error)),
   });
 }
 
@@ -66,20 +56,13 @@ export function useChangeMyPassword() {
   return useMutation({
     mutationFn: UserService.changeMyPassword,
     onSuccess: (data) => {
-      // API might return standard camelCase or PascalCase depending on C# serialization settings
       if (data?.success || (data as any)?.Success) {
         toast.success("Đổi mật khẩu thành công", "Vui lòng dùng mật khẩu mới từ lần đăng nhập sau.");
         return;
       }
-
-      toast.error(
-        "Đổi mật khẩu thất bại",
-        translateErrorMessage(data.error?.code, data.message),
-      );
+      toast.error("Thất bại", translateErrorMessage(data.error?.code, data.message));
     },
-    onError: (error: unknown) => {
-      toast.error("Đổi mật khẩu thất bại", getApiErrorMessage(error));
-    },
+    onError: (error) => toast.error("Thất bại", getApiErrorMessage(error)),
   });
 }
 
@@ -94,13 +77,8 @@ export function useActivateDoctor() {
         queryClient.invalidateQueries({ queryKey: ["doctor", "me"] });
         return;
       }
-      toast.error(
-        "Kích hoạt thất bại",
-        translateErrorMessage(data.error?.code, data.message),
-      );
+      toast.error("Kích hoạt thất bại", translateErrorMessage(data.error?.code, data.message));
     },
-    onError: (error: unknown) => {
-      toast.error("Kích hoạt thất bại", getApiErrorMessage(error));
-    },
+    onError: (error) => toast.error("Kích hoạt thất bại", getApiErrorMessage(error)),
   });
 }

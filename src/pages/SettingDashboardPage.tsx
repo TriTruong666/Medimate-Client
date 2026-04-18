@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { Button } from "../components/custom-ui/Button";
 import Toggle from "@/components/custom-ui/Toggle";
 import { useAuth } from "@/hooks/useAuth";
+import clsx from "clsx";
 import { useChangeMyPassword, useDoctorMe } from "@/hooks/data/useDoctorHooks";
 import {
   useCreateDoctorBankAccount,
@@ -32,6 +33,8 @@ import {
 import type { AIModel } from "@/types/RAGAIModel";
 import GlassSelect from "../components/custom-ui/Select";
 import { Spinner } from "../components/custom-ui/Spinner";
+
+import { Input, Textarea } from "@/components/custom-ui/Input";
 
 type SettingCardProps = {
   label: string;
@@ -60,18 +63,22 @@ function SettingCard({
       <div className="setting-card-main">
         <div className="flex flex-col space-y-3">
           {/* Label */}
-          <h2 className="text-[18px] font-medium">{label}</h2>
+          <h2 className="text-[18px] font-medium text-gray-900 dark:text-white">
+            {label}
+          </h2>
           {/* Description */}
-          <span className="text-[13px]">{description}</span>
+          <span className="text-[13px] text-gray-600 dark:text-gray-400">
+            {description}
+          </span>
         </div>
         {/* Children */}
         <div className="">{children}</div>
 
         {/* Info */}
         {info && (
-          <div className="dark:border-border-dark flex space-x-3 rounded-lg border border-gray-100 px-4 py-3">
-            <IoIosInformationCircleOutline />
-            {info}
+          <div className="flex space-x-3 rounded-lg border border-gray-300 bg-gray-50/50 px-4 py-3 text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+            <IoIosInformationCircleOutline className="mt-0.5 shrink-0" />
+            <div className="text-[13px] leading-relaxed">{info}</div>
           </div>
         )}
       </div>
@@ -325,75 +332,73 @@ export function ProfileSettingDashboardPage() {
         >
           <form className="flex flex-col space-y-4" onSubmit={handleSubmit}>
             <div className="flex items-center space-x-4">
-              <input
+              <Input
+                label="Email"
                 value={user?.email || ""}
                 placeholder="Email liên hệ"
-                className="input-primary w-[50%] text-white placeholder:text-neutral-400 disabled:opacity-60"
                 disabled
                 readOnly
               />
-              <input
+              <Input
+                label="Số điện thoại"
                 value={user?.phoneNumber || ""}
                 placeholder="Số điện thoại"
-                className="input-primary w-[50%] text-white placeholder:text-neutral-400 disabled:opacity-60"
                 disabled
                 readOnly
               />
             </div>
-            <input
+            <Input
+              label="Họ và tên"
               value={form.fullName}
-              onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-              placeholder="Họ và tên"
-              className="input-primary w-full text-white placeholder:text-neutral-400 disabled:opacity-60"
+              onChange={(val) => setForm({ ...form, fullName: val })}
+              placeholder="Nhập họ và tên"
             />
             {user?.role === "Doctor" && (
               <>
                 <div className="flex items-center space-x-4">
-                  <input
+                  <Input
+                    label="Chuyên khoa"
                     value={form.specialty}
-                    onChange={(e) =>
-                      setForm({ ...form, specialty: e.target.value })
-                    }
-                    placeholder="Chuyên khoa (VD: Nội khoa, Nhi khoa)"
-                    className="input-primary w-[50%] text-black placeholder:text-gray-500"
+                    onChange={(val) => setForm({ ...form, specialty: val })}
+                    placeholder="VD: Nội khoa, Nhi khoa"
                   />
-                  <input
+                  <Input
+                    label="Nơi công tác"
                     value={form.currentHospitalName}
-                    onChange={(e) =>
-                      setForm({ ...form, currentHospitalName: e.target.value })
+                    onChange={(val) =>
+                      setForm({ ...form, currentHospitalName: val })
                     }
-                    placeholder="Nơi công tác"
-                    className="input-primary w-[50%] text-black placeholder:text-gray-500"
+                    placeholder="Hệ thống cơ sở y tế"
                   />
                 </div>
                 <div className="flex items-center space-x-4">
-                  <input
+                  <Input
+                    label="Mã CCHN"
+                    className="w-[65%]"
                     value={form.licenseNumber}
-                    onChange={(e) =>
-                      setForm({ ...form, licenseNumber: e.target.value })
-                    }
+                    onChange={(val) => setForm({ ...form, licenseNumber: val })}
                     placeholder="Mã số chứng chỉ hành nghề"
-                    className="input-primary w-[65%] text-black placeholder:text-gray-500"
                   />
-                  <input
+                  <Input
+                    label="Kinh nghiệm (năm)"
                     type="number"
-                    min="0"
+                    className="flex-1"
                     value={form.yearsOfExperience}
-                    onChange={(e) =>
+                    onChange={(val) =>
                       setForm({
                         ...form,
-                        yearsOfExperience: Number(e.target.value),
+                        yearsOfExperience: Number(val),
                       })
                     }
-                    placeholder="Năm kinh nghiệm"
-                    className="input-primary w-[35%] text-black placeholder:text-gray-500"
+                    placeholder="Năm"
                   />
                 </div>
-                <textarea
+                <Textarea
+                  label="Giới thiệu bản thân"
                   value={form.bio}
-                  onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                  onChange={(val) => setForm({ ...form, bio: val })}
                   placeholder="Giới thiệu chuyên môn y khoa..."
-                  className="input-primary min-h-[100px] w-full py-3 text-black placeholder:text-gray-500"
+                  rows={5}
                 />
               </>
             )}
@@ -413,8 +418,8 @@ export function ProfileSettingDashboardPage() {
         >
           <div className="flex flex-col items-center py-8">
             <div className="group relative cursor-pointer">
-              <div className="relative h-48 w-48 rounded-full bg-linear-to-br from-white/20 to-white/5 p-0.5 transition">
-                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-white/10 bg-neutral-900">
+              <div className="relative h-48 w-48 rounded-full bg-linear-to-br from-gray-200 to-gray-50 p-0.5 shadow-lg transition active:scale-95 dark:from-white/20 dark:to-white/5 dark:shadow-none">
+                <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border border-gray-300 bg-white dark:border-white/10 dark:bg-neutral-900">
                   {avatarPreview ? (
                     <img
                       src={avatarPreview}
@@ -422,7 +427,7 @@ export function ProfileSettingDashboardPage() {
                       className="h-full w-full object-cover transition duration-500 group-hover:scale-110"
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center text-white/30">
+                    <div className="flex flex-col items-center justify-center text-gray-300 dark:text-white/30">
                       <FiUser className="mb-2 text-5xl" />
                     </div>
                   )}
@@ -467,29 +472,29 @@ export function ProfileSettingDashboardPage() {
           >
             <div className="flex w-full flex-col gap-4 py-4">
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <input
+                <Input
+                  label="Ngân hàng"
                   value={bankForm.bankName}
-                  onChange={(e) =>
-                    setBankForm({ ...bankForm, bankName: e.target.value })
+                  onChange={(val) =>
+                    setBankForm({ ...bankForm, bankName: val })
                   }
                   placeholder="Tên ngân hàng"
-                  className="input-primary w-full text-white placeholder:text-neutral-400"
                 />
-                <input
+                <Input
+                  label="Số tài khoản"
                   value={bankForm.accountNumber}
-                  onChange={(e) =>
-                    setBankForm({ ...bankForm, accountNumber: e.target.value })
+                  onChange={(val) =>
+                    setBankForm({ ...bankForm, accountNumber: val })
                   }
                   placeholder="Số tài khoản"
-                  className="input-primary w-full text-white placeholder:text-neutral-400"
                 />
-                <input
+                <Input
+                  label="Chủ tài khoản"
                   value={bankForm.accountHolder}
-                  onChange={(e) =>
-                    setBankForm({ ...bankForm, accountHolder: e.target.value })
+                  onChange={(val) =>
+                    setBankForm({ ...bankForm, accountHolder: val })
                   }
                   placeholder="Chủ tài khoản"
-                  className="input-primary w-full text-white placeholder:text-neutral-400"
                 />
               </div>
 
@@ -509,7 +514,7 @@ export function ProfileSettingDashboardPage() {
                   <button
                     type="button"
                     onClick={resetBankForm}
-                    className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+                    className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
                   >
                     Hủy chỉnh sửa
                   </button>
@@ -530,13 +535,13 @@ export function ProfileSettingDashboardPage() {
                     {bankAccounts?.map((account) => (
                       <div
                         key={account.bankAccountId}
-                        className="flex flex-col gap-3 rounded-lg border border-white/10 bg-black/30 p-3 md:flex-row md:items-center md:justify-between"
+                        className="flex flex-col gap-3 rounded-lg border border-gray-300 bg-white p-3 md:flex-row md:items-center md:justify-between dark:border-white/10 dark:bg-black/30"
                       >
                         <div className="min-w-0 space-y-1">
-                          <p className="text-sm font-medium text-white">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
                             {account.bankName} - {account.accountNumber}
                           </p>
-                          <p className="text-xs text-gray-400">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
                             Chủ tài khoản: {account.accountHolder}
                           </p>
                         </div>
@@ -585,10 +590,10 @@ export function ProfileSettingDashboardPage() {
             }
           >
             <div className="flex w-full flex-col py-4">
-              <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-white/10 bg-white/5 transition hover:bg-white/10">
+              <label className="flex h-32 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 transition hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <p className="mb-2 text-sm text-gray-400">
-                    <span className="font-semibold text-white">
+                  <p className="mb-2 text-sm text-gray-600 dark:text-gray-400">
+                    <span className="font-semibold text-gray-900 dark:text-white">
                       Click tải lên
                     </span>{" "}
                     nhiều ảnh
@@ -682,31 +687,31 @@ export function SecuritySettingDashboardPage() {
             className="flex max-w-3xl flex-col gap-4"
             onSubmit={handlePasswordChange}
           >
-            <input
+            <Input
+              label="Mật khẩu hiện tại"
               type="password"
-              placeholder="Mật khẩu hiện tại"
-              className="input-primary text-black placeholder:text-gray-500"
+              placeholder="Nhập mật khẩu cũ"
               value={passwords.oldPassword}
-              onChange={(e) =>
-                setPasswords({ ...passwords, oldPassword: e.target.value })
+              onChange={(val) =>
+                setPasswords({ ...passwords, oldPassword: val })
               }
             />
-            <input
+            <Input
+              label="Mật khẩu mới"
               type="password"
-              placeholder="Mật khẩu mới"
-              className="input-primary text-black placeholder:text-gray-500"
+              placeholder="Nhập mật khẩu mới"
               value={passwords.newPassword}
-              onChange={(e) =>
-                setPasswords({ ...passwords, newPassword: e.target.value })
+              onChange={(val) =>
+                setPasswords({ ...passwords, newPassword: val })
               }
             />
-            <input
+            <Input
+              label="Xác nhận mật khẩu"
               type="password"
-              placeholder="Xác nhận mật khẩu mới"
-              className="input-primary text-black placeholder:text-gray-500"
+              placeholder="Nhập lại mật khẩu mới"
               value={passwords.confirmPassword}
-              onChange={(e) =>
-                setPasswords({ ...passwords, confirmPassword: e.target.value })
+              onChange={(val) =>
+                setPasswords({ ...passwords, confirmPassword: val })
               }
             />
           </form>
@@ -731,24 +736,24 @@ export function NotificationSettingDashboardPage() {
           disable
         >
           <div className="flex max-w-3xl flex-col gap-5">
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-5 dark:border-white/10 dark:bg-white/3">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Hoạt động đăng nhập
                 </p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-gray-500 dark:text-white/40">
                   Nhận email khi có đăng nhập mới
                 </p>
               </div>
               <Toggle />
             </div>
 
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-5 dark:border-white/10 dark:bg-white/3">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Thay đổi bảo mật
                 </p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-gray-500 dark:text-white/40">
                   Nhận email khi thay đổi mật khẩu hoặc 2FA
                 </p>
               </div>
@@ -808,24 +813,24 @@ export function MessageSettingDashboardPage() {
           }
         >
           <div className="flex max-w-3xl flex-col gap-5">
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-5 dark:border-white/10 dark:bg-white/3">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Thông báo trong ứng dụng
                 </p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-gray-500 dark:text-white/40">
                   Hiển thị popup khi có tin nhắn mới
                 </p>
               </div>
               <Toggle />
             </div>
 
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-5 dark:border-white/10 dark:bg-white/3">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Thông báo qua email
                 </p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-gray-500 dark:text-white/40">
                   Gửi email nếu bạn không online
                 </p>
               </div>
@@ -844,24 +849,24 @@ export function MessageSettingDashboardPage() {
           }
         >
           <div className="flex max-w-3xl flex-col gap-5">
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-5 dark:border-white/10 dark:bg-white/3">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Hiển thị trạng thái online
                 </p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-gray-500 dark:text-white/40">
                   Người khác có thể thấy bạn đang hoạt động
                 </p>
               </div>
               <Toggle />
             </div>
 
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-5">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-5 dark:border-white/10 dark:bg-white/3">
               <div>
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
                   Hiển thị đã xem
                 </p>
-                <p className="text-xs text-white/40">
+                <p className="text-xs text-gray-500 dark:text-white/40">
                   Người gửi biết khi bạn đã đọc tin nhắn
                 </p>
               </div>
@@ -906,10 +911,14 @@ export function SystemSettingDashboardPage() {
           disable
         >
           <div className="flex max-w-3xl flex-col gap-4">
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-4 dark:border-white/10 dark:bg-white/3">
               <div>
-                <p className="text-sm font-medium text-white">Medimate</p>
-                <p className="text-xs text-white/40">Phiên bản 1.0.0 Beta</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Medimate
+                </p>
+                <p className="text-xs text-gray-500 dark:text-white/40">
+                  Phiên bản 1.0.0 Beta
+                </p>
               </div>
               <Badge value="Mới nhất" type="info" />
             </div>
@@ -927,17 +936,17 @@ export function SystemSettingDashboardPage() {
         >
           <div className="flex max-w-3xl flex-col gap-4">
             {/* Python server */}
-            <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4">
+            <div className="flex items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-4 dark:border-white/10 dark:bg-white/3">
               <div className="flex items-center gap-4">
                 <IconBadge
                   icon={<HiOutlineServer />}
                   type={isLoading ? "info" : isPyActive ? "success" : "error"}
                 />
                 <div>
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white">
                     AI / Python Server (RAG)
                   </p>
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-gray-500 dark:text-white/40">
                     {isLoading
                       ? "Đang kiểm tra..."
                       : isPyActive
@@ -970,20 +979,26 @@ export function SystemSettingDashboardPage() {
           disable
         >
           <div className="flex max-w-3xl flex-col gap-4">
-            <div className="flex cursor-pointer items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4 transition hover:bg-white/6">
+            <div className="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-4 transition hover:bg-gray-100 dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/6">
               <div className="flex items-center gap-4">
                 <IconBadge icon={<HiOutlineCog />} type="info" />
-                <p className="text-sm font-medium text-white">Xem logs</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Xem logs
+                </p>
               </div>
-              <span className="text-xs text-white/40">Mở console log</span>
+              <span className="text-xs text-gray-500 dark:text-white/40">
+                Mở console log
+              </span>
             </div>
 
-            <div className="flex cursor-pointer items-center justify-between rounded-2xl border border-white/10 bg-white/3 px-6 py-4 transition hover:bg-white/6">
+            <div className="flex cursor-pointer items-center justify-between rounded-2xl border border-gray-300 bg-gray-50 px-6 py-4 transition hover:bg-gray-100 dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/6">
               <div className="flex items-center gap-4">
                 <IconBadge icon={<HiOutlineCog />} type="info" />
-                <p className="text-sm font-medium text-white">Khởi động lại</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  Khởi động lại
+                </p>
               </div>
-              <span className="text-xs text-white/40">
+              <span className="text-xs text-gray-500 dark:text-white/40">
                 Khởi động lại server
               </span>
             </div>
@@ -1031,35 +1046,37 @@ function AIModelConfigItem({ model }: AIModelConfigItemProps) {
   };
 
   return (
-    <div className="group relative flex items-center justify-between rounded-2xl border border-white/10 bg-white/5 px-6 py-4 transition hover:bg-white/10">
+    <div className="group relative flex items-center justify-between rounded-2xl border border-gray-300 bg-white px-6 py-4 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
       {/* Key info */}
       <div className="flex flex-1 flex-col gap-1">
-        <p className="text-sm font-medium text-white">{model.name}</p>
+        <p className="text-sm font-medium text-gray-900 dark:text-white">
+          {model.name}
+        </p>
         {!editing ? (
           <div className="flex flex-col gap-0.5">
-            <p className="truncate text-[10px] text-white/30">
+            <p className="truncate text-[10px] text-gray-500 dark:text-white/30">
               Model Name:{" "}
-              <span className="text-white/50">{config.modelName || "N/A"}</span>
+              <span className="text-gray-700 dark:text-white/50">
+                {config.modelName || "N/A"}
+              </span>
             </p>
-            <p className="text-[10px] tracking-widest text-white/40">
+            <p className="text-[10px] tracking-widest text-gray-600 dark:text-white/40">
               API Key: {masked ? "•••••••••••••••••••••••••••" : config.apiKey}
             </p>
           </div>
         ) : (
           <div className="mt-2 flex max-w-md flex-col gap-2">
-            <input
-              className="input-primary text-xs text-white"
+            <Input
+              label="Model Name"
+              placeholder="VD: models/gemini-pro"
               value={config.modelName}
-              placeholder="Model Name (VD: models/gemini-pro)"
-              onChange={(e) =>
-                setConfig({ ...config, modelName: e.target.value })
-              }
+              onChange={(val) => setConfig({ ...config, modelName: val })}
             />
-            <input
-              className="input-primary text-xs text-white"
+            <Input
+              label="API Key"
+              placeholder="Tải lên hoặc dán mã khóa"
               value={config.apiKey}
-              placeholder="API Key"
-              onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
+              onChange={(val) => setConfig({ ...config, apiKey: val })}
             />
           </div>
         )}
@@ -1231,60 +1248,34 @@ export function SystemConfigSettingDashboardPage() {
           }
         >
           <div className="flex max-w-3xl flex-col gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
-                Tên hệ thống
-              </label>
-              <input
-                className="input-primary w-full text-white"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Ví dụ: Medimate RAG Core"
-              />
-            </div>
+            <Input
+              label="Tên hệ thống"
+              value={form.name}
+              onChange={(val) => setForm({ ...form, name: val })}
+              placeholder="Ví dụ: Medimate RAG Core"
+            />
 
             <div className="grid grid-cols-3 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
-                  Top K
-                </label>
-                <input
-                  type="number"
-                  className="input-primary w-full text-white"
-                  value={form.top_k}
-                  onChange={(e) =>
-                    setForm({ ...form, top_k: Number(e.target.value) })
-                  }
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
-                  Threshold
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  className="input-primary w-full text-white"
-                  value={form.threshold}
-                  onChange={(e) =>
-                    setForm({ ...form, threshold: Number(e.target.value) })
-                  }
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium tracking-wider text-white/50 uppercase">
-                  Temperature
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  className="input-primary w-full text-white"
-                  value={form.temperature}
-                  onChange={(e) =>
-                    setForm({ ...form, temperature: Number(e.target.value) })
-                  }
-                />
-              </div>
+              <Input
+                label="Top K"
+                type="number"
+                value={form.top_k}
+                onChange={(val) => setForm({ ...form, top_k: Number(val) })}
+              />
+              <Input
+                label="Threshold"
+                type="number"
+                value={form.threshold}
+                onChange={(val) => setForm({ ...form, threshold: Number(val) })}
+              />
+              <Input
+                label="Temperature"
+                type="number"
+                value={form.temperature}
+                onChange={(val) =>
+                  setForm({ ...form, temperature: Number(val) })
+                }
+              />
             </div>
 
             <div className="flex flex-col gap-2">
@@ -1315,13 +1306,12 @@ export function SystemConfigSettingDashboardPage() {
           }
         >
           <div className="flex max-w-5xl flex-col gap-4">
-            <textarea
-              className="input-primary min-h-[500px] w-full resize-none p-6 text-sm leading-relaxed text-white thin-scrollbar"
+            <Textarea
+              label="System Prompt"
               value={form.prompt_template}
-              onChange={(e) =>
-                setForm({ ...form, prompt_template: e.target.value })
-              }
+              onChange={(val) => setForm({ ...form, prompt_template: val })}
               placeholder="Nhập System Prompt Template..."
+              rows={20}
             />
           </div>
         </SettingCard>

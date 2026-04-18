@@ -158,22 +158,22 @@ export default function DocumentDashboardPage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             Quản lý tài liệu
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+          <div className="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5">
             <button
               onClick={() => handleChangeTableLayout("table")}
-              className={`${tableLayout === "table" ? "bg-primary text-white shadow-sm" : "text-gray-400 hover:bg-white/5 hover:text-white"} flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+              className={`${tableLayout === "table" ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"} flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
             >
               <LuTable2 className="text-sm" />
               Bảng
             </button>
             <button
               onClick={() => handleChangeTableLayout("card")}
-              className={`${tableLayout === "card" ? "bg-primary text-white shadow-sm" : "text-gray-400 hover:bg-white/5 hover:text-white"} flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+              className={`${tableLayout === "card" ? "bg-primary text-white shadow-sm" : "text-gray-500 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"} flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
             >
               <LuGrid3X3 className="text-sm" />
               Thẻ
@@ -191,7 +191,7 @@ export default function DocumentDashboardPage() {
               ]}
             />
           </div>
-          <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
+          <button className="flex items-center gap-2 rounded-lg border border-gray-400 bg-white px-4 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10">
             Xuất <PiExport />
           </button>
 
@@ -209,7 +209,7 @@ export default function DocumentDashboardPage() {
           placeholder="Tìm kiếm tài liệu..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          className="h-10 w-full rounded-lg border border-white/10 bg-white/5 px-4 text-[13px] text-white backdrop-blur-md outline-hidden transition duration-300 focus:border-white/20 focus:bg-white/8 focus:ring-1 focus:ring-white/10 placeholder:text-white/20"
+          className="h-10 w-full rounded-lg border border-gray-400 bg-white px-4 text-[13px] text-gray-900 outline-hidden transition duration-300 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-white/20"
         />
       </div>
 
@@ -238,31 +238,31 @@ export default function DocumentDashboardPage() {
             </div>
           ) : isError ? (
             <div className="flex min-h-[400px] flex-col items-center justify-center py-10">
-              <div className="mb-4 rounded-full bg-red-500/10 p-4 text-red-500">
+              <div className="mb-4 rounded-full bg-red-100 p-4 text-red-500 dark:bg-red-500/10">
                 <FiRefreshCcw className="text-3xl" />
               </div>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Đã xảy ra lỗi
               </h3>
-              <p className="mt-2 text-sm text-white/50">
+              <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
                 Không thể tải danh sách tài liệu vào lúc này.
               </p>
               <button
                 onClick={() => refetch()}
-                className="mt-6 rounded-lg border border-white/5 bg-white/5 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-white/10"
+                className="mt-6 rounded-lg border border-gray-400 bg-white px-6 py-2.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-white/5 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
               >
                 Thử lại
               </button>
             </div>
           ) : cardDocuments.length === 0 ? (
             <div className="flex min-h-[400px] flex-col items-center justify-center py-10 text-center">
-              <div className="mb-4 rounded-full bg-white/5 p-4 text-gray-400">
+              <div className="mb-4 rounded-full bg-gray-100 p-4 text-gray-400 dark:bg-white/5">
                 <LuGrid3X3 className="text-3xl" />
               </div>
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 Chưa có tài liệu
               </h3>
-              <p className="mt-2 text-sm text-white/50">
+              <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
                 Bắt đầu bằng cách tải lên tài liệu đầu tiên của bạn.
               </p>
               <button
@@ -283,7 +283,7 @@ export default function DocumentDashboardPage() {
                   <button
                     onClick={handleLoadMore}
                     disabled={isLoading}
-                    className="flex min-w-40 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-6 py-3 text-sm font-semibold text-white backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10 disabled:opacity-50"
+                    className="flex min-w-40 items-center justify-center gap-2 rounded-xl border border-gray-400 bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 disabled:opacity-50"
                   >
                     {isLoading ? (
                       <>
@@ -359,7 +359,7 @@ function DocumentCard({ data }: DocumentCardProps) {
     <motion.div
       variants={cardItem}
       whileHover={{ y: -4 }}
-      className="group dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-100 bg-white/80 p-4 backdrop-blur transition-colors duration-300 hover:border-white/20 hover:bg-white/10 dark:bg-white/5"
+      className="group relative flex h-full flex-col rounded-2xl border border-gray-400 bg-white/80 p-4 backdrop-blur transition-all duration-300 hover:border-primary/50 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10"
     >
       {/* Header */}
       <div className="flex items-start gap-3">
@@ -375,7 +375,7 @@ function DocumentCard({ data }: DocumentCardProps) {
         </div>
       </div>
 
-      <div className="my-4 h-px bg-gray-100 dark:bg-white/10" />
+      <div className="my-4 h-px bg-gray-300 dark:bg-white/10" />
 
       {/* Meta */}
       <div className="flex items-center justify-between text-xs">
@@ -433,10 +433,10 @@ function DocumentTable({
       {data.map((row, i) => (
         <tr
           key={row.id || i}
-          className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+          className="transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
         >
           {/* Name */}
-          <td className="dark:border-border-dark border-r border-gray-100 p-4">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4">
             <div className="flex min-w-0 items-center gap-3">
               <FileIcon type={row.type as any} />
               <div className="flex min-w-0 flex-col">
@@ -451,21 +451,21 @@ function DocumentTable({
           </td>
 
           {/* Type */}
-          <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
             <span className="text-sm text-gray-600 dark:text-gray-300">
               {(row.type || "N/A").toUpperCase()}
             </span>
           </td>
 
           {/* Size */}
-          <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
             <span className="font-mono text-sm text-gray-600 dark:text-gray-300">
               {formatFileSize(row.file_size)}
             </span>
           </td>
 
           {/* Status */}
-          <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
             <StatusBadge status={row.status as any} />
           </td>
 
@@ -595,20 +595,20 @@ function StatusBadge({
 
 function DocumentCardSkeleton() {
   return (
-    <div className="dark:border-border-dark flex h-48 flex-col rounded-2xl border border-gray-100 bg-white/5 p-4 backdrop-blur">
+    <div className="flex h-48 flex-col rounded-2xl border border-gray-400 bg-white p-4 dark:border-white/10 dark:bg-white/5">
       <div className="flex items-start gap-3">
-        <div className="h-10 w-10 animate-pulse rounded-lg bg-white/10" />
+        <div className="h-10 w-10 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
         <div className="flex-1 space-y-2">
-          <div className="h-4 w-3/4 animate-pulse rounded bg-white/10" />
-          <div className="h-3 w-1/4 animate-pulse rounded bg-white/10" />
+          <div className="h-4 w-3/4 animate-pulse rounded bg-gray-200 dark:bg-white/10" />
+          <div className="h-3 w-1/4 animate-pulse rounded bg-gray-200 dark:bg-white/10" />
         </div>
       </div>
-      <div className="mt-8 h-px w-full bg-white/5" />
+      <div className="mt-8 h-px w-full bg-gray-100 dark:bg-white/5" />
       <div className="mt-auto flex items-center justify-between">
-        <div className="h-6 w-16 animate-pulse rounded-full bg-white/10" />
+        <div className="h-6 w-16 animate-pulse rounded-full bg-gray-200 dark:bg-white/10" />
         <div className="flex gap-2">
-          <div className="h-8 w-8 animate-pulse rounded-lg bg-white/10" />
-          <div className="h-8 w-8 animate-pulse rounded-lg bg-white/10" />
+          <div className="h-8 w-8 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
+          <div className="h-8 w-8 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
         </div>
       </div>
     </div>

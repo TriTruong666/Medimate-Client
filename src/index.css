@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* =========================================
+   VIEW TRANSITIONS — Circular Reveal
+   New layer luôn nằm trên, expand circle
+========================================= */
+::view-transition-old(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 0;
+}
+
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  z-index: 1;
+}
+
 @theme {
   --color-primary: #EC4899;
   --color-background-light: #f3f4f6;
@@ -16,8 +32,8 @@
   --color-card-dark: #16111d;
 
 
-  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-sans: "Manrope", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji", ui-sans-serif, system-ui, sans-serif;
   --font-logo: "Zen Tokyo Zoo", system-ui;
   --font-over: "OverusedGrotesk", system-ui, sans-serif;
 
@@ -36,8 +52,7 @@
 
 @layer components {
   .input-primary {
-    @apply rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 pr-4 text-sm text-gray-200 placeholder-gray-500 backdrop-blur-md outline-none hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-1 focus:ring-white/10 focus:outline-none disabled:bg-white/10 disabled:text-gray-400 disabled:placeholder-gray-400 disabled:cursor-not-allowed;
-
+    @apply rounded-xl border border-gray-400 bg-white px-4 py-2.5 pr-4 text-sm text-gray-900 placeholder-gray-400 transition-all outline-none hover:bg-gray-50 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/10 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:bg-white/10 dark:focus:border-white/20 dark:focus:bg-white/10 dark:focus:ring-white/10;
   }
 
   .btn-primary {
@@ -49,19 +64,19 @@
   }
 
   .card-primary {
-    @apply dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-100 bg-white/80 p-4 backdrop-blur transition-colors duration-300 hover:border-white/20 hover:bg-white/10 dark:bg-white/5
+    @apply dark:border-border-dark relative flex h-full flex-col rounded-2xl border border-gray-400 bg-white p-4 transition-colors duration-300 hover:border-primary/40 hover:shadow-lg dark:bg-white/5 dark:hover:border-white/20 dark:shadow-none
   }
 
   .setting-card {
-    @apply dark:border-border-dark relative flex h-full flex-col border border-gray-100
+    @apply dark:border-border-dark relative flex h-full flex-col border border-gray-300 overflow-hidden rounded-xl
   }
 
   .setting-card-main {
-    @apply dark:border-border-dark space-y-4 border-b border-gray-100 bg-white/80 px-6 py-4 dark:bg-neutral-950
+    @apply dark:border-border-dark space-y-4 border-b border-gray-300 bg-white/80 px-6 py-4 dark:bg-neutral-950
   }
 
   .helper-setting-card {
-    @apply text-[13px] text-white/40
+    @apply text-[13px] text-gray-500 dark:text-white/40
   }
 }
 
@@ -101,7 +116,13 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background-color: var(--color-background-light);
+  color: #1f2937;
+}
+
+.dark body {
   background-color: var(--color-background-dark);
+  color: #f9fafb;
 }
 
 
@@ -166,10 +187,7 @@ body {
 
 /* Container: logo + brand name, căn giữa màn hình */
 .medimate-brand-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
+  @apply fixed z-9999 flex h-screen w-screen items-center justify-center bg-white dark:bg-black select-none;
   min-height: 100vh;
   padding: 2rem;
   overflow: hidden;
@@ -187,18 +205,30 @@ body {
 }
 
 .brand-text-white {
+  color: #EC4899; /* Pink for light mode */
+}
+
+html.dark .brand-text-white {
   color: #ffffff;
 }
 
 .brand-text-purple {
+  color: #EC4899; /* Lighter pink for light mode */
+}
+
+html.dark .brand-text-purple {
   color: #E1A3F1;
 }
 
 .medimate-svg {
   width: 190px;
   height: auto;
-  filter: drop-shadow(0 0 24px rgba(226, 172, 245, 0.4));
+  filter: drop-shadow(0 0 24px rgba(255, 45, 85, 0.4));
   animation: svgReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+html.dark .medimate-svg {
+  filter: drop-shadow(0 0 24px rgba(226, 172, 245, 0.4));
 }
 
 /* Cấu hình chung cho các đường vẽ */
@@ -211,20 +241,29 @@ body {
 
 /* --- Đường viền tím: vẽ nền chính (bút chính) --- */
 .path-purple {
-  stroke: #E1A3F1;
+  stroke: #EC4899;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
   animation: drawBase 2.8s cubic-bezier(0.33, 1, 0.68, 1) forwards;
+  filter: drop-shadow(0 0 8px rgba(255, 45, 85, 0.5));
+}
+
+html.dark .path-purple {
+  stroke: #E1A3F1;
   filter: drop-shadow(0 0 8px rgba(225, 163, 241, 0.5));
 }
 
 /* --- Đường viền trắng: vệt sáng rượt theo đầu bút --- */
 .path-white {
-  stroke: #FFFFFF;
+  stroke: #EC4899;
   stroke-dasharray: 0.04 1;
   stroke-dashoffset: 1;
   animation: drawChase 2.4s cubic-bezier(0.33, 1, 0.68, 1) forwards;
   animation-delay: 0.15s;
+}
+
+html.dark .path-white {
+  stroke: #FFFFFF;
 }
 
 /* --- Fill: Nổi lên mượt mà sau khi vẽ viền gần xong --- */

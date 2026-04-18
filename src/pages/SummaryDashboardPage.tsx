@@ -75,10 +75,10 @@ export default function SummaryDashboardPage() {
     scales: {
       x: {
         grid: { display: false },
-        ticks: { color: "#9ca3af" },
+        ticks: { color: "#6b7280" },
       },
       y: {
-        grid: { color: "rgba(255,255,255,0.05)" },
+        grid: { color: "rgba(0,0,0,0.05)", borderDash: [4, 4] },
         ticks: { display: false },
       },
     },
@@ -127,16 +127,16 @@ export default function SummaryDashboardPage() {
       x: {
         grid: { display: false },
         ticks: {
-          color: "#6b7280",
+          color: "#94a3b8",
           font: { size: 11 },
         },
       },
       y: {
         grid: {
-          color: "rgba(255,255,255,0.05)",
+          color: "rgba(0,0,0,0.05)",
         },
         ticks: {
-          color: "#6b7280",
+          color: "#94a3b8",
           font: { size: 11 },
         },
       },
@@ -150,7 +150,7 @@ export default function SummaryDashboardPage() {
           <p className="mb-1 text-xs tracking-wider text-gray-500 uppercase dark:text-gray-400">
             Thứ 6 · 21 Tháng 6
           </p>
-          <h1 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             Tổng quan hệ thống
           </h1>
         </div>
@@ -164,10 +164,10 @@ export default function SummaryDashboardPage() {
       >
         <motion.div
           variants={dashboardItem}
-          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10"
+          className="rounded-xl border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
         >
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <HiOutlineDocumentText className="text-lg" />
               <span>Tổng số tài liệu</span>
             </div>
@@ -177,7 +177,7 @@ export default function SummaryDashboardPage() {
             </span>
           </div>
 
-          <h3 className="text-3xl font-semibold text-white tabular-nums">
+          <h3 className="text-3xl font-semibold text-gray-900 dark:text-white tabular-nums">
             12,842
           </h3>
 
@@ -191,17 +191,17 @@ export default function SummaryDashboardPage() {
 
         <motion.div
           variants={dashboardItem}
-          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10"
+          className="rounded-xl border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
         >
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <HiOutlineUsers className="text-lg" />
               <span>Tài khoản hoạt động</span>
             </div>
             <span className="text-xs text-gray-500">Hôm nay</span>
           </div>
 
-          <h3 className="text-3xl font-semibold text-white tabular-nums">
+          <h3 className="text-3xl font-semibold text-gray-900 dark:text-white tabular-nums">
             3,105
           </h3>
 
@@ -215,23 +215,23 @@ export default function SummaryDashboardPage() {
 
         <motion.div
           variants={dashboardItem}
-          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:bg-white/10"
+          className="rounded-xl border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
         >
           <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-400">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <HiOutlineStar className="text-lg" />
               <span>Mức độ hài lòng</span>
             </div>
             <span className="text-xs text-gray-500">30 ngày</span>
           </div>
 
-          <h3 className="text-3xl font-semibold text-white">
+          <h3 className="text-3xl font-semibold text-gray-900 dark:text-white">
             4.8<span className="text-base text-gray-500"> / 5</span>
           </h3>
 
           <div className="mt-3 space-y-2">
-            <div className="h-1 w-full rounded-full bg-white/10">
-              <div className="h-full w-[92%] rounded-full bg-white/40" />
+            <div className="h-1 w-full rounded-full bg-gray-100 dark:bg-white/10">
+              <div className="h-full w-[92%] rounded-full bg-gray-400 dark:bg-white/40" />
             </div>
 
             <p className="text-xs text-gray-500">
@@ -248,13 +248,13 @@ export default function SummaryDashboardPage() {
       >
         <motion.div
           variants={dashboardItem}
-          className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-1"
+          className="rounded-xl border border-gray-400 bg-white p-6 dark:border-white/10 dark:bg-white/5 lg:col-span-1"
         >
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-sm font-medium text-gray-400">Nạp tài liệu</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Nạp tài liệu</h3>
 
-            <button className="flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs text-gray-400 hover:bg-white/5">
-              This Week
+            <button className="flex items-center gap-1 rounded-md border border-gray-400 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5">
+              Tuần này
               <HiChevronDown className="text-sm" />
             </button>
           </div>
@@ -263,7 +263,7 @@ export default function SummaryDashboardPage() {
             <div className="relative h-40 w-40">
               <Doughnut data={donutData} options={donutOptions} />
               <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-semibold text-white">85%</span>
+                <span className="text-2xl font-semibold text-gray-900 dark:text-white">85%</span>
                 <span className="text-[10px] tracking-wide text-gray-500 uppercase">
                   Thành công
                 </span>
@@ -273,33 +273,33 @@ export default function SummaryDashboardPage() {
             <div className="space-y-3 text-xs">
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 rounded-full bg-orange-500" />
-                <span className="font-medium text-white">12</span>
-                <span className="text-gray-400">Chờ nạp</span>
+                <span className="font-medium text-gray-900 dark:text-white">12</span>
+                <span className="text-gray-500 dark:text-gray-400">Chờ nạp</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 rounded-full bg-purple-500" />
-                <span className="font-medium text-white">84</span>
-                <span className="text-gray-400">Đang nạp</span>
+                <span className="font-medium text-gray-900 dark:text-white">84</span>
+                <span className="text-gray-500 dark:text-gray-400">Đang nạp</span>
               </div>
               <div className="flex items-center gap-3">
                 <span className="h-2 w-2 rounded-full bg-green-500" />
-                <span className="font-medium text-white">156</span>
-                <span className="text-gray-400">Đã nạp</span>
+                <span className="font-medium text-gray-900 dark:text-white">156</span>
+                <span className="text-gray-500 dark:text-gray-400">Đã nạp</span>
               </div>
             </div>
           </div>
         </motion.div>
         <motion.div
           variants={dashboardItem}
-          className="rounded-xl border border-white/10 bg-white/5 p-6 lg:col-span-2"
+          className="rounded-xl border border-gray-400 bg-white p-6 dark:border-white/10 dark:bg-white/5 lg:col-span-2"
         >
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-400">Lưu lượng nhúng</p>
-              <h3 className="text-3xl font-semibold text-white">2.4k Docs</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Lưu lượng nhúng</p>
+              <h3 className="text-3xl font-semibold text-gray-900 dark:text-white">2.4k Docs</h3>
             </div>
 
-            <button className="flex items-center gap-1 rounded-md border border-white/10 px-2 py-1 text-xs text-gray-400 hover:bg-white/5">
+            <button className="flex items-center gap-1 rounded-md border border-gray-400 px-2 py-1 text-xs text-gray-500 hover:bg-gray-50 dark:border-white/10 dark:text-gray-400 dark:hover:bg-white/5">
               Tuần này
               <HiChevronDown className="text-sm" />
             </button>
@@ -318,7 +318,7 @@ export default function SummaryDashboardPage() {
       >
         <motion.div
           variants={dashboardItem}
-          className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors"
+          className="rounded-xl border border-gray-400 bg-white p-6 transition-colors dark:border-white/10 dark:bg-white/5"
         >
           {/* Header */}
           <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
@@ -327,9 +327,9 @@ export default function SummaryDashboardPage() {
                 <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
                   Lưu lượng hoạt động
                 </p>
-                <h3 className="text-3xl font-bold tracking-tight text-white">
+                <h3 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                   1.2 TB
-                  <span className="ml-1 text-base font-normal text-gray-400">
+                  <span className="ml-1 text-base font-normal text-gray-500 dark:text-gray-400">
                     /mo
                   </span>
                 </h3>
@@ -339,19 +339,19 @@ export default function SummaryDashboardPage() {
                 <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
                   Số lượng hành động
                 </p>
-                <h3 className="text-3xl font-bold tracking-tight text-white">
+                <h3 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
                   24.5k
                 </h3>
               </div>
             </div>
 
             {/* Chart type switch */}
-            <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+            <div className="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5">
               <button className="bg-primary flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-white shadow-sm">
                 <MdOutlineShowChart className="text-sm" />
                 Line
               </button>
-              <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-gray-400 transition hover:bg-white/5 hover:text-white">
+              <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-gray-500 transition hover:bg-white/10 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white">
                 <HiOutlineChartBar className="text-sm" />
                 Bar
               </button>
@@ -368,22 +368,22 @@ export default function SummaryDashboardPage() {
           </span> */}
 
             <div className="flex flex-wrap gap-6">
-              <button className="relative pb-1 text-xs font-semibold text-white">
+              <button className="relative pb-1 text-xs font-semibold text-gray-900 dark:text-white">
                 Tất cả
                 <span className="bg-primary absolute bottom-0 left-0 h-0.5 w-full" />
               </button>
 
-              <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
+              <button className="flex items-center gap-2 text-xs font-medium text-gray-500 transition hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
                 Chờ nạp
               </button>
 
-              <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
+              <button className="flex items-center gap-2 text-xs font-medium text-gray-500 transition hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                 Đã nạp
               </button>
 
-              <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-white">
+              <button className="flex items-center gap-2 text-xs font-medium text-gray-500 transition hover:text-gray-900 dark:text-gray-400 dark:hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
                 Thất bại
               </button>

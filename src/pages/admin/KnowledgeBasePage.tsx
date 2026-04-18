@@ -3,7 +3,7 @@ import { type ReactNode, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../components/custom-ui/Breadcrumb";
 import { HiOutlineArrowRight, HiOutlinePlus } from "react-icons/hi";
-import {  FiPlus, FiShield } from "react-icons/fi";
+import { FiPlus, FiShield } from "react-icons/fi";
 
 import { motion } from "framer-motion";
 import { cardContainer, cardItem } from "../../motions/cardMotion";
@@ -43,7 +43,7 @@ export default function KnowledgeBasePage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Kho dữ liệu RAG Core
           </h1>
         </div>
@@ -75,7 +75,7 @@ export default function KnowledgeBasePage() {
           Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="h-72 w-full animate-pulse rounded-2xl bg-white/5"
+              className="h-72 w-full animate-pulse rounded-2xl bg-gray-100 dark:bg-white/5"
             />
           ))
         ) : (
@@ -103,12 +103,12 @@ export default function KnowledgeBasePage() {
             {/* Create New */}
             <a
               href="/dashboard/rag/new"
-              className="group hover:border-primary/50 hover:bg-primary/5 dark:border-border-dark flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 p-8 transition"
+              className="group hover:border-primary/50 hover:bg-primary/5 flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-400 bg-gray-50/30 p-8 transition-all duration-300 dark:border-white/10 dark:bg-transparent"
             >
-              <div className="group-hover:bg-primary/10 group-hover:text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition dark:bg-white/5">
+              <div className="group-hover:bg-primary/10 group-hover:text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-gray-400 transition-all duration-300 dark:bg-white/5">
                 <HiOutlinePlus className="text-3xl" />
               </div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
                 Thêm mới
               </p>
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -164,13 +164,13 @@ function DataSourceCard({
     <motion.div
       variants={cardItem}
       onClick={() => navigate(`/dashboard/rag/${collectionId}`)}
-      className="group dark:border-border-dark relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white/80 backdrop-blur transition-all hover:border-white/20 hover:bg-white/10 dark:bg-white/5"
+      className="group hover:border-primary/50 relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-white/10"
     >
       {/* Body */}
       <div className="relative space-y-5 p-6">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="bg-primary/10 text-primary ring-primary/20 flex h-11 w-11 items-center justify-center rounded-xl ring-1">
+          <div className="bg-primary/10 text-primary ring-primary/20 flex h-11 w-11 items-center justify-center rounded-xl ring-1 transition-transform duration-300 group-hover:scale-110">
             {icon}
           </div>
 
@@ -208,12 +208,12 @@ function DataSourceCard({
       </div>
 
       {/* Footer */}
-      <div className="dark:border-border-dark relative mt-auto flex items-center justify-between border-t border-gray-100 bg-gray-50/60 px-6 py-4 dark:bg-white/5">
+      <div className="relative mt-auto flex items-center justify-between border-t border-gray-400 bg-gray-50/80 px-6 py-4 dark:border-white/5 dark:bg-white/5">
         <div className="text-xs text-gray-500 dark:text-gray-400">
           {footerLeft}
         </div>
 
-        <div className="text-primary flex items-center gap-1 text-sm font-medium transition group-hover:gap-2">
+        <div className="text-primary flex items-center gap-1 text-[12px] font-medium transition group-hover:gap-2">
           Chi tiết
           <HiOutlineArrowRight className="text-base" />
         </div>

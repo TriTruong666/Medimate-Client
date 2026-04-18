@@ -213,7 +213,7 @@ export function PackageDashboardPage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Quản lý gói
           </h1>
         </div>
@@ -243,19 +243,22 @@ export function PackageDashboardPage() {
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
-                className="h-48 animate-pulse rounded-2xl bg-white/5 opacity-50"
+                className="h-48 animate-pulse rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-white/5"
               />
             ))}
           </div>
         ) : isError ? (
           /* NEW ERROR STATE PATTERN */
           <div className="flex min-h-[400px] flex-col items-center justify-center py-10">
-            <p className="max-w-md text-center text-sm font-medium text-red-500">
+            <div className="mb-4 rounded-full bg-red-100 p-4 text-red-500 dark:bg-red-500/10">
+              <FiPlus className="rotate-45 text-3xl" />
+            </div>
+            <p className="max-w-md text-center text-sm font-medium text-gray-900 dark:text-white">
               {error?.message || "Đã xảy ra lỗi khi tải dữ liệu từ hệ thống"}
             </p>
             <button
               onClick={() => refetch()}
-              className="mt-6 rounded-lg border border-white/5 bg-white/5 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-white/10"
+              className="mt-6 rounded-lg border border-gray-400 bg-white px-6 py-2.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-white/5 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
             >
               Thử lại
             </button>
@@ -276,8 +279,13 @@ export function PackageDashboardPage() {
         ) : (
           /* NEW EMPTY STATE PATTERN (WITH CTA, NO ICON) */
           <div className="flex min-h-[400px] flex-col items-center justify-center py-10 text-center">
-            <h3 className="text-lg font-semibold text-white">Danh sách trống</h3>
-            <p className="mt-2 text-sm text-white/50">
+            <div className="mb-4 rounded-full bg-gray-100 p-4 text-gray-400 dark:bg-white/5">
+              <FiPlus className="text-3xl" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Danh sách trống
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
               Chưa có dữ liệu nào được tìm thấy trong hệ thống
             </p>
             <button
@@ -356,19 +364,19 @@ function PackageComparisonTable({
   ];
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-100 bg-white/80 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
+    <div className="overflow-x-auto rounded-2xl border border-gray-400 bg-white/80 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
       <table className="min-w-full text-sm tabular-nums">
         {/* Header */}
         <thead className="bg-gray-50/50 dark:bg-white/5">
           <tr>
-            <th className="dark:border-border-dark border-r border-gray-100 px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+            <th className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Tính năng / Gói
             </th>
 
             {columns.map((col) => (
               <th
                 key={col.key}
-                className="dark:border-border-dark border-r border-gray-100 px-6 py-4 text-center text-sm font-semibold text-gray-900 dark:text-white"
+                className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-center text-sm font-semibold text-gray-900 dark:text-white"
               >
                 {col.label}
               </th>
@@ -377,14 +385,14 @@ function PackageComparisonTable({
         </thead>
 
         {/* Body */}
-        <tbody className="divide-y divide-gray-100 dark:divide-white/10">
+        <tbody className="divide-y divide-gray-400 dark:divide-white/10">
           {featureRows.map((feature, rowIndex) => (
             <tr
               key={rowIndex}
               className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
             >
               {/* Feature label */}
-              <td className="dark:border-border-dark border-r border-gray-100 px-6 py-4 text-gray-700 dark:text-gray-300">
+              <td className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-gray-700 dark:text-gray-300">
                 {feature.label}
               </td>
 
@@ -394,7 +402,7 @@ function PackageComparisonTable({
                 return (
                   <td
                     key={colIndex}
-                    className="dark:border-border-dark border-r border-gray-100 px-6 py-4 text-center last:border-r-0"
+                    className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-center last:border-r-0"
                   >
                     <TableCell
                       value={
@@ -443,7 +451,7 @@ function TableCell({ value }: { value: TableCellValue }) {
     return <Badge value="Miễn phí" type="success" />;
   }
 
-  return <span className="text-gray-900 dark:text-gray-200">{value}</span>;
+  return <span className="text-gray-900 dark:text-gray-300">{value}</span>;
 }
 
 function PackageGrid({
@@ -538,7 +546,7 @@ function PackageCard({
       </p>
 
       {/* Divider */}
-      <div className="my-4 h-px bg-gray-100 dark:bg-white/5" />
+      <div className="my-4 h-px bg-gray-200 dark:bg-white/5" />
 
       {/* Stats Section */}
       <div className="relative mt-auto flex items-center justify-between">

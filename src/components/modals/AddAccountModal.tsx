@@ -50,7 +50,7 @@ function RoleCard({ icon, title, description, active, onClick }: any) {
         "group cursor-pointer rounded-xl border p-5 transition-all duration-200",
         active
           ? "border-primary bg-primary/10 shadow-primary/20 shadow-lg"
-          : "border-white/10 bg-white/5 hover:border-white/20 hover:bg-white/10",
+          : "border-gray-400 bg-white hover:border-white/20 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10",
       )}
     >
       <div
@@ -58,15 +58,15 @@ function RoleCard({ icon, title, description, active, onClick }: any) {
           "mb-4 flex h-12 w-12 items-center justify-center rounded-xl transition",
           active
             ? "bg-primary text-white"
-            : "bg-white/10 text-gray-300 group-hover:bg-white/20",
+            : "bg-gray-100 text-gray-500 group-hover:bg-gray-200 dark:bg-white/10 dark:text-gray-300 dark:group-hover:bg-white/20",
         )}
       >
         {icon}
       </div>
 
-      <h3 className="mb-1 text-sm font-semibold text-white">{title}</h3>
+      <h3 className="mb-1 text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
 
-      <p className="text-xs text-gray-400">{description}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400">{description}</p>
     </div>
   );
 }
@@ -99,40 +99,7 @@ function RolePhase({
   );
 }
 
-function Input({
-  label,
-  type = "text",
-  className,
-  placeholder = "Input here",
-  disabled = false,
-  value,
-  error,
-  onChange,
-}: {
-  label: string;
-  type?: string;
-  className?: string;
-  placeholder?: string;
-  disabled?: boolean;
-  value?: string;
-  error?: string;
-  onChange?: (value: string) => void;
-}) {
-  return (
-    <div className={clsx("flex flex-col gap-1", className)}>
-      <label className="text-xs text-gray-400">{label}</label>
-      <input
-        type={type}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="input-primary text-[13px]!"
-        value={value ?? ""}
-        onChange={(e) => onChange?.(e.target.value)}
-      />
-      {error && <p className="text-[12px] text-red-500 italic">{error}</p>}
-    </div>
-  );
-}
+import { Input } from "@/components/custom-ui/Input";
 
 function InfoPhase({
   value,
@@ -222,15 +189,15 @@ export function AddAccountModal() {
   };
 
   return (
-    <div className="flex w-150 flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6">
-        <h2 className="text-base font-semibold text-white">
+    <div className="flex w-150 flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">
           Tạo tài khoản mới
         </h2>
 
         <button
           onClick={closeModal}
-          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
         >
           <HiOutlineX className="h-5 w-5" />
         </button>
@@ -248,10 +215,10 @@ export function AddAccountModal() {
       </div>
 
       {phase === "role" && (
-        <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+        <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
           <button
             onClick={closeModal}
-            className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+            className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
           >
             Thoát
           </button>
@@ -263,7 +230,7 @@ export function AddAccountModal() {
               "rounded-lg px-4 py-2 text-sm font-medium transition",
               role
                 ? "bg-primary text-white hover:opacity-90"
-                : "bg-white/10 text-white/40",
+                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-white/40",
             )}
           >
             Tiếp theo
@@ -272,10 +239,10 @@ export function AddAccountModal() {
       )}
 
       {phase === "info" && (
-        <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+        <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
           <button
             onClick={() => setPhase("role")}
-            className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+            className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
           >
             Quay lại
           </button>
@@ -289,7 +256,7 @@ export function AddAccountModal() {
               "rounded-lg px-4 py-2 text-sm font-medium transition",
               role
                 ? "bg-primary text-white hover:opacity-90"
-                : "bg-white/10 text-white/40",
+                : "bg-gray-200 text-gray-400 dark:bg-white/10 dark:text-white/40",
             )}
           >
             Tạo mới

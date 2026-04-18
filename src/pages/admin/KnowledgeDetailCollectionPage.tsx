@@ -99,7 +99,7 @@ export default function KnowledgeDetailCollectionPage() {
           <div className="b-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
             <div>
               <Breadcrumb items={breadcrumbItems} />
-              <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+              <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
                 Chi tiết Collection
               </h1>
             </div>
@@ -171,20 +171,20 @@ function DetailCollectionForm() {
       <form className="w-full space-y-6">
         {/* Name */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-300">
+          <label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
             Tên collection
           </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Ví dụ: Tài liệu pháp lý 2024"
-            className="input-primary w-full"
+            className="focus:border-primary/50 focus:ring-primary/10 w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition outline-none focus:ring-2 dark:border-white/10 dark:bg-white/5 dark:text-white"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-300">
+          <label className="mb-1.5 block text-[13px] font-semibold text-gray-700 dark:text-gray-300">
             Mô tả
           </label>
           <textarea
@@ -192,16 +192,18 @@ function DetailCollectionForm() {
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             placeholder="Mô tả ngắn gọn mục đích collection..."
-            className="input-primary w-full resize-none"
+            className="focus:border-primary/50 focus:ring-primary/10 w-full resize-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 transition outline-none focus:ring-2 dark:border-white/10 dark:bg-white/5 dark:text-white"
           />
         </div>
 
         {/* Documents */}
-        <div className="flex flex-col rounded-xl border border-dashed border-white/10 bg-white/5 px-4 py-3">
-          <div className="flex items-center justify-between">
+        <div className="flex flex-col rounded-2xl border border-dashed border-gray-400 bg-gray-50/30 px-6 py-5 dark:border-white/10 dark:bg-white/5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-medium text-white">Tài liệu đã gán</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                Tài liệu đã gán
+              </p>
+              <p className="mt-0.5 text-xs font-medium text-gray-500 dark:text-white/50">
                 {collection?.documents?.length
                   ? `Tổng cộng ${collection.documents.length} tài liệu`
                   : "Chưa có tài liệu nào"}
@@ -213,7 +215,7 @@ function DetailCollectionForm() {
                 onClick={() => {
                   if (collectionId) openIndexModal(collectionId);
                 }}
-                className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-gray-300 transition hover:bg-white/10 hover:text-white"
+                className="flex items-center gap-1.5 rounded-xl border border-gray-400 bg-white px-4 py-2 text-xs font-bold text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white"
               >
                 <HiOutlinePlus className="text-sm" />
                 Thêm tài liệu
@@ -225,10 +227,10 @@ function DetailCollectionForm() {
                   onClick={() => {
                     if (collectionId) openProcessModal(collectionId);
                   }}
-                  className="border-primary/20 bg-primary/10 text-primary hover:bg-primary/20 flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-medium transition"
+                  className="bg-primary flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold text-white shadow-md transition-all hover:opacity-90 active:scale-95"
                 >
                   <HiOutlinePlay className="text-sm" />
-                  Xử lý RAG / Nạp kiến thức
+                  Nạp kiến thức mới
                 </button>
               )}
             </div>
@@ -241,24 +243,24 @@ function DetailCollectionForm() {
                   key={doc.id}
                   className={`group relative flex items-center justify-between rounded-xl border p-3 transition-all ${
                     doc.status === "indexing"
-                      ? "animate-pulse-slow border-green-500/30 bg-green-500/5"
+                      ? "animate-pulse-slow border-emerald-500/30 bg-emerald-50 dark:border-emerald-500/30 dark:bg-emerald-500/5"
                       : doc.status === "indexed"
-                        ? "border-primary/20 bg-primary/5"
+                        ? "border-primary/30 bg-primary/5 dark:border-primary/20 dark:bg-primary/5"
                         : doc.status === "failed"
-                          ? "border-red-500/30 bg-red-500/5"
-                          : "border-white/10 bg-black/40 hover:border-white/20"
+                          ? "border-red-500/30 bg-red-50 dark:border-red-500/30 dark:bg-red-500/5"
+                          : "hover:border-primary/50 border-gray-300 bg-white dark:border-white/10 dark:bg-black/40 dark:hover:border-white/20"
                   }`}
                 >
                   <div className="flex min-w-0 items-center gap-3">
                     <div
                       className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
                         doc.status === "indexing"
-                          ? "bg-green-500/20"
+                          ? "bg-emerald-100 dark:bg-emerald-500/20"
                           : doc.status === "indexed"
-                            ? "bg-primary/20"
+                            ? "bg-primary/10 dark:bg-primary/20"
                             : doc.status === "failed"
-                              ? "bg-red-500/20"
-                              : "bg-white/5"
+                              ? "bg-red-100 dark:bg-red-500/20"
+                              : "bg-gray-100 dark:bg-white/5"
                       }`}
                     >
                       {doc.type === "pdf" ? (
@@ -273,10 +275,10 @@ function DetailCollectionForm() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p
-                        className={`truncate text-sm font-semibold ${
+                        className={`truncate text-sm font-bold ${
                           doc.status === "failed"
-                            ? "text-red-200"
-                            : "text-white"
+                            ? "text-red-600 dark:text-red-200"
+                            : "text-gray-900 dark:text-white"
                         }`}
                       >
                         {doc.doc_name}
@@ -299,7 +301,7 @@ function DetailCollectionForm() {
                             data: { document_ids: [doc.id] },
                           });
                       }}
-                      className="mr-2 flex h-6 w-6 items-center justify-center rounded-lg bg-red-500/10 text-red-500 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/20 disabled:opacity-30"
+                      className="mr-2 flex h-7 w-7 items-center justify-center rounded-lg bg-red-100 text-red-600 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-200 disabled:opacity-30 dark:bg-red-500/10 dark:text-red-500 dark:hover:bg-red-500/20"
                       title="Gỡ khỏi collection"
                     >
                       <IoClose className="text-lg" />
@@ -356,7 +358,7 @@ function DetailCollectionForm() {
           type="button"
           onClick={handleSubmit}
           disabled={isPending || !name.trim()}
-          className="bg-primary rounded-lg px-6 py-2 text-sm font-medium text-white shadow transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-40"
+          className="bg-primary rounded-xl px-8 py-2.5 text-sm font-bold text-white shadow-lg transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isPending ? "Đang lưu..." : "Lưu thay đổi"}
         </button>
@@ -414,25 +416,27 @@ function IndexingCollectionUI({
     .filter((i) => i !== -1);
 
   return (
-    <div className="flex min-h-[60vh] flex-col items-center text-white">
+    <div className="flex min-h-[60vh] flex-col items-center">
       {/* Title */}
-      <h2 className="text-2xl font-semibold tracking-tight">
+      <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
         Đang nạp dữ liệu
       </h2>
-      <p className="mt-2 max-w-xl text-center text-sm text-white/60">
+      <p className="mt-2 max-w-xl text-center text-sm font-medium text-gray-500 dark:text-white/60">
         {logMessage ||
           "Hệ thống đang xử lý tài liệu và xây dựng dữ liệu tìm kiếm."}
       </p>
 
       {/* Progress */}
-      <div className="mt-8 h-1 w-full max-w-xl rounded-full bg-white/10">
+      <div className="mt-10 h-1.5 w-full max-w-xl rounded-full bg-gray-200 dark:bg-white/10">
         <div
-          className="h-1 rounded-full bg-white/80 transition-[width] duration-700 ease-out"
+          className="bg-primary h-full rounded-full transition-[width] duration-700 ease-out dark:bg-white/80"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      <div className="mt-2 text-xs text-white/40">{progress}% hoàn thành</div>
+      <div className="mt-3 text-[11px] font-bold tracking-widest text-gray-400 uppercase dark:text-white/40">
+        {progress}% hoàn thành
+      </div>
 
       {/* Steps – LEFT ALIGNED */}
       <div className="mt-8 w-full max-w-xl space-y-3 text-sm">
@@ -446,10 +450,10 @@ function IndexingCollectionUI({
               <div
                 className={`flex items-start gap-3 transition-all duration-500 ${
                   isActive
-                    ? "text-white"
+                    ? "text-gray-900 dark:text-white"
                     : isDone
-                      ? "text-white/70"
-                      : "text-white/40"
+                      ? "text-gray-600 dark:text-white/70"
+                      : "text-gray-400 dark:text-white/40"
                 }`}
               >
                 <span
@@ -475,14 +479,13 @@ function IndexingCollectionUI({
       </div>
 
       {/* Footer */}
-      <div className="mt-10 text-xs text-white/40">
-        Bạn có thể đóng cửa sổ này, tiến trình này có thể mất rất nhiều thời
-        gian
+      <div className="mt-10 text-[11px] font-medium text-gray-400 dark:text-white/40">
+        Bạn có thể đóng cửa sổ này, tiến trình này sẽ chạy ngầm
       </div>
-      <div className="mt-5">
+      <div className="mt-8">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10"
+          className="flex items-center gap-2 rounded-xl border border-gray-400 bg-white px-6 py-2.5 text-sm font-bold text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
         >
           Quay lại <IoArrowBack />
         </button>

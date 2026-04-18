@@ -1,5 +1,9 @@
 import { useState, useRef, useEffect } from "react";
-import { HiOutlineChevronLeft, HiOutlineChevronRight, HiChevronDown } from "react-icons/hi";
+import {
+  HiOutlineChevronLeft,
+  HiOutlineChevronRight,
+  HiChevronDown,
+} from "react-icons/hi";
 
 type PaginationProps = {
   page: number;
@@ -42,16 +46,26 @@ export function Pagination({
   };
 
   return (
-    <div className="dark:border-border-dark flex items-center justify-between border border-gray-100 px-4 py-3">
+    <div className="dark:border-border-dark flex items-center justify-between border-x border-b border-gray-400 px-4 py-3 dark:border-white/10 dark:bg-white/5">
       {/* Info & Page Size */}
       <div className="flex items-center gap-6">
-        <div className="border-r pr-6 dark:border-white/10 border-gray-100 hidden sm:flex items-center gap-4">
+        <div className="hidden items-center gap-4 border-r border-gray-100 pr-6 sm:flex dark:border-white/10">
           <span className="text-xs text-gray-500 dark:text-white/60">
-            Tổng <span className="text-white font-medium">{total}</span> bản ghi
+            Tổng{" "}
+            <span className="font-medium text-gray-900 dark:text-white">
+              {total}
+            </span>{" "}
+            bản ghi
           </span>
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            Trang <span className="font-medium text-white">{page}</span> /{" "}
-            <span className="font-medium">{totalPages}</span>
+            Trang{" "}
+            <span className="font-medium text-gray-900 dark:text-white">
+              {page}
+            </span>{" "}
+            /{" "}
+            <span className="font-medium text-gray-900 dark:text-gray-200">
+              {totalPages}
+            </span>
           </span>
         </div>
       </div>
@@ -63,19 +77,22 @@ export function Pagination({
           onClick={() => onPageChange?.(page - 1)}
           className={`inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
             page === 1
-              ? "dark:border-white/5 cursor-not-allowed text-gray-600 opacity-50"
-              : "dark:border-white/10 border-gray-200 text-gray-300 hover:bg-white/5 hover:border-white/20 active:scale-95"
+              ? "cursor-not-allowed border-gray-200 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
+              : "border-gray-400 text-gray-600 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:text-gray-300 dark:hover:border-white/20 dark:hover:bg-white/5"
           } `}
         >
           <HiOutlineChevronLeft className="text-sm" />
           Trước
         </button>
 
-        <div className="flex items-center gap-1.5 mx-1">
+        <div className="mx-1 flex items-center gap-1.5">
           {getPageNumbers().map((p, idx) => {
             if (p === "...") {
               return (
-                <span key={`dots-${idx}`} className="px-1 text-gray-500 text-xs">
+                <span
+                  key={`dots-${idx}`}
+                  className="px-1 text-xs text-gray-500"
+                >
                   ...
                 </span>
               );
@@ -88,8 +105,8 @@ export function Pagination({
                 onClick={() => onPageChange?.(p as number)}
                 className={`flex h-9 w-9 items-center justify-center rounded-xl text-xs font-bold transition-all ${
                   active
-                    ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_rgba(var(--primary-rgb),0.3)]"
-                    : "dark:border-white/10 border-gray-100 text-gray-400 hover:bg-white/5 hover:text-white hover:border-white/20"
+                    ? "border-primary/30 bg-primary/10 text-primary border shadow-sm"
+                    : "border border-gray-400 text-gray-500 hover:bg-gray-50 hover:text-gray-900 dark:border-white/10 dark:text-gray-400 dark:hover:border-white/20 dark:hover:bg-white/5 dark:hover:text-white"
                 }`}
               >
                 {p}
@@ -103,8 +120,8 @@ export function Pagination({
           onClick={() => onPageChange?.(page + 1)}
           className={`inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
             page === totalPages
-              ? "dark:border-white/5 cursor-not-allowed text-gray-600 opacity-50"
-              : "dark:border-white/10 border-gray-200 text-gray-300 hover:bg-white/5 hover:border-white/20 active:scale-95"
+              ? "cursor-not-allowed border-gray-200 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
+              : "border-gray-400 text-gray-600 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:text-gray-300 dark:hover:border-white/20 dark:hover:bg-white/5"
           } `}
         >
           Sau

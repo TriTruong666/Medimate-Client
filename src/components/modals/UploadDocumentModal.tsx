@@ -31,19 +31,21 @@ function UploadItem({
   onRemove: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 p-3 transition hover:bg-white/6">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/15 text-blue-400">
+    <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white p-3 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/6">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/15 text-blue-500">
         {getFileIcon(file.name)}
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="truncate text-sm font-medium text-white">{file.name}</p>
+        <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+          {file.name}
+        </p>
         <p className="text-xs text-gray-400">{formatFileSize(file.size)}</p>
       </div>
 
       <button
         onClick={onRemove}
-        className="rounded-lg p-1 text-gray-400 transition hover:text-red-400"
+        className="rounded-lg p-1 text-gray-400 transition hover:text-red-500"
       >
         <HiOutlineTrash />
       </button>
@@ -87,15 +89,15 @@ export function UploadDocumentModal() {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6 shadow-sm">
-        <h2 className="text-base font-semibold tracking-tight text-white">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 shadow-sm dark:border-white/10">
+        <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
           Tải lên tài liệu
         </h2>
 
         <button
           onClick={closeModal}
-          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
         >
           <HiOutlineX className="h-5 w-5" />
         </button>
@@ -113,18 +115,18 @@ export function UploadDocumentModal() {
 
         <div
           onClick={() => fileInputRef.current?.click()}
-          className="group flex h-40 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/15 bg-white/2 transition hover:bg-white/5"
+          className="group flex h-40 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-gray-400 bg-gray-50/50 transition hover:bg-gray-100 dark:border-white/15 dark:bg-white/2 dark:hover:bg-white/5"
         >
           <div className="flex flex-col items-center">
-            <div className="bg-primary/15 text-primary mb-3 rounded-full p-3 transition-transform group-hover:scale-110">
+            <div className="bg-primary/10 text-primary mb-3 rounded-full p-3 transition-transform group-hover:scale-110">
               <HiOutlineCloudUpload className="text-3xl" />
             </div>
 
-            <p className="text-sm text-gray-300">
-              <span className="text-primary font-medium">Nhấn để tải lên</span>{" "}
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-primary font-bold">Nhấn để tải lên</span>{" "}
               hoặc kéo thả
             </p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               PDF, DOCX, DOC, TXT, JSON, MD
             </p>
           </div>
@@ -132,7 +134,7 @@ export function UploadDocumentModal() {
 
         {selectedFiles.length > 0 && (
           <div className="space-y-3">
-            <h3 className="text-xs font-semibold tracking-wide text-gray-400 uppercase">
+            <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-white/40">
               Tài liệu đã chọn ({selectedFiles.length})
             </h3>
 
@@ -149,10 +151,10 @@ export function UploadDocumentModal() {
         )}
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+      <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
         <button
           onClick={closeModal}
-          className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+          className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
         >
           Thoát
         </button>
@@ -160,7 +162,7 @@ export function UploadDocumentModal() {
         <button
           onClick={handleUpload}
           disabled={selectedFiles.length === 0 || uploadMutation.isPending}
-          className="bg-primary flex items-center gap-2 rounded-lg px-6 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
         >
           {uploadMutation.isPending ? "Đang tải lên..." : "Tải lên"}
         </button>

@@ -76,18 +76,18 @@ export function ConsultationSessionDetailModal({ open, session, onClose }: Props
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 12 }}
             onClick={(event) => event.stopPropagation()}
-            className="z-10 w-full max-w-4xl rounded-2xl border border-white/10 bg-neutral-900/95 shadow-2xl"
+            className="z-10 w-full max-w-4xl rounded-2xl border border-gray-400 bg-white transition-all duration-300 shadow-2xl dark:border-white/10 dark:bg-neutral-900/95"
           >
-            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-4 md:px-6">
+            <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-4 md:px-6 dark:border-white/10">
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-white">Chi tiết session tư vấn</h2>
-                <p className="mt-1 truncate text-xs text-gray-400">{session.memberName || "Bệnh nhân"}</p>
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Chi tiết session tư vấn</h2>
+                <p className="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">{session.memberName || "Bệnh nhân"}</p>
               </div>
               <div className="ml-3 flex items-center gap-2">
                 <Badge value={sessionStatus} type={sessionStatusType} />
                 <button
                   onClick={onClose}
-                  className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+                  className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
                 >
                   <HiOutlineX className="h-5 w-5" />
                 </button>
@@ -113,13 +113,13 @@ export function ConsultationSessionDetailModal({ open, session, onClose }: Props
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">Ghi chú hệ thống</p>
-                  <p className="mt-2 text-sm text-white/85">{session.note || "--"}</p>
+                <div className="rounded-2xl border border-gray-300 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+                  <p className="text-[11px] font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">Ghi chú hệ thống</p>
+                  <p className="mt-2 text-sm text-gray-700 dark:text-white/85">{session.note || "--"}</p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">Ghi chú bác sĩ</p>
-                  <p className="mt-2 text-sm text-white/85">{session.doctorNote || "--"}</p>
+                <div className="rounded-2xl border border-gray-300 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+                  <p className="text-[11px] font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">Ghi chú bác sĩ</p>
+                  <p className="mt-2 text-sm text-gray-700 dark:text-white/85">{session.doctorNote || "--"}</p>
                 </div>
               </div>
             </div>
@@ -138,9 +138,9 @@ function MetaCard({
   value: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">{label}</p>
-      <p className="mt-2 text-sm font-semibold text-white/90 tabular-nums">
+    <div className="rounded-2xl border border-gray-300 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+      <p className="text-[11px] font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">{label}</p>
+      <p className="mt-2 text-sm font-bold text-gray-900 tabular-nums dark:text-white/90">
         {value}
       </p>
     </div>
@@ -157,10 +157,10 @@ function JoinStatusCard({
   const active = !!joined;
 
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-      <p className="text-[11px] font-medium tracking-wide text-gray-400 uppercase">Trạng thái tham gia</p>
-      <p className="mt-2 text-sm font-semibold text-white/90">{role}</p>
-      <p className={`mt-1 text-xs font-medium ${active ? "text-emerald-300" : "text-white/55"}`}>
+    <div className="rounded-2xl border border-gray-300 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
+      <p className="text-[11px] font-bold tracking-wide text-gray-500 uppercase dark:text-gray-400">Trạng thái tham gia</p>
+      <p className="mt-2 text-sm font-bold text-gray-900 dark:text-white/90">{role}</p>
+      <p className={`mt-1 text-xs font-bold ${active ? "text-emerald-600 dark:text-emerald-300" : "text-gray-400 dark:text-white/55"}`}>
         {toJoinedText(active)}
       </p>
     </div>

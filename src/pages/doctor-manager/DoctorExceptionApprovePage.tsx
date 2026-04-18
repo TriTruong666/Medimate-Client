@@ -141,7 +141,7 @@ export default function DoctorExceptionApprovePage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             {getPageTitle(activeView)}
           </h1>
         </div>
@@ -158,7 +158,7 @@ export default function DoctorExceptionApprovePage() {
           loadingMessage="Đang tải danh sách lịch nghỉ..."
           emptyTitle="Chưa có dữ liệu"
           emptyMessage="Không tìm thấy lịch nghỉ theo bộ lọc hiện tại."
-          tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
+          tbodyClassName="dark:divide-border-dark divide-y divide-gray-400 bg-white/50 dark:bg-transparent"
           pagination={{
             page,
             pageSize,
@@ -173,21 +173,28 @@ export default function DoctorExceptionApprovePage() {
           {rows.map((item, index) => (
             <tr
               key={item.exceptionId || `${item.doctorId}-${item.date}-${index}`}
-              className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+              className="transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
             >
-              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-sm text-gray-900 dark:text-white">
-                {item.doctorName}
+              <td className="border-r border-gray-400 p-4 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-medium shadow-sm dark:bg-white/10 dark:text-white">
+                    {(item.doctorName || "B").charAt(0)}
+                  </div>
+                  <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                    {item.doctorName}
+                  </span>
+                </div>
               </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-sm text-gray-800 dark:text-gray-200">
+              <td className="border-r border-gray-400 p-4 text-sm font-medium text-gray-700 dark:border-white/10 dark:text-gray-200">
                 {formatDateLabel(item.date)}
               </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center text-sm text-gray-800 dark:text-gray-200">
+              <td className="border-r border-gray-400 p-4 text-center text-sm font-medium text-gray-700 dark:border-white/10 dark:text-gray-200">
                 {toTimeLabel(item.startTime)} - {toTimeLabel(item.endTime)}
               </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-sm text-gray-700 dark:text-gray-300">
+              <td className="border-r border-gray-400 p-4 text-sm font-medium text-gray-600 dark:border-white/10 dark:text-gray-300">
                 {item.reason || "Không có lý do"}
               </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+              <td className="border-r border-gray-400 p-4 text-center dark:border-white/10">
                 {item.isAvailableOverride ? (
                   <Badge type="success" value="Đã duyệt" />
                 ) : (
@@ -200,12 +207,12 @@ export default function DoctorExceptionApprovePage() {
                     type="button"
                     onClick={() => void handleApprove(item)}
                     disabled={approveMutation.isPending}
-                    className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-300 transition hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded-lg bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 dark:hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Duyệt
                   </button>
                 ) : (
-                  <span className="text-xs text-gray-400">-</span>
+                  <span className="text-xs text-gray-400 italic">N/A</span>
                 )}
               </td>
             </tr>

@@ -9,14 +9,14 @@ export function PreviewPdfModal() {
   if (!fileUrl) return null;
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl">
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-4 shadow-sm">
-        <h2 className="truncate text-base font-semibold tracking-tight text-white">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-4 shadow-sm dark:border-white/10">
+        <h2 className="truncate text-base font-bold tracking-tight text-gray-900 dark:text-white">
           Xem trước
         </h2>
         <button
           onClick={closeModal}
-          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
         >
           <HiOutlineX className="h-5 w-5" />
         </button>

@@ -135,7 +135,7 @@ export default function CertificateApprovePage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             {pageTitle}
           </h1>
         </div>
@@ -159,20 +159,16 @@ function CertificateTable({
   const [selectedRow, setSelectedRow] = useState<CertificateRow | null>(null);
   const reviewDocumentMutation = useReviewDoctorDocument();
 
-  const {
-    data,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useDoctorDocuments({
+  const { data, isLoading, isError, error, refetch } = useDoctorDocuments({
     pageNumber: page,
     pageSize,
     status: activeStatus,
   });
 
   const rows = useMemo(() => {
-    return (data?.items ?? []).map(toCertificateRow).filter((row) => row.status === activeStatus);
+    return (data?.items ?? [])
+      .map(toCertificateRow)
+      .filter((row) => row.status === activeStatus);
   }, [data?.items, activeStatus]);
 
   const total = data?.totalCount ?? 0;
@@ -227,7 +223,7 @@ function CertificateTable({
         loadingMessage="Đang tải danh sách chứng chỉ..."
         emptyTitle="Chưa có dữ liệu"
         emptyMessage="Không tìm thấy chứng chỉ nào trong trạng thái này."
-        tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
+        tbodyClassName="dark:divide-border-dark divide-y divide-gray-400 bg-white/50 dark:bg-transparent"
         pagination={{
           page,
           pageSize,
@@ -242,76 +238,76 @@ function CertificateTable({
         {rows.map((row) => (
           <tr
             key={row.id}
-            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+            className="transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
           >
-                {/* 1. Thông tin bác sĩ */}
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="from-primary/20 to-primary/5 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br text-sm font-bold shadow-inner">
-                      {row.doctorName.charAt(4)}
-                    </div>
-                    <div className="flex min-w-0 flex-col">
-                      <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
-                        {row.doctorName}
-                      </span>
-                      <span className="text-primary truncate text-[12px] font-medium">
-                        {row.specialty}
-                      </span>
-                    </div>
-                  </div>
-                </td>
+            {/* 1. Thông tin bác sĩ */}
+            <td className="border-r border-gray-400 p-4 dark:border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-medium shadow-sm dark:bg-white/10 dark:text-white">
+                  {row.doctorName.charAt(0)}
+                </div>
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                    {row.doctorName}
+                  </span>
+                  <span className="text-primary truncate text-[11px] font-medium">
+                    {row.specialty}
+                  </span>
+                </div>
+              </div>
+            </td>
 
-                {/* 2. Thông tin chứng chỉ */}
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                  <div className="flex flex-col">
-                    <span
-                      className="mb-1 line-clamp-1 text-sm font-semibold text-gray-800 dark:text-gray-200"
-                      title={row.certName}
-                    >
-                      {row.certName}
-                    </span>
-                    <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-                      <span>
-                        <span className="font-medium text-gray-600 dark:text-gray-300">
-                          Người duyệt:
-                        </span>{" "}
-                        {row.reviewedBy}
-                      </span>
-                      <span className="h-1 w-1 rounded-full bg-gray-300 dark:bg-gray-600"></span>
-                      <span>
-                        <span className="font-medium text-gray-600 dark:text-gray-300">
-                          Duyệt lúc:
-                        </span>{" "}
-                        {row.reviewedDate}
-                      </span>
-                    </div>
-                    <div className="mt-2 text-[11px] text-gray-400 italic dark:text-gray-500">
-                      Đã nộp: {formatRelativeTime(row.submitDate)}
-                    </div>
-                  </div>
-                </td>
+            {/* 2. Thông tin chứng chỉ */}
+            <td className="border-r border-gray-400 p-4 dark:border-white/10">
+              <div className="flex flex-col">
+                <span
+                  className="mb-1 line-clamp-1 text-sm font-semibold text-gray-900 dark:text-gray-100"
+                  title={row.certName}
+                >
+                  {row.certName}
+                </span>
+                <div className="flex items-center gap-2.5 text-[11px] text-gray-500 dark:text-gray-400">
+                  <span>
+                    <span className="font-medium text-gray-600 dark:text-gray-300">
+                      Người duyệt:
+                    </span>{" "}
+                    {row.reviewedBy}
+                  </span>
+                  <span className="h-0.5 w-0.5 rounded-full bg-gray-300 dark:bg-gray-600"></span>
+                  <span>
+                    <span className="font-medium text-gray-600 dark:text-gray-300">
+                      Duyệt:
+                    </span>{" "}
+                    {row.reviewedDate}
+                  </span>
+                </div>
+                <div className="mt-1.5 text-[10px] font-medium text-gray-400 italic dark:text-gray-500">
+                  Nộp: {formatRelativeTime(row.submitDate)}
+                </div>
+              </div>
+            </td>
 
-                {/* 3. Trạng thái */}
-                <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  {row.status === "Pending" ? (
-                    <Badge type="warning" value="Chờ duyệt" />
-                  ) : row.status === "Approved" ? (
-                    <Badge type="success" value="Đã duyệt" />
-                  ) : (
-                    <Badge type="error" value="Bị từ chối" />
-                  )}
-                </td>
+            {/* 3. Trạng thái */}
+            <td className="border-r border-gray-400 p-4 text-center dark:border-white/10">
+              {row.status === "Pending" ? (
+                <Badge type="warning" value="Chờ duyệt" />
+              ) : row.status === "Approved" ? (
+                <Badge type="success" value="Đã duyệt" />
+              ) : (
+                <Badge type="error" value="Bị từ chối" />
+              )}
+            </td>
 
-                {/* 4. Thao tác */}
-                <td className="p-4 text-center">
-                  <Tooltip content="Xem file gốc chứng chỉ">
-                    <IconAction
-                      icon={<FiEye />}
-                      onClick={() => setSelectedRow(row)}
-                      className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary-light"
-                    />
-                  </Tooltip>
-                </td>
+            {/* 4. Thao tác */}
+            <td className="p-4 text-center">
+              <Tooltip content="Xem chi tiết & duyệt chứng chỉ">
+                <IconAction
+                  icon={<FiEye />}
+                  onClick={() => setSelectedRow(row)}
+                  className="text-primary hover:bg-primary/10 dark:text-primary-light"
+                />
+              </Tooltip>
+            </td>
           </tr>
         ))}
       </DataTableShell>

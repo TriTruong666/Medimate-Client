@@ -83,15 +83,15 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
   };
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-xl max-w-lg w-full">
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6 shadow-sm">
-        <h2 className="text-base font-semibold text-white">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white max-w-lg w-full shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 shadow-sm dark:border-white/10">
+        <h2 className="text-base font-semibold text-gray-900 dark:text-white">
           Thêm tài liệu vào Collection
         </h2>
 
         <button
           onClick={closeModal}
-          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
         >
           <HiOutlineX className="h-5 w-5" />
         </button>
@@ -100,12 +100,12 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
       <div className="space-y-5 p-6 pb-2">
         {/* Search */}
         <div className="relative">
-          <HiOutlineSearch className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" />
+          <HiOutlineSearch className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Tìm kiếm tài liệu..."
-            className="h-9 w-full rounded-xl border border-white/10 bg-white/5 pr-4 pl-11 text-sm text-gray-200 backdrop-blur-md transition-all placeholder:text-gray-500 hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-2 focus:ring-white/10 focus:outline-none"
+            className="input-primary h-10 w-full pl-11"
           />
         </div>
 
@@ -113,7 +113,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
         <div className="flex items-center justify-between px-1">
            <button 
              onClick={() => handleSelectAll(!isAllSelected)}
-             className="text-xs font-medium text-primary hover:underline transition-all"
+             className="text-xs font-bold text-primary hover:underline transition-all"
            >
              {isAllSelected ? "Bỏ chọn tất cả" : "Chọn tất cả đang tải"}
            </button>
@@ -121,7 +121,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
              <button
                onClick={() => fetchNextPage()}
                disabled={isFetchingNextPage}
-               className="text-xs font-medium text-gray-400 hover:text-white transition-all disabled:opacity-50"
+               className="text-xs font-bold text-gray-500 hover:text-gray-900 transition-all disabled:opacity-50 dark:text-gray-400 dark:hover:text-white"
              >
                {isFetchingNextPage ? "Đang tải..." : "Tải thêm"}
              </button>
@@ -132,10 +132,10 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
           {isLoading ? (
             <div className="flex h-32 flex-col items-center justify-center gap-2">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-                <p className="text-xs text-gray-400">Đang tải tài liệu...</p>
+                <p className="text-xs text-gray-500 font-medium">Đang tải tài liệu...</p>
             </div>
           ) : allLoadedDocs.length === 0 ? (
-            <div className="flex h-32 flex-col items-center justify-center text-gray-500">
+            <div className="flex h-32 flex-col items-center justify-center text-gray-400 font-medium">
                <FiFileText className="text-3xl mb-2" />
                <p className="text-sm">Không tìm thấy tài liệu</p>
             </div>
@@ -149,27 +149,27 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
                   onClick={() => toggleDoc(doc.id)}
                   className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2 text-left transition ${
                     isSelected
-                      ? "border-primary bg-primary/10"
-                      : "border-white/10 bg-white/3 hover:bg-white/5"
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-gray-300 bg-gray-50 hover:bg-white dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/5"
                   }`}
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-white">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-200 text-gray-900 dark:bg-white/10 dark:text-white dark:border-transparent">
                     {doc.type === "pdf" ? (
-                      <AiOutlineFilePdf className="text-xl text-red-400" />
+                      <AiOutlineFilePdf className="text-xl text-red-500" />
                     ) : (
-                      <FiFileText className="text-xl text-blue-400" />
+                      <FiFileText className="text-xl text-blue-500" />
                     )}
                   </div>
   
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">
+                    <p className="truncate text-sm font-bold text-gray-900 dark:text-white">
                       {doc.doc_name}
                     </p>
-                    <p className="text-xs text-gray-400">{formatFileSize(doc.file_size)}</p>
+                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{formatFileSize(doc.file_size)}</p>
                   </div>
   
                   {isSelected && (
-                    <HiOutlineCheck className="text-primary text-lg" />
+                    <HiOutlineCheck className="text-primary text-xl font-bold" />
                   )}
                 </button>
               );
@@ -178,15 +178,15 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between border-t border-white/10 bg-white/5 p-6 shadow-sm">
-        <p className="text-xs text-gray-400">
+      <div className="flex items-center justify-between border-t border-gray-400 bg-white/5 p-6 shadow-sm dark:border-white/10">
+        <p className="text-xs font-bold text-gray-500 dark:text-gray-400">
           Đã chọn {selectedIds.length} tài liệu
         </p>
 
         <div className="flex gap-3">
           <button
             onClick={closeModal}
-            className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+            className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
           >
             Huỷ
           </button>
@@ -194,7 +194,7 @@ export function IndexDocumentModal({ onConfirm }: AddDocumentModalProps) {
           <button
             onClick={handleConfirm}
             disabled={selectedIds.length === 0 || isAssigning}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-white/10 disabled:text-white/40"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
           >
             {isAssigning ? "Đang gán..." : "Thêm tài liệu"}
           </button>

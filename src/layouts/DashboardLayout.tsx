@@ -7,6 +7,7 @@ import {
 } from "react-icons/hi";
 import { FiSettings } from "react-icons/fi";
 import medimateLogo from "../assets/medimate-logo.png";
+import medimateLogoLight from "../assets/medimate-logo-light.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState, useRef } from "react";
 import Lenis from "lenis";
@@ -52,7 +53,7 @@ export default function DashboardLayout() {
   }, []);
 
   return (
-    <div className="relative bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
+    <div className="relative bg-white font-sans text-gray-800 transition-colors duration-300 dark:bg-[#050505] dark:text-gray-100">
       <WelcomeLoading />
       <ModalContainer />
       <ToastContainer />
@@ -122,18 +123,18 @@ function Navbar() {
   }, [charIndex, isDeleting, index, placeholderTexts]);
 
   return (
-    <header className="dark:border-border-dark sticky top-0 z-10 flex items-center justify-between border-b border-transparent p-4 md:p-6">
+    <header className="dark:border-border-dark sticky top-0 z-10 flex items-center justify-between border-b border-gray-300 p-4 md:p-6">
       <div className="flex flex-1 items-center gap-4">
         <div className="group relative w-112.5 max-md:block">
           <HiSearch
             size={18}
-            className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-white"
+            className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900 dark:group-focus-within:text-white"
           />
 
           <input
             type="text"
             placeholder={placeholder}
-            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 pr-4 pl-11 text-sm text-gray-200 backdrop-blur-md transition-all placeholder:text-gray-500 hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-2 focus:ring-white/10 focus:outline-none"
+            className="focus:border-primary/50 focus:ring-primary/10 h-11 w-full rounded-xl border border-gray-400 bg-white pr-4 pl-11 text-sm text-gray-900 transition-all placeholder:text-gray-400 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:bg-white/10 dark:focus:border-white/20 dark:focus:bg-white/10 dark:focus:ring-white/10"
           />
         </div>
       </div>
@@ -157,16 +158,21 @@ function Sidebar() {
   });
 
   return (
-    <aside className="fixed z-20 hidden max-h-screen w-64 flex-col justify-between overflow-y-hidden border-r border-white/5 bg-[#050505] md:relative md:flex">
+    <aside className="fixed z-20 hidden max-h-screen w-64 flex-col justify-between overflow-y-hidden border-r border-gray-300 bg-white md:relative md:flex dark:border-white/5 dark:bg-[#050505]">
       <div className="flex flex-col overflow-auto [&::-webkit-scrollbar]:w-1!">
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-5 select-none">
           <img
-            src={medimateLogo}
-            className="flex h-9 w-9 items-center justify-center rounded-lg"
+            src={medimateLogoLight}
+            className="h-9 w-9 rounded-lg dark:hidden"
             alt="Logo"
           />
-          <span className="text-lg font-semibold tracking-tight text-white">
+          <img
+            src={medimateLogo}
+            className="hidden h-9 w-9 rounded-lg dark:block"
+            alt="Logo"
+          />
+          <span className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
             Medimate
           </span>
         </div>
@@ -194,7 +200,7 @@ function Sidebar() {
       </div>
 
       {/* Bottom */}
-      <div className="space-y-1 border-t border-white/5 px-3 py-4">
+      <div className="space-y-1 border-t border-gray-300 px-3 py-4 dark:border-white/5">
         <SidebarItem
           to="/dashboard/settings"
           icon={<FiSettings />}
@@ -218,7 +224,7 @@ function CollapsibleNavItem({ item }: { item: RouteConfig }) {
     <div className="">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+        className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
       >
         <div className="flex items-center gap-3">
           {Icon && <Icon className="text-lg" />}
@@ -282,9 +288,10 @@ export function SidebarItem({
       to={to}
       end={exact}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${isActive
-          ? "bg-white/10 text-white shadow-inner"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
+          isActive
+            ? "bg-primary/10 text-primary shadow-inner dark:bg-white/10 dark:text-white"
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >
@@ -305,9 +312,10 @@ export function SubItem({ label, to }: SubItemProps) {
       to={to}
       end
       className={({ isActive }) =>
-        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${isActive
-          ? "bg-white/10 text-white"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
+        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+          isActive
+            ? "bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
+            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >
