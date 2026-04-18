@@ -10,14 +10,22 @@ export function VideoPlayer({ videoTrack, className }: VideoPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (videoTrack && containerRef.current) {
-      videoTrack.play(containerRef.current);
+    const container = containerRef.current;
+    if (!videoTrack || !container) return;
+
+    // Attach track to DOM container
+    try {
+      videoTrack.play(container);
+    } catch (err) {
+      console.warn("[VideoPlayer] play() error:", err);
     }
+
     return () => {
-      // Unbind when unmounting
-      if (videoTrack) {
+      // Chỉ detach player khỏi DOM — KHÔNG gọi track.stop() hay track.close()
+      // Lifecycle thật sự của track được quản lý bởi useAgoraVideoCall hook
+      try {
         videoTrack.stop();
-      }
+      } catch { /* ignore */ }
     };
   }, [videoTrack]);
 

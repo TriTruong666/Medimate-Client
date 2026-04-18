@@ -6,7 +6,7 @@ import {
   useJoinConsultationSession,
 } from "@/hooks/data/useSessionHooks";
 import { getVideoCallToken } from "@/apis/session.service";
-import { useAgoraVideoCall } from "@/hooks/agora/useAgoraVideoCall";
+import { useVideoCallContext } from "@/contexts/VideoCallContext";
 import { VideoPlayer } from "@/components/agora/VideoPlayer";
 import {
   FiMic,
@@ -14,6 +14,7 @@ import {
   FiVideo,
   FiVideoOff,
   FiPhoneOff,
+  FiMinimize2,
 } from "react-icons/fi";
 import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/custom-ui/Spinner";
@@ -44,8 +45,10 @@ export default function DoctorVideoCallPage() {
     typeof tokenRes?.data === "string" ? tokenRes.data : tokenRes?.data?.token;
 
   const {
-    initAgora,
-    leaveCall,
+    isActive,
+    startCall,
+    endCall,
+    setMinimize,
     isConnected,
     error: agoraError,
     localVideoTrack,
@@ -54,49 +57,60 @@ export default function DoctorVideoCallPage() {
     isVideoEnabled,
     toggleAudio,
     toggleVideo,
-  } = useAgoraVideoCall({
-    appId: appId || "",
-    channelName: sessionId || "",
-    token: token || "",
-    uid: 0,
-  });
+  } = useVideoCallContext();
 
-  // Automatically start call when token is retrieved
+  // Dùng ref để tránh joinSession thay đổi identity gây re-trigger effect
+  const joinSessionRef = useRef(joinSession);
+  joinSessionRef.current = joinSession;
+
+  // Khi token sẵn sàng + appId + sessionId, nếu chưa active thì startCall
   useEffect(() => {
+    if (!token || !appId || !sessionId || isActive) return;
+
     let unmounted = false;
-    
-    if (token && appId && sessionId) {
-      const startConnection = async () => {
-        try {
-          if (!hasJoinedBeRef.current) {
-            hasJoinedBeRef.current = true;
-            await joinSession(sessionId);
-          }
-          if (unmounted) return;
-          await initAgora();
-        } catch (e) {
-          console.error("Lỗi khi join:", e);
+
+    const startConnection = async () => {
+      try {
+        if (!hasJoinedBeRef.current) {
+          hasJoinedBeRef.current = true;
+          await joinSessionRef.current(sessionId);
         }
-      };
-      
-      startConnection();
-    }
-    
+        if (unmounted) return;
+        await startCall(sessionId, appId, token);
+      } catch (e) {
+        console.error("[VideoCall] Lỗi khi join:", e);
+      }
+    };
+
+    startConnection();
+
     return () => {
       unmounted = true;
-      leaveCall();
     };
-  }, [token, appId, sessionId, joinSession, initAgora, leaveCall]);
+  }, [token, appId, sessionId, isActive, startCall]);
+
+  // Luôn maximize khi trang này mount; tự động minimize khi unmount (chuyển tab)
+  useEffect(() => {
+    setMinimize(false);
+    return () => {
+      setMinimize(true);
+    };
+  }, [setMinimize]);
 
   const handleLeaveCall = async () => {
     try {
-      await leaveCall();
-      toast.success("Đã rời phòng khám", "Bạn có thể quay lại phòng bất cứ lúc nào khi phiên khám vẫn đang mở.");
+      await endCall();
+      toast.success("Đã kết thúc cuộc gọi", "Phiên khám video đã dừng.");
       navigate("/dashboard/doctor-support");
     } catch {
       toast.error("Lỗi", "Không thể thoát bình thường, có thể đã mất kết nối.");
       navigate("/dashboard/doctor-support");
     }
+  };
+
+  const handleMinimize = () => {
+    setMinimize(true);
+    navigate("/dashboard/doctor-support");
   };
 
   if (!appId) {
@@ -226,11 +240,20 @@ export default function DoctorVideoCallPage() {
           )}
         </button>
 
+        {/* Minimize Call */}
+        <button
+          onClick={handleMinimize}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-500/20 text-blue-500 transition-all duration-300 hover:bg-blue-500/30"
+          title="Thu nhỏ cửa sổ"
+        >
+          <FiMinimize2 className="text-xl" />
+        </button>
+
         {/* Leave Call */}
         <button
           onClick={handleLeaveCall}
           className="group flex h-16 w-16 items-center justify-center rounded-full bg-rose-600 font-bold shadow-lg shadow-rose-600/30 transition-all hover:bg-rose-700 hover:shadow-rose-600/50"
-          title="Rời phòng tạm thời"
+          title="Kết thúc cuộc gọi"
         >
           <FiPhoneOff className="text-2xl text-white transition-transform group-hover:rotate-12" />
         </button>
