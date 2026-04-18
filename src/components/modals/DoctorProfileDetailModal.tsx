@@ -369,7 +369,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
   const [queue, setQueue] = useState<CreateDoctorAvailabilityBody[]>([]);
   const [edits, setEdits] = useState<Record<string, UpdateDoctorAvailabilityBody>>({});
 
-  const availabilities = data ?? [];
+  const availabilities = (data ?? []).filter((item) => item.isActive);
 
   function handleAddToQueue() {
     if (!validateAvailabilitySlot(newSlot)) return;
@@ -482,6 +482,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Bắt đầu</label>
             <input
               type="time"
+              lang="en-GB"
               value={newSlot.startTime}
               onChange={(e) => setNewSlot((prev) => ({ ...prev, startTime: e.target.value }))}
               className="input-primary w-full"
@@ -491,6 +492,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Kết thúc</label>
             <input
               type="time"
+              lang="en-GB"
               value={newSlot.endTime}
               onChange={(e) => setNewSlot((prev) => ({ ...prev, endTime: e.target.value }))}
               className="input-primary w-full"
@@ -580,12 +582,14 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
                   </select>
                   <input
                     type="time"
+                    lang="en-GB"
                     value={draft.startTime}
                     onChange={(e) => patchRowDraft(item, { startTime: e.target.value })}
                     className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   />
                   <input
                     type="time"
+                    lang="en-GB"
                     value={draft.endTime}
                     onChange={(e) => patchRowDraft(item, { endTime: e.target.value })}
                     className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
