@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { FiPaperclip, FiUser } from "react-icons/fi";
 import { HiXMark } from "react-icons/hi2";
 import { IoSend } from "react-icons/io5";
-import { LuCalendar, LuClock } from "react-icons/lu";
+import { LuCalendar, LuClock, LuTimer } from "react-icons/lu";
 import { PATHS } from "@/config/paths";
 import { useChatIdentity, useChatSessionDetails, useChatSessionMessages, useMarkChatSessionMessagesRead, useSendChatSessionMessage } from "@/hooks/data/useChatDoctorHooks";
 import { useCountdown } from "@/hooks/useCountdown";
@@ -72,7 +72,17 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     ? new Date(new Date(startedTime).getTime() + 125 * 60 * 1000).toISOString()
     : expiredAt; // fallback khi chưa load xong sessionDetails
 
-  const { isExpired, displayText: countdownText } = useCountdown(derivedExpiredAt);
+  // Chỉ enforce hết hạn khi đã có đủ thông tin (tránh false-positive khi data đang load)
+  const isDataReady = !!(sessionDetails || cachedSession || expiredAt);
+  const { isExpired: isCountdownExpired, displayText: countdownText } = useCountdown(derivedExpiredAt);
+  // isExpired thực sự chỉ khi data đã sẵn sàng VÀ đồng hồ đã hết
+  const isExpired = isDataReady && isCountdownExpired;
+
+  // Thời gian hết hạn dạng HH:mm để hiển thị trong banner
+  const expiryTimeLabel = derivedExpiredAt
+    ? new Date(derivedExpiredAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false })
+    : null;
+
   const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
   const hasMarkedReadRef = useRef<string | null>(null);
 
@@ -86,8 +96,6 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
       hasMarkedReadRef.current = null;
     });
   }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
-
-  // (cachedSession logic moved up)
 
   // Map đúng field names từ API response thực tế hoặc lấy từ cache dự phòng
   const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || cachedSession?.memberName || cachedSession?.partnerName || "Phòng chat";
@@ -104,11 +112,9 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   // Status badge: chỉ "Hết hạn" khi đồng hồ thực sự hết, không dùng session.status
   const displayStatus = isExpired
     ? "Hết hạn"
-    : sessionDetails?.status === "Ended"
+    : (sessionDetails?.status === "Ended" || sessionDetails?.status === "Processing")
       ? "Đang diễn ra"   // session Ended nhưng chat 125p vẫn còn
-      : sessionDetails?.status === "InProgress"
-        ? "Đang diễn ra"
-        : "Đang kết nối";
+      : "Đang kết nối";
 
   const messageItems = useMemo(() => messages || [], [messages]);
 
@@ -185,11 +191,21 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
               )}
             </div>
 
-            {/* Countdown */}
-            {!isExpired && countdownText && (
-              <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-orange-500/20 px-2 py-1">
-                <span className="text-xs font-semibold text-orange-300">{countdownText}</span>
-              </div>
+            {/* Countdown / Expiry badge */}
+            {isExpired ? (
+              expiryTimeLabel && (
+                <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1">
+                  <LuTimer className="h-3 w-3 text-red-400" />
+                  <span className="text-[10px] font-semibold text-red-400">Hết hạn {expiryTimeLabel}</span>
+                </div>
+              )
+            ) : (
+              countdownText && (
+                <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-orange-500/20 px-2 py-1">
+                  <LuTimer className="h-3 w-3 text-orange-300" />
+                  <span className="text-xs font-semibold text-orange-300">{countdownText}</span>
+                </div>
+              )
             )}
 
             {/* View patient profile button */}
@@ -229,7 +245,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
               }}
             />
           ) : (
-            <ChatThread sessionId={sessionId} messages={messageItems} isExpired={isExpired} />
+            <ChatThread sessionId={sessionId} messages={messageItems} isExpired={isExpired} expiryTimeLabel={expiryTimeLabel} />
           )}
         </div>
       </motion.div>
@@ -250,10 +266,12 @@ function ChatThread({
   sessionId,
   messages,
   isExpired,
+  expiryTimeLabel,
 }: {
   sessionId: string;
   messages: ChatDoctorMessageResponse[];
   isExpired: boolean;
+  expiryTimeLabel: string | null;
 }) {
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -310,8 +328,13 @@ function ChatThread({
         )}
       >
         {isExpired && (
-          <div className="mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-            Hết hạn chat. Bạn chỉ có thể xem lại tin nhắn.
+          <div className="mb-2 flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <LuTimer className="h-3.5 w-3.5 flex-shrink-0 text-red-400" />
+            <span>
+              Phòng chat đã đóng lúc{" "}
+              <span className="font-semibold">{expiryTimeLabel ?? "--:--"}</span>.
+              {" "}Bạn chỉ có thể xem lại tin nhắn.
+            </span>
           </div>
         )}
 

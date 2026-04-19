@@ -49,7 +49,7 @@ export default function DoctorVideoCallPage() {
   const {
     isActive,
     startCall,
-    endCall,
+    leaveChannel,
     setMinimize,
     isConnected,
     error: agoraError,
@@ -108,7 +108,8 @@ export default function DoctorVideoCallPage() {
           console.warn("API End Session failed:", e);
         }
       }
-      await endCall();
+      // Dùng leaveChannel() để rời Agora channel và dọn track
+      await leaveChannel();
       toast.success("Đã kết thúc cuộc gọi", "Phiên khám video đã dừng.");
       navigate("/dashboard/doctor-support", { replace: true });
     } catch (err) {
@@ -180,26 +181,30 @@ export default function DoctorVideoCallPage() {
       )}
 
       {/* Main Video Area */}
-      <div className={`relative flex-1 bg-[#111] ${remoteUsers.length > 1 ? 'flex flex-wrap items-center justify-center gap-4 p-4' : ''}`}>
+      <div className="relative flex-1 overflow-hidden bg-[#111]">
         {remoteUsers.length > 0 ? (
-          remoteUsers.map((user) => (
-            <div
-              key={user.uid}
-              className={`relative overflow-hidden ${
-                remoteUsers.length === 1
-                  ? "h-full w-full"
-                  : "h-[45%] w-full rounded-2xl border border-white/5 shadow-2xl sm:w-[48%]"
-              }`}
-            >
-              <VideoPlayer
-                videoTrack={user.videoTrack}
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute bottom-4 left-4 rounded bg-black/60 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
-                {remoteUsers.length > 1 ? `Đối tác tham gia (${user.uid})` : "Thành viên"}
+          <div className={`flex h-full items-center justify-center ${
+            remoteUsers.length > 1 ? 'flex-wrap gap-4 p-4' : ''
+          }`}>
+            {remoteUsers.map((user) => (
+              <div
+                key={user.uid}
+                className={`relative overflow-hidden rounded-2xl ${
+                  remoteUsers.length === 1
+                    ? "h-full w-full max-h-[70vh] mx-auto"
+                    : "h-[45%] w-full border border-white/5 shadow-2xl sm:w-[48%]"
+                }`}
+              >
+                <VideoPlayer
+                  videoTrack={user.videoTrack}
+                  className="h-full w-full object-contain"
+                />
+                <div className="absolute bottom-4 left-4 rounded bg-black/60 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-md">
+                  {remoteUsers.length > 1 ? `Đối tác tham gia (${user.uid})` : "Thành viên"}
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         ) : (
           <div className="flex h-full flex-col items-center justify-center bg-gray-900/50">
             <div className="mb-4 rounded-full bg-white/5 p-6 shadow-[0_0_30px_rgba(255,255,255,0.05)]">

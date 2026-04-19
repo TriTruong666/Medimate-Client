@@ -13,6 +13,7 @@ interface VideoCallContextValue {
   // Actions
   startCall: (sessionId: string, appId: string, token: string) => Promise<void>;
   endCall: () => Promise<void>;
+  leaveChannel: () => Promise<void>; // Alias của endCall — rời Agora channel
   toggleMinimize: () => void;
   setMinimize: (val: boolean) => void;
 
@@ -58,6 +59,7 @@ export function VideoCallProvider({ children }: { children: ReactNode }) {
         isMinimized,
         startCall,
         endCall,
+        leaveChannel: endCall, // Alias tường minh để dùng ở VideoCallPage
         toggleMinimize,
         setMinimize,
         ...agora,
