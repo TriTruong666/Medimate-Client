@@ -100,7 +100,7 @@ export function PrescriptionSessionModal({
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white">Danh sách đơn thuốc</h3>
                   <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Chỉ phiên tư vấn <span className="text-emerald-600 font-bold dark:text-emerald-400">Đang diễn ra</span> hoặc <span className="text-emerald-600 font-bold dark:text-emerald-400">Đang xử lý</span> mới được tạo đơn mới.
+                    Chỉ phiên tư vấn <span className="text-emerald-600 font-bold dark:text-emerald-400">Đang diễn ra</span> mới được tạo đơn mới.
                   </p>
                 </div>
 
@@ -142,47 +142,47 @@ export function PrescriptionSessionModal({
                     const prescriptionId = getPrescriptionId(item);
 
                     return (
-                    <div
-                      key={prescriptionId || `${item.memberId}-${item.createdDate}`}
-                      className="flex flex-col gap-5 rounded-2xl border border-gray-400 bg-white p-5 shadow-sm transition-all hover:border-primary/30 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="text-sm font-bold text-gray-900 dark:text-white">
-                            Bệnh nhân: {item.memberName || item.memberId}
-                          </p>
-                          <p className="mt-1 text-xs font-bold text-gray-900 dark:text-white">{item.diagnosis}</p>
-                          <p className="mt-1 text-xs font-medium text-gray-500 dark:text-white/50">
-                            {formatDate(item.createdDate)}
-                          </p>
+                      <div
+                        key={prescriptionId || `${item.memberId}-${item.createdDate}`}
+                        className="flex flex-col gap-5 rounded-2xl border border-gray-400 bg-white p-5 shadow-sm transition-all hover:border-primary/30 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-sm font-bold text-gray-900 dark:text-white">
+                              Bệnh nhân: {item.memberName || item.memberId}
+                            </p>
+                            <p className="mt-1 text-xs font-bold text-gray-900 dark:text-white">{item.diagnosis}</p>
+                            <p className="mt-1 text-xs font-medium text-gray-500 dark:text-white/50">
+                              {formatDate(item.createdDate)}
+                            </p>
+                          </div>
+                          <Badge type="info" value={item.status || "Active"} />
                         </div>
-                        <Badge type="info" value={item.status || "Active"} />
-                      </div>
 
-                      <div className="flex items-center justify-between border-t border-gray-100 dark:border-white/5 pt-4">
-                        <p className="text-xs font-bold text-gray-500 dark:text-white/60">
-                          {item.medicines.length} thuốc
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Tooltip content="Xem chi tiết đơn">
-                            <IconAction
-                              icon={<HiOutlineEye />}
-                              disabled={!prescriptionId}
-                              onClick={() => {
-                                if (!prescriptionId) return;
-                                setSelectedPrescriptionId(prescriptionId);
-                              }}
-                            />
-                          </Tooltip>
-                          <Tooltip content="Sửa đơn">
-                            <IconAction
-                              icon={<HiOutlinePencil />}
-                              onClick={() => openEdit(item)}
-                            />
-                          </Tooltip>
+                        <div className="flex items-center justify-between border-t border-gray-100 dark:border-white/5 pt-4">
+                          <p className="text-xs font-bold text-gray-500 dark:text-white/60">
+                            {item.medicines.length} thuốc
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <Tooltip content="Xem chi tiết đơn">
+                              <IconAction
+                                icon={<HiOutlineEye />}
+                                disabled={!prescriptionId}
+                                onClick={() => {
+                                  if (!prescriptionId) return;
+                                  setSelectedPrescriptionId(prescriptionId);
+                                }}
+                              />
+                            </Tooltip>
+                            <Tooltip content="Sửa đơn">
+                              <IconAction
+                                icon={<HiOutlinePencil />}
+                                onClick={() => openEdit(item)}
+                              />
+                            </Tooltip>
+                          </div>
                         </div>
                       </div>
-                    </div>
                     );
                   })}
                 </div>

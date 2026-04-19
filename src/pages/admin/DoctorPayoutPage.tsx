@@ -14,7 +14,6 @@ import type { PendingPayout } from "@/apis/payout.service";
 const breadcrumbItems = [
   { label: "Dashboard", path: "/dashboard" },
   { label: "Giao dịch", path: "/dashboard/transactions" },
-  { label: "Thanh toán bác sĩ" },
 ];
 
 export default function DoctorPayoutPage() {
@@ -36,11 +35,10 @@ export default function DoctorPayoutPage() {
       <div className="mb-6 flex gap-4 border-b border-gray-300 dark:border-white/10">
         <button
           onClick={() => setActiveTab("pending")}
-          className={`relative flex items-center px-2 py-3 text-[13px] font-semibold transition-colors ${
-            activeTab === "pending"
+          className={`relative flex items-center px-2 py-3 text-[13px] font-semibold transition-colors ${activeTab === "pending"
               ? "text-primary"
               : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-          }`}
+            }`}
         >
           <span>Chờ thanh toán</span>
           {activeTab === "pending" && (
@@ -53,11 +51,10 @@ export default function DoctorPayoutPage() {
         </button>
         <button
           onClick={() => setActiveTab("paid")}
-          className={`relative flex items-center px-2 py-3 text-[13px] font-semibold transition-colors ${
-            activeTab === "paid"
+          className={`relative flex items-center px-2 py-3 text-[13px] font-semibold transition-colors ${activeTab === "paid"
               ? "text-primary"
               : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-          }`}
+            }`}
         >
           <span>Đã thanh toán</span>
           {activeTab === "paid" && (
