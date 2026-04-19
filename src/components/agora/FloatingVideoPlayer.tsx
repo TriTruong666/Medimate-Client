@@ -3,6 +3,8 @@ import { useVideoCallContext } from "@/contexts/VideoCallContext";
 import { VideoPlayer } from "./VideoPlayer";
 import { FiMic, FiMicOff, FiVideo, FiVideoOff, FiPhoneOff, FiMaximize2 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import { useEndConsultationSession } from "@/hooks/data/useSessionHooks";
+import { toast } from "@/hooks/useToast";
 
 export function FloatingVideoPlayer() {
   const {
@@ -20,6 +22,7 @@ export function FloatingVideoPlayer() {
   } = useVideoCallContext();
 
   const navigate = useNavigate();
+  const { mutateAsync: completeSession } = useEndConsultationSession();
 
   if (!isActive || !isMinimized) return null;
 
@@ -50,8 +53,14 @@ export function FloatingVideoPlayer() {
 
         {/* Khung hình của mình (Mini local) */}
         {localVideoTrack && (
-          <div className="absolute top-2 right-2 h-20 w-16 overflow-hidden rounded-lg shadow-lg ring-1 ring-white/20">
-            <VideoPlayer videoTrack={localVideoTrack} className="h-full w-full object-cover" />
+          <div className="absolute top-2 right-2 h-20 w-16 overflow-hidden rounded-lg shadow-lg ring-1 ring-white/20 bg-gray-800">
+            {isVideoEnabled ? (
+              <VideoPlayer videoTrack={localVideoTrack} className="h-full w-full object-cover" />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <FiVideoOff className="text-xl text-gray-500" />
+              </div>
+            )}
           </div>
         )}
 
@@ -87,8 +96,11 @@ export function FloatingVideoPlayer() {
 
         <button
           onClick={async () => {
-            await endCall();
-            // Không chuyển trang, chỉ tắt call
+             if (sessionId) {
+               try { await completeSession(sessionId); } catch (e) { console.warn("API End call failed:", e); }
+             }
+             await endCall();
+             toast.success("Đã kết thúc", "Phiên tư vấn video đã hoàn thành.");
           }}
           className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-600 text-white transition hover:bg-rose-700"
           title="Kết thúc gọi"

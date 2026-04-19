@@ -52,27 +52,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     error: messagesError,
     refetch: refetchMessages,
   } = useChatSessionMessages(sessionId);
-  // Backend: chatEndTime = startedAt + 125 phút (60 phút session + 60 phút chat dư)
-  // Chỉ block chat khi đồng hồ này hết — KHÔNG dùng session.status
-  const derivedExpiredAt = sessionDetails?.startedAt
-    ? new Date(new Date(sessionDetails.startedAt).getTime() + 125 * 60 * 1000).toISOString()
-    : expiredAt; // fallback khi chưa load xong sessionDetails
-
-  const { isExpired, displayText: countdownText } = useCountdown(derivedExpiredAt);
-  const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
-  const hasMarkedReadRef = useRef<string | null>(null);
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (!sessionId || !doctorId) return;
-    if (isMessagesLoading || isMessagesError) return;
-    if (hasMarkedReadRef.current === sessionId) return;
-
-    hasMarkedReadRef.current = sessionId;
-    void markReadMutation.mutateAsync().catch(() => {
-      hasMarkedReadRef.current = null;
-    });
-  }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
 
   // Tìm lại trong cache danh sách list session (vì API Detail có thể bị thiếu trả về Date/Time)
   const cachedSessionsQueries = queryClient.getQueriesData<BaseResponse<ChatSessionSummaryResponse[]>>({ queryKey: ["chat-sessions"] });
@@ -85,12 +65,41 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     }
   }
 
+  // Backend quy định chat tồn tại 125 phút từ lúc session startedAt 
+  // (Không phụ thuộc vào session status = Ended hay InProgress)
+  const startedTime = sessionDetails?.startedAt || cachedSession?.startedAt;
+  const derivedExpiredAt = startedTime
+    ? new Date(new Date(startedTime).getTime() + 125 * 60 * 1000).toISOString()
+    : expiredAt; // fallback khi chưa load xong sessionDetails
+
+  const { isExpired, displayText: countdownText } = useCountdown(derivedExpiredAt);
+  const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
+  const hasMarkedReadRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!sessionId || !doctorId) return;
+    if (isMessagesLoading || isMessagesError) return;
+    if (hasMarkedReadRef.current === sessionId) return;
+
+    hasMarkedReadRef.current = sessionId;
+    void markReadMutation.mutateAsync().catch(() => {
+      hasMarkedReadRef.current = null;
+    });
+  }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
+
+  // (cachedSession logic moved up)
+
   // Map đúng field names từ API response thực tế hoặc lấy từ cache dự phòng
   const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || cachedSession?.memberName || cachedSession?.partnerName || "Phòng chat";
   const partnerAvatar = sessionDetails?.memberAvatar || sessionDetails?.partnerAvatar || cachedSession?.memberAvatar || cachedSession?.partnerAvatar || null;
-  const appointmentDate = sessionDetails?.appointmentDate || cachedSession?.appointmentDate;
-  const appointmentTime = sessionDetails?.appointmentTime || cachedSession?.appointmentTime;
   const appointmentId = sessionDetails?.appointmentId || cachedSession?.appointmentId;
+
+  // Derive date and time from startedAt if backend doesn't explicitly return them
+  const fallbackDate = sessionDetails?.startedAt || cachedSession?.startedAt;
+  const computedDateStr = sessionDetails?.appointmentDate || cachedSession?.appointmentDate || fallbackDate;
+  const appointmentTime = sessionDetails?.appointmentTime || cachedSession?.appointmentTime || (
+    fallbackDate ? new Date(fallbackDate).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false }) : null
+  );
 
   // Status badge: chỉ "Hết hạn" khi đồng hồ thực sự hết, không dùng session.status
   const displayStatus = isExpired
@@ -158,12 +167,12 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
                 </span>
               </div>
               {/* Appointment info row */}
-              {(appointmentDate || appointmentTime) && (
+              {(computedDateStr || appointmentTime) && (
                 <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-400">
-                  {appointmentDate && (
+                  {computedDateStr && (
                     <span className="flex items-center gap-1">
                       <LuCalendar className="h-3 w-3" />
-                      {formatAppointmentDate(appointmentDate)}
+                      {formatAppointmentDate(computedDateStr)}
                     </span>
                   )}
                   {appointmentTime && (

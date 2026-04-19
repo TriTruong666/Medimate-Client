@@ -11,7 +11,7 @@ import {
   HiOutlineBriefcase,
   HiOutlineIdentification,
 } from "react-icons/hi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoctorDocumentsByDoctorId } from "@/hooks/data/useDoctorDocumentHooks";
 import { formatRelativeTime } from "@/common/format";
@@ -234,6 +234,56 @@ export function DoctorProfileDetailModal({
         </motion.div>
       </div>
     </AnimatePresence>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CUSTOM 24H TIME INPUT (Tránh trình duyệt ép AM/PM theo hệ điều hành)
+// ─────────────────────────────────────────────────────────────────
+function TimeInput24h({ value, onChange, disabled, className }: { value: string, onChange: (val: string) => void, disabled?: boolean, className?: string }) {
+  const [val, setVal] = useState(value);
+
+  // Sync state if props change (e.g. queue clear)
+  useEffect(() => { setVal(value); }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let input = e.target.value.replace(/[^\d:]/g, ""); // Chỉ cho nhập số và dấu 2 chấm
+    setVal(input);
+  };
+
+  const handleBlur = () => {
+    let v = val.trim();
+    // Tự động thêm dấu : nếu người dùng nhập 4 số liên tiếp (VD: 1530 -> 15:30)
+    if (/^\d{4}$/.test(v)) {
+      v = `${v.substring(0, 2)}:${v.substring(2, 4)}`;
+    }
+    
+    // Validate đúng chuẩn HH:mm
+    if (/^\d{1,2}:\d{1,2}$/.test(v)) {
+      let [h, m] = v.split(":");
+      let hh = Math.min(23, Math.max(0, parseInt(h) || 0));
+      let mm = Math.min(59, Math.max(0, parseInt(m) || 0));
+      let formatted = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+      setVal(formatted);
+      onChange(formatted);
+    } else {
+      // Revert if invalid
+      setVal(value);
+      onChange(value);
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      disabled={disabled}
+      value={val}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      placeholder="08:00"
+      maxLength={5}
+      className={className}
+    />
   );
 }
 
@@ -480,21 +530,17 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Bắt đầu</label>
-            <input
-              type="time"
-              lang="en-GB"
+            <TimeInput24h
               value={newSlot.startTime}
-              onChange={(e) => setNewSlot((prev) => ({ ...prev, startTime: e.target.value }))}
+              onChange={(val) => setNewSlot((prev) => ({ ...prev, startTime: val }))}
               className="input-primary w-full"
             />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Kết thúc</label>
-            <input
-              type="time"
-              lang="en-GB"
+            <TimeInput24h
               value={newSlot.endTime}
-              onChange={(e) => setNewSlot((prev) => ({ ...prev, endTime: e.target.value }))}
+              onChange={(val) => setNewSlot((prev) => ({ ...prev, endTime: val }))}
               className="input-primary w-full"
             />
           </div>
@@ -580,18 +626,14 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-                  <input
-                    type="time"
-                    lang="en-GB"
+                  <TimeInput24h
                     value={draft.startTime}
-                    onChange={(e) => patchRowDraft(item, { startTime: e.target.value })}
+                    onChange={(val) => patchRowDraft(item, { startTime: val })}
                     className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   />
-                  <input
-                    type="time"
-                    lang="en-GB"
+                  <TimeInput24h
                     value={draft.endTime}
-                    onChange={(e) => patchRowDraft(item, { endTime: e.target.value })}
+                    onChange={(val) => patchRowDraft(item, { endTime: val })}
                     className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   />
                   <div className="flex items-center gap-2">
