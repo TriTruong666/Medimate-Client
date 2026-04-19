@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import {
   useJoinConsultationSession,
+  useEndConsultationSession,
 } from "@/hooks/data/useSessionHooks";
 import { getVideoCallToken } from "@/apis/session.service";
 import { useVideoCallContext } from "@/contexts/VideoCallContext";
@@ -26,6 +27,7 @@ export default function DoctorVideoCallPage() {
   const hasJoinedBeRef = useRef(false);
 
   const { mutateAsync: joinSession } = useJoinConsultationSession();
+  const { mutateAsync: completeSession } = useEndConsultationSession();
 
   const appId = import.meta.env.VITE_AGORA_APP_ID;
 
@@ -99,12 +101,19 @@ export default function DoctorVideoCallPage() {
 
   const handleLeaveCall = async () => {
     try {
+      if (sessionId) {
+        try {
+          await completeSession(sessionId);
+        } catch (e) {
+          console.warn("API End Session failed:", e);
+        }
+      }
       await endCall();
       toast.success("Đã kết thúc cuộc gọi", "Phiên khám video đã dừng.");
-      navigate("/dashboard/doctor-support");
-    } catch {
+      navigate("/dashboard/doctor-support", { replace: true });
+    } catch (err) {
       toast.error("Lỗi", "Không thể thoát bình thường, có thể đã mất kết nối.");
-      navigate("/dashboard/doctor-support");
+      navigate("/dashboard/doctor-support", { replace: true });
     }
   };
 
@@ -206,7 +215,7 @@ export default function DoctorVideoCallPage() {
 
         {/* Local Doctor Video Mini Player */}
         <div className="absolute bottom-6 right-6 z-40 aspect-video w-[250px] overflow-hidden rounded-xl bg-gray-900 shadow-2xl ring-2 ring-white/10 transition-transform hover:scale-105 sm:w-[320px]">
-          {localVideoTrack ? (
+          {localVideoTrack && isVideoEnabled ? (
             <VideoPlayer
               videoTrack={localVideoTrack}
               className="h-full w-full object-cover"

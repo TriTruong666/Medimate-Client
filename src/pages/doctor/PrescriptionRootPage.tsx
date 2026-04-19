@@ -138,6 +138,7 @@ export default function PrescriptionRootPage() {
           <div className="grid gap-4 xl:grid-cols-2">
             {sessions.map((session) => {
               const isHighlighted = highlightedSessionId === session.consultanSessionId;
+              const isNow = session.status === "InProgress";
 
               // Chat window = startedAt + 125 phút (backend: session 60p + chat dư 60p + 5p buffer)
               const chatEndAt = session.startedAt
