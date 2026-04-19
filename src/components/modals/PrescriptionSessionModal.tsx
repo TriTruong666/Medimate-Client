@@ -35,7 +35,7 @@ export function PrescriptionSessionModal({
 }: Props) {
   const sessionId = session?.consultanSessionId || "";
   const memberId = session?.memberId || "";
-  const canCreate = session?.status === "InProgress";
+  const canCreate = session?.status === "InProgress" || session?.status === "Processing";
 
   const { data, isLoading, isError, error, refetch } = usePrescriptionsBySession(sessionId);
   const list = useMemo(() => data || [], [data]);
@@ -100,7 +100,7 @@ export function PrescriptionSessionModal({
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 dark:text-white">Danh sách đơn thuốc</h3>
                   <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                    Chỉ phiên tư vấn đang <span className="text-emerald-600 font-bold dark:text-emerald-400">diễn ra</span> mới được tạo đơn mới.
+                    Chỉ phiên tư vấn <span className="text-emerald-600 font-bold dark:text-emerald-400">Đang diễn ra</span> hoặc <span className="text-emerald-600 font-bold dark:text-emerald-400">Đang xử lý</span> mới được tạo đơn mới.
                   </p>
                 </div>
 
