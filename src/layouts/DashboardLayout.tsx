@@ -206,11 +206,11 @@ function Sidebar() {
           icon={<FiSettings />}
           label="Cài đặt"
         />
-        <SidebarItem
+        {/* <SidebarItem
           to="/dashboard/help"
           icon={<HiOutlineQuestionMarkCircle />}
           label="Trợ giúp"
-        />
+        /> */}
       </div>
     </aside>
   );
@@ -288,10 +288,9 @@ export function SidebarItem({
       to={to}
       end={exact}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-          isActive
-            ? "bg-primary/10 text-primary shadow-inner dark:bg-white/10 dark:text-white"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${isActive
+          ? "bg-primary/10 text-primary shadow-inner dark:bg-white/10 dark:text-white"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >
@@ -312,10 +311,9 @@ export function SubItem({ label, to }: SubItemProps) {
       to={to}
       end
       className={({ isActive }) =>
-        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-          isActive
-            ? "bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${isActive
+          ? "bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >
