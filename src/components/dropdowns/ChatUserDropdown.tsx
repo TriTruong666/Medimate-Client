@@ -118,8 +118,12 @@ export function ChatUserDropdown() {
 
 function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
   const [, openPopup] = useAtom(openPopupAtom);
-  const { isExpired } = useCountdown(session.expiredAt);
-  const initials = (session.partnerName || "")
+  const derivedExpiredAt = session.startedAt 
+    ? new Date(new Date(session.startedAt).getTime() + 125 * 60 * 1000).toISOString()
+    : session.expiredAt;
+  
+  const { isExpired } = useCountdown(derivedExpiredAt);
+  const initials = (session.partnerName || session.memberName || "")
     .trim()
     .split(/\s+/)
     .filter(Boolean)
@@ -128,23 +132,23 @@ function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
     .join("")
     .toUpperCase();
 
-  const expiredAtText = session.expiredAt
-    ? formatDateTime(session.expiredAt)
+  const expiredAtText = derivedExpiredAt
+    ? formatDateTime(derivedExpiredAt)
     : null;
 
   return (
     <div
       onClick={() =>
-        openPopup(session.sessionId || "", session.expiredAt || "")
+        openPopup(session.sessionId || session.consultanSessionId || "", derivedExpiredAt || "")
       }
       className={`group relative flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-gray-50 dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 last:border-0`}
     >
       <div className="relative h-10 w-10 shrink-0">
         <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-gray-100 to-gray-50 text-sm font-semibold text-gray-900 dark:from-white/20 dark:to-white/5 dark:text-white">
-          {session.partnerAvatar ? (
+          {session.partnerAvatar || session.memberAvatar ? (
             <img
-              src={session.partnerAvatar}
-              alt={session.partnerName}
+              src={(session.partnerAvatar || session.memberAvatar) as string}
+              alt={session.partnerName || session.memberName || ""}
               className="h-full w-full object-cover"
             />
           ) : (
@@ -158,13 +162,20 @@ function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
       <div className="flex flex-1 flex-col overflow-hidden text-left">
         <div className="flex items-center justify-between">
           <p className="text-[13px] font-medium text-gray-900 group-hover:text-primary transition-colors dark:text-white/90 dark:group-hover:text-white">
-            {session.partnerName}
+            {session.partnerName || session.memberName}
           </p>
           {session.unreadCount ? (
             <span className="ml-2 rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
               {session.unreadCount > 99 ? "99+" : session.unreadCount}
             </span>
           ) : null}
+        </div>
+        
+        {/* Lịch hẹn */}
+        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+          {(session.appointmentDate || session.startedAt) && (
+            <span>{formatDateTime(session.startedAt || session.appointmentDate || "")}</span>
+          )}
         </div>
         <p className="mt-0.5 line-clamp-1 text-xs text-gray-500 dark:text-white/40">
           {isExpired && expiredAtText
