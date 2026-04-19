@@ -9,7 +9,6 @@ import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
-import { Spinner } from "@/components/custom-ui/Spinner";
 import { DoctorSupportDetailPage } from "./DoctorSupportDetailPage";
 import { PrescriptionSessionModal } from "@/components/modals/PrescriptionSessionModal";
 import { PATHS } from "@/config/paths";
@@ -130,11 +129,10 @@ export default function PrescriptionInProgressPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${
-                          isNow
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${isNow
                             ? "bg-primary text-white"
                             : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
-                        }`}
+                          }`}
                       >
                         {isNow && (
                           <div className="bg-primary/30 absolute h-10 w-10 animate-ping rounded-full" />
