@@ -153,16 +153,16 @@ export default function PrescriptionRootPage() {
                     cardRefs.current[session.consultanSessionId] = node;
                   }}
                   className={`group relative flex flex-col gap-4 rounded-2xl border p-5 transition-all hover:shadow-lg ${isHighlighted
-                      ? "border-primary/50 bg-primary/5 ring-primary/20 ring-1 dark:border-red-400/70 dark:bg-red-500/10 dark:ring-red-400/50"
-                      : "border-gray-400 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+                    ? "border-primary/50 bg-primary/5 ring-primary/20 ring-1 dark:border-red-400/70 dark:bg-red-500/10 dark:ring-red-400/50"
+                    : "border-gray-400 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
                     }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div
                         className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${isNow
-                            ? "bg-primary text-white"
-                            : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
+                          ? "bg-primary text-white"
+                          : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
                           }`}
                       >
                         {isNow && (
