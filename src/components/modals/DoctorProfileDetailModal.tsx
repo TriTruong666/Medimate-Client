@@ -678,8 +678,16 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
     try {
       await updateMutation.mutateAsync({
         id: item.exceptionId,
-        data: { ...item, isAvailableOverride: true },
+        data: {
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          reason: item.reason,
+          status: "Approved",
+          isAvailableOverride: item.isAvailableOverride,
+        },
       });
+      await refetch();
     } catch {}
   }
 
@@ -687,10 +695,18 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
     if (!item.exceptionId) return;
     if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này không?")) return;
     try {
-      // Giữ isAvailableOverride = false (trạng thái gốc) — coi như không duyệt
-      // và dùng refetch để làm mới danh sách
+      await updateMutation.mutateAsync({
+        id: item.exceptionId,
+        data: {
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          reason: item.reason,
+          status: "Rejected",
+          isAvailableOverride: item.isAvailableOverride,
+        },
+      });
       await refetch();
-      toast.info("Đã từ chối", "Yêu cầu lịch nghỉ đã bị từ chối.");
     } catch {}
   }
 
