@@ -37,6 +37,7 @@ export function useUpdateSubscriptionStatus() {
           Cancelled: "Huỷ",
           Expired: "Hết hạn",
           Pending: "Chờ xử lý",
+          Inactive: "Không hoạt động"
         };
         const label = statusLabel[variables.payload.status] ?? "Cập nhật";
         toast.success(`${label} thành công`, `Đã cập nhật trạng thái gói gia đình.`);
