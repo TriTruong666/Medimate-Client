@@ -111,7 +111,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
 
   // Status badge: chỉ "Hết hạn" khi đồng hồ thực sự hết, không dùng session.status
   const displayStatus = isExpired
-    ? "Hết hạn"
+    ? ""
     : (sessionDetails?.status === "Ended" || sessionDetails?.status === "Processing")
       ? "Đang diễn ra"   // session Ended nhưng chat 125p vẫn còn
       : "Đang kết nối";

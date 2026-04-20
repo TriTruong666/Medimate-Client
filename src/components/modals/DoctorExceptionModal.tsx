@@ -12,7 +12,70 @@ import { HiOutlineTrash, HiOutlineX } from "react-icons/hi";
 import { toast } from "@/hooks/useToast";
 
 function toApiTime(value: string): string {
-  return value.length === 5 ? `${value}:00` : value;
+  if (!value) return value;
+  // Đã đúng format HH:MM:SS
+  if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value;
+  // HH:MM → HH:MM:00
+  if (/^\d{2}:\d{2}$/.test(value)) return `${value}:00`;
+  
+  const parsed = new Date(`1970-01-01 ${value}`);
+  if (!isNaN(parsed.getTime())) {
+    const h = String(parsed.getHours()).padStart(2, "0");
+    const m = String(parsed.getMinutes()).padStart(2, "0");
+    return `${h}:${m}:00`;
+  }
+  
+  return value.includes(":") && value.split(":").length === 2
+    ? `${value}:00`
+    : value;
+}
+
+// CUSTOM 24H TIME INPUT (Tránh trình duyệt ép AM/PM theo hệ điều hành)
+function TimeInput24h({ value, onChange, disabled, className }: { value: string, onChange: (val: string) => void, disabled?: boolean, className?: string }) {
+  const [val, setVal] = useState(value);
+
+  // Sync state if props change
+  useMemo(() => { setVal(value); }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let input = e.target.value.replace(/[^\d:]/g, ""); // Chỉ cho nhập số và dấu 2 chấm
+    setVal(input);
+  };
+
+  const handleBlur = () => {
+    let v = val.trim();
+    // Tự động thêm dấu : nếu người dùng nhập 4 số liên tiếp (VD: 1530 -> 15:30)
+    if (/^\d{4}$/.test(v)) {
+      v = `${v.substring(0, 2)}:${v.substring(2, 4)}`;
+    }
+    
+    // Validate đúng chuẩn HH:mm
+    if (/^\d{1,2}:\d{1,2}$/.test(v)) {
+      let [h, m] = v.split(":");
+      let hh = Math.min(23, Math.max(0, parseInt(h) || 0));
+      let mm = Math.min(59, Math.max(0, parseInt(m) || 0));
+      let formatted = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+      setVal(formatted);
+      onChange(formatted);
+    } else {
+      // Revert if invalid
+      setVal(value);
+      onChange(value);
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      disabled={disabled}
+      value={val}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      placeholder="08:00"
+      maxLength={5}
+      className={className}
+    />
+  );
 }
 
 function formatDateTimeDisplay(value: string): string {
@@ -81,11 +144,13 @@ export function DoctorExceptionModal({
     }
 
     try {
-      const convertedDate = convertToVNDateISOString(form.date);
-      if (!convertedDate) {
+      const dateObj = new Date(form.date);
+      if (Number.isNaN(dateObj.getTime())) {
         toast.error("Ngày nghỉ không hợp lệ", "Vui lòng chọn lại ngày nghỉ.");
         return;
       }
+      // Send as ISO string representing midnight UTC
+      const convertedDate = dateObj.toISOString();
 
       await createMutation.mutateAsync({
         date: convertedDate,
@@ -157,7 +222,7 @@ export function DoctorExceptionModal({
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Ngày nghỉ</label>
                     <input
-                      type="datetime-local"
+                      type="date"
                       value={form.date}
                       onChange={(event) =>
                         setForm((prev) => ({ ...prev, date: event.target.value }))
@@ -181,11 +246,10 @@ export function DoctorExceptionModal({
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Giờ bắt đầu</label>
-                    <input
-                      type="time"
+                    <TimeInput24h
                       value={form.startTime}
-                      onChange={(event) =>
-                        setForm((prev) => ({ ...prev, startTime: event.target.value }))
+                      onChange={(val) =>
+                        setForm((prev) => ({ ...prev, startTime: val }))
                       }
                       className="input-primary w-full"
                     />
@@ -193,11 +257,10 @@ export function DoctorExceptionModal({
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Giờ kết thúc</label>
-                    <input
-                      type="time"
+                    <TimeInput24h
                       value={form.endTime}
-                      onChange={(event) =>
-                        setForm((prev) => ({ ...prev, endTime: event.target.value }))
+                      onChange={(val) =>
+                        setForm((prev) => ({ ...prev, endTime: val }))
                       }
                       className="input-primary w-full"
                     />

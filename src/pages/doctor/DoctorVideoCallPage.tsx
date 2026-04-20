@@ -101,20 +101,11 @@ export default function DoctorVideoCallPage() {
 
   const handleLeaveCall = async () => {
     try {
-      if (sessionId) {
-        try {
-          await completeSession(sessionId);
-        } catch (e) {
-          console.warn("API End Session failed:", e);
-        }
-      }
       // Dùng leaveChannel() để rời Agora channel và dọn track
       await leaveChannel();
-      toast.success("Đã kết thúc cuộc gọi", "Phiên khám video đã dừng.");
-      navigate("/dashboard/doctor-support", { replace: true });
+      toast.success("Đã ngắt kết nối", "Bạn đã ngắt kết nối cuộc gọi video.");
     } catch (err) {
       toast.error("Lỗi", "Không thể thoát bình thường, có thể đã mất kết nối.");
-      navigate("/dashboard/doctor-support", { replace: true });
     }
   };
 
