@@ -669,9 +669,9 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
   const [view, setView] = useState<"pending" | "approved" | "rejected">("pending");
 
   const items = data ?? [];
-  const pending = items.filter((item) => item.status === "Pending");
-  const approved = items.filter((item) => item.status === "Approved");
-  const rejected = items.filter((item) => item.status === "Rejected");
+  const pending = items.filter((item) => item.status?.toLowerCase() === "pending");
+  const approved = items.filter((item) => item.status?.toLowerCase() === "approved");
+  const rejected = items.filter((item) => item.status?.toLowerCase() === "rejected");
   const visibleItems = view === "pending" ? pending : view === "approved" ? approved : rejected;
 
   async function handleApprove(item: DoctorAvailabilityException) {

@@ -193,11 +193,10 @@ export default function DoctorExceptionApprovePage() {
                 {item.reason || "Không có lý do"}
               </td>
               <td className="border-r border-gray-400 p-4 text-center dark:border-white/10">
-                {item.status === "Approved" ? (
+                {item.status?.toLowerCase() === "approved" ? (
                   <Badge type="success" value="Đã duyệt" />
-                ) : item.status === "Rejected" ? (
-                  // Đổi "danger" thành "error" (hoặc "destructive" tùy vào định nghĩa của component Badge)
-                  <Badge type="error" value="Từ chối" />
+                ) : item.status?.toLowerCase() === "rejected" ? (
+                  <Badge type="error" value="Không duyệt" />
                 ) : (
                   <Badge type="warning" value="Chờ duyệt" />
                 )}
