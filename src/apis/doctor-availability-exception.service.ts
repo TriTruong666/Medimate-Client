@@ -26,6 +26,7 @@ function normalizeException(
     startTime: raw.startTime || "",
     endTime: raw.endTime || "",
     reason: raw.reason || "",
+    status: raw.status || "Pending", // Mặc định là Pending
     isAvailableOverride: raw.isAvailableOverride ?? false,
   };
 }
@@ -108,9 +109,9 @@ export async function getDoctorAvailabilityExceptionsPaged(
     ...payload,
     data: payload.data
       ? {
-          ...payload.data,
-          items: (payload.data.items || []).map(normalizeException),
-        }
+        ...payload.data,
+        items: (payload.data.items || []).map(normalizeException),
+      }
       : null,
   };
 }
