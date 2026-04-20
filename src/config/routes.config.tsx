@@ -328,7 +328,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     roles: ["Doctor"],
     children: [
       {
-        path: PATHS.DASHBOARD.TRANSACTION,
+        path: PATHS.DASHBOARD.TRANSACTION || "/dashboard/transaction/payouts",
         element: <TransactionDashboardPage />,
         label: "Lịch sử giao dịch",
         index: true,

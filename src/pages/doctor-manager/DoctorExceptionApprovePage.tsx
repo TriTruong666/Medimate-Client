@@ -55,9 +55,7 @@ function toTimeLabel(value: string): string {
   return value.slice(0, 5);
 }
 
-function getNowISOString(): string {
-  return new Date().toISOString();
-}
+
 
 export default function DoctorExceptionApprovePage() {
   const { pathname } = useLocation();
@@ -69,8 +67,8 @@ export default function DoctorExceptionApprovePage() {
   // Map activeView -> status string cho API
   const statusFilter =
     activeView === "approved" ? "Approved"
-    : activeView === "past-unapproved" ? "Rejected"
-    : "Pending";
+      : activeView === "past-unapproved" ? "Rejected"
+        : "Pending";
 
   const queryParams = {
     isDescending: true,
