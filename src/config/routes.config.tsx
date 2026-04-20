@@ -302,7 +302,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Giao dịch",
     icon: GrTransaction,
     showInSidebar: true,
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin", "User"],
     children: [
       {
         path: PATHS.DASHBOARD.TRANSACTION,
@@ -311,10 +311,27 @@ export const ROUTES_CONFIG: RouteConfig[] = [
         index: true,
       },
       {
-        path: PATHS.DASHBOARD.PAYOUTS?.ROOT || "/dashboard/transaction/payouts",
+        // path: PATHS.DASHBOARD.PAYOUTS?.ROOT || "/dashboard/transaction/payouts",
+        path: PATHS.DASHBOARD.PAYOUTS?.ROOT,
         element: <DoctorPayoutPage />,
         label: "Thanh toán Bác sĩ",
         roles: ["Admin"],
+      },
+    ],
+  },
+  {
+    path: PATHS.DASHBOARD.TRANSACTION,
+    layout: "dashboard",
+    label: "Giao dịch",
+    icon: GrTransaction,
+    showInSidebar: true,
+    roles: ["Doctor"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.TRANSACTION,
+        element: <TransactionDashboardPage />,
+        label: "Lịch sử giao dịch",
+        index: true,
       },
     ],
   },
