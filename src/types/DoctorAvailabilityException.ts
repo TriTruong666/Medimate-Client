@@ -6,6 +6,7 @@ export interface DoctorAvailabilityException {
   startTime: string;
   endTime: string;
   reason: string;
+  status: string;
   isAvailableOverride: boolean;
 }
 
@@ -22,12 +23,14 @@ export interface UpdateDoctorAvailabilityExceptionBody {
   startTime: string | null;
   endTime: string | null;
   reason: string;
+  status: string;
   isAvailableOverride: boolean;
 }
 
 export interface GetDoctorAvailabilityExceptionsQuery {
   doctorId?: string;
   isAvailableOverride?: boolean;
+  status: string;
   dateFrom?: string;
   dateTo?: string;
   isDescending?: boolean;

@@ -678,8 +678,35 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
     try {
       await updateMutation.mutateAsync({
         id: item.exceptionId,
-        data: { ...item, isAvailableOverride: true },
+        data: {
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          reason: item.reason,
+          status: "Approved",
+          isAvailableOverride: item.isAvailableOverride,
+        },
       });
+      await refetch();
+    } catch {}
+  }
+
+  async function handleReject(item: DoctorAvailabilityException) {
+    if (!item.exceptionId) return;
+    if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này không?")) return;
+    try {
+      await updateMutation.mutateAsync({
+        id: item.exceptionId,
+        data: {
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          reason: item.reason,
+          status: "Rejected",
+          isAvailableOverride: item.isAvailableOverride,
+        },
+      });
+      await refetch();
     } catch {}
   }
 
@@ -723,13 +750,22 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
                 <p className="text-xs italic text-gray-600 dark:text-gray-400">Lý do: {item.reason || "Không có"}</p>
               </div>
               {view === "pending" && (
-                <button
-                  onClick={() => void handleApprove(item)}
-                  disabled={updateMutation.isPending}
-                  className="mt-4 sm:mt-0 flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
-                >
-                  <HiOutlineCheck className="h-4 w-4" /> Duyệt đơn
-                </button>
+                <div className="mt-4 sm:mt-0 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => void handleApprove(item)}
+                    disabled={updateMutation.isPending}
+                    className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                  >
+                    <HiOutlineCheck className="h-4 w-4" /> Duyệt
+                  </button>
+                  <button
+                    onClick={() => void handleReject(item)}
+                    disabled={updateMutation.isPending}
+                    className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                  >
+                    Từ chối
+                  </button>
+                </div>
               )}
             </div>
           ))}
