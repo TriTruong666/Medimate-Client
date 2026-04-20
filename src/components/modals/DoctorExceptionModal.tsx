@@ -3,53 +3,87 @@ import {
   useDeleteDoctorAvailabilityException,
   useDoctorAvailabilityExceptions,
 } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
-import { convertToVNDateISOString, formatDate } from "@/common/format";
+import { formatDate } from "@/common/format";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityException";
 import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { HiOutlineTrash, HiOutlineX } from "react-icons/hi";
 import { toast } from "@/hooks/useToast";
 
+// --- HELPERS ---
+
 function toApiTime(value: string): string {
   if (!value) return value;
-  // Đã đúng format HH:MM:SS
   if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value;
-  // HH:MM → HH:MM:00
   if (/^\d{2}:\d{2}$/.test(value)) return `${value}:00`;
-  
-  const parsed = new Date(`1970-01-01 ${value}`);
-  if (!isNaN(parsed.getTime())) {
-    const h = String(parsed.getHours()).padStart(2, "0");
-    const m = String(parsed.getMinutes()).padStart(2, "0");
-    return `${h}:${m}:00`;
-  }
-  
-  return value.includes(":") && value.split(":").length === 2
-    ? `${value}:00`
-    : value;
+  return value.includes(":") && value.split(":").length === 2 ? `${value}:00` : value;
 }
 
-// CUSTOM 24H TIME INPUT (Tránh trình duyệt ép AM/PM theo hệ điều hành)
+// --- COMPONENT: DATE INPUT MASK (Sửa lỗi nhập ngày 21 thành 02/01) ---
+function DateInputMask({ value, onChange, className }: { value: string, onChange: (val: string) => void, className?: string }) {
+  const [displayVal, setDisplayVal] = useState("");
+
+  useMemo(() => {
+    if (!value) {
+      setDisplayVal("");
+      return;
+    }
+    const parts = value.split("-");
+    if (parts.length === 3) {
+      const [y, m, d] = parts;
+      setDisplayVal(`${d}/${m}/${y}`);
+    }
+  }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let input = e.target.value.replace(/\D/g, "");
+    if (input.length > 8) input = input.substring(0, 8);
+
+    let formatted = input;
+    if (input.length > 4) {
+      formatted = `${input.substring(0, 2)}/${input.substring(2, 4)}/${input.substring(4, 8)}`;
+    } else if (input.length > 2) {
+      formatted = `${input.substring(0, 2)}/${input.substring(2, 4)}`;
+    }
+
+    setDisplayVal(formatted);
+
+    if (input.length === 8) {
+      const d = input.substring(0, 2);
+      const m = input.substring(2, 4);
+      const y = input.substring(4, 8);
+      onChange(`${y}-${m}-${d}`);
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      value={displayVal}
+      onChange={handleChange}
+      placeholder="DD/MM/YYYY"
+      maxLength={10}
+      className={className}
+    />
+  );
+}
+
+// --- COMPONENT: TIME INPUT 24H ---
 function TimeInput24h({ value, onChange, disabled, className }: { value: string, onChange: (val: string) => void, disabled?: boolean, className?: string }) {
   const [val, setVal] = useState(value);
-
-  // Sync state if props change
   useMemo(() => { setVal(value); }, [value]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let input = e.target.value.replace(/[^\d:]/g, ""); // Chỉ cho nhập số và dấu 2 chấm
+    let input = e.target.value.replace(/[^\d:]/g, "");
     setVal(input);
   };
 
   const handleBlur = () => {
     let v = val.trim();
-    // Tự động thêm dấu : nếu người dùng nhập 4 số liên tiếp (VD: 1530 -> 15:30)
     if (/^\d{4}$/.test(v)) {
       v = `${v.substring(0, 2)}:${v.substring(2, 4)}`;
     }
-    
-    // Validate đúng chuẩn HH:mm
     if (/^\d{1,2}:\d{1,2}$/.test(v)) {
       let [h, m] = v.split(":");
       let hh = Math.min(23, Math.max(0, parseInt(h) || 0));
@@ -58,7 +92,6 @@ function TimeInput24h({ value, onChange, disabled, className }: { value: string,
       setVal(formatted);
       onChange(formatted);
     } else {
-      // Revert if invalid
       setVal(value);
       onChange(value);
     }
@@ -87,25 +120,7 @@ function formatDateTimeDisplay(value: string): string {
   })}`;
 }
 
-function validateForm(form: {
-  date: string;
-  startTime: string;
-  endTime: string;
-  reason: string;
-}): boolean {
-  if (!form.date || !form.startTime || !form.endTime || !form.reason.trim()) {
-    toast.error("Thiếu thông tin", "Vui lòng nhập đủ ngày, giờ và lý do nghỉ.");
-    return false;
-  }
-
-  if (form.startTime >= form.endTime) {
-    toast.error("Thời gian không hợp lệ", "Giờ bắt đầu phải sớm hơn giờ kết thúc.");
-    return false;
-  }
-
-  return true;
-}
-
+// --- MAIN MODAL ---
 export function DoctorExceptionModal({
   doctorId,
   open,
@@ -115,8 +130,7 @@ export function DoctorExceptionModal({
   open: boolean;
   onClose: () => void;
 }) {
-  const { data, isLoading, isError, error, refetch } =
-    useDoctorAvailabilityExceptions(doctorId);
+  const { data, isLoading, isError, error, refetch } = useDoctorAvailabilityExceptions(doctorId);
   const createMutation = useCreateDoctorAvailabilityException(doctorId);
   const deleteMutation = useDeleteDoctorAvailabilityException(doctorId);
 
@@ -128,40 +142,36 @@ export function DoctorExceptionModal({
   });
 
   const exceptions = data ?? [];
-
-  const pendingItems = useMemo(
-    () => exceptions.filter((item) => !item.isAvailableOverride),
-    [exceptions],
-  );
-  const approvedItems = useMemo(
-    () => exceptions.filter((item) => item.isAvailableOverride),
-    [exceptions],
-  );
+  const pendingItems = useMemo(() => exceptions.filter((item) => !item.isAvailableOverride), [exceptions]);
+  const approvedItems = useMemo(() => exceptions.filter((item) => item.isAvailableOverride), [exceptions]);
 
   async function handleCreate() {
-    if (!validateForm(form)) {
+    if (!form.date || !form.startTime || !form.endTime || !form.reason.trim()) {
+      toast.error("Thiếu thông tin", "Vui lòng nhập đủ ngày, giờ và lý do nghỉ.");
       return;
     }
 
     try {
-      const dateObj = new Date(form.date);
+      const dateParts = form.date.split("-").map(Number);
+      const [year, month, day] = dateParts;
+      const dateObj = new Date(year, month - 1, day, 0, 0, 0);
+
       if (Number.isNaN(dateObj.getTime())) {
-        toast.error("Ngày nghỉ không hợp lệ", "Vui lòng chọn lại ngày nghỉ.");
+        toast.error("Ngày không hợp lệ", "Vui lòng kiểm tra lại ngày nhập.");
         return;
       }
-      // Send as ISO string representing midnight UTC
-      const convertedDate = dateObj.toISOString();
 
       await createMutation.mutateAsync({
-        date: convertedDate,
+        date: dateObj.toISOString(),
         startTime: toApiTime(form.startTime),
         endTime: toApiTime(form.endTime),
         reason: form.reason.trim(),
         isAvailableOverride: false,
       });
+
       setForm({ date: "", startTime: "08:00", endTime: "12:00", reason: "" });
-    } catch {
-      // Handled by mutation onError
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -170,21 +180,11 @@ export function DoctorExceptionModal({
       toast.error("Không thể xóa", "Lịch nghỉ đã được duyệt không thể xóa.");
       return;
     }
-
-    if (!item.exceptionId) {
-      toast.error("Thiếu ID", "Không tìm thấy ID lịch nghỉ để xóa.");
-      return;
-    }
-
-    if (!window.confirm("Bạn có chắc muốn xóa lịch nghỉ này?")) {
-      return;
-    }
-
+    if (!item.exceptionId) return;
+    if (!window.confirm("Bạn có chắc muốn xóa lịch nghỉ này?")) return;
     try {
       await deleteMutation.mutateAsync(item.exceptionId);
-    } catch {
-      // Handled by mutation onError
-    }
+    } catch { }
   }
 
   return (
@@ -192,86 +192,52 @@ export function DoctorExceptionModal({
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
           <div className="absolute inset-0" onClick={onClose} />
-
           <motion.div
-            data-lenis-prevent
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="z-10 flex h-[90vh] min-h-0 max-h-[820px] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
+            className="z-10 flex h-[90vh] max-h-[820px] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
           >
-            <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-4 md:px-6 dark:border-white/10">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">Lịch nghỉ bác sĩ</h2>
-                <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                  Tạo lịch nghỉ khẩn cấp (chờ duyệt), xem và xóa lịch chưa duyệt.
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
-              >
-                <HiOutlineX className="h-5 w-5" />
-              </button>
+            <div className="flex items-center justify-between border-b border-gray-400 p-4 dark:border-white/10">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">Lịch nghỉ bác sĩ</h2>
+              <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-900"><HiOutlineX className="h-5 w-5" /></button>
             </div>
 
-            <div data-lenis-prevent className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6 thin-scrollbar">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6 thin-scrollbar">
               <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">Thêm lịch nghỉ</h3>
                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Ngày nghỉ</label>
-                    <input
-                      type="date"
+                    <label className="text-[12px] font-medium text-gray-500">Ngày nghỉ (DD/MM/YYYY)</label>
+                    <DateInputMask
                       value={form.date}
-                      onChange={(event) =>
-                        setForm((prev) => ({ ...prev, date: event.target.value }))
-                      }
+                      onChange={(val: string) => setForm((prev) => ({ ...prev, date: val }))}
                       className="input-primary w-full"
                     />
                   </div>
-
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Lý do nghỉ</label>
+                    <label className="text-[12px] font-medium text-gray-500">Lý do nghỉ</label>
                     <input
                       type="text"
                       value={form.reason}
-                      onChange={(event) =>
-                        setForm((prev) => ({ ...prev, reason: event.target.value }))
-                      }
-                      placeholder="Ví dụ: Nghỉ phép cá nhân"
+                      onChange={(e) => setForm((prev) => ({ ...prev, reason: e.target.value }))}
                       className="input-primary w-full"
+                      placeholder="Lý do..."
                     />
                   </div>
-
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Giờ bắt đầu</label>
-                    <TimeInput24h
-                      value={form.startTime}
-                      onChange={(val) =>
-                        setForm((prev) => ({ ...prev, startTime: val }))
-                      }
-                      className="input-primary w-full"
-                    />
+                    <label className="text-[12px] font-medium text-gray-500">Giờ bắt đầu</label>
+                    <TimeInput24h value={form.startTime} onChange={(val: string) => setForm((prev) => ({ ...prev, startTime: val }))} className="input-primary w-full" />
                   </div>
-
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Giờ kết thúc</label>
-                    <TimeInput24h
-                      value={form.endTime}
-                      onChange={(val) =>
-                        setForm((prev) => ({ ...prev, endTime: val }))
-                      }
-                      className="input-primary w-full"
-                    />
+                    <label className="text-[12px] font-medium text-gray-500">Giờ kết thúc</label>
+                    <TimeInput24h value={form.endTime} onChange={(val: string) => setForm((prev) => ({ ...prev, endTime: val }))} className="input-primary w-full" />
                   </div>
                 </div>
-
                 <button
-                  type="button"
                   onClick={() => void handleCreate()}
                   disabled={createMutation.isPending}
-                  className="mt-5 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                  className="mt-5 rounded-lg bg-primary px-4 py-2 text-white disabled:opacity-50"
                 >
                   {createMutation.isPending ? "Đang tạo..." : "Gửi lịch nghỉ chờ duyệt"}
                 </button>
@@ -279,50 +245,19 @@ export function DoctorExceptionModal({
 
               <section className="mt-6 rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
                 <div className="mb-4 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-gray-900 dark:text-white">Danh sách lịch nghỉ</h3>
-                  <button
-                    type="button"
-                    onClick={() => void refetch()}
-                    className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-transparent dark:text-gray-300 dark:hover:bg-white/10"
-                  >
-                    Làm mới
-                  </button>
+                  <h3 className="text-sm font-bold">Danh sách lịch nghỉ</h3>
+                  <button onClick={() => void refetch()} className="text-xs">Làm mới</button>
                 </div>
-
-                {isLoading ? (
-                  <div className="flex h-32 items-center justify-center">
-                    <Spinner size="lg" />
-                  </div>
-                ) : isError ? (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-600 dark:border-red-400/20 dark:bg-red-500/10 dark:text-red-200">
-                    {error?.message || "Không thể tải lịch nghỉ."}
-                  </div>
-                ) : (
+                {isLoading ? <Spinner size="lg" /> : (
                   <div className="space-y-6">
-                    <ExceptionList
-                      title={`Chưa duyệt (${pendingItems.length})`}
-                      items={pendingItems}
-                      onDelete={handleDelete}
-                      showDelete
-                    />
-                    <ExceptionList
-                      title={`Đã duyệt (${approvedItems.length})`}
-                      items={approvedItems}
-                      onDelete={handleDelete}
-                      showDelete={false}
-                    />
+                    <ExceptionList title="Chưa duyệt" items={pendingItems} onDelete={handleDelete} showDelete />
+                    <ExceptionList title="Đã duyệt" items={approvedItems} onDelete={handleDelete} showDelete={false} />
                   </div>
                 )}
               </section>
             </div>
-
-            <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
-              <button
-                onClick={onClose}
-                className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
-              >
-                Đóng
-              </button>
+            <div className="flex justify-end p-6 border-t dark:border-white/10">
+              <button onClick={onClose}>Đóng</button>
             </div>
           </motion.div>
         </div>
@@ -331,53 +266,21 @@ export function DoctorExceptionModal({
   );
 }
 
-function ExceptionList({
-  title,
-  items,
-  onDelete,
-  showDelete,
-}: {
-  title: string;
-  items: DoctorAvailabilityException[];
-  onDelete: (item: DoctorAvailabilityException) => void;
-  showDelete: boolean;
-}) {
+function ExceptionList({ title, items, onDelete, showDelete }: { title: string, items: DoctorAvailabilityException[], onDelete: (i: any) => void, showDelete: boolean }) {
   return (
     <div>
-      <h4 className="mb-3 text-[11px] font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">
-        {title}
-      </h4>
-      {items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-100/50 px-3 py-6 text-center text-xs font-bold text-gray-400 dark:border-white/10 dark:bg-black/20">
-          Chưa có dữ liệu
-        </div>
-      ) : (
+      <h4 className="mb-3 text-[11px] font-bold text-gray-500 uppercase">{title} ({items.length})</h4>
+      {items.length === 0 ? <div className="p-6 text-center text-xs text-gray-400">Chưa có dữ liệu</div> : (
         <div className="space-y-3">
           {items.map((item) => (
-            <div
-              key={item.exceptionId}
-              className="flex flex-col gap-4 rounded-xl border border-gray-300 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between dark:border-white/10 dark:bg-black/20"
-            >
+            <div key={item.exceptionId} className="flex justify-between items-center p-4 bg-white rounded-xl border dark:bg-black/20">
               <div className="text-xs">
-                <p className="text-sm font-bold text-gray-900 dark:text-white">{formatDateTimeDisplay(item.date)}</p>
-                <p className="mt-1 font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                  {item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}
-                </p>
-                <p className="mt-2 font-medium text-gray-600 dark:text-gray-400 italic">Lý do: {item.reason || "Không có"}</p>
+                <p className="font-bold">{formatDateTimeDisplay(item.date)}</p>
+                <p>{item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}</p>
+                <p className="italic">Lý do: {item.reason}</p>
               </div>
-
-              {showDelete ? (
-                <button
-                  type="button"
-                  onClick={() => onDelete(item)}
-                  className="inline-flex items-center gap-2 self-start rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-100 dark:bg-red-500/20 dark:text-red-200 dark:hover:bg-red-500/30"
-                >
-                  <HiOutlineTrash className="h-4 w-4" /> Xóa
-                </button>
-              ) : (
-                <span className="self-start rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-bold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">
-                  Đã duyệt
-                </span>
+              {showDelete && (
+                <button onClick={() => onDelete(item)} className="text-red-600"><HiOutlineTrash /></button>
               )}
             </div>
           ))}
