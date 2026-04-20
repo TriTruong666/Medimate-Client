@@ -7,7 +7,7 @@ import {
   useDoctorAvailabilityExceptionsPaged,
 } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
 import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityException";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const columns: DataTableColumn[] = [
@@ -66,24 +66,18 @@ export default function DoctorExceptionApprovePage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const queryParams = useMemo(() => {
-    const base = {
-      isDescending: true,
-      pageNumber: page,
-      pageSize,
-    };
+  // Map activeView -> status string cho API
+  const statusFilter =
+    activeView === "approved" ? "Approved"
+    : activeView === "past-unapproved" ? "Rejected"
+    : "Pending";
 
-    // Lọc theo Status thay vì isAvailableOverride
-    if (activeView === "approved") {
-      return { ...base, status: "Approved" };
-    }
-
-    if (activeView === "past-unapproved") {
-      return { ...base, status: "Rejected" };
-    }
-
-    return { ...base, status: "Pending" };
-  }, [activeView, page, pageSize]);
+  const queryParams = {
+    isDescending: true,
+    pageNumber: page,
+    pageSize,
+    status: statusFilter,
+  };
 
   const { data, isLoading, isError, error, refetch } = useDoctorAvailabilityExceptionsPaged(queryParams);
   const approveMutation = useApproveDoctorAvailabilityException();
