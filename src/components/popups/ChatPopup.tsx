@@ -110,11 +110,6 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   );
 
   // Status badge: chỉ "Hết hạn" khi đồng hồ thực sự hết, không dùng session.status
-  const displayStatus = isExpired
-    ? "Hết hạn"
-    : (sessionDetails?.status === "Ended" || sessionDetails?.status === "Processing")
-      ? "Đang diễn ra"   // session Ended nhưng chat 125p vẫn còn
-      : "Đang kết nối";
 
   const messageItems = useMemo(() => messages || [], [messages]);
 
@@ -169,7 +164,6 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
                     ? "bg-red-500/20 text-red-400"
                     : "bg-green-500/20 text-green-400"
                 )}>
-                  {displayStatus}
                 </span>
               </div>
               {/* Appointment info row */}

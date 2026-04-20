@@ -15,7 +15,7 @@ export function VideoPlayer({ videoTrack, className }: VideoPlayerProps) {
 
     // Attach track to DOM container
     try {
-      videoTrack.play(container);
+      videoTrack.play(container, { fit: "contain" });
     } catch (err) {
       console.warn("[VideoPlayer] play() error:", err);
     }

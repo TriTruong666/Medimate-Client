@@ -118,10 +118,10 @@ export function ChatUserDropdown() {
 
 function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
   const [, openPopup] = useAtom(openPopupAtom);
-  const derivedExpiredAt = session.startedAt 
+  const derivedExpiredAt = session.startedAt
     ? new Date(new Date(session.startedAt).getTime() + 125 * 60 * 1000).toISOString()
     : session.expiredAt;
-  
+
   const { isExpired } = useCountdown(derivedExpiredAt);
   const initials = (session.partnerName || session.memberName || "")
     .trim()
@@ -170,7 +170,7 @@ function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
             </span>
           ) : null}
         </div>
-        
+
         {/* Lịch hẹn */}
         <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-500 dark:text-gray-400 font-medium">
           {(session.appointmentDate || session.startedAt) && (
