@@ -1,207 +1,246 @@
-import { FiEye, FiAward, FiStar, FiMail, FiPhone } from "react-icons/fi";
+import { useState, useMemo } from "react";
+import { FiEye, FiAward, FiStar, FiMail, FiPhone, FiPlus, FiEdit3, FiTrash2, FiFileText } from "react-icons/fi";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
-import { DataTableShell } from "@/components/custom-ui/DataTableShell";
-import { useClientPagination } from "@/hooks/useClientPagination";
+import { DataTableShell, type DataTableColumn } from "@/components/custom-ui/DataTableShell";
+import {
+  useDoctorContracts,
+  useCreateDoctorContract,
+  useUpdateDoctorContract,
+  useDeleteDoctorContract
+} from "@/hooks/data/useDoctorContractHooks";
+import { formatDate } from "@/common/format";
+import type { DoctorContract, UpdateDoctorContractBody } from "@/types/DoctorContract";
+import { AnimatePresence, motion } from "framer-motion";
 
-// MOCK DATA
-const mockContracts = [
-  {
-    id: "CTR-2026-001",
-    doctorName: "BS. Nguyễn Trí Trường",
-    specialty: "Tim Mạch",
-    experience: "10 Năm",
-    rating: 4.8,
-    phone: "0901234567",
-    email: "truongnt@medimate.com",
-    submitDate: "15/03/2026",
-    status: "active", // active, terminated
-  },
-  {
-    id: "CTR-2026-002",
-    doctorName: "BS. Trần Thanh Tâm",
-    specialty: "Da Liễu",
-    experience: "5 Năm",
-    rating: 4.5,
-    phone: "0918765432",
-    email: "tamtt@medimate.com",
-    submitDate: "12/03/2026",
-    status: "active",
-  },
-  {
-    id: "CTR-2026-003",
-    doctorName: "BS. Lê Phương Trinh",
-    specialty: "Nhi Khoa",
-    experience: "12 Năm",
-    rating: 4.9,
-    phone: "0987123456",
-    email: "trinhlp@medimate.com",
-    submitDate: "05/01/2025",
-    status: "terminated",
-  },
-];
-
-type ColumnKey = "doctor" | "contact" | "contract" | "actions";
-
-type TableColumn = {
-  key: ColumnKey;
-  label: string;
-  width?: string;
-  align?: "left" | "center" | "right";
-};
-
-const columns: TableColumn[] = [
-  { key: "doctor", label: "Thông tin Bác sĩ", width: "w-[30%]" },
-  { key: "contact", label: "Liên hệ", width: "w-[25%]" },
-  { key: "contract", label: "Hợp đồng", width: "w-[30%]" },
+const columns: DataTableColumn[] = [
+  { key: "doctor", label: "Thông tin Bác sĩ", width: "w-[25%]" },
+  { key: "contract", label: "Thời hạn Hợp đồng", width: "w-[25%]" },
+  { key: "status", label: "Trạng thái", width: "w-[15%]", align: "center" },
+  { key: "note", label: "Ghi chú", width: "w-[20%]" },
   { key: "actions", label: "Thao tác", width: "w-[15%]", align: "center" },
 ];
 
 export default function DoctorContractPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingContract, setEditingContract] = useState<DoctorContract | null>(null);
+
+  const { data: contractsData, isLoading, isError, error, refetch } = useDoctorContracts();
+  const deleteMutation = useDeleteDoctorContract();
+
   const breadcrumbItems = [
     { label: "Dashboard", path: "/dashboard" },
-    { label: "Bác sĩ", path: "/dashboard/doctors" },
     { label: "Hợp đồng Bác sĩ" },
   ];
 
+  const handleEdit = (contract: DoctorContract) => {
+    setEditingContract(contract);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa hợp đồng này không?")) {
+      await deleteMutation.mutateAsync(id);
+    }
+  };
+
+  const handleAddNew = () => {
+    setEditingContract(null);
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="page-layout">
-      {/* Header */}
-      <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
-            Lưu trữ Hợp đồng
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Quản lý Hợp đồng Bác sĩ
           </h1>
         </div>
+        <button
+          onClick={handleAddNew}
+          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+        >
+          <FiPlus strokeWidth={3} /> Thêm Hợp đồng
+        </button>
       </div>
 
-      {/* Content - Data Table */}
       <div className="my-8">
-        <ContractTable />
+        <DataTableShell
+          columns={columns}
+          isLoading={isLoading}
+          isError={isError}
+          errorMessage={error?.message}
+          isEmpty={!contractsData || contractsData.length === 0}
+          onRetry={() => void refetch()}
+        >
+          {contractsData?.map((row) => (
+            <tr key={row.contractId} className="transition-colors hover:bg-gray-50/80 dark:hover:bg-white/5">
+              <td className="p-4 border-r dark:border-border-dark">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl font-bold">
+                    <FiFileText />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">Mã: {row.contractId.slice(0, 8)}...</span>
+                    <span className="text-[11px] text-gray-500 uppercase tracking-wider">MediMate Partner</span>
+                  </div>
+                </div>
+              </td>
+              <td className="p-4 border-r dark:border-border-dark text-sm">
+                <div className="flex flex-col gap-1">
+                  <span className="text-gray-600 dark:text-gray-300">Bắt đầu: <b>{formatDate(row.startDate || "")}</b></span>
+                  <span className="text-gray-600 dark:text-gray-300">Kết thúc: <b>{formatDate(row.endDate || "")}</b></span>
+                </div>
+              </td>
+              <td className="p-4 border-r dark:border-border-dark text-center">
+                <Badge
+                  type={row.status === "Active" ? "success" : row.status === "Expired" ? "warning" : "error"}
+                  value={row.status === "Active" ? "Đang hiệu lực" : row.status === "Expired" ? "Hết hạn" : "Đã chấm dứt"}
+                />
+              </td>
+              <td className="p-4 border-r dark:border-border-dark text-sm text-gray-500 italic">
+                {row.note || "Không có ghi chú"}
+              </td>
+              <td className="p-4">
+                <div className="flex items-center justify-center gap-2">
+                  <Tooltip content="Xem File">
+                    <IconAction
+                      icon={<FiEye />}
+                      onClick={() => window.open(row.fileUrl, "_blank")}
+                      className="text-blue-500 hover:bg-blue-50"
+                    />
+                  </Tooltip>
+                  <Tooltip content="Chỉnh sửa">
+                    <IconAction
+                      icon={<FiEdit3 />}
+                      onClick={() => handleEdit(row)}
+                      className="text-amber-500 hover:bg-amber-50"
+                    />
+                  </Tooltip>
+                  <Tooltip content="Xóa">
+                    <IconAction
+                      icon={<FiTrash2 />}
+                      onClick={() => handleDelete(row.contractId)}
+                      className="text-red-500 hover:bg-red-50"
+                    />
+                  </Tooltip>
+                </div>
+              </td>
+            </tr>
+          ))}
+        </DataTableShell>
       </div>
+
+      <ContractFormModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        initialData={editingContract}
+      />
     </div>
   );
 }
 
-function ContractTable() {
-  // Simulate useQuery logic for data_handling_ui
-  const isLoading = false;
-  const isError = false;
-  const data = mockContracts;
-  const {
-    page,
-    pageSize,
-    total,
-    pagedData,
-    handlePageChange,
-    handlePageSizeChange,
-  } = useClientPagination(data, { initialPageSize: 5 });
+// --- MODAL FORM COMPONENT ---
+function ContractFormModal({ isOpen, onClose, initialData }: { isOpen: boolean, onClose: () => void, initialData: DoctorContract | null }) {
+  const createMutation = useCreateDoctorContract();
+  const updateMutation = useUpdateDoctorContract();
+
+  const [form, setForm] = useState({
+    startDate: "",
+    endDate: "",
+    status: "Active",
+    note: "",
+  });
+  const [file, setFile] = useState<File | null>(null);
+
+  // Load data khi edit
+  useMemo(() => {
+    if (initialData) {
+      setForm({
+        startDate: initialData.startDate?.split("T")[0] || "",
+        endDate: initialData.endDate?.split("T")[0] || "",
+        status: initialData.status,
+        note: initialData.note || "",
+      });
+    } else {
+      setForm({ startDate: "", endDate: "", status: "Active", note: "" });
+      setFile(null);
+    }
+  }, [initialData, isOpen]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (initialData) {
+      // Update
+      await updateMutation.mutateAsync({
+        id: initialData.contractId,
+        data: { ...form, file } as UpdateDoctorContractBody
+      });
+    } else {
+      // Create
+      if (!file) return alert("Vui lòng chọn file hợp đồng");
+      await createMutation.mutateAsync({ ...form, file });
+    }
+    onClose();
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <>
-      <DataTableShell
-        columns={columns}
-        isLoading={isLoading}
-        isError={isError}
-        isEmpty={data.length === 0}
-        loadingMessage="Đang tải danh sách hợp đồng..."
-        emptyTitle="Chưa có dữ liệu"
-        emptyMessage="Không tìm thấy hợp đồng y tế nào vào lúc này."
-        tbodyClassName="divide-y divide-gray-400 bg-white/50 dark:divide-border-dark dark:bg-transparent"
-        pagination={{
-          page,
-          pageSize,
-          total,
-          onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
-        }}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-900 border dark:border-white/10"
       >
-        {pagedData.map((row) => (
-          <tr
-            key={row.id}
-            className="transition-colors hover:bg-gray-50/80 dark:hover:bg-white/5"
-          >
-                {/* 1. Thông tin bác sĩ */}
-                <td className="border-r border-gray-400 p-4 dark:border-border-dark">
-                  <div className="flex items-center gap-3">
-                    <div className="from-primary/20 to-primary/5 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-linear-to-br text-sm font-bold shadow-inner">
-                      {row.doctorName.charAt(4)}
-                    </div>
-                    <div className="flex min-w-0 flex-col">
-                      <span className="mb-0.5 truncate text-sm font-semibold text-gray-900 dark:text-white">
-                        {row.doctorName}
-                      </span>
-                      <span className="text-primary mb-1 truncate text-[12px] font-medium">
-                        {row.specialty}
-                      </span>
-                      <div className="flex gap-2 text-[10px]">
-                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                          <FiAward className="text-amber-500" />{" "}
-                          {row.experience}
-                        </span>
-                        <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400">
-                          <FiStar className="text-yellow-400" /> {row.rating}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
+        <h2 className="text-xl font-bold mb-4">{initialData ? "Cập nhật Hợp đồng" : "Thêm Hợp đồng mới"}</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500">Ngày bắt đầu</label>
+              <input type="date" value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} className="input-primary" required />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-gray-500">Ngày kết thúc</label>
+              <input type="date" value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} className="input-primary" required />
+            </div>
+          </div>
 
-                {/* 2. Contact Info */}
-                <td className="border-r border-gray-400 p-4 dark:border-border-dark">
-                  <div className="flex flex-col space-y-2 text-xs">
-                    <p className="flex items-center gap-1.5 text-gray-600 dark:text-gray-300">
-                      <FiPhone className="text-gray-400" /> {row.phone}
-                    </p>
-                    <p
-                      className="pointer-events-auto flex items-center gap-1.5 truncate text-gray-600 dark:text-gray-300"
-                      title={row.email}
-                    >
-                      <FiMail className="text-gray-400" /> {row.email}
-                    </p>
-                  </div>
-                </td>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500">Trạng thái</label>
+            <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="input-primary">
+              <option value="Active">Đang hiệu lực</option>
+              <option value="Expired">Hết hạn</option>
+              <option value="Terminated">Đã chấm dứt</option>
+            </select>
+          </div>
 
-                {/* 3. Contract Info & Status */}
-                <td className="border-r border-gray-400 p-4 dark:border-border-dark">
-                  <div className="flex flex-col text-xs">
-                    <p className="mb-1 text-gray-500 dark:text-gray-400">
-                      Ký ngày:{" "}
-                      <span className="font-medium text-gray-800 dark:text-gray-200">
-                        {row.submitDate}
-                      </span>
-                    </p>
-                    <p className="mb-2 text-gray-500 dark:text-gray-400">
-                      Mã HĐ:{" "}
-                      <span className="font-monospace text-gray-800 dark:text-gray-200">
-                        {row.id}
-                      </span>
-                    </p>
-                    <div className="mt-1 w-fit">
-                      {row.status === "active" ? (
-                        <Badge type="success" value="Đang hiệu lực" />
-                      ) : (
-                        <Badge type="error" value="Đã chấm dứt" />
-                      )}
-                    </div>
-                  </div>
-                </td>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500">File hợp đồng (PDF/Ảnh)</label>
+            <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="text-sm border p-2 rounded-xl w-full" required={!initialData} />
+          </div>
 
-                {/* 4. Thao tác */}
-                <td className="p-4 text-center">
-                  <Tooltip content="Mở trình xem Hợp Đồng gốc">
-                    <IconAction
-                      icon={<FiEye />}
-                      className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary-light"
-                    />
-                  </Tooltip>
-                </td>
-          </tr>
-        ))}
-      </DataTableShell>
-    </>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-semibold text-gray-500">Ghi chú</label>
+            <textarea value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} className="input-primary h-20 resize-none" placeholder="Nhập ghi chú nếu có..." />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl">Hủy</button>
+            <button
+              type="submit"
+              disabled={createMutation.isPending || updateMutation.isPending}
+              className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg disabled:opacity-50"
+            >
+              {createMutation.isPending || updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
   );
 }
