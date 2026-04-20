@@ -190,7 +190,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
               expiryTimeLabel && (
                 <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1">
                   <LuTimer className="h-3 w-3 text-red-400" />
-                  <span className="text-[10px] font-semibold text-red-400">Hết hạn {expiryTimeLabel}</span>
+                  <span className="text-[10px] font-semibold text-red-400">Hết hạn</span>
                 </div>
               )
             ) : (

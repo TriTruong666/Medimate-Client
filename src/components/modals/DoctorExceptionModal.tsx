@@ -154,7 +154,7 @@ export function DoctorExceptionModal({
     try {
       const dateParts = form.date.split("-").map(Number);
       const [year, month, day] = dateParts;
-      const dateObj = new Date(year, month - 1, day, 0, 0, 0);
+      const dateObj = new Date(Date.UTC(year, month - 1, day, 0, 0, 0));
 
       if (Number.isNaN(dateObj.getTime())) {
         toast.error("Ngày không hợp lệ", "Vui lòng kiểm tra lại ngày nhập.");

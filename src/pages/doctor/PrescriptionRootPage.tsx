@@ -252,7 +252,7 @@ export default function PrescriptionRootPage() {
                         onClick={() => handleOpenSessionModal(session)}
                         className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
                       >
-                        Xem đơn thuốc
+                        Xem
                       </button>
                     ) : (
                       <button
@@ -260,7 +260,7 @@ export default function PrescriptionRootPage() {
                         onClick={() => handleOpenSessionModal(session)}
                         className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
                       >
-                        Mở đơn thuốc
+                        Tạo đơn thuốc
                       </button>
                     )}
                   </div>
