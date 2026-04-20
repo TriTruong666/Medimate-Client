@@ -7,7 +7,7 @@ import {
   useDoctorAvailabilityExceptionsPaged,
 } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
 import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityException";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const columns: DataTableColumn[] = [
@@ -66,24 +66,18 @@ export default function DoctorExceptionApprovePage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const queryParams = useMemo(() => {
-    const base = {
-      isDescending: true,
-      pageNumber: page,
-      pageSize,
-    };
+  // Map activeView -> status string cho API
+  const statusFilter =
+    activeView === "approved" ? "Approved"
+    : activeView === "past-unapproved" ? "Rejected"
+    : "Pending";
 
-    // Lọc theo Status thay vì isAvailableOverride
-    if (activeView === "approved") {
-      return { ...base, status: "Approved" };
-    }
-
-    if (activeView === "past-unapproved") {
-      return { ...base, status: "Rejected" };
-    }
-
-    return { ...base, status: "Pending" };
-  }, [activeView, page, pageSize]);
+  const queryParams = {
+    isDescending: true,
+    pageNumber: page,
+    pageSize,
+    status: statusFilter,
+  };
 
   const { data, isLoading, isError, error, refetch } = useDoctorAvailabilityExceptionsPaged(queryParams);
   const approveMutation = useApproveDoctorAvailabilityException();
@@ -193,11 +187,10 @@ export default function DoctorExceptionApprovePage() {
                 {item.reason || "Không có lý do"}
               </td>
               <td className="border-r border-gray-400 p-4 text-center dark:border-white/10">
-                {item.status === "Approved" ? (
+                {item.status?.toLowerCase() === "approved" ? (
                   <Badge type="success" value="Đã duyệt" />
-                ) : item.status === "Rejected" ? (
-                  // Đổi "danger" thành "error" (hoặc "destructive" tùy vào định nghĩa của component Badge)
-                  <Badge type="error" value="Từ chối" />
+                ) : item.status?.toLowerCase() === "rejected" ? (
+                  <Badge type="error" value="Không duyệt" />
                 ) : (
                   <Badge type="warning" value="Chờ duyệt" />
                 )}

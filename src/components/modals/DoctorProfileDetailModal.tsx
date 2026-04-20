@@ -666,12 +666,13 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
 function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
   const { data, isLoading, isError, error, refetch } = useDoctorAvailabilityExceptions(doctorId);
   const updateMutation = useUpdateDoctorAvailabilityException(doctorId);
-  const [view, setView] = useState<"pending" | "approved">("pending");
+  const [view, setView] = useState<"pending" | "approved" | "rejected">("pending");
 
   const items = data ?? [];
-  const pending = items.filter((item) => !item.isAvailableOverride);
-  const approved = items.filter((item) => item.isAvailableOverride);
-  const visibleItems = view === "pending" ? pending : approved;
+  const pending = items.filter((item) => item.status?.toLowerCase() === "pending");
+  const approved = items.filter((item) => item.status?.toLowerCase() === "approved");
+  const rejected = items.filter((item) => item.status?.toLowerCase() === "rejected");
+  const visibleItems = view === "pending" ? pending : view === "approved" ? approved : rejected;
 
   async function handleApprove(item: DoctorAvailabilityException) {
     if (!item.exceptionId) return;
@@ -729,6 +730,14 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
             }`}
           >
             Đã duyệt ({approved.length})
+          </button>
+          <button
+            onClick={() => setView("rejected")}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              view === "rejected" ? "bg-white text-primary shadow-sm dark:bg-primary dark:text-white" : "text-gray-400"
+            }`}
+          >
+            Từ chối ({rejected.length})
           </button>
         </div>
         <button onClick={() => void refetch()} className="text-xs font-medium text-primary hover:opacity-80 transition-all">Làm mới</button>
