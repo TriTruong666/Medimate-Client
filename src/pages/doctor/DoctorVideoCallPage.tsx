@@ -25,6 +25,7 @@ export default function DoctorVideoCallPage() {
   const navigate = useNavigate();
   
   const hasJoinedBeRef = useRef(false);
+  const isIntentionalLeaveRef = useRef(false);
 
   const { mutateAsync: joinSession } = useJoinConsultationSession();
   const { mutateAsync: completeSession } = useEndConsultationSession();
@@ -67,7 +68,7 @@ export default function DoctorVideoCallPage() {
 
   // Khi token sẵn sàng + appId + sessionId, nếu chưa active thì startCall
   useEffect(() => {
-    if (!token || !appId || !sessionId || isActive) return;
+    if (!token || !appId || !sessionId || isActive || isIntentionalLeaveRef.current) return;
 
     let unmounted = false;
 
@@ -101,11 +102,14 @@ export default function DoctorVideoCallPage() {
 
   const handleLeaveCall = async () => {
     try {
+      isIntentionalLeaveRef.current = true;
       // Dùng leaveChannel() để rời Agora channel và dọn track
       await leaveChannel();
       toast.success("Đã ngắt kết nối", "Bạn đã ngắt kết nối cuộc gọi video.");
+      navigate("/dashboard/doctor-support", { replace: true });
     } catch (err) {
       toast.error("Lỗi", "Không thể thoát bình thường, có thể đã mất kết nối.");
+      navigate("/dashboard/doctor-support", { replace: true });
     }
   };
 
