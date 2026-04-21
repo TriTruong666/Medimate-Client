@@ -71,14 +71,19 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     }
   }
 
-  // Backend quy định chat tồn tại 125 phút từ lúc session startedAt 
-  // (Không phụ thuộc vào session status = Ended hay InProgress)
   const startedTime = sessionDetails?.startedAt || cachedSession?.startedAt;
   const status = sessionDetails?.status || cachedSession?.status;
 
-  const derivedExpiredAt = startedTime
-    ? new Date(new Date(startedTime).getTime() + 125 * 60 * 1000).toISOString()
-    : expiredAt; // fallback khi chưa load xong sessionDetails
+  // Lấy chatExpiredAt từ message cuối cùng/đầu tiên do Backend trả về
+  const firstMessageWithExpiry = messages?.find(m => m.chatExpiredAt);
+  
+  let derivedExpiredAt = expiredAt; // fallback
+  if (firstMessageWithExpiry?.chatExpiredAt) {
+    derivedExpiredAt = firstMessageWithExpiry.chatExpiredAt;
+  } else if (startedTime) {
+    // Nếu hệ thống cũ chưa update field chatExpiredAt, fallback về tính 125 phút
+    derivedExpiredAt = new Date(new Date(startedTime).getTime() + 125 * 60 * 1000).toISOString();
+  }
 
   // Truyền ngày rất xa để hook đếm ngược không trả về expired true nếu truyền null/undefined
   const { isExpired: isCountdownExpired, displayText: rawCountdownText } = useCountdown(derivedExpiredAt || "9999-12-31T23:59:59Z");
@@ -92,11 +97,9 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
       isExpired = isCountdownExpired;
     } else {
       // Nếu không có mốc thời gian rõ ràng, chỉ hết hạn nếu status là Ended
-      return
+      isExpired = status === "Ended" || status === "Completed";
     }
   }
-
-  // Thời gian hết hạn dạng HH:mm để hiển thị trong banner
   const expiryTimeLabel = derivedExpiredAt
     ? new Date(derivedExpiredAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false })
     : null;
@@ -441,7 +444,8 @@ function ChatThread({
 function ChatMessageItem({ message }: { message: ChatDoctorMessageResponse }) {
   const isMine = message.senderType === 2;
   const body = message.content?.trim() || (message.attachmentUrl ? "Tệp đính kèm" : "");
-  const timeLabel = formatMessageTime(message.createdAt);
+  // Backend update: sử dụng sendAt thay cho createdAt
+  const timeLabel = formatMessageTime(message.sendAt || message.createdAt);
 
   return (
     <div className={clsx("flex w-full flex-col gap-1", isMine ? "items-end" : "items-start")}>
