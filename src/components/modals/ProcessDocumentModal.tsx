@@ -4,7 +4,11 @@ import { HiOutlineX, HiOutlineSearch, HiOutlineCheck } from "react-icons/hi";
 import { AiOutlineFilePdf } from "react-icons/ai";
 import { FiFileText } from "react-icons/fi";
 import { closeModalAtom, collectionIdAtom } from "../../stores/modalStore";
-import { processUpdateAtom, processLogAtom } from "@/stores/sseStore";
+import {
+  processUpdateAtom,
+  processLogAtom,
+  hasDismissedIndexingAtom,
+} from "@/stores/sseStore";
 import { useRAGPendingDocumentsInfinite } from "@/hooks/data/useRAGDocumentHooks";
 import { useProcessRAGCollection } from "@/hooks/data/useRAGCollectionHooks";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +24,7 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [, setProcessUpdate] = useAtom(processUpdateAtom);
   const [, setProcessLog] = useAtom(processLogAtom);
+  const [, setHasDismissedIndexing] = useAtom(hasDismissedIndexingAtom);
 
   const { user } = useAuth();
 
@@ -68,6 +73,7 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
 
     setProcessUpdate(null);
     setProcessLog(null);
+    setHasDismissedIndexing(false);
 
     processDocs(
       {

@@ -74,6 +74,40 @@ export function useCreateRAGCollection() {
 }
 ```
 
+## ⏹️ 3. Chat & Cancellation (Dừng tiến trình)
+
+```typescript
+/**
+ * Hook chat với AI
+ */
+export function useRAGChat() {
+  return useMutation({
+    mutationFn: (data: RAGChatRequest) => RAGChatService.chatWithAI(data),
+    onSuccess: (res) => {
+      if (!res.success) {
+        toast.error("Thất bại", res.message || "Không thể nhận phản hồi");
+      }
+    },
+    onError: (err) => toast.error("Lỗi", getApiErrorMessage(err)),
+  });
+}
+
+/**
+ * Hook dừng chat đang chạy (cần client_id)
+ */
+export function useStopRAGChat() {
+  return useMutation({
+    mutationFn: (clientId: string) => RAGChatService.stopChat(clientId),
+    onSuccess: (res) => {
+      if (!res.success) {
+        toast.error("Thất bại", res.message || "Không thể dừng chat");
+      }
+    },
+    onError: (err) => toast.error("Lỗi", getApiErrorMessage(err)),
+  });
+}
+```
+
 ## ⚖️ Điểm khác biệt quan trọng
 1. **Phân trang**: `data.pagination` chứa `current_page`, `total_pages`, `limit`, `total_records`.
 2. **Success Check**: Luôn kiểm tra `res.success` trong `onSuccess` hoặc `queryFn`.

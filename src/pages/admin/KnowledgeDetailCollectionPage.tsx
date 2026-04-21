@@ -16,6 +16,7 @@ import {
   openIndexModalAtom,
   openProcessRAGModalAtom,
 } from "@/stores/modalStore";
+import { hasDismissedIndexingAtom } from "@/stores/sseStore";
 import { useRagSse } from "@/hooks/sse/useRagSseHooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { Spinner } from "@/components/custom-ui/Spinner";
@@ -37,6 +38,9 @@ const breadcrumbItems = [
 export default function KnowledgeDetailCollectionPage() {
   const { id: collectionId } = useParams();
   const [isIndexing, setIsIndexing] = useState(false);
+  const [hasDismissedIndexing, setHasDismissedIndexing] = useAtom(
+    hasDismissedIndexingAtom,
+  );
   const [currentStep, setCurrentStep] = useState<IndexingStep>("parse");
 
   const queryClient = useQueryClient();
@@ -51,12 +55,13 @@ export default function KnowledgeDetailCollectionPage() {
         queryKey: ["rag", "collections", collectionId],
       });
 
-      if (processUpdate.status === "indexing") {
+      if (processUpdate.status === "indexing" && !hasDismissedIndexing) {
         setIsIndexing(true);
       } else if (
         processUpdate.status === "indexed" ||
         processUpdate.status === "failed"
       ) {
+        setHasDismissedIndexing(false); // Reset for next time
         // Delay 3s để user thấy 100% trước khi chuyển phase
         setTimeout(() => {
           setIsIndexing(false);
@@ -65,7 +70,7 @@ export default function KnowledgeDetailCollectionPage() {
         }, 3000);
       }
     }
-  }, [processUpdate, collectionId, queryClient]);
+  }, [processUpdate, collectionId, queryClient, hasDismissedIndexing]);
 
   useEffect(() => {
     if (processLog) {
@@ -80,8 +85,8 @@ export default function KnowledgeDetailCollectionPage() {
         return;
       }
 
-      // Khi có log nạp tài liệu, tự động chuyển sang giao diện Indexing nếu chưa bật
-      if (!isIndexing) {
+      // Khi có log nạp tài liệu, tự động chuyển sang giao diện Indexing nếu chưa bật và chưa bị dismiss
+      if (!isIndexing && !hasDismissedIndexing) {
         setIsIndexing(true);
       }
 
@@ -90,7 +95,7 @@ export default function KnowledgeDetailCollectionPage() {
       }
       setLogMessage(processLog.message);
     }
-  }, [processLog, isIndexing]);
+  }, [processLog, isIndexing, hasDismissedIndexing]);
 
   return (
     <div className="page-layout">
@@ -106,7 +111,9 @@ export default function KnowledgeDetailCollectionPage() {
           </div>
 
           <div className="my-10 w-full">
-            <DetailCollectionForm />
+            <DetailCollectionForm
+              onResetDismissal={() => setHasDismissedIndexing(false)}
+            />
           </div>
         </>
       ) : (
@@ -114,7 +121,10 @@ export default function KnowledgeDetailCollectionPage() {
           <IndexingCollectionUI
             progress={progress}
             logMessage={logMessage}
-            onBack={() => setIsIndexing(false)}
+            onBack={() => {
+              setIsIndexing(false);
+              setHasDismissedIndexing(true);
+            }}
           />
         </div>
       )}
@@ -122,7 +132,11 @@ export default function KnowledgeDetailCollectionPage() {
   );
 }
 
-function DetailCollectionForm() {
+function DetailCollectionForm({
+  onResetDismissal,
+}: {
+  onResetDismissal: () => void;
+}) {
   const { id: collectionId } = useParams();
   const [, openIndexModal] = useAtom(openIndexModalAtom);
   const [, openProcessModal] = useAtom(openProcessRAGModalAtom);
@@ -225,7 +239,10 @@ function DetailCollectionForm() {
                 <button
                   type="button"
                   onClick={() => {
-                    if (collectionId) openProcessModal(collectionId);
+                    if (collectionId) {
+                      onResetDismissal();
+                      openProcessModal(collectionId);
+                    }
                   }}
                   className="bg-primary flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold text-white shadow-md transition-all hover:opacity-90 active:scale-95"
                 >

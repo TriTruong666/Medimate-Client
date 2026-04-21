@@ -8,3 +8,10 @@ export const chatWithAI = async (
   const res = await axiosRAGClient.post("api/v1/chat/completion/", data);
   return res.data;
 };
+
+export const stopChat = async (
+  client_id: string,
+): Promise<RAGApiResponse<RAGChatResponse>> => {
+  const res = await axiosRAGClient.post("api/v1/chat/stop/", { client_id });
+  return res.data;
+};

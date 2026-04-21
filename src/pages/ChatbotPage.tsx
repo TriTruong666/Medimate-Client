@@ -9,6 +9,8 @@ import { HiChevronDown, HiOutlineTemplate } from "react-icons/hi";
 import { AnimatePresence, motion } from "framer-motion";
 import ChatResponseMarkdown from "../components/custom-ui/ChatMarkdown";
 import { useAuth } from "@/hooks/useAuth";
+import { useStopRAGChat } from "../hooks/data/useRAGChatHooks";
+import { HiStop } from "react-icons/hi2";
 
 export default function ChatbotPage() {
   const [phase, setPhase] = useState<"welcome" | "main">("welcome");
@@ -266,8 +268,12 @@ function MainChat({
   const [streamingText, setStreamingText] = useState("");
   const textareaRef = useAutoResizeTextarea(value, 160);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  const streamIntervalRef = useRef<any>(null);
+  const { user } = useAuth();
   const chatbotMutation = useRAGChat();
+  const stopMutation = useStopRAGChat();
+
+  const clientId = user?.userId || "guest_session";
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -287,14 +293,17 @@ function MainChat({
   const simulateStreaming = (text: string) => {
     let i = 0;
     setStreamingText("");
-    const interval = setInterval(() => {
+    if (streamIntervalRef.current) clearInterval(streamIntervalRef.current);
+
+    streamIntervalRef.current = setInterval(() => {
       // Tốc độ và chunk size nhỏ hơn để tạo cảm giác tự nhiên và dễ đọc hơn
       const chunkSize = Math.floor(Math.random() * 3) + 1;
       if (i < text.length) {
         setStreamingText(text.slice(0, i + chunkSize));
         i += chunkSize;
       } else {
-        clearInterval(interval);
+        if (streamIntervalRef.current) clearInterval(streamIntervalRef.current);
+        streamIntervalRef.current = null;
         setMessages((prev) => [...prev, { role: "assistant", content: text }]);
         setStreamingText("");
       }
@@ -314,6 +323,7 @@ function MainChat({
       {
         question: content,
         ai_model_id: selectedModelId,
+        client_id: clientId,
       },
       {
         onSuccess: (res) => {
@@ -323,6 +333,17 @@ function MainChat({
         },
       },
     );
+  };
+
+  const handleStop = () => {
+    if (chatbotMutation.isPending) {
+      stopMutation.mutate(clientId);
+    }
+    if (streamIntervalRef.current) {
+      clearInterval(streamIntervalRef.current);
+      streamIntervalRef.current = null;
+    }
+    setStreamingText("");
   };
 
   return (
@@ -373,17 +394,27 @@ function MainChat({
               className="max-h-40 w-full resize-none bg-transparent pr-12 text-[14px] font-medium text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/40"
             />
 
-            <button
-              onClick={() => handleChat(value)}
-              disabled={chatbotMutation.isPending || !value.trim()}
-              className="bg-primary absolute right-3.5 bottom-3.5 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-lg transition hover:scale-105 active:scale-95 disabled:opacity-40 dark:bg-white dark:text-black"
-            >
-              {chatbotMutation.isPending ? (
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white"></div>
-              ) : (
+            {chatbotMutation.isPending || streamingText ? (
+              <button
+                onClick={handleStop}
+                disabled={stopMutation.isPending}
+                className="absolute right-3.5 bottom-3.5 flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white shadow-lg transition hover:scale-105 active:scale-95 disabled:opacity-40"
+              >
+                {stopMutation.isPending ? (
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white"></div>
+                ) : (
+                  <HiStop className="text-[20px]" />
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={() => handleChat(value)}
+                disabled={!value.trim()}
+                className="bg-primary absolute right-3.5 bottom-3.5 flex h-10 w-10 items-center justify-center rounded-full text-white shadow-lg transition hover:scale-105 active:scale-95 disabled:opacity-40 dark:bg-white dark:text-black"
+              >
                 <IoArrowUp className="text-[18px]" />
-              )}
-            </button>
+              </button>
+            )}
           </div>
 
           <p className="mt-3 text-center text-[10px] font-medium tracking-tight text-gray-400 dark:text-white/30">

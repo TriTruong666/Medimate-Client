@@ -20,3 +20,19 @@ export function useRAGChat() {
     },
   });
 }
+/**
+ * Hook dừng chat đang chạy
+ */
+export function useStopRAGChat() {
+  return useMutation({
+    mutationFn: (clientId: string) => RAGChatService.stopChat(clientId),
+    onSuccess: (res) => {
+      if (!res.success) {
+        toast.error("Thất bại", res.message || "Không thể dừng chat");
+      }
+    },
+    onError: (err) => {
+      toast.error("Lỗi", getApiErrorMessage(err));
+    },
+  });
+}

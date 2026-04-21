@@ -6,3 +6,4 @@ export const lastNotificationAtom = atom<SSENotification | null>(null);
 export const processUpdateAtom = atom<SSEProcessUpdate | null>(null);
 export const processLogAtom = atom<SSEProcessLog | null>(null);
 export const lastEventTimestampAtom = atom<string>("");
+export const hasDismissedIndexingAtom = atom(false);
