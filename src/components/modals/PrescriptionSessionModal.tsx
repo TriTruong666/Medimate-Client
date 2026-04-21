@@ -174,12 +174,12 @@ export function PrescriptionSessionModal({
                                 }}
                               />
                             </Tooltip>
-                            <Tooltip content="Sửa đơn">
+                            {/* <Tooltip content="Sửa đơn">
                               <IconAction
                                 icon={<HiOutlinePencil />}
                                 onClick={() => openEdit(item)}
                               />
-                            </Tooltip>
+                            </Tooltip> */}
                           </div>
                         </div>
                       </div>
