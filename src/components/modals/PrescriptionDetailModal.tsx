@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
-import { HiOutlinePencil, HiOutlineX, HiOutlineDownload, HiOutlineClipboardCopy } from "react-icons/hi";
+import { HiOutlinePencil, HiOutlineX, HiOutlineDownload } from "react-icons/hi";
 import html2canvas from "html2canvas";
 import { Badge } from "@/components/custom-ui/Badge";
 import { PrescriptionModal } from "@/components/modals/PrescriptionModal";
@@ -40,38 +40,9 @@ export function PrescriptionDetailModal({
       const link = document.createElement("a");
       link.href = dataUrl;
       link.download = `DonThuoc_${data?.memberId || "Patient"}_${formatDate(new Date().toISOString()).split(" ")[0].replace(/\//g, "-")}.png`;
+      document.body.appendChild(link);
       link.click();
-    } catch (err) {
-      console.error("Error capturing prescription:", err);
-    } finally {
-      setIsCapturing(false);
-    }
-  }
-
-  async function handleCopyImage() {
-    if (!printRef.current) return;
-    try {
-      setIsCapturing(true);
-      const canvas = await html2canvas(printRef.current, {
-        scale: 2,
-        backgroundColor: "#ffffff",
-        useCORS: true,
-      });
-      canvas.toBlob(async (blob) => {
-        if (blob) {
-          try {
-            await navigator.clipboard.write([
-              new ClipboardItem({
-                [blob.type]: blob
-              })
-            ]);
-            alert("Đã copy ảnh vào clipboard! Bạn có thể dán (Ctrl+V) vào khung chat.");
-          } catch (err) {
-            console.error("Clipboard write failed", err);
-            alert("Không thể copy ảnh, vui lòng thử tải ảnh thay thế.");
-          }
-        }
-      }, "image/png");
+      document.body.removeChild(link);
     } catch (err) {
       console.error("Error capturing prescription:", err);
     } finally {
@@ -102,15 +73,6 @@ export function PrescriptionDetailModal({
               <div className="flex items-center gap-2">
                 {data && (
                   <>
-                    <button
-                      type="button"
-                      onClick={handleCopyImage}
-                      disabled={isCapturing}
-                      className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                    >
-                      <HiOutlineClipboardCopy className="h-4 w-4" />
-                      {isCapturing ? "Đang xử lý..." : "Copy ảnh"}
-                    </button>
                     <button
                       type="button"
                       onClick={handleDownloadImage}
@@ -220,7 +182,7 @@ export function PrescriptionDetailModal({
                   </div>
 
                   {/* VÙNG IN ẨN DÀNH CHO HTML2CANVAS */}
-                  <div className="absolute top-[-9999px] left-[-9999px] pointer-events-none">
+                  <div className="fixed top-[200vh] left-0 pointer-events-none z-[-50]">
                     <div
                       ref={printRef}
                       className="w-[794px] bg-white text-black"

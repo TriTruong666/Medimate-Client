@@ -54,6 +54,12 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   } = useChatSessionMessages(sessionId);
   const queryClient = useQueryClient();
 
+  // Force refetch mảng dữ liệu ngay khi Popup được bật để đảm bảo lấy data mới nhất
+  useEffect(() => {
+    void refetchDetails();
+    void refetchMessages();
+  }, [sessionId, refetchDetails, refetchMessages]);
+
   // Tìm lại trong cache danh sách list session (vì API Detail có thể bị thiếu trả về Date/Time)
   const cachedSessionsQueries = queryClient.getQueriesData<BaseResponse<ChatSessionSummaryResponse[]>>({ queryKey: ["chat-sessions"] });
   let cachedSession: ChatSessionSummaryResponse | undefined;
@@ -68,15 +74,27 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
   // Backend quy định chat tồn tại 125 phút từ lúc session startedAt 
   // (Không phụ thuộc vào session status = Ended hay InProgress)
   const startedTime = sessionDetails?.startedAt || cachedSession?.startedAt;
+  const status = sessionDetails?.status || cachedSession?.status;
+
   const derivedExpiredAt = startedTime
     ? new Date(new Date(startedTime).getTime() + 125 * 60 * 1000).toISOString()
     : expiredAt; // fallback khi chưa load xong sessionDetails
 
-  // Chỉ enforce hết hạn khi đã có đủ thông tin (tránh false-positive khi data đang load)
+  // Truyền ngày rất xa để hook đếm ngược không trả về expired true nếu truyền null/undefined
+  const { isExpired: isCountdownExpired, displayText: rawCountdownText } = useCountdown(derivedExpiredAt || "9999-12-31T23:59:59Z");
+  const countdownText = derivedExpiredAt ? rawCountdownText : null;
+
   const isDataReady = !!(sessionDetails || cachedSession || expiredAt);
-  const { isExpired: isCountdownExpired, displayText: countdownText } = useCountdown(derivedExpiredAt);
-  // isExpired thực sự chỉ khi data đã sẵn sàng VÀ đồng hồ đã hết
-  const isExpired = isDataReady && isCountdownExpired;
+
+  let isExpired = false;
+  if (isDataReady) {
+    if (derivedExpiredAt) {
+      isExpired = isCountdownExpired;
+    } else {
+      // Nếu không có mốc thời gian rõ ràng, chỉ hết hạn nếu status là Ended
+      return
+    }
+  }
 
   // Thời gian hết hạn dạng HH:mm để hiển thị trong banner
   const expiryTimeLabel = derivedExpiredAt

@@ -267,9 +267,9 @@ function TransactionTable({
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <Tooltip content="In hoá đơn">
+                  {/* <Tooltip content="In hoá đơn">
                     <IconAction icon={<HiOutlinePrinter />} />
-                  </Tooltip>
+                  </Tooltip> */}
                   <Tooltip content="Chi tiết">
                     <IconAction
                       icon={
