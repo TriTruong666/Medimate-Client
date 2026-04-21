@@ -5,12 +5,12 @@ import {
   HiOutlineCalendar,
   HiOutlineClipboardCheck,
   HiOutlineInformationCircle,
+  HiOutlineClock,
+  HiOutlinePlus,
 } from "react-icons/hi";
 import { useSearchParams } from "react-router-dom";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
-import IconAction from "@/components/custom-ui/IconAction";
-import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DoctorSupportDetailModal } from "@/components/modals/DoctorSupportDetailModal";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { useMyConsultationSessions } from "@/hooks/data/useSessionHooks";
@@ -108,41 +108,45 @@ export default function PrescriptionRootPage() {
           />
           <div>
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
-              Danh sách phiên tư vấn
+              Phiên tư vấn & Đơn thuốc
             </h1>
+            <p className="mt-1 text-sm font-medium text-gray-500">Quản lý các phiên hội thoại và kê đơn thuốc cho bệnh nhân.</p>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
             <Spinner size="lg" />
           </div>
         ) : isError ? (
-          <div className="flex min-h-75 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6">
-            <p className="text-sm text-red-400">
+          <div className="flex min-h-75 flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50/30 p-6 dark:border-red-900/20 dark:bg-red-900/5">
+            <p className="text-sm font-semibold text-red-600 dark:text-red-400">
               Không thể tải danh sách phiên tư vấn.
             </p>
             <button
               type="button"
               onClick={() => void refetch()}
-              className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white"
+              className="mt-4 rounded-xl border border-red-200 bg-white px-4 py-2 text-xs font-bold text-red-600 shadow-sm transition hover:bg-red-50"
             >
               Thử lại
             </button>
           </div>
         ) : sessions.length === 0 ? (
-          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
-            Chưa có phiên tư vấn nào.
+          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-6 text-sm font-semibold text-gray-400 dark:border-white/10 dark:bg-white/5">
+            Chưa có phiên tư vấn nào được ghi nhận.
           </div>
         ) : (
           <div className="grid gap-4 xl:grid-cols-2">
             {sessions.map((session) => {
-              const isHighlighted = highlightedSessionId === session.consultanSessionId;
+              const isHighlighted =
+                highlightedSessionId === session.consultanSessionId;
               const isNow = session.status === "InProgress";
 
               // Chat window = startedAt + 125 phút (backend: session 60p + chat dư 60p + 5p buffer)
               const chatEndAt = session.startedAt
-                ? new Date(new Date(session.startedAt).getTime() + 125 * 60 * 1000)
+                ? new Date(
+                    new Date(session.startedAt).getTime() + 125 * 60 * 1000,
+                  )
                 : null;
               const isChatExpired = chatEndAt ? now > chatEndAt : false;
 
@@ -152,32 +156,33 @@ export default function PrescriptionRootPage() {
                   ref={(node) => {
                     cardRefs.current[session.consultanSessionId] = node;
                   }}
-                  className={`group relative flex flex-col gap-4 rounded-2xl border p-5 transition-all hover:shadow-lg ${isHighlighted
-                    ? "border-primary/50 bg-primary/5 ring-primary/20 ring-1 dark:border-red-400/70 dark:bg-red-500/10 dark:ring-red-400/50"
-                    : "border-gray-400 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-                    }`}
+                  className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all hover:shadow-xl ${
+                    isHighlighted
+                      ? "border-primary/50 bg-primary/5 ring-primary/20 ring-1 dark:border-primary-400/70 dark:bg-primary-500/10 dark:ring-primary-400/50"
+                      : "border-gray-200 bg-white hover:border-gray-400 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 p-5 pb-4">
                     <div className="flex items-center gap-3">
                       <div
-                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${isNow
-                          ? "bg-primary text-white"
-                          : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
-                          }`}
+                        className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                          isNow
+                            ? "bg-primary text-white"
+                            : "bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400"
+                        }`}
                       >
                         {isNow && (
-                          <div className="bg-primary/30 absolute h-10 w-10 animate-ping rounded-full" />
+                          <div className="absolute h-10 w-10 animate-ping rounded-full bg-primary/30" />
                         )}
                         {(session.memberName || "?").charAt(0)}
                       </div>
                       <div className="min-w-0">
-                        <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                        <h4 className="truncate text-sm font-bold text-gray-900 dark:text-white">
                           {session.memberName ||
                             `Bệnh nhân ${shortId(session.memberId)}`}
                         </h4>
-                        <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                          PT #{shortId(session.memberId)} • AP #
-                          {shortId(session.appointmentId)}
+                        <p className="text-[10px] font-semibold tracking-wider text-gray-400 uppercase">
+                          Patient #{shortId(session.memberId, 6)}
                         </p>
                       </div>
                     </div>
@@ -193,76 +198,57 @@ export default function PrescriptionRootPage() {
                     />
                   </div>
 
-                  <div className="h-px bg-gray-100 dark:bg-white/5" />
-
-                  <div className="flex-1 space-y-3">
-                    <div className="grid gap-3 text-[11px] text-gray-600 dark:text-gray-300">
+                  <div className="grid grid-cols-2 gap-px bg-gray-100 dark:bg-white/5">
+                    <div className="bg-white p-4 dark:bg-transparent">
                       <div className="flex items-center gap-2">
-                        <HiOutlineCalendar className="h-4 w-4 text-gray-400" />
-                        <span>
-                          {session.startedAt
-                            ? formatDate(session.startedAt)
-                            : "--"}{" "}
-                          -{" "}
-                          {session.endedAt ? formatDate(session.endedAt) : "--"}
-                        </span>
+                        <HiOutlineCalendar className="h-3.5 w-3.5 text-gray-400" />
+                        <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">Ngày bắt đầu</span>
                       </div>
+                      <p className="mt-1 text-xs font-semibold text-gray-900 dark:text-white">
+                        {session.startedAt ? formatDate(session.startedAt) : "--"}
+                      </p>
+                    </div>
+                    <div className="bg-white p-4 dark:bg-transparent">
                       <div className="flex items-center gap-2">
-                        <HiOutlineClipboardCheck className="h-4 w-4 text-gray-400" />
-                        <span className="truncate">
-                          Session: {shortId(session.consultanSessionId, 12)}
-                        </span>
+                        <HiOutlineClock className="h-3.5 w-3.5 text-gray-400" />
+                        <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">Thời gian kết thúc</span>
                       </div>
+                      <p className="mt-1 text-xs font-semibold text-gray-900 dark:text-white">
+                        {chatEndAt ? formatDate(chatEndAt.toISOString()) : "--"}
+                      </p>
                     </div>
                   </div>
 
-                  <div className="grid gap-2 text-xs text-white/60 md:grid-cols-2">
-                    <p>Session: {shortId(session.consultanSessionId, 12)}</p>
-                    <p>Lịch hẹn: {session.appointmentTime || "--"}</p>
-                    <p>
-                      Bắt đầu:{" "}
-                      {session.startedAt ? formatDate(session.startedAt) : "--"}
-                    </p>
-                    <p>
-                      Kết thúc:{" "}
-                      {chatEndAt ? formatDate(chatEndAt.toISOString()) : "--"}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    <Tooltip content="Xem chi tiết session tư vấn">
-                      <IconAction
-                        icon={<HiOutlineInformationCircle />}
+                  <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 p-3 px-5 dark:border-white/5 dark:bg-black/20">
+                    <div className="flex gap-1">
+                      <button
                         onClick={() => setSelectedSessionDetail(session)}
-                      />
-                    </Tooltip>
-                    <Tooltip content="Xem chi tiết appointment">
-                      <IconAction
-                        icon={<HiOutlineEye />}
-                        onClick={() =>
-                          setSelectedAppointmentId(session.appointmentId)
-                        }
-                      />
-                    </Tooltip>
+                        className="rounded-lg p-2 text-gray-400 transition hover:bg-white hover:text-gray-900 shadow-xs dark:hover:bg-white/10 dark:hover:text-white"
+                        title="Chi tiết session"
+                      >
+                        <HiOutlineInformationCircle className="h-4.5 w-4.5" />
+                      </button>
+                      <button
+                        onClick={() => setSelectedAppointmentId(session.appointmentId)}
+                        className="rounded-lg p-2 text-gray-400 transition hover:bg-white hover:text-gray-900 shadow-xs dark:hover:bg-white/10 dark:hover:text-white"
+                        title="Chi tiết lịch hẹn"
+                      >
+                        <HiOutlineEye className="h-4.5 w-4.5" />
+                      </button>
+                    </div>
 
-                    {isChatExpired ? (
-                      // Phiên chat đã hết hạn — không cho tạo đơn thuốc
-                      <button
-                        type="button"
-                        onClick={() => handleOpenSessionModal(session)}
-                        className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
-                      >
-                        Xem
-                      </button>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleOpenSessionModal(session)}
-                        className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
-                      >
-                        Tạo đơn thuốc
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleOpenSessionModal(session)}
+                      className={`flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                        isChatExpired
+                        ? "bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400" 
+                        : "bg-gray-900 text-white shadow dark:bg-white dark:text-black"
+                      }`}
+                    >
+                      {!isChatExpired && <HiOutlinePlus className="h-3.5 w-3.5" />}
+                      {isChatExpired ? "Xem phiên tư vấn" : "Kê đơn thuốc"}
+                    </button>
                   </div>
                 </div>
               );
@@ -270,12 +256,14 @@ export default function PrescriptionRootPage() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/70">
-          <div className="mb-2 flex items-center gap-2 text-white">
-            <HiOutlineClipboardCheck className="h-5 w-5 text-red-400" />
-            Ghi chú
+        <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <HiOutlineClipboardCheck className="h-5 w-5" />
           </div>
-          <p>Chỉ phiên đang diễn ra mới được tạo đơn.</p>
+          <div className="text-xs">
+            <p className="font-bold text-gray-900 dark:text-white text-sm">Ghi chú quan trọng</p>
+            <p className="mt-0.5 text-gray-500">Chỉ các phiên tư vấn đang diễn ra hoặc chưa hết hạn mới có thể kê đơn thuốc mới.</p>
+          </div>
         </div>
 
         <DoctorSupportDetailModal
@@ -299,36 +287,6 @@ export default function PrescriptionRootPage() {
           }}
         />
       </motion.div>
-    </div>
-  );
-}
-
-function SessionGridSkeleton() {
-  return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {[...Array(6)].map((_, i) => (
-        <div
-          key={i}
-          className="flex h-56 animate-pulse flex-col rounded-2xl border border-gray-400 bg-white/50 p-5 dark:border-white/10 dark:bg-white/5"
-        >
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-white/10" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-1/2 rounded bg-gray-200 dark:bg-white/10" />
-              <div className="h-3 w-1/3 rounded bg-gray-200 dark:bg-white/10" />
-            </div>
-          </div>
-          <div className="mt-4 h-px bg-gray-100 dark:bg-white/5" />
-          <div className="mt-4 flex-1 space-y-3">
-            <div className="h-3 w-3/4 rounded bg-gray-200 dark:bg-white/10" />
-            <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-white/10" />
-          </div>
-          <div className="mt-4 flex items-center justify-between">
-            <div className="h-4 w-16 rounded bg-gray-200 dark:bg-white/10" />
-            <div className="h-7 w-24 rounded-lg bg-gray-200 dark:bg-white/10" />
-          </div>
-        </div>
-      ))}
     </div>
   );
 }
