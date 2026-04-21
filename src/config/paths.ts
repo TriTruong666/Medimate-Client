@@ -19,7 +19,10 @@ export const PATHS = {
     RAG_NEW: "/dashboard/rag/new",
     RAG_DETAIL: "/dashboard/rag/:id",
     CHATBOT: "/dashboard/chatbot",
-    TRANSACTION: "/dashboard/transaction",
+    TRANSACTION: {
+      ROOT: "/dashboard/transaction",
+      PAYOUTS: "/dashboard/transaction/payouts",
+    },
     DOCTOR_REPORT: "/dashboard/doctor-report",
     DOCTOR_CONTRACT: "/dashboard/doctor-contract",
     INCOME: "/dashboard/income",

@@ -183,7 +183,7 @@ function AssetCard({ asset }: { asset: BaseAsset }) {
             {asset.size !== "N/A" ? asset.size : asset.date}
           </span>
           <span className="group-hover:text-primary rounded-full bg-gray-50 px-2.5 py-1 text-[10px] font-bold text-gray-400 transition-colors dark:bg-white/5 dark:text-gray-500">
-            Preview
+            Xem
           </span>
         </div>
       </div>

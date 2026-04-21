@@ -95,8 +95,6 @@ function Avatar({ name, src }: { name?: string | null; src?: string | null }) {
   );
 }
 
-
-
 export function DoctorSupportDetailModal({
   open,
   appointmentId,
@@ -145,9 +143,6 @@ export function DoctorSupportDetailModal({
               <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                 Chi tiết lịch hẹn
               </h2>
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                Xem thông tin chi tiết và hồ sơ sức khỏe của bệnh nhân
-              </p>
             </div>
             <button
               onClick={onClose}
@@ -190,12 +185,12 @@ export function DoctorSupportDetailModal({
                   </div>
                   <div className="p-4 font-sans">
                     <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-400">
+                      <div className="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-400 flex h-10 w-10 items-center justify-center rounded-xl">
                         <FiCalendar className="h-5 w-5" />
                       </div>
                       <div>
                         <div className="flex items-end gap-2">
-                          <h3 className="text-base font-semibold leading-none tracking-tight text-gray-900 dark:text-white">
+                          <h3 className="text-base leading-none font-semibold tracking-tight text-gray-900 dark:text-white">
                             {formatTime(data.appointmentTime)}
                           </h3>
                           <span className="mb-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -203,7 +198,8 @@ export function DoctorSupportDetailModal({
                           </span>
                         </div>
                         <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                          APT #{toShortId(data.appointmentId, 10)} • TẠO {formatDateTime(data.createdAt).toUpperCase()}
+                          APT #{toShortId(data.appointmentId, 10)} • TẠO{" "}
+                          {formatDateTime(data.createdAt).toUpperCase()}
                         </p>
                       </div>
                     </div>
@@ -213,7 +209,7 @@ export function DoctorSupportDetailModal({
                         <p className="text-[10px] font-bold tracking-widest text-yellow-800 uppercase dark:text-yellow-400">
                           Nội dung ghi chú / Lý do hủy
                         </p>
-                        <p className="mt-1.5 text-sm font-medium leading-relaxed text-yellow-900 dark:text-yellow-200/90">
+                        <p className="mt-1.5 text-sm leading-relaxed font-medium text-yellow-900 dark:text-yellow-200/90">
                           {data.cancelReason}
                         </p>
                       </div>
@@ -276,7 +272,10 @@ export function DoctorSupportDetailModal({
                     </p>
                     {healthProfile && healthProfile.insuranceNumber && (
                       <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
-                        BHYT: <span className="text-gray-900 dark:text-gray-200">{healthProfile.insuranceNumber}</span>
+                        BHYT:{" "}
+                        <span className="text-gray-900 dark:text-gray-200">
+                          {healthProfile.insuranceNumber}
+                        </span>
                       </span>
                     )}
                   </div>
@@ -297,17 +296,23 @@ export function DoctorSupportDetailModal({
                             },
                             {
                               label: "Chiều cao",
-                              value: healthProfile.height ? `${healthProfile.height} cm` : "----",
+                              value: healthProfile.height
+                                ? `${healthProfile.height} cm`
+                                : "----",
                               color: "text-blue-500 dark:text-blue-400",
                             },
                             {
                               label: "Cân nặng",
-                              value: healthProfile.weight ? `${healthProfile.weight} kg` : "----",
+                              value: healthProfile.weight
+                                ? `${healthProfile.weight} kg`
+                                : "----",
                               color: "text-emerald-500 dark:text-emerald-400",
                             },
                             {
                               label: "BMI",
-                              value: healthProfile.bmi ? healthProfile.bmi.toFixed(1) : "----",
+                              value: healthProfile.bmi
+                                ? healthProfile.bmi.toFixed(1)
+                                : "----",
                               color: "text-amber-500 dark:text-amber-400",
                             },
                           ].map((stat) => (
@@ -318,44 +323,47 @@ export function DoctorSupportDetailModal({
                               <p className="text-[9px] font-medium tracking-widest text-gray-400 uppercase">
                                 {stat.label}
                               </p>
-                              <p className={`mt-1 text-sm font-semibold ${stat.color}`}>
+                              <p
+                                className={`mt-1 text-sm font-semibold ${stat.color}`}
+                              >
                                 {stat.value}
                               </p>
                             </div>
                           ))}
                         </div>
 
-                        {healthProfile.conditions && healthProfile.conditions.length > 0 && (
-                          <div className="space-y-3">
-                            <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
-                              Bệnh lý nền
-                            </p>
-                            <div className="grid gap-3 sm:grid-cols-2">
-                              {healthProfile.conditions.map((condition) => (
-                                <div
-                                  key={condition.conditionId}
-                                  className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5"
-                                >
-                                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                                    {condition.conditionName}
-                                  </h4>
-                                  <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
-                                    {condition.description}
-                                  </p>
-                                  <span
-                                    className={`mt-3 inline-block rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
-                                      condition.status === "Active"
-                                        ? "bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
-                                        : "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
-                                    }`}
+                        {healthProfile.conditions &&
+                          healthProfile.conditions.length > 0 && (
+                            <div className="space-y-3">
+                              <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                                Bệnh lý nền
+                              </p>
+                              <div className="grid gap-3 sm:grid-cols-2">
+                                {healthProfile.conditions.map((condition) => (
+                                  <div
+                                    key={condition.conditionId}
+                                    className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5"
                                   >
-                                    {condition.status}
-                                  </span>
-                                </div>
-                              ))}
+                                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                                      {condition.conditionName}
+                                    </h4>
+                                    <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                      {condition.description}
+                                    </p>
+                                    <span
+                                      className={`mt-3 inline-block rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
+                                        condition.status === "Active"
+                                          ? "bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
+                                          : "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                                      }`}
+                                    >
+                                      {condition.status}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     ) : (
                       <div className="flex items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 py-8 dark:border-white/10 dark:bg-white/5">

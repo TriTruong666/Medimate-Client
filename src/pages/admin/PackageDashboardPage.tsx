@@ -314,6 +314,7 @@ export function PackageDashboardPage() {
 
       {deletingPackage && (
         <DeletePackageModal
+          isOpen={!!deletingPackage}
           packageName={deletingPackage.packageName}
           isPending={isDeletingPackage}
           onClose={handleCloseDeletePopup}

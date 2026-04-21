@@ -17,6 +17,7 @@ import {
 import type { PaginationParams } from "@/common/query.params";
 import type { Transaction } from "@/types/Transaction";
 import { useAuth } from "@/hooks/useAuth";
+import { PATHS } from "@/config/paths";
 
 type ColumnKey =
   | "id"
@@ -53,7 +54,7 @@ const breadcrumbItems = [
   },
   {
     label: "Giao dịch",
-    path: "/dashboard/transaction",
+    path: PATHS.DASHBOARD.TRANSACTION.ROOT,
   },
   {
     label: "Tất cả",

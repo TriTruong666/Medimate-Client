@@ -1,21 +1,23 @@
 import { HiOutlineX, HiOutlineInformationCircle } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
 
-type DeletePackageModalProps = {
-  packageName: string;
+type DeleteDoctorContractModalProps = {
+  contractId: string;
   isPending: boolean;
   onClose: () => void;
   onConfirm: () => void;
   isOpen?: boolean;
 };
 
-export function DeletePackageModal({
-  packageName,
+export function DeleteDoctorContractModal({
+  contractId,
   isPending,
   onClose,
   onConfirm,
   isOpen = false,
-}: DeletePackageModalProps) {
+}: DeleteDoctorContractModalProps) {
+  const shortId = contractId.slice(0, 8).toUpperCase();
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,7 +33,7 @@ export function DeletePackageModal({
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10">
               <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
-                Xác nhận xoá gói
+                Xác nhận xoá hợp đồng
               </h2>
               <button
                 type="button"
@@ -46,21 +48,21 @@ export function DeletePackageModal({
             {/* Content */}
             <div className="space-y-6 p-6">
               <p className="text-sm text-gray-500 dark:text-gray-300">
-                Hành động này sẽ xoá vĩnh viễn gói dịch vụ <span className="font-semibold text-gray-900 dark:text-white">{packageName}</span>. Vui lòng xác nhận trước khi tiếp tục.
+                Hành động này sẽ xoá vĩnh viễn hợp đồng <span className="font-semibold text-gray-900 dark:text-white">HD-{shortId}</span>. Vui lòng xác nhận trước khi tiếp tục.
               </p>
 
               <div className="flex flex-col gap-3">
                 <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-50 p-4 dark:bg-red-500/10">
                   <HiOutlineInformationCircle className="mt-0.5 flex-shrink-0 text-red-600 dark:text-red-400" />
                   <p className="text-sm text-red-700 dark:text-red-200">
-                    Xoá gói dịch vụ sẽ loại bỏ hoàn toàn các cấu hình liên quan. Những người dùng đang sử dụng gói này có thể bị ảnh hưởng.
+                    Việc xoá hợp đồng sẽ gỡ bỏ các ràng buộc pháp lý và quyền lợi liên quan của bác sĩ trong hệ thống.
                   </p>
                 </div>
 
                 <div className="flex items-start gap-3 rounded-lg border border-gray-400 bg-white/5 p-4 dark:border-white/20 dark:bg-white/5">
                   <HiOutlineInformationCircle className="mt-0.5 flex-shrink-0 text-gray-500 dark:text-white" />
                   <p className="text-sm text-gray-600 dark:text-white/80">
-                    Hành động này không thể hoàn tác. Bạn có thể tạo lại gói mới sau nếu cần.
+                    Hành động này không thể hoàn tác. Vui lòng kiểm tra kỹ trước khi xoá.
                   </p>
                 </div>
               </div>
@@ -82,7 +84,7 @@ export function DeletePackageModal({
                 disabled={isPending}
                 className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
-                {isPending ? "Đang xử lý..." : "Xoá gói"}
+                {isPending ? "Đang xử lý..." : "Xác nhận xoá"}
               </button>
             </div>
           </motion.div>

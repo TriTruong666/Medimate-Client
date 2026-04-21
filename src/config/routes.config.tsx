@@ -297,7 +297,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     roles: ["Admin"],
   },
   {
-    path: PATHS.DASHBOARD.TRANSACTION,
+    path: PATHS.DASHBOARD.TRANSACTION.ROOT,
     layout: "dashboard",
     label: "Giao dịch",
     icon: GrTransaction,
@@ -305,15 +305,14 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     roles: ["Admin", "User", "Doctor"],
     children: [
       {
-        path: PATHS.DASHBOARD.TRANSACTION,
+        path: PATHS.DASHBOARD.TRANSACTION.ROOT,
         element: <TransactionDashboardPage />,
         label: "Lịch sử giao dịch",
         index: true,
         roles: ["Admin", "User", "Doctor"],
       },
       {
-        path: PATHS.DASHBOARD.PAYOUTS?.ROOT || "/dashboard/transaction/payouts",
-        // path: PATHS.DASHBOARD.PAYOUTS?.ROOT,
+        path: PATHS.DASHBOARD.TRANSACTION.PAYOUTS,
         element: <DoctorPayoutPage />,
         label: "Thanh toán Bác sĩ",
         roles: ["Admin"],
