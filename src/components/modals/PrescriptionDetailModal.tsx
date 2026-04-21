@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
-import { HiOutlinePencil, HiOutlineX } from "react-icons/hi";
+import { useRef, useState } from "react";
+import { HiOutlinePencil, HiOutlineX, HiOutlineDownload, HiOutlineClipboardCopy } from "react-icons/hi";
+import html2canvas from "html2canvas";
 import { Badge } from "@/components/custom-ui/Badge";
 import { PrescriptionModal } from "@/components/modals/PrescriptionModal";
 import { usePrescriptionDetail } from "@/hooks/data/usePrescriptionHooks";
@@ -23,6 +24,60 @@ export function PrescriptionDetailModal({
     prescriptionId || "",
   );
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  async function handleDownloadImage() {
+    if (!printRef.current) return;
+    try {
+      setIsCapturing(true);
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      });
+      const dataUrl = canvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      link.href = dataUrl;
+      link.download = `DonThuoc_${data?.memberId || "Patient"}_${formatDate(new Date().toISOString()).split(" ")[0].replace(/\//g, "-")}.png`;
+      link.click();
+    } catch (err) {
+      console.error("Error capturing prescription:", err);
+    } finally {
+      setIsCapturing(false);
+    }
+  }
+
+  async function handleCopyImage() {
+    if (!printRef.current) return;
+    try {
+      setIsCapturing(true);
+      const canvas = await html2canvas(printRef.current, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+      });
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                [blob.type]: blob
+              })
+            ]);
+            alert("Đã copy ảnh vào clipboard! Bạn có thể dán (Ctrl+V) vào khung chat.");
+          } catch (err) {
+            console.error("Clipboard write failed", err);
+            alert("Không thể copy ảnh, vui lòng thử tải ảnh thay thế.");
+          }
+        }
+      }, "image/png");
+    } catch (err) {
+      console.error("Error capturing prescription:", err);
+    } finally {
+      setIsCapturing(false);
+    }
+  }
 
   return (
     <AnimatePresence>
@@ -46,14 +101,34 @@ export function PrescriptionDetailModal({
               </div>
               <div className="flex items-center gap-2">
                 {data && (
-                  <button
-                    type="button"
-                    onClick={() => setIsEditOpen(true)}
-                    className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                  >
-                    <HiOutlinePencil className="h-4 w-4" />
-                    Sửa
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleCopyImage}
+                      disabled={isCapturing}
+                      className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    >
+                      <HiOutlineClipboardCopy className="h-4 w-4" />
+                      {isCapturing ? "Đang xử lý..." : "Copy ảnh"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDownloadImage}
+                      disabled={isCapturing}
+                      className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    >
+                      <HiOutlineDownload className="h-4 w-4" />
+                      {isCapturing ? "Đang xử lý..." : "Tải ảnh"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditOpen(true)}
+                      className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    >
+                      <HiOutlinePencil className="h-4 w-4" />
+                      Sửa
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={onClose}
@@ -84,64 +159,167 @@ export function PrescriptionDetailModal({
                   </button>
                 </div>
               ) : data ? (
-                <div className="grid gap-4 lg:grid-cols-3">
-                  <div className="space-y-4 lg:col-span-2">
-                    <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
-                      <h3 className="text-base font-bold text-gray-900 dark:text-white">Thông tin cơ bản</h3>
-                      <div className="mt-4 grid gap-4 md:grid-cols-2">
-                        <InfoCard label="Bệnh nhân" value={data.memberName || data.memberId} />
-                        <InfoCard label="Bác sĩ" value={data.doctorName || data.doctorId} />
-                        <InfoCard label="Session" value={data.consultanSessionId} />
-                        <InfoCard label="Ngày tạo" value={formatDate(data.createdDate)} />
-                      </div>
-                    </section>
+                <>
+                  <div className="grid gap-4 lg:grid-cols-3 bg-white dark:bg-neutral-900 p-2 rounded-xl">
+                    <div className="space-y-4 lg:col-span-2">
+                      <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">Thông tin cơ bản</h3>
+                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                          <InfoCard label="Bệnh nhân" value={data.memberName || data.memberId} />
+                          <InfoCard label="Bác sĩ" value={data.doctorName || data.doctorId} />
+                          <InfoCard label="Session" value={data.consultanSessionId} />
+                          <InfoCard label="Ngày tạo" value={formatDate(data.createdDate)} />
+                        </div>
+                      </section>
 
-                    <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
-                      <h3 className="text-base font-bold text-gray-900 dark:text-white">Chẩn đoán và lời dặn</h3>
-                      <p className="mt-3 text-sm font-bold text-gray-900 dark:text-white">{data.diagnosis}</p>
-                      <p className="mt-2 text-sm font-medium text-gray-600 dark:text-white/70">
-                        {data.advice || "Không có lời dặn."}
-                      </p>
-                    </section>
+                      <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">Chẩn đoán và lời dặn</h3>
+                        <p className="mt-3 text-sm font-bold text-gray-900 dark:text-white">{data.diagnosis}</p>
+                        <p className="mt-2 text-sm font-medium text-gray-600 dark:text-white/70">
+                          {data.advice || "Không có lời dặn."}
+                        </p>
+                      </section>
 
-                    <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
-                      <h3 className="text-base font-bold text-gray-900 dark:text-white">Danh sách thuốc</h3>
-                      <div className="mt-4 space-y-3">
-                        {data.medicines.map((medicine, index) => (
-                          <div key={index} className="rounded-xl border border-gray-300 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
-                            <p className="text-sm font-bold text-gray-900 dark:text-white">
-                              {index + 1}. {medicine.medicineName}
-                            </p>
-                            <p className="mt-1 text-xs font-bold text-gray-500 dark:text-white/70">
-                              {medicine.dosage} - {medicine.quantity} {medicine.unit}
-                            </p>
-                            <p className="mt-1 text-xs font-medium text-gray-600 dark:text-white/70">{medicine.instructions}</p>
+                      <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
+                        <h3 className="text-base font-bold text-gray-900 dark:text-white">Danh sách thuốc</h3>
+                        <div className="mt-4 space-y-3">
+                          {data.medicines.map((medicine, index) => (
+                            <div key={index} className="rounded-xl border border-gray-300 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5">
+                              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                                {index + 1}. {medicine.medicineName}
+                              </p>
+                              <p className="mt-1 text-xs font-bold text-gray-500 dark:text-white/70">
+                                {medicine.dosage} - {medicine.quantity} {medicine.unit}
+                              </p>
+                              <p className="mt-1 text-xs font-medium text-gray-600 dark:text-white/70">{medicine.instructions}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </section>
+                    </div>
+
+                    <div className="space-y-4">
+                      <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
+                        <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Tóm tắt</h4>
+                        <div className="mt-4 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-gray-500 dark:text-white/50">Trạng thái</span>
+                            <Badge type="info" value={data.status || "Active"} />
                           </div>
-                        ))}
-                      </div>
-                    </section>
+                          <div className="flex items-center justify-between border-t border-gray-200 dark:border-white/5 pt-3">
+                            <span className="text-xs font-bold text-gray-500 dark:text-white/50">Số thuốc</span>
+                            <span className="text-sm font-bold text-gray-900 dark:text-white">{data.medicines.length}</span>
+                          </div>
+                          <div className="flex items-center justify-between border-t border-gray-200 dark:border-white/5 pt-3">
+                            <span className="text-xs font-bold text-gray-500 dark:text-white/50">Cập nhật</span>
+                            <span className="text-xs font-bold text-gray-700 dark:text-white">{formatDate(data.updatedDate)}</span>
+                          </div>
+                        </div>
+                      </section>
+                    </div>
                   </div>
 
-                  <div className="space-y-4">
-                    <section className="rounded-2xl border border-gray-400 bg-gray-50 p-5 dark:border-white/10 dark:bg-white/5">
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">Tóm tắt</h4>
-                      <div className="mt-4 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-gray-500 dark:text-white/50">Trạng thái</span>
-                          <Badge type="info" value={data.status || "Active"} />
+                  {/* VÙNG IN ẨN DÀNH CHO HTML2CANVAS */}
+                  <div className="absolute top-[-9999px] left-[-9999px] pointer-events-none">
+                    <div
+                      ref={printRef}
+                      className="w-[794px] bg-white text-black"
+                      style={{
+                        width: 794,
+                        padding: "40px 50px",
+                        fontFamily: "'Times New Roman', Times, serif"
+                      }}
+                    >
+                      {/* Header */}
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="flex gap-4 items-center">
+                          <div className="w-16 h-16 rounded-full border-[3px] border-black flex items-center justify-center font-bold text-[10px] text-center p-1">
+                            MEDIMATE<br />CLINIC
+                          </div>
+                          <div className="text-center font-bold text-[15px] uppercase">
+                            <p>HỆ THỐNG MEDIMATE</p>
+                            <p>PHÒNG KHÁM ĐA KHOA</p>
+                          </div>
                         </div>
-                        <div className="flex items-center justify-between border-t border-gray-200 dark:border-white/5 pt-3">
-                          <span className="text-xs font-bold text-gray-500 dark:text-white/50">Số thuốc</span>
-                          <span className="text-sm font-bold text-gray-900 dark:text-white">{data.medicines.length}</span>
-                        </div>
-                        <div className="flex items-center justify-between border-t border-gray-200 dark:border-white/5 pt-3">
-                          <span className="text-xs font-bold text-gray-500 dark:text-white/50">Cập nhật</span>
-                          <span className="text-xs font-bold text-gray-700 dark:text-white">{formatDate(data.updatedDate)}</span>
+                        <div className="text-right text-[15px]">
+                          <p>Mã y tế: {data.memberId?.slice(0, 8).toUpperCase()}</p>
+                          <p>Số hồ sơ: {data.consultanSessionId?.split("-")[0].toUpperCase()}</p>
                         </div>
                       </div>
-                    </section>
+
+                      {/* Title */}
+                      <div className="text-center mb-8">
+                        <h1 className="text-[32px] font-bold uppercase tracking-wide">Đơn Thuốc</h1>
+                        <p className="text-[16px] font-bold mt-1">(BẢN LƯU / ĐIỆN TỬ)</p>
+                      </div>
+
+                      {/* Patient Info */}
+                      <div className="text-[16px] leading-[1.8] mb-6">
+                        <div className="flex justify-between">
+                          <p className="flex-[3]">
+                            Họ tên: <span className="font-bold uppercase text-[18px]">{data.memberName || `Bệnh nhân ${data.memberId?.slice(0, 6)}`}</span>
+                          </p>
+                          <p className="flex-1">Tuổi: <span className="font-bold">--</span></p>
+                          <p className="flex-1">Giới tính: <span className="font-bold">--</span></p>
+                        </div>
+                        <p>Địa chỉ: <span className="font-bold">Thông tin được bảo mật trên Medimate</span></p>
+                        <p>Chẩn đoán: <span className="font-bold">{data.diagnosis}</span></p>
+                        <p>Bệnh kèm theo: <span className="font-bold">Không</span></p>
+                      </div>
+
+                      {/* Table */}
+                      <table className="w-full border-collapse border border-black mb-6 text-[15px]">
+                        <thead>
+                          <tr className="font-bold">
+                            <th className="border border-black p-2 w-[10%] text-center">STT</th>
+                            <th className="border border-black p-2 w-[60%] text-left">Tên thuốc / Hàm lượng</th>
+                            <th className="border border-black p-2 w-[15%] text-center">ĐVT</th>
+                            <th className="border border-black p-2 w-[15%] text-center">Số lượng</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.medicines.map((med, index) => (
+                            <tr key={index}>
+                              <td className="border border-black p-2 text-center align-top font-bold text-[16px]">{index + 1}</td>
+                              <td className="border border-black p-2 align-top">
+                                <p className="font-bold text-[16px]">
+                                  {med.medicineName} {med.dosage ? `(${med.dosage})` : ""}
+                                </p>
+                                <p className="italic mt-1 text-[15px]">Uống, {med.instructions} -</p>
+                              </td>
+                              <td className="border border-black p-2 text-center align-top text-[16px]">{med.unit}</td>
+                              <td className="border border-black p-2 text-center align-top font-bold text-[16px]">{med.quantity}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      <p className="text-[16px] font-bold mb-6">Cộng khoản: {data.medicines.length}</p>
+
+                      {/* Footer */}
+                      <div className="flex justify-between items-start mt-8">
+                        <div className="w-[60%] pr-4">
+                          <p className="italic text-[15px]">Bệnh nhân đi khám lần sau xin mang theo đơn này!</p>
+                          <p className="text-[18px] mt-2 text-red-600 font-bold italic border-b border-red-200 pb-1 inline-block">
+                            Lời dặn của bác sĩ: {data.advice || "Hết thuốc tái khám"}
+                          </p>
+                        </div>
+                        <div className="w-[40%] text-center">
+                          <p className="text-[16px] font-bold mb-2 italic">
+                            Ngày {new Date().getDate().toString().padStart(2, '0')} tháng {(new Date().getMonth() + 1).toString().padStart(2, '0')} năm {new Date().getFullYear()}
+                          </p>
+                          <p className="text-[16px] font-bold">Bác sĩ điều trị</p>
+                          <div className="h-28 flex items-center justify-center">
+                            {/* Dấu phẩy ký mẫu hoặc khoảng trống */}
+                          </div>
+                          <p className="text-[18px] font-bold text-blue-800 italic">
+                            Bs. {data.doctorName || "Medimate"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </>
               ) : null}
             </div>
           </motion.div>
