@@ -191,9 +191,9 @@ export default function DocumentDashboardPage() {
               ]}
             />
           </div>
-          <button className="flex items-center gap-2 rounded-lg border border-gray-400 bg-white px-4 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10">
+          {/* <button className="flex items-center gap-2 rounded-lg border border-gray-400 bg-white px-4 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10">
             Xuất <PiExport />
-          </button>
+          </button> */}
 
           <button onClick={() => openModal("upload")} className="btn-primary">
             <MdOutlineDriveFolderUpload />
@@ -393,9 +393,9 @@ function DocumentCard({ data }: DocumentCardProps) {
         <StatusBadge status={data.status as any} />
 
         <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
-          <Tooltip content="Tải xuống">
+          {/* <Tooltip content="Tải xuống">
             <IconAction icon={<HiOutlineDownload />} />
-          </Tooltip>
+          </Tooltip> */}
           <Tooltip content="Xoá tài liệu">
             <IconAction
               onClick={() => openDeleteModal("document", data.id)}
@@ -472,9 +472,9 @@ function DocumentTable({
           {/* Actions */}
           <td className="p-4 text-center">
             <div className="flex items-center justify-center gap-2">
-              <Tooltip content="Tải xuống">
+              {/* <Tooltip content="Tải xuống">
                 <IconAction icon={<HiOutlineDownload />} />
-              </Tooltip>
+              </Tooltip> */}
               <Tooltip content="Xoá tài liệu">
                 <IconAction
                   onClick={() => openDeleteModal("document", row.id)}
@@ -494,17 +494,17 @@ function FileIcon({
   type,
 }: {
   type:
-    | "pdf"
-    | "json"
-    | "text"
-    | "docx"
-    | "doc"
-    | "txt"
-    | "csv"
-    | "xls"
-    | "xlsx"
-    | "html"
-    | "md";
+  | "pdf"
+  | "json"
+  | "text"
+  | "docx"
+  | "doc"
+  | "txt"
+  | "csv"
+  | "xls"
+  | "xlsx"
+  | "html"
+  | "md";
 }) {
   const map: Record<string, { icon: React.ReactNode; className: string }> = {
     pdf: {
