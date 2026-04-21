@@ -47,6 +47,7 @@ export interface ChatSessionSummaryResponse {
 export interface ChatDoctorMessageResponse {
   messageId: string;
   sessionId: string;
+  senderId?: string;
   senderType: 1 | 2 | number;
   content: string | null;
   attachmentUrl?: string | null;
@@ -54,7 +55,11 @@ export interface ChatDoctorMessageResponse {
   senderName?: string | null;
   senderAvatar?: string | null;
   isRead?: boolean;
-  createdAt: string;
+  createdAt?: string; // Tạm giữ lại nếu code cũ còn dùng
+  sendAt?: string;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  chatExpiredAt?: string | null;
 }
 
 export interface SendChatDoctorMessageBody {
