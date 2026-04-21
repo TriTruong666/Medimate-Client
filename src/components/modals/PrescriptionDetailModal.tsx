@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useState } from "react";
 import { HiOutlinePencil, HiOutlineX, HiOutlineDownload } from "react-icons/hi";
-import html2canvas from "html2canvas";
+import { toBlob } from "html-to-image";
 import { Badge } from "@/components/custom-ui/Badge";
 import { PrescriptionModal } from "@/components/modals/PrescriptionModal";
 import { usePrescriptionDetail } from "@/hooks/data/usePrescriptionHooks";
@@ -31,28 +31,26 @@ export function PrescriptionDetailModal({
     if (!printRef.current) return;
     try {
       setIsCapturing(true);
-      const canvas = await html2canvas(printRef.current, {
-        scale: 2,
+      const blob = await toBlob(printRef.current, {
         backgroundColor: "#ffffff",
-        useCORS: true,
+        pixelRatio: 2,
+        style: {
+          opacity: "1",      // Override any inline opacity overrides for printing
+        }
       });
-      await new Promise<void>((resolve, reject) => {
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error("Lỗi lưu ảnh."));
-            return;
-          }
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `DonThuoc_${data?.memberId || "Patient"}_${formatDate(new Date().toISOString()).split(" ")[0].replace(/\//g, "-")}.png`;
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          resolve();
-        }, "image/png");
-      });
+
+      if (!blob) {
+        throw new Error("Không thể tạo ảnh từ giao diện này.");
+      }
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `DonThuoc_${data?.memberId || "Patient"}_${formatDate(new Date().toISOString()).split(" ")[0].replace(/\//g, "-")}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("Error capturing prescription:", err);
     } finally {
