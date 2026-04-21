@@ -228,3 +228,71 @@ function MetaCard({ label, value }: { label: string; value: string }) {
     </div>
   );
 }
+
+// {/* THÊM COMPONENT TEMPLATE ẨN VÀO CUỐI MODAL */ }
+// <div className="fixed top-[-9999px] left-[-9999px]">
+//   {list.map(item => (
+//     <div key={`template-${getPrescriptionId(item)}`} id={`prescription-card-${getPrescriptionId(item)}`}
+//       className="w-[600px] bg-white p-8 font-serif text-black leading-relaxed"
+//     >
+//       {/* Header chuẩn y tế */}
+//       <div className="flex justify-between items-start border-b-2 border-black pb-4 mb-4">
+//         <div>
+//           <p className="font-bold text-sm uppercase">Sở y tế MediMate</p>
+//           <p className="font-bold text-xs">TRUNG TÂM TƯ VẤN SỨC KHỎE TỪ XA</p>
+//         </div>
+//         <div className="text-right text-[10px]">
+//           <p>Mã y tế: {shortId(item.memberId)}</p>
+//           <p>Số hồ sơ: {shortId(getPrescriptionId(item))}</p>
+//         </div>
+//       </div>
+
+//       <h1 className="text-center text-2xl font-bold my-6 uppercase">Đơn Thuốc</h1>
+
+//       {/* Thông tin bệnh nhân */}
+//       <div className="space-y-1 mb-6 text-sm">
+//         <p>Họ tên bệnh nhân: <span className="font-bold uppercase ml-2">{item.memberName}</span></p>
+//         <p>Chẩn đoán: <span className="font-bold italic">{item.diagnosis}</span></p>
+//       </div>
+
+//       {/* Bảng thuốc */}
+//       <table className="w-full border-collapse border border-black text-sm">
+//         <thead>
+//           <tr className="bg-gray-100">
+//             <th className="border border-black p-1 w-10">STT</th>
+//             <th className="border border-black p-1 text-left">Tên thuốc / Hàm lượng</th>
+//             <th className="border border-black p-1 w-16">ĐVT</th>
+//             <th className="border border-black p-1 w-16">SL</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           {item.medicines.map((med, idx) => (
+//             <tr key={idx}>
+//               <td className="border border-black p-1 text-center">{idx + 1}</td>
+//               <td className="border border-black p-1">
+//                 <p className="font-bold">{med.medicineName} {med.dosage}</p>
+//                 <p className="italic text-xs">Cách dùng: {med.instructions}</p>
+//               </td>
+//               <td className="border border-black p-1 text-center">{med.unit || "Viên"}</td>
+//               <td className="border border-black p-1 text-center font-bold">{med.quantity}</td>
+//             </tr>
+//           ))}
+//         </tbody>
+//       </table>
+
+//       {/* Lời dặn & Chữ ký */}
+//       <div className="mt-8 flex justify-between">
+//         <div className="w-1/2 text-sm italic">
+//           <p className="font-bold underline mb-1 text-red-600">Lời dặn của bác sĩ:</p>
+//           <p>{item.advice || "Hết thuốc tái khám."}</p>
+//         </div>
+//         <div className="text-center">
+//           <p className="text-xs mb-12">Ngày {format(new Date(), "dd")} tháng {format(new Date(), "MM")} năm {format(new Date(), "yyyy")}</p>
+//           <p className="font-bold">Bác sĩ điều trị</p>
+//           <div className="h-16"></div> {/* Khoảng trống chữ ký */}
+//           <p className="font-bold uppercase underline">BS. {item.doctorName || "Hệ thống"}</p>
+//         </div>
+//       </div>
+//     </div>
+//   ))}
+// </div>

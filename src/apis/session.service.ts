@@ -6,8 +6,13 @@ export interface SessionData {
   appointmentId: string;
   doctorId: string;
   doctorName?: string | null;
+  doctorAvatar?: string | null;
   memberId: string;
   memberName?: string | null;
+  memberAvatar?: string | null;
+  appointmentDate?: string;
+  appointmentTime?: string;
+  appointmentStatus?: string;
   startedAt?: string | null;
   endedAt?: string | null;
   status: string;

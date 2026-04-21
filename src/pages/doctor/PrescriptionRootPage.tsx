@@ -218,14 +218,14 @@ export default function PrescriptionRootPage() {
 
                   <div className="grid gap-2 text-xs text-white/60 md:grid-cols-2">
                     <p>Session: {shortId(session.consultanSessionId, 12)}</p>
-                    <p>Appointment: {shortId(session.appointmentId, 12)}</p>
+                    <p>Lịch hẹn: {session.appointmentTime || "--"}</p>
                     <p>
                       Bắt đầu:{" "}
                       {session.startedAt ? formatDate(session.startedAt) : "--"}
                     </p>
                     <p>
                       Kết thúc:{" "}
-                      {session.endedAt ? formatDate(session.endedAt) : "--"}
+                      {chatEndAt ? formatDate(chatEndAt.toISOString()) : "--"}
                     </p>
                   </div>
 
