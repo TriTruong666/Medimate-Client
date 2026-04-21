@@ -36,13 +36,23 @@ export function PrescriptionDetailModal({
         backgroundColor: "#ffffff",
         useCORS: true,
       });
-      const dataUrl = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.href = dataUrl;
-      link.download = `DonThuoc_${data?.memberId || "Patient"}_${formatDate(new Date().toISOString()).split(" ")[0].replace(/\//g, "-")}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      await new Promise<void>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("Lỗi lưu ảnh."));
+            return;
+          }
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `DonThuoc_${data?.memberId || "Patient"}_${formatDate(new Date().toISOString()).split(" ")[0].replace(/\//g, "-")}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+          resolve();
+        }, "image/png");
+      });
     } catch (err) {
       console.error("Error capturing prescription:", err);
     } finally {
@@ -182,7 +192,7 @@ export function PrescriptionDetailModal({
                   </div>
 
                   {/* VÙNG IN ẨN DÀNH CHO HTML2CANVAS */}
-                  <div className="fixed top-[200vh] left-0 pointer-events-none z-[-50]">
+                  <div className="absolute top-0 left-0 pointer-events-none -z-50 opacity-0">
                     <div
                       ref={printRef}
                       className="w-[794px] bg-white text-black"
