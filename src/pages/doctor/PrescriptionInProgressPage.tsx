@@ -9,7 +9,7 @@ import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
-import { DoctorSupportDetailPage } from "./DoctorSupportDetailPage";
+import { DoctorSupportDetailModal } from "@/components/modals/DoctorSupportDetailModal";
 import { PrescriptionSessionModal } from "@/components/modals/PrescriptionSessionModal";
 import { PATHS } from "@/config/paths";
 import { useMyConsultationSessions } from "@/hooks/data/useSessionHooks";
@@ -204,7 +204,7 @@ export default function PrescriptionInProgressPage() {
           </div>
         )}
 
-        <DoctorSupportDetailPage
+        <DoctorSupportDetailModal
           open={!!selectedAppointmentId}
           appointmentId={selectedAppointmentId}
           onClose={() => setSelectedAppointmentId(null)}

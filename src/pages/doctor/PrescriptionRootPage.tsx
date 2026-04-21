@@ -11,7 +11,7 @@ import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import IconAction from "@/components/custom-ui/IconAction";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
-import { DoctorSupportDetailPage } from "./DoctorSupportDetailPage";
+import { DoctorSupportDetailModal } from "@/components/modals/DoctorSupportDetailModal";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { useMyConsultationSessions } from "@/hooks/data/useSessionHooks";
 import { formatDate } from "@/common/format";
@@ -278,7 +278,7 @@ export default function PrescriptionRootPage() {
           <p>Chỉ phiên đang diễn ra mới được tạo đơn.</p>
         </div>
 
-        <DoctorSupportDetailPage
+        <DoctorSupportDetailModal
           open={!!selectedAppointmentId}
           appointmentId={selectedAppointmentId}
           onClose={() => setSelectedAppointmentId(null)}

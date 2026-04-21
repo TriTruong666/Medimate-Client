@@ -1,18 +1,34 @@
 import { useState, useMemo } from "react";
-import { FiEye, FiAward, FiStar, FiMail, FiPhone, FiPlus, FiEdit3, FiTrash2, FiFileText } from "react-icons/fi";
+import {
+  FiEye,
+  FiAward,
+  FiStar,
+  FiMail,
+  FiPhone,
+  FiPlus,
+  FiEdit3,
+  FiTrash2,
+  FiFileText,
+} from "react-icons/fi";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
-import { DataTableShell, type DataTableColumn } from "@/components/custom-ui/DataTableShell";
+import {
+  DataTableShell,
+  type DataTableColumn,
+} from "@/components/custom-ui/DataTableShell";
 import {
   useDoctorContracts,
   useCreateDoctorContract,
   useUpdateDoctorContract,
-  useDeleteDoctorContract
+  useDeleteDoctorContract,
 } from "@/hooks/data/useDoctorContractHooks";
 import { formatDate } from "@/common/format";
-import type { DoctorContract, UpdateDoctorContractBody } from "@/types/DoctorContract";
+import type {
+  DoctorContract,
+  UpdateDoctorContractBody,
+} from "@/types/DoctorContract";
 import { AnimatePresence, motion } from "framer-motion";
 
 const columns: DataTableColumn[] = [
@@ -25,9 +41,17 @@ const columns: DataTableColumn[] = [
 
 export default function DoctorContractPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingContract, setEditingContract] = useState<DoctorContract | null>(null);
+  const [editingContract, setEditingContract] = useState<DoctorContract | null>(
+    null,
+  );
 
-  const { data: contractsData, isLoading, isError, error, refetch } = useDoctorContracts();
+  const {
+    data: contractsData,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useDoctorContracts();
   const deleteMutation = useDeleteDoctorContract();
 
   const breadcrumbItems = [
@@ -62,7 +86,7 @@ export default function DoctorContractPage() {
         </div>
         <button
           onClick={handleAddNew}
-          className="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
+          className="bg-primary flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white shadow-lg transition-all hover:opacity-90 active:scale-95"
         >
           <FiPlus strokeWidth={3} /> Thêm Hợp đồng
         </button>
@@ -78,31 +102,54 @@ export default function DoctorContractPage() {
           onRetry={() => void refetch()}
         >
           {contractsData?.map((row) => (
-            <tr key={row.contractId} className="transition-colors hover:bg-gray-50/80 dark:hover:bg-white/5">
-              <td className="p-4 border-r dark:border-border-dark">
+            <tr
+              key={row.contractId}
+              className="transition-colors hover:bg-gray-50/80 dark:hover:bg-white/5"
+            >
+              <td className="dark:border-border-dark border-r border-gray-400 p-4">
                 <div className="flex items-center gap-3">
                   <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl font-bold">
                     <FiFileText />
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-sm font-semibold text-gray-900 dark:text-white">Mã: {row.contractId.slice(0, 8)}...</span>
-                    <span className="text-[11px] text-gray-500 uppercase tracking-wider">MediMate Partner</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      Mã: {row.contractId.slice(0, 8)}...
+                    </span>
+                    <span className="text-[11px] tracking-wider text-gray-500 uppercase">
+                      MediMate Partner
+                    </span>
                   </div>
                 </div>
               </td>
-              <td className="p-4 border-r dark:border-border-dark text-sm">
+              <td className="dark:border-border-dark border-r border-gray-400 p-4 text-sm">
                 <div className="flex flex-col gap-1">
-                  <span className="text-gray-600 dark:text-gray-300">Bắt đầu: <b>{formatDate(row.startDate || "")}</b></span>
-                  <span className="text-gray-600 dark:text-gray-300">Kết thúc: <b>{formatDate(row.endDate || "")}</b></span>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Bắt đầu: <b>{formatDate(row.startDate || "")}</b>
+                  </span>
+                  <span className="text-gray-600 dark:text-gray-300">
+                    Kết thúc: <b>{formatDate(row.endDate || "")}</b>
+                  </span>
                 </div>
               </td>
-              <td className="p-4 border-r dark:border-border-dark text-center">
+              <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
                 <Badge
-                  type={row.status === "Active" ? "success" : row.status === "Expired" ? "warning" : "error"}
-                  value={row.status === "Active" ? "Đang hiệu lực" : row.status === "Expired" ? "Hết hạn" : "Đã chấm dứt"}
+                  type={
+                    row.status === "Active"
+                      ? "success"
+                      : row.status === "Expired"
+                        ? "warning"
+                        : "error"
+                  }
+                  value={
+                    row.status === "Active"
+                      ? "Đang hiệu lực"
+                      : row.status === "Expired"
+                        ? "Hết hạn"
+                        : "Đã chấm dứt"
+                  }
                 />
               </td>
-              <td className="p-4 border-r dark:border-border-dark text-sm text-gray-500 italic">
+              <td className="dark:border-border-dark border-r p-4 text-sm text-gray-500 italic">
                 {row.note || "Không có ghi chú"}
               </td>
               <td className="p-4">
@@ -145,7 +192,15 @@ export default function DoctorContractPage() {
 }
 
 // --- MODAL FORM COMPONENT ---
-function ContractFormModal({ isOpen, onClose, initialData }: { isOpen: boolean, onClose: () => void, initialData: DoctorContract | null }) {
+function ContractFormModal({
+  isOpen,
+  onClose,
+  initialData,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  initialData: DoctorContract | null;
+}) {
   const createMutation = useCreateDoctorContract();
   const updateMutation = useUpdateDoctorContract();
 
@@ -178,7 +233,7 @@ function ContractFormModal({ isOpen, onClose, initialData }: { isOpen: boolean, 
       // Update
       await updateMutation.mutateAsync({
         id: initialData.contractId,
-        data: { ...form, file } as UpdateDoctorContractBody
+        data: { ...form, file } as UpdateDoctorContractBody,
       });
     } else {
       // Create
@@ -191,28 +246,54 @@ function ContractFormModal({ isOpen, onClose, initialData }: { isOpen: boolean, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl dark:bg-neutral-900 border dark:border-white/10"
+        className="w-full max-w-lg rounded-2xl border border-gray-400 bg-white p-6 shadow-2xl dark:border-white/10 dark:bg-neutral-900"
       >
-        <h2 className="text-xl font-bold mb-4">{initialData ? "Cập nhật Hợp đồng" : "Thêm Hợp đồng mới"}</h2>
+        <h2 className="mb-4 text-xl font-bold">
+          {initialData ? "Cập nhật Hợp đồng" : "Thêm Hợp đồng mới"}
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-500">Ngày bắt đầu</label>
-              <input type="date" value={form.startDate} onChange={e => setForm({ ...form, startDate: e.target.value })} className="input-primary" required />
+              <label className="text-xs font-semibold text-gray-500">
+                Ngày bắt đầu
+              </label>
+              <input
+                type="date"
+                value={form.startDate}
+                onChange={(e) =>
+                  setForm({ ...form, startDate: e.target.value })
+                }
+                className="input-primary"
+                required
+              />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-500">Ngày kết thúc</label>
-              <input type="date" value={form.endDate} onChange={e => setForm({ ...form, endDate: e.target.value })} className="input-primary" required />
+              <label className="text-xs font-semibold text-gray-500">
+                Ngày kết thúc
+              </label>
+              <input
+                type="date"
+                value={form.endDate}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                className="input-primary"
+                required
+              />
             </div>
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500">Trạng thái</label>
-            <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })} className="input-primary">
+            <label className="text-xs font-semibold text-gray-500">
+              Trạng thái
+            </label>
+            <select
+              value={form.status}
+              onChange={(e) => setForm({ ...form, status: e.target.value })}
+              className="input-primary"
+            >
               <option value="Active">Đang hiệu lực</option>
               <option value="Expired">Hết hạn</option>
               <option value="Terminated">Đã chấm dứt</option>
@@ -220,23 +301,45 @@ function ContractFormModal({ isOpen, onClose, initialData }: { isOpen: boolean, 
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500">File hợp đồng (PDF/Ảnh)</label>
-            <input type="file" onChange={e => setFile(e.target.files?.[0] || null)} className="text-sm border p-2 rounded-xl w-full" required={!initialData} />
+            <label className="text-xs font-semibold text-gray-500">
+              File hợp đồng (PDF/Ảnh)
+            </label>
+            <input
+              type="file"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              className="w-full rounded-xl border p-2 text-sm"
+              required={!initialData}
+            />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-xs font-semibold text-gray-500">Ghi chú</label>
-            <textarea value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} className="input-primary h-20 resize-none" placeholder="Nhập ghi chú nếu có..." />
+            <label className="text-xs font-semibold text-gray-500">
+              Ghi chú
+            </label>
+            <textarea
+              value={form.note}
+              onChange={(e) => setForm({ ...form, note: e.target.value })}
+              className="input-primary h-20 resize-none"
+              placeholder="Nhập ghi chú nếu có..."
+            />
           </div>
 
           <div className="flex justify-end gap-3 pt-4">
-            <button type="button" onClick={onClose} className="px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 rounded-xl">Hủy</button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-xl px-4 py-2 text-sm text-gray-500 hover:bg-gray-100"
+            >
+              Hủy
+            </button>
             <button
               type="submit"
               disabled={createMutation.isPending || updateMutation.isPending}
-              className="bg-primary text-white px-6 py-2 rounded-xl text-sm font-bold shadow-lg disabled:opacity-50"
+              className="bg-primary rounded-xl px-6 py-2 text-sm font-bold text-white shadow-lg disabled:opacity-50"
             >
-              {createMutation.isPending || updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
+              {createMutation.isPending || updateMutation.isPending
+                ? "Đang lưu..."
+                : "Lưu thay đổi"}
             </button>
           </div>
         </form>

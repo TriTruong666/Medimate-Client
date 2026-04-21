@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { FiCalendar, FiClock } from "react-icons/fi";
 import { HiOutlineX } from "react-icons/hi";
 
-type DoctorSupportDetailPageProps = {
+type DoctorSupportDetailModalProps = {
   open: boolean;
   appointmentId: string | null;
   onClose: () => void;
@@ -83,36 +83,25 @@ function Avatar({ name, src }: { name?: string | null; src?: string | null }) {
       <img
         src={src}
         alt={name || "avatar"}
-        className="h-16 w-16 rounded-2xl object-cover"
+        className="h-10 w-10 rounded-full border border-gray-100 object-cover shadow-sm dark:border-white/10"
       />
     );
   }
 
   return (
-    <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-gray-200 bg-white text-lg font-semibold text-gray-900 dark:border-white/10 dark:bg-white/5 dark:text-white">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
       {getInitials(name)}
     </div>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-start justify-between gap-4 rounded-xl border border-gray-100 bg-white px-4 py-3 dark:border-white/10 dark:bg-white/5">
-      <span className="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
-        {label}
-      </span>
-      <span className="text-right text-sm font-medium text-gray-900 dark:text-white">
-        {value}
-      </span>
-    </div>
-  );
-}
 
-export function DoctorSupportDetailPage({
+
+export function DoctorSupportDetailModal({
   open,
   appointmentId,
   onClose,
-}: DoctorSupportDetailPageProps) {
+}: DoctorSupportDetailModalProps) {
   const { data, isLoading, isError, error, refetch } = useAppointmentDetail(
     appointmentId || "",
     open,
@@ -148,12 +137,12 @@ export function DoctorSupportDetailPage({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           onClick={(event) => event.stopPropagation()}
-          className="z-10 flex h-[90vh] max-h-215 min-h-0 w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900 dark:backdrop-blur-xl"
+          className="z-10 flex h-[90vh] max-h-[600px] min-h-0 w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900 dark:backdrop-blur-xl"
         >
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/50 p-5 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/50 p-4 dark:border-white/10 dark:bg-white/5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                 Chi tiết lịch hẹn
               </h2>
               <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
@@ -169,7 +158,7 @@ export function DoctorSupportDetailPage({
           </div>
 
           {/* Content */}
-          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-5">
+          <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-4">
             {isLoading ? (
               <DetailSkeleton />
             ) : isError ? (
@@ -190,196 +179,174 @@ export function DoctorSupportDetailPage({
                 </button>
               </div>
             ) : data ? (
-              <div className="space-y-5">
-                <section className="rounded-2xl border border-gray-300 bg-gray-50/30 p-5 dark:border-white/10 dark:bg-white/5">
-                  <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-                    <div className="flex items-start gap-3">
-                      <div className="text-primary flex h-12 w-12 items-center justify-center rounded-xl border border-gray-300 bg-white shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-white">
-                        <FiCalendar className="h-6 w-6" />
+              <div className="space-y-4">
+                {/* Lịch hẹn */}
+                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                    <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                      Lịch hẹn khám bệnh
+                    </p>
+                    {getStatusBadge(data.status)}
+                  </div>
+                  <div className="p-4 font-sans">
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-400">
+                        <FiCalendar className="h-5 w-5" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Lịch hẹn khám bệnh
-                        </h3>
-                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                          <span className="rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
-                            Mã lịch #{toShortId(data.appointmentId, 12)}
+                        <div className="flex items-end gap-2">
+                          <h3 className="text-base font-semibold leading-none tracking-tight text-gray-900 dark:text-white">
+                            {formatTime(data.appointmentTime)}
+                          </h3>
+                          <span className="mb-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
+                            {formatDate(data.appointmentDate)}
                           </span>
-                          {getStatusBadge(data.status)}
-                          <span className="rounded-full border border-gray-300 bg-white px-2.5 py-0.5 text-[10px] font-medium text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
-                            Tạo lúc {formatDateTime(data.createdAt)}
+                        </div>
+                        <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+                          APT #{toShortId(data.appointmentId, 10)} • TẠO {formatDateTime(data.createdAt).toUpperCase()}
+                        </p>
+                      </div>
+                    </div>
+
+                    {data.cancelReason?.trim() ? (
+                      <div className="mt-5 rounded-2xl border border-yellow-200/60 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/20">
+                        <p className="text-[10px] font-bold tracking-widest text-yellow-800 uppercase dark:text-yellow-400">
+                          Nội dung ghi chú / Lý do hủy
+                        </p>
+                        <p className="mt-1.5 text-sm font-medium leading-relaxed text-yellow-900 dark:text-yellow-200/90">
+                          {data.cancelReason}
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </section>
+
+                <div className="grid gap-4 xl:grid-cols-2">
+                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                    <div className="border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                      <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                        Bác sĩ điều trị
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 p-4">
+                      <Avatar name={data.doctorName} src={data.doctorAvatar} />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                          {data.doctorName}
+                        </h3>
+                        <p className="mt-0.5 truncate text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                          {data.specialty || "Chuyên khoa: Chưa cập nhật"}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                    <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                      <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                        Thông tin bệnh nhân
+                      </p>
+                      <span className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+                        #{toShortId(data.memberId, 8)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 p-4">
+                      <Avatar name={data.memberName} src={data.memberAvatar} />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                          {data.memberName}
+                        </h3>
+                        <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                          <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
+                            {getGenderDisplay(data.memberGender)}
+                          </span>
+                          <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
+                            {formatDateOfBirth(data.memberDateOfBirth)}
                           </span>
                         </div>
                       </div>
                     </div>
-                    <div className="grid gap-1.5 text-xs text-gray-600 md:text-right dark:text-gray-300">
-                      <div className="flex items-center gap-2 md:justify-end">
-                        <FiClock className="h-4 w-4 text-gray-400" />
-                        <span className="bg-primary/10 text-primary rounded-md px-2 py-0.5 font-semibold dark:bg-blue-500/20 dark:text-blue-400">
-                          {formatTime(data.appointmentTime)}
-                        </span>
-                        <span className="font-medium text-gray-500 dark:text-gray-400">
-                          • {formatDate(data.appointmentDate)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {data.cancelReason?.trim() ? (
-                    <div className="mt-5 rounded-xl border border-yellow-500/20 bg-yellow-50/50 p-4 dark:bg-yellow-500/5">
-                      <p className="text-[10px] font-medium tracking-widest text-yellow-700 uppercase dark:text-yellow-300">
-                        Lý do hủy / ghi chú
-                      </p>
-                      <p className="mt-1.5 text-xs leading-relaxed text-yellow-900 dark:text-yellow-50/90">
-                        {data.cancelReason}
-                      </p>
-                    </div>
-                  ) : null}
-                </section>
-
-                <div className="grid gap-5 xl:grid-cols-2">
-                  <section className="rounded-2xl border border-gray-300 bg-gray-50/30 p-5 dark:border-white/10 dark:bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={data.doctorName} src={data.doctorAvatar} />
-                      <div>
-                        <p className="text-[10px] font-medium tracking-[0.2em] text-gray-400 uppercase">
-                          Bác sĩ điều trị
-                        </p>
-                        <h3 className="mt-0.5 text-base font-semibold text-gray-900 dark:text-white">
-                          {data.doctorName}
-                        </h3>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 space-y-2.5">
-                      <InfoRow
-                        label="Chuyên khoa"
-                        value={data.specialty || "Chưa cập nhật"}
-                      />
-                    </div>
-                  </section>
-
-                  <section className="rounded-2xl border border-gray-300 bg-gray-50/30 p-5 dark:border-white/10 dark:bg-white/5">
-                    <div className="flex items-center gap-3">
-                      <Avatar name={data.memberName} src={data.memberAvatar} />
-                      <div>
-                        <p className="text-[10px] font-medium tracking-[0.2em] text-gray-400 uppercase">
-                          Thông tin bệnh nhân
-                        </p>
-                        <h3 className="mt-0.5 text-base font-semibold text-gray-900 dark:text-white">
-                          {data.memberName}
-                        </h3>
-                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                          {getGenderDisplay(data.memberGender)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-5 space-y-2.5">
-                      <InfoRow
-                        label="Mã bệnh nhân"
-                        value={`#${toShortId(data.memberId, 12)}`}
-                      />
-                      <InfoRow
-                        label="Ngày sinh"
-                        value={formatDateOfBirth(data.memberDateOfBirth)}
-                      />
-                    </div>
                   </section>
                 </div>
 
-                {/* Hồ sơ sức khỏe */}
-                <section className="rounded-2xl border border-gray-300 bg-gray-50/30 p-5 dark:border-white/10 dark:bg-white/5">
-                  <div className="mb-5 flex items-center justify-between">
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">
+                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                    <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                       Hồ sơ sức khỏe
-                    </h3>
-                    <div className="bg-primary/20 h-0.5 w-12 rounded-full" />
+                    </p>
+                    {healthProfile && healthProfile.insuranceNumber && (
+                      <span className="text-[10px] font-bold text-gray-500 dark:text-gray-400">
+                        BHYT: <span className="text-gray-900 dark:text-gray-200">{healthProfile.insuranceNumber}</span>
+                      </span>
+                    )}
                   </div>
-
-                  {isLoadingHealth ? (
-                    <div className="flex animate-pulse flex-col space-y-3">
-                      <div className="h-3 w-1/3 rounded bg-gray-200 dark:bg-white/10" />
-                      <div className="h-10 w-full rounded-xl bg-gray-200 dark:bg-white/10" />
-                    </div>
-                  ) : healthProfile ? (
-                    <div className="space-y-6">
-                      {/* Thẻ chỉ số */}
-                      <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4">
-                        {[
-                          {
-                            label: "Nhóm máu",
-                            value: healthProfile.bloodType || "N/A",
-                            color: "text-red-600",
-                          },
-                          {
-                            label: "Chiều cao",
-                            value: healthProfile.height
-                              ? `${healthProfile.height} cm`
-                              : "N/A",
-                            color: "text-blue-600",
-                          },
-                          {
-                            label: "Cân nặng",
-                            value: healthProfile.weight
-                              ? `${healthProfile.weight} kg`
-                              : "N/A",
-                            color: "text-green-600",
-                          },
-                          {
-                            label: "BMI",
-                            value: healthProfile.bmi
-                              ? healthProfile.bmi.toFixed(1)
-                              : "N/A",
-                            color: "text-orange-600",
-                          },
-                        ].map((stat) => (
-                          <div
-                            key={stat.label}
-                            className="rounded-xl border border-gray-200 bg-white p-3 shadow-sm dark:border-white/5 dark:bg-black/20"
-                          >
-                            <p className="text-[9px] font-medium tracking-widest text-gray-400 uppercase">
-                              {stat.label}
-                            </p>
-                            <p
-                              className={`mt-1 text-base font-semibold ${stat.color} dark:text-white`}
-                            >
-                              {stat.value}
-                            </p>
-                          </div>
-                        ))}
+                  <div className="p-4">
+                    {isLoadingHealth ? (
+                      <div className="flex animate-pulse flex-col space-y-3">
+                        <div className="h-4 w-1/3 rounded-lg bg-gray-200 dark:bg-white/10" />
+                        <div className="h-16 w-full rounded-2xl bg-gray-200 dark:bg-white/10" />
                       </div>
+                    ) : healthProfile ? (
+                      <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                          {[
+                            {
+                              label: "Nhóm máu",
+                              value: healthProfile.bloodType || "N/A",
+                              color: "text-rose-500 dark:text-rose-400",
+                            },
+                            {
+                              label: "Chiều cao",
+                              value: healthProfile.height ? `${healthProfile.height} cm` : "----",
+                              color: "text-blue-500 dark:text-blue-400",
+                            },
+                            {
+                              label: "Cân nặng",
+                              value: healthProfile.weight ? `${healthProfile.weight} kg` : "----",
+                              color: "text-emerald-500 dark:text-emerald-400",
+                            },
+                            {
+                              label: "BMI",
+                              value: healthProfile.bmi ? healthProfile.bmi.toFixed(1) : "----",
+                              color: "text-amber-500 dark:text-amber-400",
+                            },
+                          ].map((stat) => (
+                            <div
+                              key={stat.label}
+                              className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-white/5 dark:bg-white/5"
+                            >
+                              <p className="text-[9px] font-medium tracking-widest text-gray-400 uppercase">
+                                {stat.label}
+                              </p>
+                              <p className={`mt-1 text-sm font-semibold ${stat.color}`}>
+                                {stat.value}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
 
-                      {healthProfile.insuranceNumber && (
-                        <InfoRow
-                          label="Bảo hiểm y tế"
-                          value={healthProfile.insuranceNumber}
-                        />
-                      )}
-
-                      {healthProfile.conditions &&
-                        healthProfile.conditions.length > 0 && (
+                        {healthProfile.conditions && healthProfile.conditions.length > 0 && (
                           <div className="space-y-3">
-                            <p className="text-[10px] font-medium tracking-wider text-gray-700 uppercase dark:text-gray-300">
+                            <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                               Bệnh lý nền
                             </p>
                             <div className="grid gap-3 sm:grid-cols-2">
                               {healthProfile.conditions.map((condition) => (
                                 <div
                                   key={condition.conditionId}
-                                  className="group hover:border-primary/30 relative rounded-xl border border-gray-200 bg-white p-3.5 transition-all dark:border-white/10 dark:bg-white/5"
+                                  className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5"
                                 >
                                   <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                                     {condition.conditionName}
                                   </h4>
-                                  <p className="mt-0.5 text-[11px] text-gray-500 dark:text-gray-400">
+                                  <p className="mt-1 text-xs font-medium text-gray-500 dark:text-gray-400">
                                     {condition.description}
                                   </p>
                                   <span
-                                    className={`mt-2.5 inline-block rounded-md px-2 py-1 text-[9px] font-medium tracking-wider uppercase ${
+                                    className={`mt-3 inline-block rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
                                       condition.status === "Active"
-                                        ? "bg-red-50 text-red-600 dark:bg-red-500/20 dark:text-red-400"
-                                        : "bg-green-50 text-green-600 dark:bg-green-500/20 dark:text-green-400"
+                                        ? "bg-rose-50 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400"
+                                        : "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
                                     }`}
                                   >
                                     {condition.status}
@@ -389,14 +356,15 @@ export function DoctorSupportDetailPage({
                             </div>
                           </div>
                         )}
-                    </div>
-                  ) : (
-                    <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center">
-                      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                        Bệnh nhân chưa cập nhật hồ sơ sức khỏe.
-                      </p>
-                    </div>
-                  )}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 py-8 dark:border-white/10 dark:bg-white/5">
+                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500">
+                          Bệnh nhân chưa cập nhật hồ sơ sức khỏe
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </section>
               </div>
             ) : (
@@ -412,7 +380,7 @@ export function DoctorSupportDetailPage({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end gap-3 border-t border-gray-400 bg-gray-50/50 p-5 dark:border-white/10 dark:bg-white/5">
+          <div className="flex justify-end gap-3 border-t border-gray-400 bg-gray-50/50 p-4 dark:border-white/10 dark:bg-white/5">
             <button
               onClick={onClose}
               className="rounded-lg px-6 py-2 text-xs font-semibold text-gray-600 transition hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-white/10"

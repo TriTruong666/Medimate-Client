@@ -17,7 +17,7 @@ import { chatPopupAtom, closePopupAtom, chatSessionExpiryAtom } from "../../stor
 import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
 import { Spinner } from "../custom-ui/Spinner";
 import type { ChatDoctorMessageResponse, ChatSessionSummaryResponse } from "@/types/ChatDoctor";
-import { DoctorSupportDetailPage } from "@/pages/doctor/DoctorSupportDetailPage";
+import { DoctorSupportDetailModal } from "@/components/modals";
 
 type ChatPopupProps = {
   sessionId: string;
@@ -267,7 +267,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
 
       {/* Patient profile modal */}
       {appointmentId && (
-        <DoctorSupportDetailPage
+        <DoctorSupportDetailModal
           open={isProfileOpen}
           appointmentId={appointmentId}
           onClose={() => setIsProfileOpen(false)}

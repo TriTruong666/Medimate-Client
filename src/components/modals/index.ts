@@ -14,3 +14,4 @@ export * from "./UploadDocumentModal";
 export * from "./ConfirmUpdateProfileModal";
 export * from "./ConsultationSessionDetailModal";
 export * from "./ProcessDocumentModal";
+export * from "./DoctorSupportDetailModal";

@@ -8,7 +8,7 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { DoctorExceptionModal } from "@/components/modals/DoctorExceptionModal";
-import { DoctorSupportDetailPage } from "./DoctorSupportDetailPage";
+import { DoctorSupportDetailModal } from "@/components/modals/DoctorSupportDetailModal";
 import {
   useDoctorAppointments,
   useUpdateAppointmentStatus,
@@ -417,7 +417,7 @@ export default function DoctorSupportPage({
         onClose={() => setIsExceptionModalOpen(false)}
       />
 
-      <DoctorSupportDetailPage
+      <DoctorSupportDetailModal
         open={!!selectedAppointmentId}
         appointmentId={selectedAppointmentId}
         onClose={() => setSelectedAppointmentId(null)}
