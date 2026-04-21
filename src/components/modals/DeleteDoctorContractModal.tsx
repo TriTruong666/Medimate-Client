@@ -28,7 +28,7 @@ export function DeleteDoctorContractModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             onClick={(e) => e.stopPropagation()}
-            className="flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
+            className="flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10">
@@ -48,21 +48,27 @@ export function DeleteDoctorContractModal({
             {/* Content */}
             <div className="space-y-6 p-6">
               <p className="text-sm text-gray-500 dark:text-gray-300">
-                Hành động này sẽ xoá vĩnh viễn hợp đồng <span className="font-semibold text-gray-900 dark:text-white">HD-{shortId}</span>. Vui lòng xác nhận trước khi tiếp tục.
+                Hành động này sẽ xoá vĩnh viễn hợp đồng{" "}
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  HD-{shortId}
+                </span>
+                . Vui lòng xác nhận trước khi tiếp tục.
               </p>
 
               <div className="flex flex-col gap-3">
                 <div className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-50 p-4 dark:bg-red-500/10">
                   <HiOutlineInformationCircle className="mt-0.5 flex-shrink-0 text-red-600 dark:text-red-400" />
                   <p className="text-sm text-red-700 dark:text-red-200">
-                    Việc xoá hợp đồng sẽ gỡ bỏ các ràng buộc pháp lý và quyền lợi liên quan của bác sĩ trong hệ thống.
+                    Việc xoá hợp đồng sẽ gỡ bỏ các ràng buộc pháp lý và quyền
+                    lợi liên quan của bác sĩ trong hệ thống.
                   </p>
                 </div>
 
                 <div className="flex items-start gap-3 rounded-lg border border-gray-400 bg-white/5 p-4 dark:border-white/20 dark:bg-white/5">
                   <HiOutlineInformationCircle className="mt-0.5 flex-shrink-0 text-gray-500 dark:text-white" />
                   <p className="text-sm text-gray-600 dark:text-white/80">
-                    Hành động này không thể hoàn tác. Vui lòng kiểm tra kỹ trước khi xoá.
+                    Hành động này không thể hoàn tác. Vui lòng kiểm tra kỹ trước
+                    khi xoá.
                   </p>
                 </div>
               </div>

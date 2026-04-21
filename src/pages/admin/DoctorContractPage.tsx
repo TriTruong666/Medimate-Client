@@ -113,8 +113,8 @@ export default function DoctorContractPage() {
                     <span className="text-sm font-semibold text-gray-900 dark:text-white">
                       HD-{row.contractId.slice(0, 8).toUpperCase()}
                     </span>
-                    <span className="text-[10px] font-bold tracking-widest text-gray-400 uppercase">
-                      Partner Agreement
+                    <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+                      Hợp đồng Bác sĩ
                     </span>
                   </div>
                 </div>

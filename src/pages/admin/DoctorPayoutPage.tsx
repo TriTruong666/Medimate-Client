@@ -236,8 +236,8 @@ function PaidPayoutsView() {
           <td className="dark:border-border-dark border-r border-gray-400 p-4 font-mono text-[13px] text-gray-600 dark:text-gray-300">
             {row.bankTransactionCode || "N/A"}
           </td>
-          <td className="dark:border-border-dark text-success border-r border-gray-400 p-4 text-sm font-bold tabular-nums">
-            {row.amount?.toLocaleString()} đ
+          <td className="dark:border-border-dark text-success border-r border-gray-400 p-4 font-mono text-sm tabular-nums">
+            {formatPrice(row.amount)}
           </td>
           <td className="dark:border-border-dark border-r border-gray-400 p-4 text-[13px] text-gray-600 dark:text-gray-300">
             {row.paidAt

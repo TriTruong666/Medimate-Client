@@ -5,6 +5,7 @@ import { useApprovePayoutMutation } from "@/hooks/data/usePayoutHooks";
 import type { PendingPayout } from "@/apis/payout.service";
 import { Input } from "@/components/custom-ui/Input";
 import { toast } from "@/hooks/useToast";
+import { formatPrice } from "@/common/format";
 
 interface Props {
   isOpen: boolean;
@@ -54,7 +55,7 @@ export function ApprovePayoutModal({ isOpen, onClose, payout }: Props) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             onClick={(e) => e.stopPropagation()}
-            className="z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
+            className="z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
           >
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10">
@@ -70,22 +71,33 @@ export function ApprovePayoutModal({ isOpen, onClose, payout }: Props) {
             </div>
 
             {/* Content */}
-            <form id="approve-payout-form" onSubmit={handleSubmit} className="p-6">
+            <form
+              id="approve-payout-form"
+              onSubmit={handleSubmit}
+              className="p-6"
+            >
               <div className="mb-6 space-y-2">
-                <p className="text-[11px] font-bold tracking-widest text-gray-400 uppercase">Thông tin bác sĩ</p>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400">
-                    <span className="font-bold">{payout.doctorName.charAt(0)}</span>
+                    <span className="font-bold">
+                      {payout.doctorName.charAt(0)}
+                    </span>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">{payout.doctorName}</p>
-                    <p className="text-xs text-gray-500">{payout.bankName} - {payout.accountNumber}</p>
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      {payout.doctorName}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {payout.bankName} - {payout.accountNumber}
+                    </p>
                   </div>
                 </div>
-                <div className="mt-4 rounded-xl bg-orange-50 p-4 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20">
-                  <p className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Số tiền quyết toán</p>
-                  <p className="mt-1 text-2xl font-bold text-orange-700 dark:text-orange-400 tabular-nums">
-                    {payout.amount.toLocaleString()} đ
+                <div className="mt-4 rounded-xl border border-orange-100 bg-orange-50 p-4 dark:border-orange-500/20 dark:bg-orange-500/10">
+                  <p className="text-[10px] font-bold tracking-wider text-orange-600 uppercase">
+                    Số tiền quyết toán
+                  </p>
+                  <p className="mt-1 font-mono text-2xl font-bold text-orange-700 tabular-nums dark:text-orange-400">
+                    {formatPrice(payout.amount)}
                   </p>
                 </div>
               </div>
@@ -107,7 +119,7 @@ export function ApprovePayoutModal({ isOpen, onClose, payout }: Props) {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setFile(e.target.files?.[0] || null)}
-                    className="w-full rounded-xl border border-gray-400 bg-white px-4 py-2 text-xs font-medium text-gray-600 outline-none transition-all file:mr-4 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-1 file:text-xs file:font-semibold hover:border-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:file:bg-white/10 dark:file:text-white"
+                    className="w-full rounded-xl border border-gray-400 bg-white px-4 py-2 text-xs font-medium text-gray-600 transition-all outline-none file:mr-4 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3 file:py-1 file:text-xs file:font-semibold hover:border-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:file:bg-white/10 dark:file:text-white"
                   />
                 </div>
               </div>
@@ -126,7 +138,7 @@ export function ApprovePayoutModal({ isOpen, onClose, payout }: Props) {
                 form="approve-payout-form"
                 type="submit"
                 disabled={approveMutation.isPending}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
               >
                 {approveMutation.isPending ? "Đang xử lý..." : "Xác nhận duyệt"}
               </button>
