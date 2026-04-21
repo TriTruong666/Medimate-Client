@@ -10,6 +10,7 @@ import {
   HiOutlineOfficeBuilding,
   HiOutlineBriefcase,
   HiOutlineIdentification,
+  HiOutlineDownload,
 } from "react-icons/hi";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -118,6 +119,27 @@ function validateAvailabilitySlot(slot: {
 function getAvailabilityId(row: DoctorAvailability): string {
   return row.id || "";
 }
+
+const handleDownload = async (fileUrl: string, fileName: string) => {
+  try {
+    const response = await fetch(fileUrl);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    
+    link.download = fileName || "medimate-document";
+    
+    document.body.appendChild(link);
+    link.click();
+    
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error("Download error:", error);
+    toast.error("Lỗi", "Không thể tải file này về máy tính.");
+  }
+};
 
 export function DoctorProfileDetailModal({
   account,
@@ -368,11 +390,8 @@ function ProfileTab({ account }: { account: DoctorAccount }) {
                 const isPdf = trimmedUrl.toLowerCase().includes(".pdf");
                 
                 return (
-                  <a
+                  <div
                     key={i}
-                    href={trimmedUrl}
-                    target="_blank"
-                    rel="noreferrer"
                     className="group relative flex items-center gap-4 p-3 rounded-xl border border-gray-300 bg-white transition-all hover:border-primary/50 hover:shadow-md dark:border-white/10 dark:bg-black/20"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gray-100 dark:bg-white/5 overflow-hidden">
@@ -388,8 +407,26 @@ function ProfileTab({ account }: { account: DoctorAccount }) {
                       </span>
                       <span className="text-[10px] text-gray-500 uppercase">Nhấn để xem chi tiết</span>
                     </div>
-                    <HiOutlineExternalLink className="h-4 w-4 text-gray-400 group-hover:text-primary transition-colors" />
-                  </a>
+                    <div className="flex gap-2">
+                      <a
+                        href={trimmedUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 transition-colors"
+                        title="Xem trong tab mới"
+                      >
+                        <HiOutlineExternalLink className="h-4 w-4 text-gray-400 group-hover:text-primary" />
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleDownload(trimmedUrl, `CCHN_${account.fullName}.jpg`)}
+                        className="p-2 rounded-lg bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+                        title="Tải về máy tính"
+                      >
+                        <HiOutlineDownload className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -820,10 +857,19 @@ function DocumentsTab({ doctorId }: { doctorId: string }) {
               <p className="font-bold text-gray-900 truncate dark:text-white">{typeLabel}</p>
               <p className="text-xs text-gray-500 mt-1">Nộp lúc: {doc.submittedAt ? formatRelativeTime(doc.submittedAt) : "N/A"}</p>
             </div>
-            <Badge
-              type={status === "approved" ? "success" : status === "rejected" ? "error" : "warning"}
-              value={status === "approved" ? "Đã duyệt" : status === "rejected" ? "Bị từ chối" : "Đang chờ"}
-            />
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => handleDownload(doc.fileUrl, `${typeLabel}_${doc.documentId}.jpg`)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-300 hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5 transition-all text-xs font-medium text-gray-700 dark:text-gray-300"
+              >
+                <HiOutlineDownload className="h-4 w-4" /> Tải về
+              </button>
+              <Badge
+                type={status === "approved" ? "success" : status === "rejected" ? "error" : "warning"}
+                value={status === "approved" ? "Đã duyệt" : status === "rejected" ? "Bị từ chối" : "Đang chờ"}
+              />
+            </div>
           </div>
         );
       })}
