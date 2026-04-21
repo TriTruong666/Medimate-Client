@@ -29,6 +29,8 @@ import DrawerContainer from "../components/DrawerContainer";
 import { useAuth } from "../hooks/useAuth";
 import { SidebarSkeleton } from "../components/RoleBasedGuard";
 import { SignalRInjector } from "../hooks/useSignalR";
+import { VideoCallProvider } from "@/contexts/VideoCallContext";
+import { FloatingVideoPlayer } from "@/components/agora/FloatingVideoPlayer";
 
 export default function DashboardLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -58,21 +60,24 @@ export default function DashboardLayout() {
       <DrawerContainer />
       <ChatContainer />
       <SignalRInjector />
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <div className="relative flex h-full flex-1 flex-col overflow-hidden">
-          <Navbar />
-          <div
-            id="dashboard-scroll-container"
-            ref={scrollRef}
-            className="flex-1 overflow-hidden"
-          >
-            <div ref={contentRef}>
-              <Outlet />
+      <VideoCallProvider>
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar />
+          <div className="relative flex h-full flex-1 flex-col overflow-hidden">
+            <Navbar />
+            <div
+              id="dashboard-scroll-container"
+              ref={scrollRef}
+              className="flex-1 overflow-hidden"
+            >
+              <div ref={contentRef}>
+                <Outlet />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <FloatingVideoPlayer />
+      </VideoCallProvider>
     </div>
   );
 }
@@ -201,11 +206,11 @@ function Sidebar() {
           icon={<FiSettings />}
           label="Cài đặt"
         />
-        <SidebarItem
+        {/* <SidebarItem
           to="/dashboard/help"
           icon={<HiOutlineQuestionMarkCircle />}
           label="Trợ giúp"
-        />
+        /> */}
       </div>
     </aside>
   );
@@ -283,10 +288,9 @@ export function SidebarItem({
       to={to}
       end={exact}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-          isActive
-            ? "bg-primary/10 text-primary shadow-inner dark:bg-white/10 dark:text-white"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+        `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${isActive
+          ? "bg-primary/10 text-primary shadow-inner dark:bg-white/10 dark:text-white"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >
@@ -307,10 +311,9 @@ export function SubItem({ label, to }: SubItemProps) {
       to={to}
       end
       className={({ isActive }) =>
-        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-          isActive
-            ? "bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
-            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+        `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${isActive
+          ? "bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >

@@ -11,7 +11,7 @@ import {
   HiOutlineBriefcase,
   HiOutlineIdentification,
 } from "react-icons/hi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoctorDocumentsByDoctorId } from "@/hooks/data/useDoctorDocumentHooks";
 import { formatRelativeTime } from "@/common/format";
@@ -48,14 +48,47 @@ const dayOfWeekOptions = [
   { value: "Sunday", label: "Chủ nhật" },
 ] as const;
 
+// Chuyển giờ từ API ("HH:MM:SS" hoặc bất kỳ) sang "HH:MM" cho input[type=time]
 function toInputTime(value: string): string {
   if (!value) return "";
+
+  // Đã đúng format HH:MM
+  if (/^\d{2}:\d{2}$/.test(value)) return value;
+
+  // HH:MM:SS → lấy 5 ký tự đầu
+  if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value.slice(0, 5);
+
+  // Fallback parse (xử lý AM/PM hoặc format lạ)
+  const parsed = new Date(`1970-01-01 ${value}`);
+  if (!isNaN(parsed.getTime())) {
+    return `${String(parsed.getHours()).padStart(2, "0")}:${String(parsed.getMinutes()).padStart(2, "0")}`;
+  }
+
   return value.slice(0, 5);
 }
 
+// Chuyển giờ từ bất kỳ format nào sang "HH:MM:SS" 24h để gửi API
 function toApiTime(value: string): string {
   if (!value) return value;
-  return value.length === 5 ? `${value}:00` : value;
+
+  // Đã đúng format HH:MM:SS
+  if (/^\d{2}:\d{2}:\d{2}$/.test(value)) return value;
+
+  // HH:MM → HH:MM:00
+  if (/^\d{2}:\d{2}$/.test(value)) return `${value}:00`;
+
+  // Xử lý AM/PM (ví dụ: "08:00 AM", "02:30 PM") — trường hợp browser trả sai
+  const parsed = new Date(`1970-01-01 ${value}`);
+  if (!isNaN(parsed.getTime())) {
+    const h = String(parsed.getHours()).padStart(2, "0");
+    const m = String(parsed.getMinutes()).padStart(2, "0");
+    return `${h}:${m}:00`;
+  }
+
+  // Fallback: thêm :00 nếu chưa có
+  return value.includes(":") && value.split(":").length === 2
+    ? `${value}:00`
+    : value;
 }
 
 function getDayLabel(dayOfWeek: string): string {
@@ -136,20 +169,34 @@ export function DoctorProfileDetailModal({
                 { id: "documents", label: "Chứng chỉ y tế", icon: HiOutlineDocumentText },
                 { id: "availabilities", label: "Lịch làm việc", icon: HiOutlineCalendar },
                 { id: "exceptions", label: "Lịch nghỉ", icon: HiOutlineCalendar },
-              ] as const).map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 border-b-2 py-4 text-sm font-bold transition-all whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "border-primary text-primary"
-                      : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                  }`}
-                >
-                  <tab.icon className="h-5 w-5" />
-                  {tab.label}
-                </button>
-              ))}
+              ] as const).map((tab) => {
+                const isLocked =
+                  account.status !== "Verified" &&
+                  account.status !== "Active" &&
+                  (tab.id === "availabilities" || tab.id === "exceptions");
+
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      if (isLocked) {
+                        toast.error("Tài khoản chưa duyệt", "Chỉ có thể xem/chỉnh sửa lịch khi bác sĩ đã được duyệt.");
+                        return;
+                      }
+                      setActiveTab(tab.id);
+                    }}
+                    className={`flex items-center gap-2 border-b-2 py-4 text-sm font-bold transition-all whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? "border-primary text-primary"
+                        : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    } ${isLocked ? "opacity-40 cursor-not-allowed hover:text-gray-400" : ""}`}
+                  >
+                    <tab.icon className="h-5 w-5" />
+                    {tab.label}
+                    {isLocked && <span className="text-[10px] bg-gray-200 dark:bg-white/10 px-1.5 py-0.5 rounded-md ml-1 font-medium">Khóa</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -187,6 +234,56 @@ export function DoctorProfileDetailModal({
         </motion.div>
       </div>
     </AnimatePresence>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────
+// CUSTOM 24H TIME INPUT (Tránh trình duyệt ép AM/PM theo hệ điều hành)
+// ─────────────────────────────────────────────────────────────────
+function TimeInput24h({ value, onChange, disabled, className }: { value: string, onChange: (val: string) => void, disabled?: boolean, className?: string }) {
+  const [val, setVal] = useState(value);
+
+  // Sync state if props change (e.g. queue clear)
+  useEffect(() => { setVal(value); }, [value]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let input = e.target.value.replace(/[^\d:]/g, ""); // Chỉ cho nhập số và dấu 2 chấm
+    setVal(input);
+  };
+
+  const handleBlur = () => {
+    let v = val.trim();
+    // Tự động thêm dấu : nếu người dùng nhập 4 số liên tiếp (VD: 1530 -> 15:30)
+    if (/^\d{4}$/.test(v)) {
+      v = `${v.substring(0, 2)}:${v.substring(2, 4)}`;
+    }
+    
+    // Validate đúng chuẩn HH:mm
+    if (/^\d{1,2}:\d{1,2}$/.test(v)) {
+      let [h, m] = v.split(":");
+      let hh = Math.min(23, Math.max(0, parseInt(h) || 0));
+      let mm = Math.min(59, Math.max(0, parseInt(m) || 0));
+      let formatted = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+      setVal(formatted);
+      onChange(formatted);
+    } else {
+      // Revert if invalid
+      setVal(value);
+      onChange(value);
+    }
+  };
+
+  return (
+    <input
+      type="text"
+      disabled={disabled}
+      value={val}
+      onChange={handleChange}
+      onBlur={handleBlur}
+      placeholder="08:00"
+      maxLength={5}
+      className={className}
+    />
   );
 }
 
@@ -322,7 +419,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
   const [queue, setQueue] = useState<CreateDoctorAvailabilityBody[]>([]);
   const [edits, setEdits] = useState<Record<string, UpdateDoctorAvailabilityBody>>({});
 
-  const availabilities = data ?? [];
+  const availabilities = (data ?? []).filter((item) => item.isActive);
 
   function handleAddToQueue() {
     if (!validateAvailabilitySlot(newSlot)) return;
@@ -348,7 +445,12 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
     try {
       await createMutation.mutateAsync(payload);
       setQueue([]);
-    } catch {}
+    } catch {
+      // Vì API có thể lưu thành công một phần rồi mới quăng lỗi trùng lặp (Partial saving),
+      // ta cần xóa queue và tải lại danh sách để user có thông tin mới nhất và không nhấn tạo lại.
+      setQueue([]);
+      void refetch();
+    }
   }
 
   function getRowDraft(row: DoctorAvailability): UpdateDoctorAvailabilityBody {
@@ -428,19 +530,17 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Bắt đầu</label>
-            <input
-              type="time"
+            <TimeInput24h
               value={newSlot.startTime}
-              onChange={(e) => setNewSlot((prev) => ({ ...prev, startTime: e.target.value }))}
+              onChange={(val) => setNewSlot((prev) => ({ ...prev, startTime: val }))}
               className="input-primary w-full"
             />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Kết thúc</label>
-            <input
-              type="time"
+            <TimeInput24h
               value={newSlot.endTime}
-              onChange={(e) => setNewSlot((prev) => ({ ...prev, endTime: e.target.value }))}
+              onChange={(val) => setNewSlot((prev) => ({ ...prev, endTime: val }))}
               className="input-primary w-full"
             />
           </div>
@@ -526,16 +626,14 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
                     ))}
                   </select>
-                  <input
-                    type="time"
+                  <TimeInput24h
                     value={draft.startTime}
-                    onChange={(e) => patchRowDraft(item, { startTime: e.target.value })}
+                    onChange={(val) => patchRowDraft(item, { startTime: val })}
                     className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   />
-                  <input
-                    type="time"
+                  <TimeInput24h
                     value={draft.endTime}
-                    onChange={(e) => patchRowDraft(item, { endTime: e.target.value })}
+                    onChange={(val) => patchRowDraft(item, { endTime: val })}
                     className="input-primary py-1 px-3 text-xs w-full sm:w-auto"
                   />
                   <div className="flex items-center gap-2">
@@ -568,20 +666,48 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
 function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
   const { data, isLoading, isError, error, refetch } = useDoctorAvailabilityExceptions(doctorId);
   const updateMutation = useUpdateDoctorAvailabilityException(doctorId);
-  const [view, setView] = useState<"pending" | "approved">("pending");
+  const [view, setView] = useState<"pending" | "approved" | "rejected">("pending");
 
   const items = data ?? [];
-  const pending = items.filter((item) => !item.isAvailableOverride);
-  const approved = items.filter((item) => item.isAvailableOverride);
-  const visibleItems = view === "pending" ? pending : approved;
+  const pending = items.filter((item) => item.status?.toLowerCase() === "pending");
+  const approved = items.filter((item) => item.status?.toLowerCase() === "approved");
+  const rejected = items.filter((item) => item.status?.toLowerCase() === "rejected");
+  const visibleItems = view === "pending" ? pending : view === "approved" ? approved : rejected;
 
   async function handleApprove(item: DoctorAvailabilityException) {
     if (!item.exceptionId) return;
     try {
       await updateMutation.mutateAsync({
         id: item.exceptionId,
-        data: { ...item, isAvailableOverride: true },
+        data: {
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          reason: item.reason,
+          status: "Approved",
+          isAvailableOverride: item.isAvailableOverride,
+        },
       });
+      await refetch();
+    } catch {}
+  }
+
+  async function handleReject(item: DoctorAvailabilityException) {
+    if (!item.exceptionId) return;
+    if (!window.confirm("Bạn có chắc chắn muốn từ chối yêu cầu này không?")) return;
+    try {
+      await updateMutation.mutateAsync({
+        id: item.exceptionId,
+        data: {
+          date: item.date,
+          startTime: item.startTime,
+          endTime: item.endTime,
+          reason: item.reason,
+          status: "Rejected",
+          isAvailableOverride: item.isAvailableOverride,
+        },
+      });
+      await refetch();
     } catch {}
   }
 
@@ -605,6 +731,14 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
           >
             Đã duyệt ({approved.length})
           </button>
+          <button
+            onClick={() => setView("rejected")}
+            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
+              view === "rejected" ? "bg-white text-primary shadow-sm dark:bg-primary dark:text-white" : "text-gray-400"
+            }`}
+          >
+            Từ chối ({rejected.length})
+          </button>
         </div>
         <button onClick={() => void refetch()} className="text-xs font-medium text-primary hover:opacity-80 transition-all">Làm mới</button>
       </div>
@@ -625,13 +759,22 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
                 <p className="text-xs italic text-gray-600 dark:text-gray-400">Lý do: {item.reason || "Không có"}</p>
               </div>
               {view === "pending" && (
-                <button
-                  onClick={() => void handleApprove(item)}
-                  disabled={updateMutation.isPending}
-                  className="mt-4 sm:mt-0 flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
-                >
-                  <HiOutlineCheck className="h-4 w-4" /> Duyệt đơn
-                </button>
+                <div className="mt-4 sm:mt-0 flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => void handleApprove(item)}
+                    disabled={updateMutation.isPending}
+                    className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                  >
+                    <HiOutlineCheck className="h-4 w-4" /> Duyệt
+                  </button>
+                  <button
+                    onClick={() => void handleReject(item)}
+                    disabled={updateMutation.isPending}
+                    className="flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                  >
+                    Từ chối
+                  </button>
+                </div>
               )}
             </div>
           ))}

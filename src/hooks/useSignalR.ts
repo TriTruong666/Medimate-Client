@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCookies } from "react-cookie";
 import { useAuth } from "./useAuth";
 import { toast } from "./useToast";
 
@@ -15,7 +14,6 @@ const playNotificationSound = () => {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
 
-    // Tạo âm thanh chuông nhẹ
     oscillator.type = "sine";
     oscillator.frequency.setValueAtTime(600, audioContext.currentTime);
     oscillator.frequency.exponentialRampToValueAtTime(1200, audioContext.currentTime + 0.1);
@@ -31,13 +29,13 @@ const playNotificationSound = () => {
   }
 };
 
+// URL hub — dùng chung cho cả dev & prod (withCredentials thay thế cho accessTokenFactory)
 const base_net_url = import.meta.env.DEV
   ? import.meta.env.VITE_NET_API_URL_TEST
   : import.meta.env.VITE_NET_API_URL;
 
 export function useSignalR() {
   const queryClient = useQueryClient();
-  const [{ token }] = useCookies(["token"]);
   const { isAuthenticated } = useAuth();
   const [isConnected, setIsConnected] = useState(false);
   const connectionRef = useRef<signalR.HubConnection | null>(null);
@@ -45,10 +43,25 @@ export function useSignalR() {
   useEffect(() => {
     let isMounted = true;
 
-    const startConnection = async () => {
-      // Must be authenticated to connect
-      if (!isAuthenticated || !token || !base_net_url) return;
+    // ── LOGOUT: Ngắt kết nối ngay khi mất authentication ──────────────────────
+    if (!isAuthenticated) {
+      const conn = connectionRef.current;
+      if (conn && conn.state !== signalR.HubConnectionState.Disconnected) {
+        conn.stop().catch(() => {});
+      }
+      connectionRef.current = null;
+      if (isMounted) setIsConnected(false);
+      return () => { isMounted = false; };
+    }
 
+    // ── LOGIN: Tạo kết nối mới nếu chưa có ────────────────────────────────────
+    const startConnection = async () => {
+      if (!base_net_url) {
+        console.error("❌ [SignalR] VITE_NET_API_URL is not defined!");
+        return;
+      }
+
+      // Đã connected / đang connecting → bỏ qua
       if (
         connectionRef.current &&
         connectionRef.current.state !== signalR.HubConnectionState.Disconnected
@@ -59,11 +72,20 @@ export function useSignalR() {
         return;
       }
 
-      const url = `${base_net_url}/hub/medimate`;
+      const hubUrl = `${base_net_url}/hub/medimate`;
+      console.log("⏳ [SignalR] Connecting to:", hubUrl);
+
+      // Đọc JWT token từ cookie "token" mà web tự set sau khi login
+      // SignalR client sẽ gửi nó lên server dạng ?access_token=...
+      // Backend đọc qua: context.Request.Query["access_token"]
+      const getTokenFromCookie = (): string => {
+        const match = document.cookie.match(/(?:^|;\s*)token=([^;]+)/);
+        return match ? match[1] : "";
+      };
 
       const newConnection = new signalR.HubConnectionBuilder()
-        .withUrl(url, {
-          accessTokenFactory: () => token,
+        .withUrl(hubUrl, {
+          accessTokenFactory: () => getTokenFromCookie(),
           skipNegotiation: true,
           transport: signalR.HttpTransportType.WebSockets,
         })
@@ -73,30 +95,35 @@ export function useSignalR() {
 
       connectionRef.current = newConnection;
 
-      // -- Bắt thông báo đẩy Notification chung --
+      // ── Event Handlers ────────────────────────────────────────────────────────
+
       newConnection.on("ReceiveNotification", (notif: any) => {
         console.log("🔔 [SignalR] ReceiveNotification:", notif);
         playNotificationSound();
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
-        if (notif && notif.title) {
+        if (notif?.title) {
           toast.success(notif.title, notif.message || "Bạn có thông báo mới");
         }
       });
 
       newConnection.on("ReceiveNotificationUpdate", () => {
+        console.log("🔔 [SignalR] ReceiveNotificationUpdate");
         queryClient.invalidateQueries({ queryKey: ["notifications"] });
       });
 
-      // -- Cập nhật trạng thái Cuộc Gọi / Lịch hẹn --
       newConnection.on("AppointmentStatusUpdated", (data: any) => {
         console.log("📅 [SignalR] AppointmentStatusUpdated:", data);
-        // Refresh doctor specific caches
         queryClient.invalidateQueries({ queryKey: ["dashboard-stats"] });
         queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
+        queryClient.invalidateQueries({ queryKey: ["my-appointments"] });
+        queryClient.invalidateQueries({ queryKey: ["appointment-detail"] });
+        queryClient.invalidateQueries({ queryKey: ["available-slots"] });
         queryClient.invalidateQueries({ queryKey: ["session-details"] });
+        if (data?.status) {
+          toast.success("Lịch khám cập nhật", `Trạng thái: ${data.status}`);
+        }
       });
 
-      // -- Tin nhắn --
       newConnection.on("ReceiveMessage", (data: any) => {
         console.log("💬 [SignalR] ReceiveMessage:", data);
         playNotificationSound();
@@ -104,47 +131,69 @@ export function useSignalR() {
         queryClient.invalidateQueries({ queryKey: ["chat-sessions"] });
         queryClient.invalidateQueries({ queryKey: ["chat-session-details"] });
         queryClient.invalidateQueries({ queryKey: ["session-details"] });
-        
-        if (data && data.senderName) {
-            toast.success(`Tin nhắn từ ${data.senderName}`, data.content || "[Hình ảnh đính kèm]");
+        if (data?.senderName) {
+          toast.success(`Tin nhắn từ ${data.senderName}`, data.content || "[Hình ảnh đính kèm]");
         }
       });
 
       newConnection.on("ReceiveMessageUpdate", () => {
+        console.log("💬 [SignalR] ReceiveMessageUpdate (Đã đọc)");
         queryClient.invalidateQueries({ queryKey: ["chat-messages"] });
         queryClient.invalidateQueries({ queryKey: ["chat-sessions"] });
         queryClient.invalidateQueries({ queryKey: ["chat-session-details"] });
         queryClient.invalidateQueries({ queryKey: ["session-details"] });
       });
 
-      // -- Khi người giám hộ Join phòng Call --
       newConnection.on("GuardianJoined", (data: any) => {
         console.log("👤 [SignalR] GuardianJoined:", data);
         toast.success(
           `${data.guardianName || "Người giám hộ"} đã tham gia`,
           `Người giám hộ của ${data.memberName} vừa vào phòng khám.`
         );
+        queryClient.invalidateQueries({ queryKey: ["session", data.sessionId] });
       });
 
-      try {
-        if (newConnection.state === signalR.HubConnectionState.Disconnected) {
-          await newConnection.start();
-          if (isMounted) setIsConnected(true);
-          console.log("🟢 [SignalR] Connected successfully.");
-        }
+      newConnection.on("ReceiveMedicationLogUpdate", () => {
+        console.log("💊 [SignalR] ReceiveMedicationLogUpdate");
+        queryClient.invalidateQueries({ queryKey: ["member-med-logs"] });
+        queryClient.invalidateQueries({ queryKey: ["family-med-logs"] });
+        queryClient.invalidateQueries({ queryKey: ["schedule-stats"] });
+        queryClient.invalidateQueries({ queryKey: ["member-reminders"] });
+        queryClient.invalidateQueries({ queryKey: ["family-reminders"] });
+      });
 
-        newConnection.onreconnecting(() => console.log("🟡 [SignalR] Reconnecting..."));
-        newConnection.onreconnected(() => {
-          console.log("🟢 [SignalR] Reconnected.");
-          if (isMounted) setIsConnected(true);
-        });
-        newConnection.onclose(() => {
-          console.log("🔴 [SignalR] Connection closed.");
-          if (isMounted) setIsConnected(false);
-          connectionRef.current = null;
-        });
-      } catch (err) {
-        console.log("🔴 [SignalR] Connection Error: ", err);
+      // Lifecycle handlers
+      newConnection.onreconnecting((err) => {
+        console.log("🟡 [SignalR] Reconnecting...", err);
+        if (isMounted) setIsConnected(false);
+      });
+      newConnection.onreconnected(() => {
+        console.log("🟢 [SignalR] Reconnected.");
+        if (isMounted) setIsConnected(true);
+      });
+      newConnection.onclose((err) => {
+        console.log("🔴 [SignalR] Connection closed.", err);
+        if (isMounted) setIsConnected(false);
+        connectionRef.current = null;
+      });
+
+      // Thử kết nối với timeout 5 giây
+      try {
+        const startPromise = newConnection.start();
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error("SignalR_Connection_Timeout")), 5000)
+        );
+
+        await Promise.race([startPromise, timeoutPromise]);
+
+        if (isMounted) setIsConnected(true);
+        console.log("🟢 [SignalR] Connected successfully.");
+      } catch (err: any) {
+        if (err?.message === "SignalR_Connection_Timeout") {
+          console.log("🟡 [SignalR] Kết nối quá 5s, bỏ qua để tránh treo.");
+        } else {
+          console.log("🔴 [SignalR] Connection Error:", err?.message || err);
+        }
         connectionRef.current = null;
       }
     };
@@ -154,16 +203,12 @@ export function useSignalR() {
     return () => {
       isMounted = false;
       const conn = connectionRef.current;
-      if (conn && conn.state !== signalR.HubConnectionState.Disconnected) {
-        conn.stop().then(() => {
-          if (isMounted) setIsConnected(false);
-          connectionRef.current = null;
-        }).catch(err => console.log("🔴 [SignalR] Stop Error:", err));
-      } else {
+      if (!isAuthenticated && conn && conn.state !== signalR.HubConnectionState.Disconnected) {
+        conn.stop().catch(() => {});
         connectionRef.current = null;
       }
     };
-  }, [token, isAuthenticated, queryClient]);
+  }, [isAuthenticated, queryClient]);
 
   return { isConnected };
 }

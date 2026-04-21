@@ -7,7 +7,7 @@ import {
   useDoctorAvailabilityExceptionsPaged,
 } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
 import type { DoctorAvailabilityException } from "@/types/DoctorAvailabilityException";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const columns: DataTableColumn[] = [
@@ -55,9 +55,7 @@ function toTimeLabel(value: string): string {
   return value.slice(0, 5);
 }
 
-function getNowISOString(): string {
-  return new Date().toISOString();
-}
+
 
 export default function DoctorExceptionApprovePage() {
   const { pathname } = useLocation();
@@ -66,40 +64,20 @@ export default function DoctorExceptionApprovePage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const nowIso = getNowISOString();
+  // Map activeView -> status string cho API
+  const statusFilter =
+    activeView === "approved" ? "Approved"
+      : activeView === "past-unapproved" ? "Rejected"
+        : "Pending";
 
-  const queryParams = useMemo(() => {
-    const base = {
-      isDescending: true,
-      pageNumber: page,
-      pageSize,
-    };
+  const queryParams = {
+    isDescending: true,
+    pageNumber: page,
+    pageSize,
+    status: statusFilter,
+  };
 
-    if (activeView === "approved") {
-      return {
-        ...base,
-        isAvailableOverride: true,
-      };
-    }
-
-    if (activeView === "past-unapproved") {
-      return {
-        ...base,
-        isAvailableOverride: false,
-        dateTo: nowIso,
-      };
-    }
-
-    return {
-      ...base,
-      isAvailableOverride: false,
-      dateFrom: nowIso,
-    };
-  }, [activeView, nowIso, page, pageSize]);
-
-  const { data, isLoading, isError, error, refetch } =
-    useDoctorAvailabilityExceptionsPaged(queryParams);
-
+  const { data, isLoading, isError, error, refetch } = useDoctorAvailabilityExceptionsPaged(queryParams);
   const approveMutation = useApproveDoctorAvailabilityException();
 
   const rows = (data?.items ?? []) as DoctorAvailabilityException[];
@@ -115,9 +93,7 @@ export default function DoctorExceptionApprovePage() {
   ];
 
   async function handleApprove(item: DoctorAvailabilityException) {
-    if (!item.exceptionId) {
-      return;
-    }
+    if (!item.exceptionId) return;
 
     try {
       await approveMutation.mutateAsync({
@@ -127,13 +103,27 @@ export default function DoctorExceptionApprovePage() {
           startTime: item.startTime,
           endTime: item.endTime,
           reason: item.reason,
-          isAvailableOverride: true,
+          isAvailableOverride: item.isAvailableOverride, // GIỮ NGUYÊN (thường là false đối với lịch nghỉ)
+          status: "Approved", // CHỈ THAY ĐỔI TRẠNG THÁI
         },
       });
       await refetch();
-    } catch {
-      // Toast is handled in mutation hook.
-    }
+    } catch { }
+  }
+
+  async function handleReject(item: DoctorAvailabilityException) {
+    if (!item.exceptionId) return;
+
+    try {
+      await approveMutation.mutateAsync({
+        id: item.exceptionId,
+        data: {
+          ...item,
+          status: "Rejected", // Cập nhật trạng thái thành Từ chối
+        },
+      });
+      await refetch();
+    } catch { }
   }
 
   return (
@@ -195,24 +185,36 @@ export default function DoctorExceptionApprovePage() {
                 {item.reason || "Không có lý do"}
               </td>
               <td className="border-r border-gray-400 p-4 text-center dark:border-white/10">
-                {item.isAvailableOverride ? (
+                {item.status?.toLowerCase() === "approved" ? (
                   <Badge type="success" value="Đã duyệt" />
+                ) : item.status?.toLowerCase() === "rejected" ? (
+                  <Badge type="error" value="Không duyệt" />
                 ) : (
-                  <Badge type="warning" value="Chưa duyệt" />
+                  <Badge type="warning" value="Chờ duyệt" />
                 )}
               </td>
               <td className="p-4 text-center">
                 {activeView === "pending" ? (
-                  <button
-                    type="button"
-                    onClick={() => void handleApprove(item)}
-                    disabled={approveMutation.isPending}
-                    className="rounded-lg bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-300 dark:hover:bg-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    Duyệt
-                  </button>
+                  <div className="flex justify-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void handleApprove(item)}
+                      disabled={approveMutation.isPending}
+                      className="rounded-lg bg-emerald-50 px-4 py-1.5 text-xs font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-emerald-500/20 dark:text-emerald-300 dark:hover:bg-emerald-500/30"
+                    >
+                      Duyệt
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void handleReject(item)}
+                      disabled={approveMutation.isPending}
+                      className="rounded-lg bg-red-50 px-4 py-1.5 text-xs font-semibold text-red-600 shadow-sm transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-500/20 dark:text-red-300 dark:hover:bg-red-500/30"
+                    >
+                      Từ chối
+                    </button>
+                  </div>
                 ) : (
-                  <span className="text-xs text-gray-400 italic">N/A</span>
+                  <span className="text-xs italic text-gray-400">N/A</span>
                 )}
               </td>
             </tr>

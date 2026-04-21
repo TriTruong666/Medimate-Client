@@ -353,7 +353,7 @@ export default function DoctorSupportPage({
               transition={{ duration: 0.3 }}
             >
               {isLoading ? (
-                <AppointmentState type="loading" />
+                <AppointmentGridSkeleton />
               ) : isError ? (
                 <AppointmentState
                   type="error"
@@ -380,7 +380,7 @@ export default function DoctorSupportPage({
               transition={{ duration: 0.3 }}
             >
               {calendarLoading ? (
-                <AppointmentState type="loading" />
+                <CalendarSkeleton />
               ) : calendarError ? (
                 <AppointmentState
                   type="error"
@@ -441,7 +441,7 @@ function AppointmentCardGrid({
       variants={cardContainer}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"
     >
       {data.map((apt) => (
         <AppointmentCard key={apt.id} data={apt} onOpenDetail={onOpenDetail} />
@@ -621,6 +621,65 @@ function AppointmentCard({
 /* -------------------------------------------------------------------------- */
 /*                            CALENDAR VIEW COMPONENT                           */
 /* -------------------------------------------------------------------------- */
+function CalendarSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-gray-400 dark:border-border-dark">
+      <div className="dark:border-border-dark dark:bg-border-dark/30 grid grid-cols-7 border-b border-gray-300 bg-gray-100/80">
+        {[...Array(7)].map((_, i) => (
+          <div
+            key={i}
+            className={`h-10 border-gray-300 dark:border-border-dark ${i < 6 ? "border-r" : ""}`}
+          />
+        ))}
+      </div>
+      <div className="grid grid-cols-7">
+        {[...Array(35)].map((_, i) => (
+          <div
+            key={i}
+            className={`h-30 border-b border-gray-300 p-2 dark:border-border-dark ${i % 7 < 6 ? "border-r" : ""}`}
+          >
+            <div className="h-6 w-6 animate-pulse rounded-full bg-gray-200 dark:bg-white/10" />
+            <div className="mt-2 space-y-2">
+              <div className="h-4 w-full animate-pulse rounded bg-gray-100 dark:bg-white/5" />
+              <div className="h-4 w-2/3 animate-pulse rounded bg-gray-100 dark:bg-white/5" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function AppointmentGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="flex h-48 animate-pulse flex-col rounded-2xl border border-gray-300 bg-white/50 p-5 dark:border-white/10 dark:bg-white/5"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-white/10" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-1/2 rounded bg-gray-200 dark:bg-white/10" />
+              <div className="h-3 w-1/3 rounded bg-gray-200 dark:bg-white/10" />
+            </div>
+          </div>
+          <div className="mt-4 h-px bg-gray-100 dark:bg-white/5" />
+          <div className="mt-4 flex-1 space-y-2">
+            <div className="h-3 w-3/4 rounded bg-gray-200 dark:bg-white/10" />
+            <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-white/10" />
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="h-6 w-20 rounded-full bg-gray-200 dark:bg-white/10" />
+            <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-white/10" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function MonthlyCalendarView({
   data,
   availabilities,

@@ -309,9 +309,11 @@ export const ROUTES_CONFIG: RouteConfig[] = [
         element: <TransactionDashboardPage />,
         label: "Lịch sử giao dịch",
         index: true,
+        roles: ["Admin", "User", "Doctor"],
       },
       {
         path: PATHS.DASHBOARD.PAYOUTS?.ROOT || "/dashboard/transaction/payouts",
+        // path: PATHS.DASHBOARD.PAYOUTS?.ROOT,
         element: <DoctorPayoutPage />,
         label: "Thanh toán Bác sĩ",
         roles: ["Admin"],

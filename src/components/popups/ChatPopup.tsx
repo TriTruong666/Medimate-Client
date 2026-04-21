@@ -6,15 +6,17 @@ import { useNavigate } from "react-router-dom";
 import { FiPaperclip, FiUser } from "react-icons/fi";
 import { HiXMark } from "react-icons/hi2";
 import { IoSend } from "react-icons/io5";
-import { LuCalendar, LuClock } from "react-icons/lu";
+import { LuCalendar, LuClock, LuTimer } from "react-icons/lu";
 import { PATHS } from "@/config/paths";
 import { useChatIdentity, useChatSessionDetails, useChatSessionMessages, useMarkChatSessionMessagesRead, useSendChatSessionMessage } from "@/hooks/data/useChatDoctorHooks";
 import { useCountdown } from "@/hooks/useCountdown";
 import { toast } from "@/hooks/useToast";
+import { useQueryClient } from "@tanstack/react-query";
+import type { BaseResponse } from "@/types/APIResponse";
 import { chatPopupAtom, closePopupAtom, chatSessionExpiryAtom } from "../../stores/chatPopupStore";
 import { ChatBubble, TypingBubble } from "../custom-ui/ChatBubble";
 import { Spinner } from "../custom-ui/Spinner";
-import type { ChatDoctorMessageResponse } from "@/types/ChatDoctor";
+import type { ChatDoctorMessageResponse, ChatSessionSummaryResponse } from "@/types/ChatDoctor";
 import { DoctorSupportDetailPage } from "@/pages/doctor/DoctorSupportDetailPage";
 
 type ChatPopupProps = {
@@ -50,7 +52,58 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     error: messagesError,
     refetch: refetchMessages,
   } = useChatSessionMessages(sessionId);
-  const { isExpired, displayText: countdownText } = useCountdown(expiredAt);
+  const queryClient = useQueryClient();
+
+  // Force refetch mảng dữ liệu ngay khi Popup được bật để đảm bảo lấy data mới nhất
+  useEffect(() => {
+    void refetchDetails();
+    void refetchMessages();
+  }, [sessionId, refetchDetails, refetchMessages]);
+
+  // Tìm lại trong cache danh sách list session (vì API Detail có thể bị thiếu trả về Date/Time)
+  const cachedSessionsQueries = queryClient.getQueriesData<BaseResponse<ChatSessionSummaryResponse[]>>({ queryKey: ["chat-sessions"] });
+  let cachedSession: ChatSessionSummaryResponse | undefined;
+  for (const [, data] of cachedSessionsQueries) {
+    const found = data?.data?.find(s => s.consultanSessionId === sessionId);
+    if (found) {
+      cachedSession = found;
+      break;
+    }
+  }
+
+  const startedTime = sessionDetails?.startedAt || cachedSession?.startedAt;
+  const status = sessionDetails?.status || cachedSession?.status;
+
+  // Lấy chatExpiredAt từ message cuối cùng/đầu tiên do Backend trả về
+  const firstMessageWithExpiry = messages?.find(m => m.chatExpiredAt);
+  
+  let derivedExpiredAt = expiredAt; // fallback
+  if (firstMessageWithExpiry?.chatExpiredAt) {
+    derivedExpiredAt = firstMessageWithExpiry.chatExpiredAt;
+  } else if (startedTime) {
+    // Nếu hệ thống cũ chưa update field chatExpiredAt, fallback về tính 125 phút
+    derivedExpiredAt = new Date(new Date(startedTime).getTime() + 125 * 60 * 1000).toISOString();
+  }
+
+  // Truyền ngày rất xa để hook đếm ngược không trả về expired true nếu truyền null/undefined
+  const { isExpired: isCountdownExpired, displayText: rawCountdownText } = useCountdown(derivedExpiredAt || "9999-12-31T23:59:59Z");
+  const countdownText = derivedExpiredAt ? rawCountdownText : null;
+
+  const isDataReady = !!(sessionDetails || cachedSession || expiredAt);
+
+  let isExpired = false;
+  if (isDataReady) {
+    if (derivedExpiredAt) {
+      isExpired = isCountdownExpired;
+    } else {
+      // Nếu không có mốc thời gian rõ ràng, chỉ hết hạn nếu status là Ended
+      isExpired = status === "Ended" || status === "Completed";
+    }
+  }
+  const expiryTimeLabel = derivedExpiredAt
+    ? new Date(derivedExpiredAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false })
+    : null;
+
   const markReadMutation = useMarkChatSessionMessagesRead(sessionId);
   const hasMarkedReadRef = useRef<string | null>(null);
 
@@ -65,13 +118,19 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
     });
   }, [doctorId, isMessagesError, isMessagesLoading, markReadMutation, sessionId]);
 
-  // Normalize các field name khác nhau từ API
-  const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || "Phòng chat";
-  const displayStatus = isExpired ? "Hết hạn" : (sessionDetails?.status || "Đang kết nối");
-  const partnerAvatar = sessionDetails?.memberAvatar || sessionDetails?.partnerAvatar || null;
-  const appointmentDate = sessionDetails?.appointmentDate;
-  const appointmentTime = sessionDetails?.appointmentTime;
-  const appointmentId = sessionDetails?.appointmentId;
+  // Map đúng field names từ API response thực tế hoặc lấy từ cache dự phòng
+  const displayName = sessionDetails?.memberName || sessionDetails?.partnerName || cachedSession?.memberName || cachedSession?.partnerName || "Phòng chat";
+  const partnerAvatar = sessionDetails?.memberAvatar || sessionDetails?.partnerAvatar || cachedSession?.memberAvatar || cachedSession?.partnerAvatar || null;
+  const appointmentId = sessionDetails?.appointmentId || cachedSession?.appointmentId;
+
+  // Derive date and time from startedAt if backend doesn't explicitly return them
+  const fallbackDate = sessionDetails?.startedAt || cachedSession?.startedAt;
+  const computedDateStr = sessionDetails?.appointmentDate || cachedSession?.appointmentDate || fallbackDate;
+  const appointmentTime = sessionDetails?.appointmentTime || cachedSession?.appointmentTime || (
+    fallbackDate ? new Date(fallbackDate).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", hour12: false }) : null
+  );
+
+  // Status badge: chỉ "Hết hạn" khi đồng hồ thực sự hết, không dùng session.status
 
   const messageItems = useMemo(() => messages || [], [messages]);
 
@@ -89,19 +148,19 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 40, scale: 0.95 }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className="flex h-[460px] w-[360px] flex-col overflow-hidden rounded-xl border border-white/10 bg-[#0b0b0b] backdrop-blur-xl shadow-2xl"
+        className="flex h-[460px] w-[360px] flex-col overflow-hidden rounded-xl border border-gray-400 bg-white shadow-2xl dark:border-white/10 dark:bg-[#0b0b0b] dark:backdrop-blur-xl"
       >
         {/* ── Header ── */}
-        <div className="border-b border-white/10 px-3 py-2.5">
+        <div className="border-b border-gray-300 px-3 py-2.5 dark:border-white/10">
           <div className="flex items-center gap-2">
             {/* Avatar + click to open session */}
             <button
               type="button"
               onClick={handleOpenConsultationSession}
               title="Mở chi tiết phiên tư vấn"
-              className="flex-shrink-0 rounded-full transition hover:ring-2 hover:ring-white/20"
+              className="flex-shrink-0 rounded-full transition hover:ring-2 hover:ring-gray-300 dark:hover:ring-white/20"
             >
-              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-gray-200 to-gray-50 text-sm font-semibold text-gray-900 dark:from-white/20 dark:to-white/5 dark:text-white">
                 {partnerAvatar ? (
                   <img
                     src={partnerAvatar}
@@ -117,23 +176,24 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
             {/* Name + date/time + status */}
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="truncate text-sm font-semibold text-white">{displayName}</span>
+                <span className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                  {displayName}
+                </span>
                 <span className={clsx(
                   "flex-shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-medium",
                   isExpired
                     ? "bg-red-500/20 text-red-400"
                     : "bg-green-500/20 text-green-400"
                 )}>
-                  {displayStatus}
                 </span>
               </div>
               {/* Appointment info row */}
-              {(appointmentDate || appointmentTime) && (
+              {(computedDateStr || appointmentTime) && (
                 <div className="mt-0.5 flex items-center gap-2 text-[11px] text-gray-400">
-                  {appointmentDate && (
+                  {computedDateStr && (
                     <span className="flex items-center gap-1">
                       <LuCalendar className="h-3 w-3" />
-                      {formatAppointmentDate(appointmentDate)}
+                      {formatAppointmentDate(computedDateStr)}
                     </span>
                   )}
                   {appointmentTime && (
@@ -146,11 +206,21 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
               )}
             </div>
 
-            {/* Countdown */}
-            {!isExpired && countdownText && (
-              <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-orange-500/20 px-2 py-1">
-                <span className="text-xs font-semibold text-orange-300">{countdownText}</span>
-              </div>
+            {/* Countdown / Expiry badge */}
+            {isExpired ? (
+              expiryTimeLabel && (
+                <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-red-500/20 px-2 py-1">
+                  <LuTimer className="h-3 w-3 text-red-400" />
+                  <span className="text-[10px] font-semibold text-red-400">Hết hạn</span>
+                </div>
+              )
+            ) : (
+              countdownText && (
+                <div className="flex flex-shrink-0 items-center gap-1 rounded-lg bg-orange-500/20 px-2 py-1">
+                  <LuTimer className="h-3 w-3 text-orange-300" />
+                  <span className="text-xs font-semibold text-orange-300">{countdownText}</span>
+                </div>
+              )
             )}
 
             {/* View patient profile button */}
@@ -168,7 +238,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
             {/* Close button */}
             <button
               onClick={() => closePopup(sessionId)}
-              className="flex-shrink-0 rounded-lg p-1 text-white/60 hover:bg-white/10 hover:text-white"
+              className="flex-shrink-0 rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white"
             >
               <HiXMark size={18} />
             </button>
@@ -190,7 +260,7 @@ export function ChatPopup({ sessionId }: ChatPopupProps) {
               }}
             />
           ) : (
-            <ChatThread sessionId={sessionId} messages={messageItems} isExpired={isExpired} />
+            <ChatThread sessionId={sessionId} messages={messageItems} isExpired={isExpired} expiryTimeLabel={expiryTimeLabel} />
           )}
         </div>
       </motion.div>
@@ -211,10 +281,12 @@ function ChatThread({
   sessionId,
   messages,
   isExpired,
+  expiryTimeLabel,
 }: {
   sessionId: string;
   messages: ChatDoctorMessageResponse[];
   isExpired: boolean;
+  expiryTimeLabel: string | null;
 }) {
   const [content, setContent] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -264,18 +336,25 @@ function ChatThread({
         </div>
       </div>
 
-      <div className={clsx(
-        "border-t border-white/10 bg-white/2 px-3 py-2 backdrop-blur-md transition-all",
-        isExpired && "bg-red-500/10"
-      )}>
+      <div
+        className={clsx(
+          "border-t border-gray-300 bg-gray-50/50 px-3 py-2 backdrop-blur-md transition-all dark:border-white/10 dark:bg-white/2",
+          isExpired && "bg-red-500/10",
+        )}
+      >
         {isExpired && (
-          <div className="mb-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
-            Hết hạn chat. Bạn chỉ có thể xem lại tin nhắn.
+          <div className="mb-2 flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-300">
+            <LuTimer className="h-3.5 w-3.5 flex-shrink-0 text-red-400" />
+            <span>
+              Phòng chat đã đóng lúc{" "}
+              <span className="font-semibold">{expiryTimeLabel ?? "--:--"}</span>.
+              {" "}Bạn chỉ có thể xem lại tin nhắn.
+            </span>
           </div>
         )}
 
         {selectedFile && (
-          <div className="mb-2 flex items-center justify-between rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/70">
+          <div className="mb-2 flex items-center justify-between rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-white/70">
             <span className="truncate">{selectedFile.name}</span>
             <button
               type="button"
@@ -285,7 +364,7 @@ function ChatThread({
                   fileInputRef.current.value = "";
                 }
               }}
-              className="ml-3 rounded-md px-1 text-white/50 transition hover:bg-white/10 hover:text-white"
+              className="ml-3 rounded-md px-1 text-gray-400 transition hover:bg-gray-200 hover:text-gray-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white"
               disabled={isExpired}
             >
               <HiXMark size={14} />
@@ -295,9 +374,11 @@ function ChatThread({
 
         <div
           className={clsx(
-            "flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2 transition-all",
-            isComposerFocused && !isExpired && "border-white/20 bg-white/10",
-            isExpired && "opacity-50 cursor-not-allowed",
+            "flex items-end gap-2 rounded-xl border border-gray-300 bg-white px-3 py-2 transition-all dark:border-white/10 dark:bg-white/5",
+            isComposerFocused &&
+            !isExpired &&
+            "border-gray-500 bg-gray-50 dark:border-white/20 dark:bg-white/10",
+            isExpired && "bg-gray-100 opacity-80 cursor-not-allowed dark:bg-white/5 dark:opacity-50",
           )}
         >
           <input
@@ -314,7 +395,7 @@ function ChatThread({
           <button
             type="button"
             onClick={handlePickFile}
-            className="mb-0.5 rounded-lg p-2 text-white/50 transition hover:bg-white/10 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="mb-0.5 rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:text-white/50 dark:hover:bg-white/10 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
             title={isExpired ? "Phiên đã hết hạn" : "Đính kèm file"}
             disabled={isExpired}
           >
@@ -335,19 +416,21 @@ function ChatThread({
             placeholder={isExpired ? "Hết hạn chat" : "Aa"}
             rows={1}
             disabled={isExpired}
-            className="max-h-24 min-h-8 flex-1 resize-none bg-transparent py-1 text-[13px] leading-5 text-white outline-none placeholder:text-white/40 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="max-h-24 min-h-8 flex-1 resize-none bg-transparent py-1 text-[13px] leading-5 text-gray-900 outline-none placeholder:text-gray-400 dark:text-white dark:placeholder:text-white/40 disabled:opacity-70 disabled:cursor-not-allowed"
           />
 
           <button
             type="button"
             onClick={() => void handleSendMessage()}
-            disabled={sendMutation.isPending || (!content.trim() && !selectedFile) || isExpired}
+            disabled={
+              sendMutation.isPending || (!content.trim() && !selectedFile) || isExpired
+            }
             className={clsx(
               "mb-0.5 flex h-9 w-9 items-center justify-center rounded-full transition-all",
               !isExpired && (content.trim() || selectedFile)
-                ? "bg-linear-to-br from-purple-500 to-pink-500 text-white hover:opacity-90"
-                : "bg-white/5 text-white/30",
-              isExpired && "opacity-50 cursor-not-allowed"
+                ? "bg-linear-to-br from-purple-500 to-pink-500 text-white hover:opacity-90 shadow-md shadow-pink-500/20"
+                : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-white/30",
+              isExpired && "opacity-50 cursor-not-allowed",
             )}
           >
             <IoSend size={14} />
@@ -361,10 +444,11 @@ function ChatThread({
 function ChatMessageItem({ message }: { message: ChatDoctorMessageResponse }) {
   const isMine = message.senderType === 2;
   const body = message.content?.trim() || (message.attachmentUrl ? "Tệp đính kèm" : "");
-  const timeLabel = formatMessageTime(message.createdAt);
+  // Backend update: sử dụng sendAt thay cho createdAt
+  const timeLabel = formatMessageTime(message.sendAt || message.createdAt);
 
   return (
-    <div className={clsx("flex w-full flex-col gap-1", isMine ? "items-end" : "items-start")}> 
+    <div className={clsx("flex w-full flex-col gap-1", isMine ? "items-end" : "items-start")}>
       <ChatBubble sender={isMine ? "me" : "other"} message={body || "..."} />
 
       {message.attachmentUrl && (
@@ -383,7 +467,9 @@ function ChatMessageItem({ message }: { message: ChatDoctorMessageResponse }) {
         </a>
       )}
 
-      <span className="text-[10px] text-white/30">{timeLabel}</span>
+      <span className="text-[10px] text-gray-400 dark:text-white/30">
+        {timeLabel}
+      </span>
     </div>
   );
 }
@@ -397,12 +483,14 @@ function ChatErrorState({
 }) {
   return (
     <div className="flex h-full flex-col items-center justify-center px-6 text-center">
-      <h3 className="text-sm font-semibold text-white">Không thể tải cuộc trò chuyện</h3>
-      <p className="mt-2 text-xs text-white/50">{message}</p>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+        Không thể tải cuộc trò chuyện
+      </h3>
+      <p className="mt-2 text-xs text-gray-500 dark:text-white/50">{message}</p>
       <button
         type="button"
         onClick={onRetry}
-        className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/10"
+        className="mt-4 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-900 transition hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
       >
         Thử lại
       </button>
@@ -438,4 +526,4 @@ export function ChatContainer() {
     </div>
   );
 }
-
+

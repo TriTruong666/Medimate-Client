@@ -8,6 +8,7 @@ import { AuthProvider } from "./hooks/useAuth";
 import { listenToForegroundMessages } from "@/lib/fcm";
 import { toast } from "@/hooks/useToast";
 import GlobalSSEHandler from "./components/GlobalSSEHandler";
+import { SignalRInjector } from "./hooks/useSignalR";
 
 export default function App() {
   useEffect(() => {
@@ -31,6 +32,8 @@ export default function App() {
   return (
     <QueryProvider>
       <AuthProvider>
+        {/* SignalR: Kết nối realtime noti + appointment + chat */}
+        <SignalRInjector />
         <GlobalSSEHandler />
         <GlobalSSEHandler clientId="all" />
         <BrowserRouter>

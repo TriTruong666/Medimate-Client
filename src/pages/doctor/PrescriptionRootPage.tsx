@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { HiOutlineEye, HiOutlineCalendar, HiOutlineClipboardCheck, HiOutlineInformationCircle } from "react-icons/hi";
+import {
+  HiOutlineEye,
+  HiOutlineCalendar,
+  HiOutlineClipboardCheck,
+  HiOutlineInformationCircle,
+} from "react-icons/hi";
 import { useSearchParams } from "react-router-dom";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
@@ -23,13 +28,19 @@ export default function PrescriptionRootPage() {
   const [selectedSession, setSelectedSession] = useState<SessionData | null>(
     null,
   );
-  const [selectedSessionDetail, setSelectedSessionDetail] = useState<SessionData | null>(
-    null,
-  );
+  const [selectedSessionDetail, setSelectedSessionDetail] =
+    useState<SessionData | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const hasAutoScrolledRef = useRef(false);
   const { data, isLoading, isError, refetch } = useMyConsultationSessions();
   const highlightedSessionId = searchParams.get("sessionId") || "";
+
+  // Tick mỗi 60 giây để re-evaluate trạng thái chat window
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(interval);
+  }, []);
 
   const sessions = useMemo(
     () =>
@@ -65,6 +76,19 @@ export default function PrescriptionRootPage() {
     return value.replace(/-/g, "").toUpperCase().slice(0, length);
   }
 
+  function getSessionStatusLabel(status: string) {
+    switch (status) {
+      case "InProgress":
+        return "Đang tư vấn";
+      case "Ended":
+        return "Hoàn thành";
+      case "Processing":
+        return "Đang xử lý";
+      default:
+        return status || "Chưa xác định";
+    }
+  }
+
   return (
     <div className="page-layout">
       <motion.div
@@ -83,41 +107,44 @@ export default function PrescriptionRootPage() {
             ]}
           />
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
+            <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
               Danh sách phiên tư vấn
             </h1>
-            <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
-              Chọn phiên để xem hoặc kê đơn.
-            </p>
           </div>
         </div>
 
         {isLoading ? (
-          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
+          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
             <Spinner size="lg" />
           </div>
         ) : isError ? (
-          <div className="flex min-h-75 flex-col items-center justify-center rounded-2xl border border-gray-200 bg-white p-6 dark:border-white/10 dark:bg-white/5">
-            <p className="text-sm text-red-500 dark:text-red-400">
+          <div className="flex min-h-75 flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6">
+            <p className="text-sm text-red-400">
               Không thể tải danh sách phiên tư vấn.
             </p>
             <button
               type="button"
               onClick={() => void refetch()}
-              className="mt-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2 text-xs text-gray-700 transition hover:bg-gray-100 dark:border-white/10 dark:bg-white/5 dark:text-white"
+              className="mt-4 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs text-white"
             >
               Thử lại
             </button>
           </div>
         ) : sessions.length === 0 ? (
-          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-gray-200 bg-white p-6 text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-white/60">
+          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/60">
             Chưa có phiên tư vấn nào.
           </div>
         ) : (
           <div className="grid gap-4 xl:grid-cols-2">
             {sessions.map((session) => {
-              const isHighlighted =
-                highlightedSessionId === session.consultanSessionId;
+              const isHighlighted = highlightedSessionId === session.consultanSessionId;
+              const isNow = session.status === "InProgress";
+
+              // Chat window = startedAt + 125 phút (backend: session 60p + chat dư 60p + 5p buffer)
+              const chatEndAt = session.startedAt
+                ? new Date(new Date(session.startedAt).getTime() + 125 * 60 * 1000)
+                : null;
+              const isChatExpired = chatEndAt ? now > chatEndAt : false;
 
               return (
                 <div
@@ -125,51 +152,80 @@ export default function PrescriptionRootPage() {
                   ref={(node) => {
                     cardRefs.current[session.consultanSessionId] = node;
                   }}
-                  className={`flex flex-col gap-4 rounded-2xl border p-5 transition-all hover:shadow-md ${
-                    isHighlighted
-                      ? "border-primary/50 bg-primary/5 ring-1 ring-primary/20 dark:border-red-400/70 dark:bg-red-500/10 dark:ring-red-400/50"
-                      : "border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-                  }`}
+                  className={`group relative flex flex-col gap-4 rounded-2xl border p-5 transition-all hover:shadow-lg ${isHighlighted
+                    ? "border-primary/50 bg-primary/5 ring-primary/20 ring-1 dark:border-red-400/70 dark:bg-red-500/10 dark:ring-red-400/50"
+                    : "border-gray-400 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+                    }`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <HiOutlineCalendar className="h-5 w-5 text-primary" />
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg font-bold ${isNow
+                          ? "bg-primary text-white"
+                          : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
+                          }`}
+                      >
+                        {isNow && (
+                          <div className="bg-primary/30 absolute h-10 w-10 animate-ping rounded-full" />
+                        )}
+                        {(session.memberName || "?").charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="truncate text-sm font-semibold text-gray-900 dark:text-white">
                           {session.memberName ||
                             `Bệnh nhân ${shortId(session.memberId)}`}
+                        </h4>
+                        <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                          PT #{shortId(session.memberId)} • AP #
+                          {shortId(session.appointmentId)}
                         </p>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge
-                          type="info"
-                          value={`Session ${shortId(session.consultanSessionId)}`}
-                        />
-                        <Badge
-                          type={
-                            session.status === "InProgress" ? "warning" : "success"
-                          }
-                          value={session.status || "Active"}
-                        />
-                      </div>
                     </div>
+                    <Badge
+                      type={
+                        isNow
+                          ? "warning"
+                          : session.status === "Ended"
+                            ? "success"
+                            : "info"
+                      }
+                      value={getSessionStatusLabel(session.status)}
+                    />
+                  </div>
 
-                    <div className="text-right text-xs text-gray-500 dark:text-white/50">
-                      <p>PT: {shortId(session.memberId)}</p>
-                      <p>AP: {shortId(session.appointmentId)}</p>
+                  <div className="h-px bg-gray-100 dark:bg-white/5" />
+
+                  <div className="flex-1 space-y-3">
+                    <div className="grid gap-3 text-[11px] text-gray-600 dark:text-gray-300">
+                      <div className="flex items-center gap-2">
+                        <HiOutlineCalendar className="h-4 w-4 text-gray-400" />
+                        <span>
+                          {session.startedAt
+                            ? formatDate(session.startedAt)
+                            : "--"}{" "}
+                          -{" "}
+                          {session.endedAt ? formatDate(session.endedAt) : "--"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <HiOutlineClipboardCheck className="h-4 w-4 text-gray-400" />
+                        <span className="truncate">
+                          Session: {shortId(session.consultanSessionId, 12)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="grid gap-2 text-xs text-gray-600 dark:text-white/60 md:grid-cols-2">
+                  <div className="grid gap-2 text-xs text-white/60 md:grid-cols-2">
                     <p>Session: {shortId(session.consultanSessionId, 12)}</p>
-                    <p>Appointment: {shortId(session.appointmentId, 12)}</p>
+                    <p>Lịch hẹn: {session.appointmentTime || "--"}</p>
                     <p>
                       Bắt đầu:{" "}
                       {session.startedAt ? formatDate(session.startedAt) : "--"}
                     </p>
                     <p>
                       Kết thúc:{" "}
-                      {session.endedAt ? formatDate(session.endedAt) : "--"}
+                      {chatEndAt ? formatDate(chatEndAt.toISOString()) : "--"}
                     </p>
                   </div>
 
@@ -188,13 +244,25 @@ export default function PrescriptionRootPage() {
                         }
                       />
                     </Tooltip>
-                    <button
-                      type="button"
-                      onClick={() => handleOpenSessionModal(session)}
-                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition hover:opacity-90 active:scale-95"
-                    >
-                      Mở đơn thuốc
-                    </button>
+
+                    {isChatExpired ? (
+                      // Phiên chat đã hết hạn — không cho tạo đơn thuốc
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSessionModal(session)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                      >
+                        Xem
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenSessionModal(session)}
+                        className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                      >
+                        Tạo đơn thuốc
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -202,9 +270,9 @@ export default function PrescriptionRootPage() {
           </div>
         )}
 
-        <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 text-sm text-gray-600 dark:border-white/10 dark:bg-white/5 dark:text-white/70">
-          <div className="mb-2 flex items-center gap-2 text-gray-900 dark:text-white">
-            <HiOutlineClipboardCheck className="h-5 w-5 text-primary" />
+        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/70">
+          <div className="mb-2 flex items-center gap-2 text-white">
+            <HiOutlineClipboardCheck className="h-5 w-5 text-red-400" />
             Ghi chú
           </div>
           <p>Chỉ phiên đang diễn ra mới được tạo đơn.</p>
@@ -231,6 +299,36 @@ export default function PrescriptionRootPage() {
           }}
         />
       </motion.div>
+    </div>
+  );
+}
+
+function SessionGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {[...Array(6)].map((_, i) => (
+        <div
+          key={i}
+          className="flex h-56 animate-pulse flex-col rounded-2xl border border-gray-400 bg-white/50 p-5 dark:border-white/10 dark:bg-white/5"
+        >
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-gray-200 dark:bg-white/10" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-1/2 rounded bg-gray-200 dark:bg-white/10" />
+              <div className="h-3 w-1/3 rounded bg-gray-200 dark:bg-white/10" />
+            </div>
+          </div>
+          <div className="mt-4 h-px bg-gray-100 dark:bg-white/5" />
+          <div className="mt-4 flex-1 space-y-3">
+            <div className="h-3 w-3/4 rounded bg-gray-200 dark:bg-white/10" />
+            <div className="h-3 w-1/2 rounded bg-gray-200 dark:bg-white/10" />
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <div className="h-4 w-16 rounded bg-gray-200 dark:bg-white/10" />
+            <div className="h-7 w-24 rounded-lg bg-gray-200 dark:bg-white/10" />
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
