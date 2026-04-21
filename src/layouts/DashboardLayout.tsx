@@ -217,6 +217,7 @@ function Sidebar() {
 }
 
 function CollapsibleNavItem({ item }: { item: RouteConfig }) {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const Icon = item.icon;
 
@@ -255,13 +256,18 @@ function CollapsibleNavItem({ item }: { item: RouteConfig }) {
               transition={{ duration: 0.2 }}
               className="mt-2 ml-6 space-y-1"
             >
-              {item.children?.map((child) => (
-                <SubItem
-                  key={child.path}
-                  to={child.path}
-                  label={child.label || ""}
-                />
-              ))}
+              {item.children
+                ?.filter((child) => {
+                  if (!child.roles) return true;
+                  return user ? child.roles.includes(user.role) : false;
+                })
+                .map((child) => (
+                  <SubItem
+                    key={child.path}
+                    to={child.path}
+                    label={child.label || ""}
+                  />
+                ))}
             </motion.div>
           </motion.div>
         )}
