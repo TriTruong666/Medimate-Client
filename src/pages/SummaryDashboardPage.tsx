@@ -48,18 +48,16 @@ ChartJS.register(
 );
 
 export default function SummaryDashboardPage() {
-  const { data: usersData, isLoading: isUsersLoad } = useQuery({ 
-    queryKey: ["admin-summary", "users"], 
-    queryFn: () => getUsers({ pageNumber: 1, pageSize: 1 }) 
+  const { data: allUsersData, isLoading: isUsersLoad } = useQuery({ 
+    queryKey: ["admin-summary", "all-users"], 
+    queryFn: () => getUsers({ pageNumber: 1, pageSize: 1000 }) 
   });
-  const { data: doctorsData, isLoading: isDoctorsLoad } = useQuery({ 
-    queryKey: ["admin-summary", "doctors"], 
-    queryFn: () => getUsers({ pageNumber: 1, pageSize: 1, role: "Doctor" } as any) 
-  });
-  const { data: activeUsersData, isLoading: isActiveUsersLoad } = useQuery({ 
-    queryKey: ["admin-summary", "active-users"], 
-    queryFn: () => getUsers({ pageNumber: 1, pageSize: 1, isActive: true } as any) 
-  });
+  
+  const allUsersList = allUsersData?.data?.items || [];
+  const totalUsersCount = allUsersList.filter((u: any) => u.role === "User").length;
+  const totalDoctorsCount = allUsersList.filter((u: any) => u.role === "Doctor").length;
+  const activeUsersCount = allUsersList.filter((u: any) => u.isActive).length;
+
   const { data: ragData, isLoading: isRagLoad } = useQuery({ 
     queryKey: ["admin-summary", "rag"], 
     queryFn: () => getDocumentList({ page: 1, limit: 1 }) 
@@ -90,14 +88,14 @@ export default function SummaryDashboardPage() {
   const totalPresc = prescriptionsData?.data?.totalCount ?? 0;
 
   const topMetrics = [
-    { label: "Tổng người dùng", value: usersData?.data?.totalCount ?? 0, isLoading: isUsersLoad, icon: HiOutlineUsers, color: "text-blue-500", bg: "bg-blue-500/10", trend: "+12%" },
-    { label: "Bác sĩ tham gia", value: doctorsData?.data?.totalCount ?? 0, isLoading: isDoctorsLoad, icon: HiOutlineUsers, color: "text-emerald-500", bg: "bg-emerald-500/10", trend: "+5%" },
+    { label: "Khách hàng (User)", value: totalUsersCount, isLoading: isUsersLoad, icon: HiOutlineUsers, color: "text-blue-500", bg: "bg-blue-500/10", trend: "+12%" },
+    { label: "Bác sĩ chuyên môn", value: totalDoctorsCount, isLoading: isUsersLoad, icon: HiOutlineUsers, color: "text-emerald-500", bg: "bg-emerald-500/10", trend: "+5%" },
     { label: "Hợp đồng ký kết", value: contractsData?.data?.length ?? 0, isLoading: isContractsLoad, icon: HiOutlineClipboardList, color: "text-purple-500", bg: "bg-purple-500/10", trend: "+8%" },
     { label: "Giao dịch nền tảng", value: transactionsData?.data?.totalCount ?? 0, isLoading: isTransLoad, icon: HiOutlineCash, color: "text-indigo-500", bg: "bg-indigo-500/10", trend: "+24%" },
   ];
 
   const secondaryMetrics = [
-    { label: "Tài khoản đang HĐ", value: activeUsersData?.data?.totalCount ?? 0, isLoading: isActiveUsersLoad, icon: HiOutlineUsers, color: "text-rose-500", bg: "bg-rose-500/10" },
+    { label: "Tài khoản đang HĐ", value: activeUsersCount, isLoading: isUsersLoad, icon: HiOutlineUsers, color: "text-rose-500", bg: "bg-rose-500/10" },
     { label: "Lượt đánh giá", value: ratingsData?.data?.totalCount ?? 0, isLoading: isRatingsLoad, icon: HiOutlineStar, color: "text-yellow-500", bg: "bg-yellow-500/10" },
   ];
 
