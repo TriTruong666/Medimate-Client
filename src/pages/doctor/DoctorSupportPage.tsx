@@ -163,9 +163,9 @@ function AppointmentState({
 }) {
   if (type === "loading") {
     return (
-      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-gray-300 bg-gray-50/50 p-8 dark:border-white/10 dark:bg-white/5">
+      <div className="flex min-h-80 flex-col items-center justify-center text-center">
         <Spinner size="lg" />
-        <p className="mt-4 text-sm font-medium text-gray-500 dark:text-gray-400">
+        <p className="mt-4 text-sm font-medium text-gray-500 dark:text-white/50">
           Đang tải lịch hẹn...
         </p>
       </div>
@@ -174,11 +174,11 @@ function AppointmentState({
 
   if (type === "error") {
     return (
-      <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-gray-300 bg-gray-50/50 p-8 dark:border-white/10 dark:bg-white/5">
+      <div className="flex min-h-80 flex-col items-center justify-center text-center">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Đã xảy ra lỗi
         </h3>
-        <p className="mt-2 max-w-100 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-2 max-w-100 text-sm text-gray-500 dark:text-white/50">
           {message || "Không thể tải dữ liệu lịch hẹn. Vui lòng thử lại."}
         </p>
         <button
@@ -192,11 +192,11 @@ function AppointmentState({
   }
 
   return (
-    <div className="flex min-h-70 w-full flex-col items-center justify-center rounded-2xl border border-gray-300 bg-gray-50/50 p-8 dark:border-white/10 dark:bg-white/5">
+    <div className="flex min-h-80 flex-col items-center justify-center text-center">
       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
         Chưa có lịch hẹn
       </h3>
-      <p className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
+      <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
         Không tìm thấy lịch hẹn nào cho bác sĩ hiện tại.
       </p>
     </div>

@@ -115,25 +115,34 @@ export default function PrescriptionRootPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-gray-100 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
+          <div className="flex min-h-80 flex-col items-center justify-center text-center">
             <Spinner size="lg" />
+            <p className="mt-4 text-sm font-medium text-gray-500 dark:text-white/50">Đang tải danh sách phiên tư vấn...</p>
           </div>
         ) : isError ? (
-          <div className="flex min-h-75 flex-col items-center justify-center rounded-2xl border border-red-100 bg-red-50/30 p-6 dark:border-red-900/20 dark:bg-red-900/5">
-            <p className="text-sm font-semibold text-red-600 dark:text-red-400">
+          <div className="flex min-h-80 flex-col items-center justify-center text-center">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Đã xảy ra lỗi
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
               Không thể tải danh sách phiên tư vấn.
             </p>
             <button
               type="button"
               onClick={() => void refetch()}
-              className="mt-4 rounded-xl border border-red-200 bg-white px-4 py-2 text-xs font-bold text-red-600 shadow-sm transition hover:bg-red-50"
+              className="mt-6 rounded-lg bg-red-500 px-6 py-2.5 text-xs font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-red-600"
             >
               Thử lại
             </button>
           </div>
         ) : sessions.length === 0 ? (
-          <div className="flex min-h-75 items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/50 p-6 text-sm font-semibold text-gray-400 dark:border-white/10 dark:bg-white/5">
-            Chưa có phiên tư vấn nào được ghi nhận.
+          <div className="flex min-h-80 flex-col items-center justify-center text-center">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Danh sách trống
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
+              Chưa có phiên tư vấn nào được ghi nhận.
+            </p>
           </div>
         ) : (
           <div className="grid gap-4 xl:grid-cols-2">
