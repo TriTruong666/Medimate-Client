@@ -16,8 +16,12 @@ export async function getUsers(params: PaginationParams): Promise<BasePaginatedR
   return res.data;
 }
 
+export type CreateDoctorRequest = CreateUserRequest & {
+  currentHospitalName?: string;
+};
+
 export async function createDoctor(
-  request: CreateUserRequest,
+  request: CreateDoctorRequest,
 ): Promise<BasePaginatedResponse<Doctor[]>> {
   const res = await axiosNETClient.post("/api/v1/admin/doctors", request);
   return res.data;

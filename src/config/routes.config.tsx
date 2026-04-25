@@ -15,11 +15,12 @@ import { IoBriefcaseOutline, IoSync } from "react-icons/io5";
 import { AiOutlineRobot } from "react-icons/ai";
 import { GrTransaction } from "react-icons/gr";
 import { LiaFileContractSolid } from "react-icons/lia";
+import { TbBuildingHospital } from "react-icons/tb";
 import { VscFeedback } from "react-icons/vsc";
 import type { Role } from "@/hooks/useAuth";
 import DoctorSupportPage from "@/pages/doctor/DoctorSupportPage";
 import DoctorVideoCallPage from "@/pages/doctor/DoctorVideoCallPage";
-import DoctorContractPage from "@/pages/admin/DoctorContractPage";
+
 import DoctorProfilesPage from "@/pages/doctor-manager/DoctorProfilesPage";
 import DoctorReportPage from "@/pages/admin/DoctorReportPage";
 import CertificateApprovePage from "@/pages/doctor-manager/CertificateApprovePage";
@@ -80,6 +81,9 @@ const PackageOwnerDashboardPage = lazy(
   () => import("@/pages/admin/PackageOwnerDashboardPage"),
 );
 const DoctorPayoutPage = lazy(() => import("@/pages/admin/DoctorPayoutPage"));
+const ClinicPage = lazy(() => import("@/pages/admin/ClinicPage"));
+const ClinicDetailPage = lazy(() => import("@/pages/admin/ClinicDetailPage"));
+const ClinicContractPage = lazy(() => import("@/pages/admin/ClinicContractPage"));
 
 const ProfileSettingDashboardPage = lazy(() =>
   import("../pages/SettingDashboardPage").then((m) => ({
@@ -324,7 +328,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Tài liệu",
     icon: FiFileText,
     showInSidebar: true,
-    roles: ["Admin"],
+    roles: ["DoctorManager"],
     element: <DocumentDashboardPage />,
   },
   {
@@ -376,21 +380,21 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "RAG Core",
     icon: IoSync,
     showInSidebar: true,
-    roles: ["Admin"],
+    roles: ["DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.RAG_NEW,
     element: <KnowledgeAddCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["Admin"],
+    roles: ["DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.RAG_DETAIL,
     element: <KnowledgeDetailCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["Admin"],
+    roles: ["DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.CHATBOT,
@@ -402,13 +406,29 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     roles: ["Admin"],
   },
   {
-    path: PATHS.DASHBOARD.DOCTOR_CONTRACT,
-    element: <DoctorContractPage />,
+    path: PATHS.DASHBOARD.CLINIC,
+    element: <ClinicPage />,
     layout: "dashboard",
-    label: "Hợp đồng",
-    icon: LiaFileContractSolid,
+    label: "Phòng khám",
+    icon: TbBuildingHospital,
     showInSidebar: true,
     roles: ["Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.CLINIC_DETAIL,
+    element: <ClinicDetailPage />,
+    layout: "dashboard",
+    showInSidebar: false,
+    roles: ["Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.CLINIC_CONTRACT,
+    element: <ClinicContractPage />,
+    layout: "dashboard",
+    label: "Hợp đồng PK",
+    icon: LiaFileContractSolid,
+    showInSidebar: true,
+    roles: ["Admin", "DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.DOCTOR_REPORT,

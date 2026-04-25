@@ -963,9 +963,6 @@ function SetupLayout({
         ? undefined
         : "Vui lòng chọn chuyên khoa trong danh sách."
       : "Vui lòng chọn chuyên khoa.",
-    currentHospitalName: displayCurrentHospitalName.trim()
-      ? undefined
-      : "Vui lòng nhập bệnh viện hiện tại.",
     licenseNumber: displayLicenseNumber.trim()
       ? undefined
       : "Vui lòng nhập số giấy phép hành nghề.",
@@ -1215,7 +1212,6 @@ function SetupLayout({
               <NameUpdate
                 fullName={displayName}
                 specialty={displaySpecialty}
-                currentHospitalName={displayCurrentHospitalName}
                 licenseNumber={displayLicenseNumber}
                 yearsOfExperience={displayYearsOfExperience}
                 onFullNameChange={(value) =>
@@ -1228,12 +1224,6 @@ function SetupLayout({
                   setDraft((prev) => ({
                     ...prev,
                     specialty: value,
-                  }))
-                }
-                onCurrentHospitalNameChange={(value) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    currentHospitalName: value,
                   }))
                 }
                 onLicenseNumberChange={(value) =>
@@ -1251,7 +1241,6 @@ function SetupLayout({
                 errors={profileFieldErrors}
                 fullNameRef={registerFieldRef("fullName")}
                 specialtyRef={registerFieldRef("specialty")}
-                currentHospitalNameRef={registerFieldRef("currentHospitalName")}
                 licenseNumberRef={registerFieldRef("licenseNumber")}
                 yearsOfExperienceRef={registerFieldRef("yearsOfExperience")}
                 specialtyOptions={DOCTOR_SPECIALTY_OPTIONS}
@@ -1516,36 +1505,30 @@ function SetupItem({
 function NameUpdate({
   fullName,
   specialty,
-  currentHospitalName,
   licenseNumber,
   yearsOfExperience,
   onFullNameChange,
   onSpecialtyChange,
-  onCurrentHospitalNameChange,
   onLicenseNumberChange,
   onYearsOfExperienceChange,
   errors,
   fullNameRef,
   specialtyRef,
-  currentHospitalNameRef,
   licenseNumberRef,
   yearsOfExperienceRef,
   specialtyOptions,
 }: {
   fullName: string;
   specialty: string;
-  currentHospitalName: string;
   licenseNumber: string;
   yearsOfExperience: string;
   onFullNameChange(value: string): void;
   onSpecialtyChange(value: string): void;
-  onCurrentHospitalNameChange(value: string): void;
   onLicenseNumberChange(value: string): void;
   onYearsOfExperienceChange(value: string): void;
   errors?: SetupFieldErrors;
   fullNameRef?: React.Ref<HTMLInputElement>;
   specialtyRef?: React.Ref<HTMLDivElement>;
-  currentHospitalNameRef?: React.Ref<HTMLInputElement>;
   licenseNumberRef?: React.Ref<HTMLInputElement>;
   yearsOfExperienceRef?: React.Ref<HTMLInputElement>;
   specialtyOptions: Array<{ value: string; label: string }>;
@@ -1581,22 +1564,6 @@ function NameUpdate({
         </div>
         {errors?.specialty && (
           <p className="px-1 text-xs text-red-400">* {errors.specialty}</p>
-        )}
-      </div>
-
-      <div className="space-y-1">
-        <input
-          ref={currentHospitalNameRef}
-          className="flex h-12 w-full rounded-xl border border-white/10 bg-black px-4 text-sm text-white backdrop-blur-md transition-all duration-200 placeholder:text-white/40 focus:border-white/50 focus:bg-white/10 focus:outline-none"
-          placeholder="Bệnh viện hiện tại"
-          value={currentHospitalName}
-          onChange={(e) => onCurrentHospitalNameChange(e.target.value)}
-          type="text"
-        />
-        {errors?.currentHospitalName && (
-          <p className="px-1 text-xs text-red-400">
-            * {errors.currentHospitalName}
-          </p>
         )}
       </div>
 

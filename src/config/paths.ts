@@ -24,7 +24,9 @@ export const PATHS = {
       PAYOUTS: "/dashboard/transaction/payouts",
     },
     DOCTOR_REPORT: "/dashboard/doctor-report",
-    DOCTOR_CONTRACT: "/dashboard/doctor-contract",
+    CLINIC: "/dashboard/clinics",
+    CLINIC_DETAIL: "/dashboard/clinics/:id",
+    CLINIC_CONTRACT: "/dashboard/clinic-contracts",
     INCOME: "/dashboard/income",
     PACKAGES: {
       ROOT: "/dashboard/packages",

@@ -13,6 +13,8 @@ import {
 } from "@/hooks/data/useAccountHooks";
 import { closeModalAtom } from "../../stores/modalStore";
 import { toast } from "../../hooks/useToast";
+import { useClinics, useAddDoctorToClinic } from "@/hooks/data/useClinicHooks";
+import { Input } from "@/components/custom-ui/Input";
 
 type CreateErrors = {
   email?: string;
@@ -99,48 +101,50 @@ function RolePhase({
   );
 }
 
-import { Input } from "@/components/custom-ui/Input";
-
 function InfoPhase({
   value,
   errors,
   onChange,
+  role,
+  selectedClinic,
+  onClinicChange,
 }: {
   value: CreateUserRequest;
   errors?: CreateErrors;
   onChange: (field: keyof CreateUserRequest, value: string) => void;
+  role: "doctor" | "supervisor" | null;
+  selectedClinic: { id: string; name: string } | null;
+  onClinicChange: (clinic: { id: string; name: string } | null) => void;
 }) {
+  const { data: clinics } = useClinics();
+
   return (
     <div className="grid grid-cols-2 gap-4">
-      <Input
-        label="Email"
-        placeholder="example123@gmail.com"
-        type="email"
-        value={value.email}
-        error={errors?.email}
-        onChange={(e) => onChange("email", e)}
-      />
-      <Input
-        label="Họ và tên"
-        placeholder="Nhập tên của bạn"
-        value={value.fullName}
-        error={errors?.fullName}
-        onChange={(e) => onChange("fullName", e)}
-      />
+      <Input label="Email" placeholder="example123@gmail.com" type="email" value={value.email} error={errors?.email} onChange={(e) => onChange("email", e)} />
+      <Input label="Họ và tên" placeholder="Nhập tên của bạn" value={value.fullName} error={errors?.fullName} onChange={(e) => onChange("fullName", e)} />
+      <Input label="Số điện thoại" placeholder="Nhập SĐT của bạn" value={value.phoneNumber} error={errors?.phoneNumber} onChange={(e) => onChange("phoneNumber", e)} />
+      <Input label="Mật khẩu" type="password" placeholder="12345678aA@" disabled={true} />
 
-      <Input
-        label="Số điện thoại"
-        placeholder="Nhập SĐT của bạn"
-        value={value.phoneNumber}
-        error={errors?.phoneNumber}
-        onChange={(e) => onChange("phoneNumber", e)}
-      />
-      <Input
-        label="Mật khẩu"
-        type="password"
-        placeholder="12345678aA@"
-        disabled={true}
-      />
+      {role === "doctor" && (
+        <div className="col-span-2 flex flex-col gap-1.5">
+          <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+            Phòng khám <span className="text-xs text-gray-400">(tuỳ chọn)</span>
+          </p>
+          <select
+            value={selectedClinic?.id ?? ""}
+            onChange={(e) => {
+              const clinic = (clinics ?? []).find((c) => c.clinicId === e.target.value);
+              onClinicChange(clinic ? { id: clinic.clinicId, name: clinic.name } : null);
+            }}
+            className="h-10 w-full rounded-xl border border-gray-400 bg-white px-3 text-sm font-medium text-gray-700 outline-none transition-all focus:border-primary/50 dark:border-white/10 dark:bg-white/5 dark:text-gray-200"
+          >
+            <option value="">-- Chưa gán phòng khám --</option>
+            {(clinics ?? []).map((c) => (
+              <option key={c.clinicId} value={c.clinicId}>{c.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
     </div>
   );
 }
@@ -149,24 +153,17 @@ export function AddAccountModal() {
   const [phase, setPhase] = useState<"role" | "info">("role");
   const [role, setRole] = useState<"doctor" | "supervisor" | null>(null);
   const [, closeModal] = useAtom(closeModalAtom);
-  const { mutateAsync: mutateCreateDoctor, isPending: isPendingCreateDoctor } =
-    useCreateDoctor();
-  const {
-    mutateAsync: mutateCreateDoctorManager,
-    isPending: isPendingCreateDoctorManager,
-  } = useCreateDoctorManager();
+  const { mutateAsync: mutateCreateDoctor, isPending: isPendingCreateDoctor } = useCreateDoctor();
+  const { mutateAsync: mutateCreateDoctorManager, isPending: isPendingCreateDoctorManager } = useCreateDoctorManager();
+  const { mutateAsync: mutateAddDoctorToClinic } = useAddDoctorToClinic();
 
-  const [form, setForm] = useState<CreateUserRequest>({
-    email: "",
-    fullName: "",
-    phoneNumber: "",
-  });
+  const [form, setForm] = useState<CreateUserRequest>({ email: "", fullName: "", phoneNumber: "" });
+  const [selectedClinic, setSelectedClinic] = useState<{ id: string; name: string } | null>(null);
   const [errors, setErrors] = useState<CreateErrors>();
 
   const handleCreate = async (role: "doctor" | "supervisor") => {
     const nextErrors = validateAddAccountForm(form);
     setErrors(nextErrors);
-
     if (Object.keys(nextErrors).length > 0) {
       toast.error("Dữ liệu chưa hợp lệ", "Vui lòng kiểm tra lại thông tin.");
       return;
@@ -175,7 +172,23 @@ export function AddAccountModal() {
     try {
       let response;
       if (role === "doctor") {
-        response = await mutateCreateDoctor(form);
+        response = await mutateCreateDoctor({
+          ...form,
+          ...(selectedClinic ? { currentHospitalName: selectedClinic.name } : {}),
+        });
+        // Nếu chọn phòng khám và tạo thành công, gán doctor vào clinic
+        if (response?.success && response.data && selectedClinic) {
+          const newDoctor = Array.isArray(response.data) ? response.data[0] : response.data;
+          if (newDoctor?.doctorId) {
+            await mutateAddDoctorToClinic({
+              clinicId: selectedClinic.id,
+              body: {
+                doctorId: newDoctor.doctorId,
+                consultationFee: 0,
+              },
+            });
+          }
+        }
       } else {
         response = await mutateCreateDoctorManager(form);
       }
@@ -209,6 +222,9 @@ export function AddAccountModal() {
           <InfoPhase
             value={form}
             errors={errors}
+            role={role}
+            selectedClinic={selectedClinic}
+            onClinicChange={setSelectedClinic}
             onChange={(field, value) => setForm({ ...form, [field]: value })}
           />
         )}

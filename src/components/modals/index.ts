@@ -23,3 +23,6 @@ export * from "./DoctorProfileDetailModal";
 export * from "./PrescriptionModal";
 export * from "./AccountDetailReviewModal";
 export * from "./CertificateDetailReviewModal";
+export * from "./ClinicModal";
+export * from "./ClinicContractModal";
+export * from "./ClinicDoctorModal";
