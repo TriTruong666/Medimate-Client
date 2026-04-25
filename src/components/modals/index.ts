@@ -16,7 +16,6 @@ export * from "./ConsultationSessionDetailModal";
 export * from "./ProcessDocumentModal";
 export * from "./DoctorSupportDetailModal";
 export * from "./DoctorContractModal";
-export * from "./ApprovePayoutModal";
 export * from "./DeleteDoctorContractModal";
 export * from "./DoctorExceptionModal";
 export * from "./DoctorProfileDetailModal";
