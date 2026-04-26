@@ -22,6 +22,7 @@ export const PATHS = {
     TRANSACTION: {
       ROOT: "/dashboard/transaction",
       PAYOUTS: "/dashboard/transaction/payouts",
+      USER_REFUND: "/dashboard/transaction/user-refund",
     },
     DOCTOR_REPORT: "/dashboard/doctor-report",
     CLINIC: "/dashboard/clinics",

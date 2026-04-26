@@ -92,3 +92,39 @@ export async function processPayout(
   );
   return res.data;
 }
+
+// ─── Refund Management ────────────────────────────────────────────────────────
+
+export type RefundableAppointmentDto = {
+  appointmentId: string;
+  doctorId: string;
+  clinicId: string | null;
+  memberId: string;
+  memberName: string | null;
+  availabilityId: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  status: string;
+  paymentStatus: string;
+  cancelReason: string | null;
+  createdAt: string;
+};
+
+export async function getRefundableAppointments(): Promise<BaseResponse<RefundableAppointmentDto[]>> {
+  const res = await axiosNETClient.get("/api/v1/appointments/refundable");
+  return res.data;
+}
+
+export async function completeRefund(
+  appointmentId: string,
+  transferImage?: File | null,
+): Promise<BaseResponse<RefundableAppointmentDto>> {
+  const formData = new FormData();
+  if (transferImage) formData.append("transferImage", transferImage);
+  const res = await axiosNETClient.put(
+    `/api/v1/appointments/${appointmentId}/complete-refund`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
+  return res.data;
+}

@@ -81,6 +81,7 @@ const PackageOwnerDashboardPage = lazy(
   () => import("@/pages/admin/PackageOwnerDashboardPage"),
 );
 const ClinicPayoutPage = lazy(() => import("@/pages/admin/ClinicPayoutPage"));
+const UserRefundPage = lazy(() => import("@/pages/admin/UserRefundPage"));
 const ClinicPage = lazy(() => import("@/pages/admin/ClinicPage"));
 const ClinicDetailPage = lazy(() => import("@/pages/admin/ClinicDetailPage"));
 const ClinicContractPage = lazy(() => import("@/pages/admin/ClinicContractPage"));
@@ -318,6 +319,12 @@ export const ROUTES_CONFIG: RouteConfig[] = [
         path: PATHS.DASHBOARD.TRANSACTION.PAYOUTS,
         element: <ClinicPayoutPage />,
         label: "Thanh toán Phòng khám",
+        roles: ["Admin"],
+      },
+      {
+        path: PATHS.DASHBOARD.TRANSACTION.USER_REFUND,
+        element: <UserRefundPage />,
+        label: "Hoàn tiền User",
         roles: ["Admin"],
       },
     ],

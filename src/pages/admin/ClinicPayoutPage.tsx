@@ -8,12 +8,12 @@ import {
   usePayoutSummary,
   useProcessPayoutMutation,
 } from "@/hooks/data/usePayoutHooks";
-import type { PayoutItemDto, PayoutSummaryDto } from "@/apis/payout.service";
+import type { PayoutSummaryDto } from "@/apis/payout.service";
 import { PATHS } from "@/config/paths";
 
 const breadcrumbItems = [
   { label: "Dashboard", path: PATHS.DASHBOARD.ROOT },
-  { label: "Giao dịch", path: PATHS.DASHBOARD.TRANSACTION },
+  { label: "Giao dịch", path: PATHS.DASHBOARD.TRANSACTION.ROOT },
   { label: "Thanh toán Phòng khám" },
 ];
 
@@ -58,7 +58,8 @@ export default function ClinicPayoutPage() {
 
       {/* Content */}
       <div className="w-full">
-        {activeTab === "summary" ? <PayoutSummaryView /> : <PayoutDetailView />}
+        {activeTab === "summary" && <PayoutSummaryView />}
+        {activeTab === "detail" && <PayoutDetailView />}
       </div>
     </div>
   );
@@ -155,7 +156,7 @@ function PayoutDetailView() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Hold":
-        return <Badge type="default" value="Tạm giữ" />;
+        return <Badge type="info" value="Tạm giữ" />;
       case "ReadyToPay":
         return <Badge type="warning" value="Sẵn sàng TT" />;
       case "Paid":
@@ -163,7 +164,7 @@ function PayoutDetailView() {
       case "Cancelled":
         return <Badge type="error" value="Đã hủy" />;
       default:
-        return <Badge type="default" value={status} />;
+        return <Badge type="info" value={status} />;
     }
   };
 
@@ -261,7 +262,7 @@ function PayoutDetailView() {
                     rel="noreferrer"
                     className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-200 px-2 py-1 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
                   >
-                    Ảnh UNC <FiExternalLink />
+                    Hình ảnh UNC <FiExternalLink />
                   </a>
                 )}
                 {row.reportFileUrl && (
@@ -346,7 +347,7 @@ function ProcessPayoutModal({
 
           <div className="mb-4">
             <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Ảnh chụp UNC (Tùy chọn)
+              Hình ảnh chụp UNC (Tùy chọn)
             </label>
             <input
               type="file"
