@@ -389,21 +389,21 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "RAG Core",
     icon: IoSync,
     showInSidebar: true,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.RAG_NEW,
     element: <KnowledgeAddCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.RAG_DETAIL,
     element: <KnowledgeDetailCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.CHATBOT,
@@ -412,7 +412,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Chatbot",
     icon: AiOutlineRobot,
     showInSidebar: true,
-    roles: ["Admin"],
+    roles: ["Admin", "DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.CLINIC,
@@ -439,16 +439,6 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     showInSidebar: true,
     roles: ["Admin", "DoctorManager"],
   },
-  {
-    path: PATHS.DASHBOARD.DOCTOR_REPORT,
-    element: <DoctorReportPage />,
-    layout: "dashboard",
-    label: "Báo cáo bác sĩ",
-    icon: VscFeedback,
-    showInSidebar: true,
-    roles: ["Admin"],
-  },
-
   // Settings Routes
   {
     path: PATHS.DASHBOARD.SETTINGS.ROOT,
