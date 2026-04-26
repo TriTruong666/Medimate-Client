@@ -5,7 +5,10 @@ import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
-import { DataTableShell, type DataTableColumn } from "@/components/custom-ui/DataTableShell";
+import {
+  DataTableShell,
+  type DataTableColumn,
+} from "@/components/custom-ui/DataTableShell";
 import { useClinics, useClinicContracts } from "@/hooks/data/useClinicHooks";
 import type { ClinicContractDto } from "@/apis/clinic.service";
 import { ClinicContractModal } from "@/components/modals/ClinicContractModal";
@@ -42,35 +45,79 @@ function ClinicContractRows({
   return (
     <>
       {contracts.map((row: ClinicContractDto) => (
-        <tr key={row.contractId} className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5">
+        <tr
+          key={row.contractId}
+          className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+        >
           <td className="dark:border-border-dark border-r border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-xl"><FiFileText /></div>
+              <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-xl">
+                <FiFileText />
+              </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900 dark:text-white">HĐ-{row.contractId.slice(0, 8).toUpperCase()}</p>
-                <p className="text-xs text-gray-400 italic">{row.note ?? "Không có ghi chú"}</p>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  HĐ-{row.contractId.slice(0, 8).toUpperCase()}
+                </p>
+                <p className="text-xs text-gray-400 italic">
+                  {row.note ?? "Không có ghi chú"}
+                </p>
               </div>
             </div>
           </td>
           <td className="dark:border-border-dark border-r border-gray-200 p-4">
-            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{clinicName}</span>
+            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+              {clinicName}
+            </span>
           </td>
           <td className="dark:border-border-dark border-r border-gray-200 p-4">
             <div className="flex flex-col gap-1 text-xs text-gray-500">
-              <span>Bắt đầu: <span className="font-semibold text-gray-800 dark:text-gray-200">{formatDate(row.startDate ?? "")}</span></span>
-              <span>Kết thúc: <span className="font-semibold text-gray-800 dark:text-gray-200">{formatDate(row.endDate ?? "")}</span></span>
+              <span>
+                Bắt đầu:{" "}
+                <span className="font-semibold text-gray-800 dark:text-gray-200">
+                  {formatDate(row.startDate ?? "")}
+                </span>
+              </span>
+              <span>
+                Kết thúc:{" "}
+                <span className="font-semibold text-gray-800 dark:text-gray-200">
+                  {formatDate(row.endDate ?? "")}
+                </span>
+              </span>
             </div>
           </td>
           <td className="dark:border-border-dark border-r border-gray-200 p-4 text-center">
             <Badge
-              type={row.status === "Active" ? "success" : row.status === "Expired" ? "warning" : "error"}
-              value={row.status === "Active" ? "Đang HĐ" : row.status === "Expired" ? "Hết hạn" : "Chấm dứt"}
+              type={
+                row.status === "Active"
+                  ? "success"
+                  : row.status === "Expired"
+                    ? "warning"
+                    : "error"
+              }
+              value={
+                row.status === "Active"
+                  ? "Đang HĐ"
+                  : row.status === "Expired"
+                    ? "Hết hạn"
+                    : "Chấm dứt"
+              }
             />
           </td>
           <td className="p-4 text-center">
             <div className="flex items-center justify-center gap-1">
-              <Tooltip content="Xem file"><IconAction icon={<FiEye />} onClick={() => window.open(row.fileUrl, "_blank")} /></Tooltip>
-              <Tooltip content="Cập nhật trạng thái"><IconAction icon={<FiEdit3 />} className="text-amber-500" onClick={() => onEdit(row, clinicId)} /></Tooltip>
+              <Tooltip content="Xem file">
+                <IconAction
+                  icon={<FiEye />}
+                  onClick={() => window.open(row.fileUrl, "_blank")}
+                />
+              </Tooltip>
+              <Tooltip content="Cập nhật trạng thái">
+                <IconAction
+                  icon={<FiEdit3 />}
+                  className="text-amber-500"
+                  onClick={() => onEdit(row, clinicId)}
+                />
+              </Tooltip>
             </div>
           </td>
         </tr>
@@ -82,7 +129,8 @@ function ClinicContractRows({
 export default function ClinicContractPage() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingContract, setEditingContract] = useState<ClinicContractDto | null>(null);
+  const [editingContract, setEditingContract] =
+    useState<ClinicContractDto | null>(null);
   const [selectedClinicId, setSelectedClinicId] = useState<string>("");
 
   const { data: clinicsRes, isLoading, isError, error, refetch } = useClinics();
@@ -109,9 +157,6 @@ export default function ClinicContractPage() {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate(PATHS.DASHBOARD.CLINIC)} className="rounded-lg border border-gray-200 px-4 py-2 text-sm text-gray-600 transition hover:bg-gray-100 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/10">
-            Quản lý phòng khám
-          </button>
           <button onClick={handleAddNew} className="btn-primary">
             <FiPlus /> Thêm hợp đồng
           </button>
