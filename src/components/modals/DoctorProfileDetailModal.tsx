@@ -12,7 +12,8 @@ import {
   HiOutlineIdentification,
   HiOutlineDownload,
 } from "react-icons/hi";
-import { useState, useEffect } from "react";
+import clsx from "clsx";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDoctorDocumentsByDoctorId } from "@/hooks/data/useDoctorDocumentHooks";
 import { formatRelativeTime } from "@/common/format";
@@ -22,6 +23,8 @@ import {
 } from "@/types/DoctorDocument";
 import { Badge } from "@/components/custom-ui/Badge";
 import { Spinner } from "@/components/custom-ui/Spinner";
+import { Input } from "@/components/custom-ui/Input";
+import { HiChevronDown } from "react-icons/hi";
 import {
   useCreateDoctorAvailabilities,
   useDeleteDoctorAvailability,
@@ -179,10 +182,10 @@ export function DoctorProfileDetailModal({
           <div className="flex flex-col border-b border-gray-400 bg-gray-50/50 dark:border-white/10 dark:bg-white/5">
             <div className="flex items-center justify-between p-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-base font-bold text-gray-900 dark:text-white">
                   Hồ sơ Bác sĩ
                 </h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-[12px] text-gray-500 dark:text-gray-400">
                   Xem và quản lý thông tin chi tiết của bác sĩ{" "}
                   {account.fullName}
                 </p>
@@ -191,34 +194,18 @@ export function DoctorProfileDetailModal({
                 onClick={onClose}
                 className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
               >
-                <HiOutlineX className="h-6 w-6" />
+                <HiOutlineX className="h-4 w-4" />
               </button>
             </div>
 
             {/* Tabs */}
-            <div className="no-scrollbar flex gap-8 overflow-x-auto px-6">
+            <div className="no-scrollbar flex gap-4 overflow-x-auto px-6">
               {(
                 [
-                  {
-                    id: "profile",
-                    label: "Thông tin cá nhân",
-                    icon: HiOutlineUser,
-                  },
-                  {
-                    id: "documents",
-                    label: "Chứng chỉ y tế",
-                    icon: HiOutlineDocumentText,
-                  },
-                  {
-                    id: "availabilities",
-                    label: "Lịch làm việc",
-                    icon: HiOutlineCalendar,
-                  },
-                  {
-                    id: "exceptions",
-                    label: "Lịch nghỉ",
-                    icon: HiOutlineCalendar,
-                  },
+                  { id: "profile", label: "Thông tin cá nhân" },
+                  { id: "documents", label: "Chứng chỉ y tế" },
+                  { id: "availabilities", label: "Lịch làm việc" },
+                  { id: "exceptions", label: "Lịch nghỉ" },
                 ] as const
               ).map((tab) => {
                 const isLocked =
@@ -239,18 +226,30 @@ export function DoctorProfileDetailModal({
                       }
                       setActiveTab(tab.id);
                     }}
-                    className={`flex items-center gap-2 border-b-2 py-4 text-sm font-bold whitespace-nowrap transition-all ${
+                    className={`relative flex items-center gap-2 px-2 py-2.5 text-[13px] font-medium whitespace-nowrap transition-all ${
                       activeTab === tab.id
-                        ? "border-primary text-primary"
-                        : "border-transparent text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                        ? "text-primary"
+                        : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                     } ${isLocked ? "cursor-not-allowed opacity-40 hover:text-gray-400" : ""}`}
                   >
-                    <tab.icon className="h-5 w-5" />
                     {tab.label}
                     {isLocked && (
                       <span className="ml-1 rounded-md bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium dark:bg-white/10">
                         Khóa
                       </span>
+                    )}
+
+                    {activeTab === tab.id && (
+                      <motion.div
+                        layoutId="modalActiveTabUnderline"
+                        className="bg-primary absolute right-1 bottom-0 left-1 h-0.5 rounded-full"
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 30,
+                          mass: 1,
+                        }}
+                      />
                     )}
                   </button>
                 );
@@ -359,70 +358,142 @@ function TimeInput24h({
   );
 }
 
+function SmallGlassSelect({
+  value,
+  options,
+  onChange,
+  className,
+}: {
+  value: string;
+  options:
+    | { label: string; value: string }[]
+    | readonly { label: string; value: string }[];
+  onChange: (val: string) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = options.find((o) => o.value === value);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className={clsx("relative", className)}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-2 rounded-lg border border-gray-400 bg-white px-3 py-1.5 text-xs text-gray-900 transition-all hover:bg-gray-50 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+      >
+        <span className="truncate">{selected?.label}</span>
+        <HiChevronDown
+          className={clsx(
+            "h-3 w-3 text-gray-400 transition-transform",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+
+      {open && (
+        <div className="absolute z-50 mt-1 min-w-[120px] overflow-hidden rounded-lg border border-gray-300 bg-white/95 shadow-xl backdrop-blur-xl dark:border-white/10 dark:bg-neutral-900/95">
+          <ul className="max-h-60 overflow-y-auto">
+            {options.map((opt) => (
+              <li key={opt.value}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                  }}
+                  className={clsx(
+                    "flex w-full items-center px-3 py-2 text-xs transition",
+                    opt.value === value
+                      ? "bg-primary/10 text-primary dark:bg-primary/20"
+                      : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-white/10 dark:hover:text-white",
+                  )}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ProfileTab({ account }: { account: DoctorAccount }) {
   return (
-    <div className="grid gap-6 md:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2">
       <div className="space-y-6">
-        <div className="space-y-5 rounded-2xl border border-gray-300 bg-gray-50/30 p-6 dark:border-white/10 dark:bg-white/5">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary rounded-lg p-2">
-              <HiOutlineUser className="h-5 w-5" />
+        <div className="space-y-4 rounded-2xl border border-gray-400 bg-gray-50/30 p-4 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 text-primary rounded-lg p-1.5">
+              <HiOutlineUser className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+            <h3 className="text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Thông tin cơ bản
             </h3>
           </div>
 
-          <div className="grid gap-4">
-            <div className="flex items-center justify-between border-b border-gray-400 py-2 dark:border-white/5">
+          <div className="grid gap-3 text-[13px]">
+            <div className="flex items-center justify-between border-b border-gray-400 py-1.5 dark:border-white/5">
               <span className="font-medium text-gray-500">Họ và tên</span>
               <span className="font-bold text-gray-900 dark:text-white">
                 {account.fullName || "Chưa cập nhật"}
               </span>
             </div>
-            <div className="flex items-center justify-between border-b border-gray-400 py-2 dark:border-white/5">
+            <div className="flex items-center justify-between border-b border-gray-400 py-1.5 dark:border-white/5">
               <span className="font-medium whitespace-nowrap text-gray-500">
                 Chuyên khoa
               </span>
               <Badge type="info" value={account.specialty || "N/A"} />
             </div>
-            <div className="flex items-center justify-between border-b border-gray-400 py-2 dark:border-white/5">
+            <div className="flex items-center justify-between border-b border-gray-400 py-1.5 dark:border-white/5">
               <span className="font-medium text-gray-500">Kinh nghiệm</span>
               <span className="font-bold text-gray-900 dark:text-white">
                 {account.yearsOfExperience} năm
               </span>
             </div>
-            <div className="flex items-start justify-between py-2">
+            <div className="flex items-start justify-between py-1.5">
               <span className="font-medium text-gray-500">Đơn vị công tác</span>
-              <span className="max-w-[200px] text-right font-bold text-gray-900 dark:text-white">
+              <span className="max-w-[180px] text-right font-bold text-gray-900 dark:text-white">
                 {account.currentHospitalName || "Chưa cập nhật"}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="space-y-4 rounded-2xl border border-gray-300 bg-gray-50/30 p-6 dark:border-white/10 dark:bg-white/5">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary rounded-lg p-2">
-              <HiOutlineBriefcase className="h-5 w-5" />
+        <div className="space-y-4 rounded-2xl border border-gray-400 bg-gray-50/30 p-4 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 text-primary rounded-lg p-1.5">
+              <HiOutlineBriefcase className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+            <h3 className="text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Giới thiệu
             </h3>
           </div>
-          <p className="text-sm leading-relaxed whitespace-pre-wrap text-gray-600 dark:text-gray-300">
+          <p className="text-[13px] leading-relaxed whitespace-pre-wrap text-gray-600 dark:text-gray-300">
             {account.bio || "Bác sĩ chưa có thông tin giới thiệu."}
           </p>
         </div>
       </div>
 
       <div className="space-y-6">
-        <div className="space-y-5 rounded-2xl border border-gray-300 bg-gray-50/30 p-6 dark:border-white/10 dark:bg-white/5">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary rounded-lg p-2">
-              <HiOutlineIdentification className="h-5 w-5" />
+        <div className="space-y-4 rounded-2xl border border-gray-400 bg-gray-50/30 p-4 dark:border-white/10 dark:bg-white/5">
+          <div className="flex items-center gap-2">
+            <div className="bg-primary/10 text-primary rounded-lg p-1.5">
+              <HiOutlineIdentification className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+            <h3 className="text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
               Chứng chỉ hành nghề
             </h3>
           </div>
@@ -444,7 +515,7 @@ function ProfileTab({ account }: { account: DoctorAccount }) {
                 return (
                   <div
                     key={i}
-                    className="group hover:border-primary/50 relative flex items-center gap-4 rounded-xl border border-gray-300 bg-white p-3 transition-all hover:shadow-md dark:border-white/10 dark:bg-black/20"
+                    className="group hover:border-primary/50 relative flex items-center gap-4 rounded-xl border border-gray-400 bg-white p-3 transition-all hover:shadow-md dark:border-white/10 dark:bg-black/20"
                   >
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-gray-100 dark:bg-white/5">
                       {isPdf ? (
@@ -494,9 +565,9 @@ function ProfileTab({ account }: { account: DoctorAccount }) {
               })}
             </div>
           ) : (
-            <div className="flex h-32 flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 text-gray-400 dark:border-white/10 dark:bg-white/5">
-              <HiOutlineDocumentText className="mb-2 h-8 w-8 opacity-20" />
-              <span className="text-xs font-medium">
+            <div className="flex h-24 flex-col items-center justify-center rounded-xl border border-dashed border-gray-400 bg-gray-50 text-gray-400 dark:border-white/10 dark:bg-white/5">
+              <HiOutlineDocumentText className="mb-2 h-6 w-6 opacity-20" />
+              <span className="text-[11px] font-medium">
                 Không có hình ảnh chứng chỉ
               </span>
             </div>
@@ -623,11 +694,11 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
   return (
     <div className="space-y-8">
       {/* Create Section */}
-      <section className="rounded-2xl border border-gray-400 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5">
-        <h3 className="text-base font-bold text-gray-900 dark:text-white">
+      <section className="rounded-2xl border border-gray-400 bg-gray-50/50 p-4 dark:border-white/10 dark:bg-white/5">
+        <h3 className="text-[13px] font-bold text-gray-900 dark:text-white">
           Thêm lịch làm việc mới
         </h3>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1 text-[11px] text-gray-500">
           Cấu hình khung giờ cố định lặp lại hàng tuần.
         </p>
 
@@ -636,22 +707,16 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
               Thứ
             </label>
-            <select
+            <SmallGlassSelect
               value={newSlot.dayOfWeek}
-              onChange={(e) =>
+              options={dayOfWeekOptions}
+              onChange={(val) =>
                 setNewSlot((prev) => ({
                   ...prev,
-                  dayOfWeek: e.target.value as DayOfWeek,
+                  dayOfWeek: val as DayOfWeek,
                 }))
               }
-              className="input-primary w-full"
-            >
-              {dayOfWeekOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            />
           </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
@@ -662,7 +727,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
               onChange={(val) =>
                 setNewSlot((prev) => ({ ...prev, startTime: val }))
               }
-              className="input-primary w-full"
+              className="input-primary w-full px-3 py-1.5 text-[13px]"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -674,7 +739,7 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
               onChange={(val) =>
                 setNewSlot((prev) => ({ ...prev, endTime: val }))
               }
-              className="input-primary w-full"
+              className="input-primary w-full px-3 py-1.5 text-[13px]"
             />
           </div>
         </div>
@@ -730,9 +795,9 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
       </section>
 
       {/* List Section */}
-      <section className="rounded-2xl border border-gray-400 bg-gray-50/50 p-6 dark:border-white/10 dark:bg-white/5">
-        <div className="mb-6 flex items-center justify-between">
-          <h3 className="text-base font-bold text-gray-900 dark:text-white">
+      <section className="rounded-2xl border border-gray-400 bg-gray-50/50 p-4 dark:border-white/10 dark:bg-white/5">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-[13px] font-bold text-gray-900 dark:text-white">
             Lịch làm việc hiện tại
           </h3>
           <button
@@ -768,32 +833,26 @@ function DoctorAvailabilitiesTab({ doctorId }: { doctorId: string }) {
               return (
                 <div
                   key={rowId || idx}
-                  className="grid grid-cols-1 items-center gap-4 rounded-xl border border-gray-300 bg-white p-4 shadow-sm transition-all hover:shadow-md sm:grid-cols-[1.5fr_1fr_1fr_auto] dark:border-white/10 dark:bg-black/20"
+                  className="grid grid-cols-1 items-center gap-3 rounded-xl border border-gray-400 bg-white p-3 shadow-sm transition-all hover:shadow-md sm:grid-cols-[1.5fr_1fr_1fr_auto] dark:border-white/10 dark:bg-black/20"
                 >
-                  <select
+                  <SmallGlassSelect
                     value={draft.dayOfWeek}
-                    onChange={(e) =>
+                    options={dayOfWeekOptions}
+                    onChange={(val) =>
                       patchRowDraft(item, {
-                        dayOfWeek: e.target.value as DayOfWeek,
+                        dayOfWeek: val as DayOfWeek,
                       })
                     }
-                    className="input-primary w-full px-3 py-1 text-xs sm:w-auto"
-                  >
-                    {dayOfWeekOptions.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   <TimeInput24h
                     value={draft.startTime}
                     onChange={(val) => patchRowDraft(item, { startTime: val })}
-                    className="input-primary w-full px-3 py-1 text-xs sm:w-auto"
+                    className="input-primary w-full px-3 py-1.5 text-[13px] sm:w-auto"
                   />
                   <TimeInput24h
                     value={draft.endTime}
                     onChange={(val) => patchRowDraft(item, { endTime: val })}
-                    className="input-primary w-full px-3 py-1 text-xs sm:w-auto"
+                    className="input-primary w-full px-3 py-1.5 text-[13px] sm:w-auto"
                   />
                   <div className="flex items-center gap-2">
                     {isEdited ? (
@@ -935,16 +994,16 @@ function DoctorAvailabilityExceptionsTab({ doctorId }: { doctorId: string }) {
           {visibleItems.map((item, i) => (
             <div
               key={item.exceptionId || i}
-              className="flex flex-col items-start justify-between rounded-2xl border border-gray-300 bg-white p-5 sm:flex-row sm:items-center dark:border-white/10 dark:bg-black/20"
+              className="flex flex-col items-start justify-between rounded-2xl border border-gray-400 bg-white p-4 sm:flex-row sm:items-center dark:border-white/10 dark:bg-black/20"
             >
               <div className="space-y-1">
-                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                <p className="text-xs font-bold text-gray-900 dark:text-white">
                   {formatRelativeTime(item.date)}
                 </p>
                 <p className="text-xs font-medium text-gray-500">
                   {item.startTime.slice(0, 5)} - {item.endTime.slice(0, 5)}
                 </p>
-                <p className="text-xs text-gray-600 italic dark:text-gray-400">
+                <p className="text-[11px] text-gray-600 italic dark:text-gray-400">
                   Lý do: {item.reason || "Không có"}
                 </p>
               </div>
@@ -1008,7 +1067,7 @@ function DocumentsTab({ doctorId }: { doctorId: string }) {
         return (
           <div
             key={doc.documentId}
-            className="flex items-center gap-5 rounded-2xl border border-gray-300 bg-white p-5 dark:border-white/10 dark:bg-black/20"
+            className="flex items-center gap-4 rounded-2xl border border-gray-400 bg-white p-4 dark:border-white/10 dark:bg-black/20"
           >
             <a
               href={doc.fileUrl}
@@ -1023,7 +1082,7 @@ function DocumentsTab({ doctorId }: { doctorId: string }) {
               )}
             </a>
             <div className="min-w-0 flex-1">
-              <p className="truncate font-bold text-gray-900 dark:text-white">
+              <p className="truncate text-sm font-bold text-gray-900 dark:text-white">
                 {typeLabel}
               </p>
               <p className="mt-1 text-xs text-gray-500">
