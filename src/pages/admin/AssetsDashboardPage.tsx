@@ -133,7 +133,7 @@ function AssetCard({ asset }: { asset: BaseAsset }) {
       className="group hover:border-primary/50 relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-white/10"
     >
       {/* Preview Section */}
-      <div className="relative aspect-[4/3] overflow-hidden border-b border-gray-200 dark:border-white/5">
+      <div className="relative aspect-[4/3] overflow-hidden border-b border-gray-400 dark:border-white/5">
         <AssetPreview src={asset.preview} type={asset.type} name={asset.name} />
 
         {/* Top Badges Overlay */}

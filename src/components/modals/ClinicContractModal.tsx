@@ -94,7 +94,7 @@ export function ClinicContractModal({
             className="z-10 flex w-full max-w-lg flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/90 dark:backdrop-blur-xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 bg-white/5 p-6 dark:border-white/10">
+            <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                 {initialData
                   ? "Cập nhật trạng thái Hợp đồng"
@@ -178,7 +178,7 @@ export function ClinicContractModal({
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-gray-200 bg-white/5 p-6 dark:border-white/10">
+            <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
               <button
                 type="button"
                 onClick={onClose}

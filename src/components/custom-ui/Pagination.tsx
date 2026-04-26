@@ -77,7 +77,7 @@ export function Pagination({
           onClick={() => onPageChange?.(page - 1)}
           className={`inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
             page === 1
-              ? "cursor-not-allowed border-gray-200 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
+              ? "cursor-not-allowed border-gray-400 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
               : "border-gray-400 text-gray-600 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:text-gray-300 dark:hover:border-white/20 dark:hover:bg-white/5"
           } `}
         >
@@ -120,7 +120,7 @@ export function Pagination({
           onClick={() => onPageChange?.(page + 1)}
           className={`inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
             page === totalPages
-              ? "cursor-not-allowed border-gray-200 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
+              ? "cursor-not-allowed border-gray-400 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
               : "border-gray-400 text-gray-600 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:text-gray-300 dark:hover:border-white/20 dark:hover:bg-white/5"
           } `}
         >

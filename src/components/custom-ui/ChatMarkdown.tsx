@@ -10,7 +10,7 @@ export default function ChatResponseMarkdown({
   content,
 }: ChatResponseMarkdownProps) {
   return (
-    <div className="prose max-w-none text-sm leading-loose dark:prose-invert">
+    <div className="prose dark:prose-invert max-w-none text-sm leading-loose">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -49,7 +49,7 @@ export default function ChatResponseMarkdown({
 
           // inline and block code
           pre: ({ children }) => (
-            <pre className="mb-4 overflow-x-auto rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs text-gray-900 dark:border-white/5 dark:bg-black/40 dark:text-white">
+            <pre className="mb-4 overflow-x-auto rounded-xl border border-gray-400 bg-gray-50 p-4 text-xs text-gray-900 dark:border-white/5 dark:bg-black/40 dark:text-white">
               {children}
             </pre>
           ),
@@ -58,7 +58,7 @@ export default function ChatResponseMarkdown({
 
             if (isInline) {
               return (
-                <code className="rounded-md bg-gray-100 px-1.5 py-0.5 text-[12px] font-bold text-primary dark:bg-white/10 dark:text-primary-light">
+                <code className="text-primary dark:text-primary-light rounded-md bg-gray-100 px-1.5 py-0.5 text-[12px] font-bold dark:bg-white/10">
                   {children}
                 </code>
               );
@@ -74,7 +74,7 @@ export default function ChatResponseMarkdown({
           // blockquote
           blockquote: ({ node, ...props }) => (
             <blockquote
-              className="mb-4 border-l-4 border-gray-300 pl-4 font-medium italic text-gray-600 dark:border-white/20 dark:text-white/70"
+              className="mb-4 border-l-4 border-gray-300 pl-4 font-medium text-gray-600 italic dark:border-white/20 dark:text-white/70"
               {...props}
             />
           ),

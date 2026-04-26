@@ -110,14 +110,18 @@ export default function PrescriptionRootPage() {
             <h1 className="text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
               Phiên tư vấn & Đơn thuốc
             </h1>
-            <p className="mt-1 text-sm font-medium text-gray-500">Quản lý các phiên hội thoại và kê đơn thuốc cho bệnh nhân.</p>
+            <p className="mt-1 text-sm font-medium text-gray-500">
+              Quản lý các phiên hội thoại và kê đơn thuốc cho bệnh nhân.
+            </p>
           </div>
         </div>
 
         {isLoading ? (
           <div className="flex min-h-80 flex-col items-center justify-center text-center">
             <Spinner size="lg" />
-            <p className="mt-4 text-sm font-medium text-gray-500 dark:text-white/50">Đang tải danh sách phiên tư vấn...</p>
+            <p className="mt-4 text-sm font-medium text-gray-500 dark:text-white/50">
+              Đang tải danh sách phiên tư vấn...
+            </p>
           </div>
         ) : isError ? (
           <div className="flex min-h-80 flex-col items-center justify-center text-center">
@@ -167,8 +171,8 @@ export default function PrescriptionRootPage() {
                   }}
                   className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all hover:shadow-xl ${
                     isHighlighted
-                      ? "border-primary/50 bg-primary/5 ring-primary/20 ring-1 dark:border-primary-400/70 dark:bg-primary-500/10 dark:ring-primary-400/50"
-                      : "border-gray-200 bg-white hover:border-gray-400 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
+                      ? "border-primary/50 bg-primary/5 ring-primary/20 dark:border-primary-400/70 dark:bg-primary-500/10 dark:ring-primary-400/50 ring-1"
+                      : "border-gray-400 bg-white hover:border-gray-400 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3 p-5 pb-4">
@@ -181,7 +185,7 @@ export default function PrescriptionRootPage() {
                         }`}
                       >
                         {isNow && (
-                          <div className="absolute h-10 w-10 animate-ping rounded-full bg-primary/30" />
+                          <div className="bg-primary/30 absolute h-10 w-10 animate-ping rounded-full" />
                         )}
                         {(session.memberName || "?").charAt(0)}
                       </div>
@@ -211,16 +215,22 @@ export default function PrescriptionRootPage() {
                     <div className="bg-white p-4 dark:bg-transparent">
                       <div className="flex items-center gap-2">
                         <HiOutlineCalendar className="h-3.5 w-3.5 text-gray-400" />
-                        <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">Ngày bắt đầu</span>
+                        <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">
+                          Ngày bắt đầu
+                        </span>
                       </div>
                       <p className="mt-1 text-xs font-semibold text-gray-900 dark:text-white">
-                        {session.startedAt ? formatDate(session.startedAt) : "--"}
+                        {session.startedAt
+                          ? formatDate(session.startedAt)
+                          : "--"}
                       </p>
                     </div>
                     <div className="bg-white p-4 dark:bg-transparent">
                       <div className="flex items-center gap-2">
                         <HiOutlineClock className="h-3.5 w-3.5 text-gray-400" />
-                        <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">Thời gian kết thúc</span>
+                        <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">
+                          Thời gian kết thúc
+                        </span>
                       </div>
                       <p className="mt-1 text-xs font-semibold text-gray-900 dark:text-white">
                         {chatEndAt ? formatDate(chatEndAt.toISOString()) : "--"}
@@ -232,14 +242,16 @@ export default function PrescriptionRootPage() {
                     <div className="flex gap-1">
                       <button
                         onClick={() => setSelectedSessionDetail(session)}
-                        className="rounded-lg p-2 text-gray-400 transition hover:bg-white hover:text-gray-900 shadow-xs dark:hover:bg-white/10 dark:hover:text-white"
+                        className="rounded-lg p-2 text-gray-400 shadow-xs transition hover:bg-white hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
                         title="Chi tiết session"
                       >
                         <HiOutlineInformationCircle className="h-4.5 w-4.5" />
                       </button>
                       <button
-                        onClick={() => setSelectedAppointmentId(session.appointmentId)}
-                        className="rounded-lg p-2 text-gray-400 transition hover:bg-white hover:text-gray-900 shadow-xs dark:hover:bg-white/10 dark:hover:text-white"
+                        onClick={() =>
+                          setSelectedAppointmentId(session.appointmentId)
+                        }
+                        className="rounded-lg p-2 text-gray-400 shadow-xs transition hover:bg-white hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
                         title="Chi tiết lịch hẹn"
                       >
                         <HiOutlineEye className="h-4.5 w-4.5" />
@@ -251,11 +263,13 @@ export default function PrescriptionRootPage() {
                       onClick={() => handleOpenSessionModal(session)}
                       className={`flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold transition-all hover:-translate-y-0.5 hover:shadow-md ${
                         isChatExpired
-                        ? "bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400" 
-                        : "bg-gray-900 text-white shadow dark:bg-white dark:text-black"
+                          ? "bg-gray-100 text-gray-500 dark:bg-white/5 dark:text-gray-400"
+                          : "bg-gray-900 text-white shadow dark:bg-white dark:text-black"
                       }`}
                     >
-                      {!isChatExpired && <HiOutlinePlus className="h-3.5 w-3.5" />}
+                      {!isChatExpired && (
+                        <HiOutlinePlus className="h-3.5 w-3.5" />
+                      )}
                       {isChatExpired ? "Xem phiên tư vấn" : "Kê đơn thuốc"}
                     </button>
                   </div>
@@ -266,12 +280,17 @@ export default function PrescriptionRootPage() {
         )}
 
         <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
             <HiOutlineClipboardCheck className="h-5 w-5" />
           </div>
           <div className="text-xs">
-            <p className="font-bold text-gray-900 dark:text-white text-sm">Ghi chú quan trọng</p>
-            <p className="mt-0.5 text-gray-500">Chỉ các phiên tư vấn đang diễn ra hoặc chưa hết hạn mới có thể kê đơn thuốc mới.</p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">
+              Ghi chú quan trọng
+            </p>
+            <p className="mt-0.5 text-gray-500">
+              Chỉ các phiên tư vấn đang diễn ra hoặc chưa hết hạn mới có thể kê
+              đơn thuốc mới.
+            </p>
           </div>
         </div>
 
