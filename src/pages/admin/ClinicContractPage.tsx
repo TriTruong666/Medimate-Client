@@ -49,7 +49,7 @@ function ClinicContractRows({
           key={row.contractId}
           className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
         >
-          <td className="dark:border-border-dark border-r border-gray-200 p-4">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4">
             <div className="flex items-center gap-3">
               <div className="bg-primary/10 text-primary flex h-9 w-9 items-center justify-center rounded-xl">
                 <FiFileText />
@@ -64,12 +64,12 @@ function ClinicContractRows({
               </div>
             </div>
           </td>
-          <td className="dark:border-border-dark border-r border-gray-200 p-4">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4">
             <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
               {clinicName}
             </span>
           </td>
-          <td className="dark:border-border-dark border-r border-gray-200 p-4">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4">
             <div className="flex flex-col gap-1 text-xs text-gray-500">
               <span>
                 Bắt đầu:{" "}
@@ -85,7 +85,7 @@ function ClinicContractRows({
               </span>
             </div>
           </td>
-          <td className="dark:border-border-dark border-r border-gray-200 p-4 text-center">
+          <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
             <Badge
               type={
                 row.status === "Active"
