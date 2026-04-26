@@ -102,7 +102,7 @@ export function PrescriptionSessionModal({
               <div className="space-y-6">
                 {/* Tổng quan session */}
                 <section className="overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-                  <div className="grid grid-cols-2 divide-x divide-gray-100 border-b border-gray-100 sm:grid-cols-4 dark:divide-white/5 dark:border-white/5">
+                  <div className="grid grid-cols-2 divide-x divide-gray-400 border-b border-gray-400 sm:grid-cols-4 dark:divide-white/5 dark:border-white/5">
                     <SummaryItem
                       icon={FiFileText}
                       label="Session ID"
@@ -170,7 +170,7 @@ export function PrescriptionSessionModal({
 
                 {/* List đơn thuốc */}
                 {isLoading ? (
-                  <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-gray-100 bg-gray-50/30 dark:border-white/5 dark:bg-white/5">
+                  <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-gray-400 bg-gray-50/30 dark:border-white/5 dark:bg-white/5">
                     <Spinner size="lg" />
                   </div>
                 ) : isError ? (
@@ -212,7 +212,7 @@ export function PrescriptionSessionModal({
                           }
                           className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white transition-all hover:border-gray-400 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
                         >
-                          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/30 p-4 dark:border-white/5 dark:bg-black/20">
+                          <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/30 p-4 dark:border-white/5 dark:bg-black/20">
                             <div className="flex items-center gap-2">
                               <FiFileText className="text-primary h-4 w-4" />
                               <span className="text-[11px] font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">
@@ -241,7 +241,7 @@ export function PrescriptionSessionModal({
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-end border-t border-gray-100 bg-gray-50/30 p-3 dark:border-white/5 dark:bg-black/20">
+                          <div className="flex items-center justify-end border-t border-gray-400 bg-gray-50/30 p-3 dark:border-white/5 dark:bg-black/20">
                             <Tooltip content="Xem chi tiết đơn">
                               <button
                                 onClick={() => {

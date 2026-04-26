@@ -118,7 +118,7 @@ export function ConsultationSessionDetailModal({
               <div className="space-y-4">
                 {/* Thông tin thời gian và tổng quan */}
                 <section className="overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-5 py-3 dark:border-white/5 dark:bg-black/20">
+                  <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/50 px-5 py-3 dark:border-white/5 dark:bg-black/20">
                     <p className="text-[10px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                       Tổng quan phiên tư vấn
                     </p>
@@ -152,7 +152,7 @@ export function ConsultationSessionDetailModal({
 
                 {/* Trạng thái người tham gia */}
                 <section className="overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/50 px-5 py-3 dark:border-white/5 dark:bg-black/20">
+                  <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/50 px-5 py-3 dark:border-white/5 dark:bg-black/20">
                     <p className="text-[10px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                       Người tham gia
                     </p>
@@ -255,7 +255,7 @@ function ParticipantItem({ role, joined }: { role: string; joined?: boolean }) {
       className={`flex items-center justify-between rounded-xl border p-3 transition-all ${
         isJoined
           ? "border-emerald-100 bg-emerald-50/30 dark:border-emerald-900/30 dark:bg-emerald-900/10"
-          : "border-gray-100 bg-gray-50/30 dark:border-white/5 dark:bg-white/5"
+          : "border-gray-400 bg-gray-50/30 dark:border-white/5 dark:bg-white/5"
       }`}
     >
       <div className="min-w-0">

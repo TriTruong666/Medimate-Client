@@ -623,12 +623,12 @@ function AppointmentCard({
 /* -------------------------------------------------------------------------- */
 function CalendarSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-400 dark:border-border-dark">
+    <div className="dark:border-border-dark overflow-hidden rounded-xl border border-gray-400">
       <div className="dark:border-border-dark dark:bg-border-dark/30 grid grid-cols-7 border-b border-gray-300 bg-gray-100/80">
         {[...Array(7)].map((_, i) => (
           <div
             key={i}
-            className={`h-10 border-gray-300 dark:border-border-dark ${i < 6 ? "border-r" : ""}`}
+            className={`dark:border-border-dark h-10 border-gray-300 ${i < 6 ? "border-r" : ""}`}
           />
         ))}
       </div>
@@ -636,7 +636,7 @@ function CalendarSkeleton() {
         {[...Array(35)].map((_, i) => (
           <div
             key={i}
-            className={`h-30 border-b border-gray-300 p-2 dark:border-border-dark ${i % 7 < 6 ? "border-r" : ""}`}
+            className={`dark:border-border-dark h-30 border-b border-gray-300 p-2 ${i % 7 < 6 ? "border-r" : ""}`}
           >
             <div className="h-6 w-6 animate-pulse rounded-full bg-gray-200 dark:bg-white/10" />
             <div className="mt-2 space-y-2">
@@ -910,7 +910,7 @@ function MonthlyCalendarView({
               onClick={(event) => event.stopPropagation()}
               className="w-full max-w-xl rounded-2xl border border-gray-300 bg-white p-4 shadow-2xl dark:border-white/10 dark:bg-[#17181d]"
             >
-              <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-white/10">
+              <div className="mb-3 flex items-center justify-between border-b border-gray-400 pb-3 dark:border-white/10">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                     Lịch hẹn trong ngày
@@ -1055,7 +1055,7 @@ function CalendarAppointmentItem({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -5 }}
               transition={{ duration: 0.15 }}
-              className="dark:border-border-dark absolute top-full left-0 z-999 mt-1 w-36 rounded-lg border border-gray-100 bg-white p-1 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:bg-[#1a1c23]"
+              className="dark:border-border-dark absolute top-full left-0 z-999 mt-1 w-36 rounded-lg border border-gray-400 bg-white p-1 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:bg-[#1a1c23]"
             >
               <button
                 onClick={handleOpenDetail}

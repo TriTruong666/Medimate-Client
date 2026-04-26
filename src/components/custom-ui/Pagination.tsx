@@ -49,7 +49,7 @@ export function Pagination({
     <div className="dark:border-border-dark flex items-center justify-between border-x border-b border-gray-400 px-4 py-3 dark:border-white/10 dark:bg-white/5">
       {/* Info & Page Size */}
       <div className="flex items-center gap-6">
-        <div className="hidden items-center gap-4 border-r border-gray-100 pr-6 sm:flex dark:border-white/10">
+        <div className="hidden items-center gap-4 border-r border-gray-400 pr-6 sm:flex dark:border-white/10">
           <span className="text-xs text-gray-500 dark:text-white/60">
             Tổng{" "}
             <span className="font-medium text-gray-900 dark:text-white">

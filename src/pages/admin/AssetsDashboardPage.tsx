@@ -178,7 +178,7 @@ function AssetCard({ asset }: { asset: BaseAsset }) {
           )}
         </div>
 
-        <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3 dark:border-white/5">
+        <div className="mt-4 flex items-center justify-between border-t border-gray-400 pt-3 dark:border-white/5">
           <span className="text-[11px] font-semibold tracking-tight text-gray-500 uppercase dark:text-gray-400">
             {asset.size !== "N/A" ? asset.size : asset.date}
           </span>

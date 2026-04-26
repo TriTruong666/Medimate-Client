@@ -629,7 +629,7 @@ function DocumentCardSkeleton() {
 //   }, [data, page]);
 
 //   return (
-//     <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-border-dark">
+//     <div className="overflow-hidden rounded-xl border border-gray-400 dark:border-border-dark">
 //       <DocumentTable data={paginatedData} />
 
 //       <Pagination

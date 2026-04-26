@@ -238,7 +238,7 @@ export default function PrescriptionRootPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between border-t border-gray-100 bg-gray-50/50 p-3 px-5 dark:border-white/5 dark:bg-black/20">
+                  <div className="flex items-center justify-between border-t border-gray-400 bg-gray-50/50 p-3 px-5 dark:border-white/5 dark:bg-black/20">
                     <div className="flex gap-1">
                       <button
                         onClick={() => setSelectedSessionDetail(session)}
@@ -279,7 +279,7 @@ export default function PrescriptionRootPage() {
           </div>
         )}
 
-        <div className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
+        <div className="flex items-center gap-4 rounded-2xl border border-gray-400 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/5">
           <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
             <HiOutlineClipboardCheck className="h-5 w-5" />
           </div>
