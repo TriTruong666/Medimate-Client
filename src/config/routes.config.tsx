@@ -337,7 +337,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Tài liệu",
     icon: FiFileText,
     showInSidebar: true,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
     element: <DocumentDashboardPage />,
   },
   {
