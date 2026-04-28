@@ -40,6 +40,9 @@ interface Appointment {
   date: string;
   time: string;
   status: AppointmentStatus;
+  paymentStatus: string;  // "Pending" | "Paid"
+  amount?: number;
+  clinicName?: string;
   symptoms: string;
 }
 
@@ -148,6 +151,9 @@ function mapAppointment(raw: DoctorAppointment): Appointment {
     date: formatDate(raw.appointmentDate),
     time: formatAppointmentTime(raw.appointmentTime),
     status: raw.status,
+    paymentStatus: raw.paymentStatus ?? "Pending",
+    amount: raw.amount,
+    clinicName: raw.clinicName,
     symptoms: raw.cancelReason?.trim() || "Chưa có ghi chú cho lịch hẹn này.",
   };
 }
@@ -556,9 +562,10 @@ function AppointmentCard({
 
       {/* Footer */}
       <div className="mt-5 flex items-center justify-between">
-        <StatusBadge status={data.status} />
+        <StatusBadge status={data.status} paymentStatus={data.paymentStatus} />
         <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
-          {data.status === "Pending" && (
+          {/* Chỉ hiện Approve/Reject khi Pending và đã thanh toán */}
+          {data.status === "Pending" && data.paymentStatus === "Paid" && (
             <>
               <Tooltip content="Duyệt lịch hẹn">
                 <button
@@ -1077,7 +1084,8 @@ function CalendarAppointmentItem({
                   {sessionLoading ? "Đang tải Session..." : "Tham gia ngay"}
                 </button>
               )}
-              {apt.status === "Pending" && (
+              {/* Chỉ hiện Approve/Reject khi Pending + đã thanh toán */}
+              {apt.status === "Pending" && apt.paymentStatus === "Paid" && (
                 <>
                   <button
                     onClick={handleApprove}
@@ -1106,16 +1114,23 @@ function CalendarAppointmentItem({
 /* -------------------------------------------------------------------------- */
 /*                               HELPERS / BADGES                               */
 /* -------------------------------------------------------------------------- */
-function StatusBadge({ status }: { status: AppointmentStatus }) {
-  const map: Record<AppointmentStatus, React.ReactNode> = {
-    Pending: <Badge type="info" value="Chưa duyệt" />,
+function StatusBadge({ status, paymentStatus }: { status: AppointmentStatus; paymentStatus?: string }) {
+  // Pending chia làm 2 sub-state dựa theo paymentStatus
+  if (status === "Pending") {
+    if (paymentStatus === "Paid") {
+      return <Badge type="warning" value="Chờ duyệt" />;
+    }
+    return <Badge type="info" value="Chờ thanh toán" />;
+  }
+
+  const map: Partial<Record<AppointmentStatus, React.ReactNode>> = {
     InProgress: <Badge type="warning" value="Đang khám" />,
     Completed: <Badge type="success" value="Hoàn thành" />,
     Cancelled: <Badge type="error" value="Đã hủy" />,
     Approved: <Badge type="success" value="Đã duyệt" />,
     Rejected: <Badge type="error" value="Đã từ chối" />,
   };
-  return map[status];
+  return map[status] ?? null;
 }
 
 function AppointmentTypeBadge({ type }: { type: AppointmentType }) {

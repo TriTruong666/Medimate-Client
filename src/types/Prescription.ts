@@ -16,11 +16,14 @@ export interface PrescriptionByDoctorDto {
   doctorName?: string;
   memberId: string;
   memberName?: string;
+  memberDateOfBirth?: string;
   consultanSessionId: string;
   diagnosis: string;
   advice?: string;
   medicines: PrescriptionMedicineItem[];
   status: PrescriptionStatus;
+  /** Đơn đã gửi/khóa khi status === "Completed" */
+  isLocked?: boolean;
   createdDate: string;
   updatedDate: string;
 }
