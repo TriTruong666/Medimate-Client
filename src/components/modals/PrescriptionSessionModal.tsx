@@ -3,7 +3,6 @@ import { useMemo, useState } from "react";
 import { HiOutlineEye, HiOutlinePlus, HiOutlineX, HiOutlineInformationCircle } from "react-icons/hi";
 import { FiFileText, FiCalendar, FiActivity } from "react-icons/fi";
 import { Badge } from "@/components/custom-ui/Badge";
-import IconAction from "@/components/custom-ui/IconAction";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { PrescriptionModal } from "@/components/modals/PrescriptionModal";
@@ -179,7 +178,13 @@ export function PrescriptionSessionModal({
                                 Đơn thuốc #{shortId(prescriptionId, 6)}
                               </span>
                             </div>
-                            <Badge type="info" value={item.status || "Active"} />
+                            {item.status === "Completed" || item.isLocked ? (
+                              <Badge type="success" value="Đã gửi 🔒" />
+                            ) : item.status === "Cancelled" ? (
+                              <Badge type="error" value="Đã hủy" />
+                            ) : (
+                              <Badge type="warning" value="Đang soạn" />
+                            )}
                           </div>
 
                           <div className="flex-1 p-4">

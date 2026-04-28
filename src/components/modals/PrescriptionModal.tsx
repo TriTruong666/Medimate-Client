@@ -7,6 +7,7 @@ import {
   useUpdatePrescription,
 } from "@/hooks/data/usePrescriptionHooks";
 import { toast } from "@/hooks/useToast";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
 import type {
   CreatePrescriptionRequest,
   PrescriptionByDoctorDto,
@@ -56,16 +57,18 @@ export function PrescriptionModal({
       ? editingPrescription.medicines
       : [defaultMedicine],
   );
+  const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
 
   const createMutation = useCreatePrescription();
   const updateMutation = useUpdatePrescription();
 
   const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const isLocked = editingPrescription?.status === "Completed" || editingPrescription?.status === "Cancelled" || editingPrescription?.isLocked;
 
   const modalTitle = useMemo(() => {
-    if (isEdit) return "Cập nhật đơn thuốc";
+    if (isEdit) return isLocked ? "Chi tiết đơn thuốc (Đã khóa)" : "Cập nhật đơn thuốc";
     return "Tạo đơn thuốc";
-  }, [isEdit]);
+  }, [isEdit, isLocked]);
 
   function addMedicine() {
     setMedicines((prev) => [...prev, { ...defaultMedicine }]);
@@ -179,6 +182,7 @@ export function PrescriptionModal({
   }
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <motion.div
@@ -208,6 +212,13 @@ export function PrescriptionModal({
             </div>
 
             <div className="max-h-[70vh] space-y-5 overflow-y-auto p-5 thin-scrollbar">
+              {isLocked && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-4 text-amber-800 dark:border-amber-900/30 dark:bg-amber-900/10 dark:text-amber-200">
+                  <p className="text-sm font-bold">Đơn thuốc đã bị khóa</p>
+                  <p className="mt-1 text-xs">Đơn thuốc này đã được gửi cho bệnh nhân hoặc bị hủy. Bạn không thể chỉnh sửa thêm.</p>
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-1.5 flex flex-col">
                   <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">
@@ -218,6 +229,7 @@ export function PrescriptionModal({
                     onChange={(event) => setDiagnosis(event.target.value)}
                     placeholder="Ví dụ: Viêm họng cấp"
                     className="input-primary w-full"
+                    disabled={isLocked}
                   />
                 </div>
                 <div className="space-y-1.5 flex flex-col">
@@ -229,6 +241,7 @@ export function PrescriptionModal({
                     onChange={(event) => setAdvice(event.target.value)}
                     placeholder="Ví dụ: Uống nhiều nước ấm"
                     className="input-primary w-full"
+                    disabled={isLocked}
                   />
                 </div>
               </div>
@@ -248,14 +261,16 @@ export function PrescriptionModal({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-gray-900 dark:text-white">Danh sách thuốc</h4>
-                  <button
-                    type="button"
-                    onClick={addMedicine}
-                    className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                  >
-                    <HiOutlinePlus className="h-4 w-4" />
-                    Thêm thuốc
-                  </button>
+                  {!isLocked && (
+                    <button
+                      type="button"
+                      onClick={addMedicine}
+                      className="flex items-center gap-1 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                    >
+                      <HiOutlinePlus className="h-4 w-4" />
+                      Thêm thuốc
+                    </button>
+                  )}
                 </div>
 
                 <div className="rounded-xl border border-blue-500/20 bg-blue-50 p-4 text-xs text-blue-800 dark:bg-blue-500/10 dark:text-blue-100">
@@ -291,14 +306,16 @@ export function PrescriptionModal({
                   >
                     <div className="mb-3 flex items-center justify-between">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Thuốc {idx + 1}</p>
-                      <button
-                        type="button"
-                        onClick={() => removeMedicine(idx)}
-                        disabled={medicines.length === 1}
-                        className="rounded-md p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-30 dark:hover:bg-white/10 dark:hover:text-red-400"
-                      >
-                        <HiOutlineTrash className="h-4 w-4" />
-                      </button>
+                      {!isLocked && (
+                        <button
+                          type="button"
+                          onClick={() => removeMedicine(idx)}
+                          disabled={medicines.length === 1}
+                          className="rounded-md p-1 text-gray-400 transition hover:bg-red-50 hover:text-red-500 disabled:opacity-30 dark:hover:bg-white/10 dark:hover:text-red-400"
+                        >
+                          <HiOutlineTrash className="h-4 w-4" />
+                        </button>
+                      )}
                     </div>
 
                     <div className="grid gap-3 md:grid-cols-2">
@@ -311,6 +328,7 @@ export function PrescriptionModal({
                           }
                           placeholder="Paracetamol"
                           className="input-primary w-full"
+                          disabled={isLocked}
                         />
                       </div>
 
@@ -323,6 +341,7 @@ export function PrescriptionModal({
                           }
                           placeholder="500mg hoặc 1 viên/lần"
                           className="input-primary w-full"
+                          disabled={isLocked}
                         />
                       </div>
 
@@ -337,6 +356,7 @@ export function PrescriptionModal({
                           }
                           placeholder="10"
                           className="input-primary w-full"
+                          disabled={isLocked}
                         />
                       </div>
 
@@ -349,6 +369,7 @@ export function PrescriptionModal({
                           }
                           placeholder="Viên, Gói, Ống"
                           className="input-primary w-full"
+                          disabled={isLocked}
                         />
                       </div>
 
@@ -361,6 +382,7 @@ export function PrescriptionModal({
                           }
                           placeholder="Ngày 2 lần sau ăn, sáng và tối"
                           className="input-primary w-full"
+                          disabled={isLocked}
                         />
                       </div>
                     </div>
@@ -375,20 +397,39 @@ export function PrescriptionModal({
                 onClick={onClose}
                 className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
               >
-                Hủy
+                {isLocked ? "Đóng" : "Hủy"}
               </button>
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
-              >
-                {isSubmitting ? "Đang lưu..." : isEdit ? "Cập nhật" : "Tạo đơn"}
-              </button>
+              {!isLocked && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (validateForm()) setShowConfirmSubmit(true);
+                  }}
+                  disabled={isSubmitting}
+                  className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+                >
+                  {isSubmitting ? "Đang lưu..." : isEdit ? "Cập nhật" : "Tạo đơn"}
+                </button>
+              )}
             </div>
           </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
+
+    <ConfirmModal
+      open={showConfirmSubmit}
+      title={isEdit ? "Cập nhật đơn thuốc" : "Tạo đơn thuốc mới"}
+      message={isEdit ? "Bạn có chắc chắn muốn cập nhật đơn thuốc này?" : "Bạn có chắc chắn muốn tạo đơn thuốc mới cho bệnh nhân này?"}
+      confirmText={isEdit ? "Cập nhật" : "Tạo đơn"}
+      confirmButtonType="primary"
+      onConfirm={() => {
+        setShowConfirmSubmit(false);
+        handleSubmit();
+      }}
+      onCancel={() => setShowConfirmSubmit(false)}
+      isLoading={isSubmitting}
+    />
+    </>
   );
 }

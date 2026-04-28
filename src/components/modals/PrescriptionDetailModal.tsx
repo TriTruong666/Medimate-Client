@@ -4,8 +4,10 @@ import { HiOutlinePencil, HiOutlineX, HiOutlineDownload } from "react-icons/hi";
 import { toBlob } from "html-to-image";
 import { Badge } from "@/components/custom-ui/Badge";
 import { PrescriptionModal } from "@/components/modals/PrescriptionModal";
-import { usePrescriptionDetail } from "@/hooks/data/usePrescriptionHooks";
+import { usePrescriptionDetail, useUpdatePrescription } from "@/hooks/data/usePrescriptionHooks";
+import { toast } from "@/hooks/useToast";
 import { formatDate } from "@/common/format";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 type Props = {
   open: boolean;
@@ -26,6 +28,28 @@ export function PrescriptionDetailModal({
   const [isEditOpen, setIsEditOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const updateMutation = useUpdatePrescription();
+  const [showConfirmSend, setShowConfirmSend] = useState(false);
+
+  const isLocked = data?.status === "Completed" || data?.status === "Cancelled" || data?.isLocked;
+
+  async function handleCompleteAndSend() {
+    if (!prescriptionId || !data) return;
+    try {
+      const result = await updateMutation.mutateAsync({
+        id: prescriptionId,
+        body: { status: "Completed" },
+      });
+      if (result.success) {
+        toast.success("Đã gửi đơn thuốc", "Đơn thuốc đã được khóa và gửi vào khung chat cho bệnh nhân.");
+        setShowConfirmSend(false);
+        refetch();
+        onUpdated?.();
+      }
+    } catch (error) {
+      toast.error("Lỗi", "Không thể hoàn tất đơn thuốc lúc này.");
+    }
+  }
 
   async function handleDownloadImage() {
     if (!printRef.current) return;
@@ -59,6 +83,7 @@ export function PrescriptionDetailModal({
   }
 
   return (
+    <>
     <AnimatePresence>
       {open && (
         <div className="fixed inset-0 z-120 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
@@ -90,14 +115,16 @@ export function PrescriptionDetailModal({
                       <HiOutlineDownload className="h-4 w-4" />
                       {isCapturing ? "Đang xử lý..." : "Tải ảnh"}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => setIsEditOpen(true)}
-                      className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                    >
-                      <HiOutlinePencil className="h-4 w-4" />
-                      Sửa
-                    </button>
+                    {!isLocked && (
+                      <button
+                        type="button"
+                        onClick={() => setIsEditOpen(true)}
+                        className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+                      >
+                        <HiOutlinePencil className="h-4 w-4" />
+                        Sửa
+                      </button>
+                    )}
                   </>
                 )}
                 <button
@@ -185,6 +212,22 @@ export function PrescriptionDetailModal({
                             <span className="text-xs font-bold text-gray-700 dark:text-white">{formatDate(data.updatedDate)}</span>
                           </div>
                         </div>
+
+                        {!isLocked && (
+                          <div className="mt-6">
+                            <button
+                              type="button"
+                              onClick={() => setShowConfirmSend(true)}
+                              disabled={updateMutation.isPending}
+                              className="w-full rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg transition hover:bg-emerald-600 active:scale-95 disabled:opacity-50"
+                            >
+                              {updateMutation.isPending ? "Đang xử lý..." : "Hoàn tất & Gửi cho bệnh nhân"}
+                            </button>
+                            <p className="mt-2 text-center text-[10px] font-medium text-gray-500 dark:text-gray-400">
+                              Lưu ý: Sau khi hoàn tất, đơn thuốc sẽ bị khóa và không thể chỉnh sửa.
+                            </p>
+                          </div>
+                        )}
                       </section>
                     </div>
                   </div>
@@ -308,6 +351,26 @@ export function PrescriptionDetailModal({
         </div>
       )}
     </AnimatePresence>
+
+    <ConfirmModal
+      open={showConfirmSend}
+      title="Gửi đơn thuốc"
+      message={
+        <div className="space-y-2">
+          <p>Bạn có chắc chắn muốn gửi đơn thuốc này cho bệnh nhân?</p>
+          <ul className="list-disc pl-5 text-amber-600 dark:text-amber-400">
+            <li>Đơn thuốc sẽ tự động gửi vào khung chat của bệnh nhân.</li>
+            <li>Sau khi gửi, đơn thuốc sẽ bị <span className="font-bold underline">khóa và không thể sửa</span>.</li>
+          </ul>
+        </div>
+      }
+      confirmText="Gửi đơn thuốc"
+      confirmButtonType="success"
+      onConfirm={handleCompleteAndSend}
+      onCancel={() => setShowConfirmSend(false)}
+      isLoading={updateMutation.isPending}
+    />
+    </>
   );
 }
 
