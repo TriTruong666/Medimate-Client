@@ -84,13 +84,13 @@ function Avatar({ name, src }: { name?: string | null; src?: string | null }) {
       <img
         src={src}
         alt={name || "avatar"}
-        className="h-10 w-10 rounded-full border border-gray-100 object-cover shadow-sm dark:border-white/10"
+        className="h-10 w-10 rounded-full border border-gray-400 object-cover shadow-sm dark:border-white/10"
       />
     );
   }
 
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-400 bg-gray-50 text-sm font-semibold text-gray-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
       {getInitials(name)}
     </div>
   );
@@ -184,8 +184,8 @@ export function DoctorSupportDetailModal({
             ) : data ? (
               <div className="space-y-4">
                 {/* Lịch hẹn */}
-                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                     <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                       Lịch hẹn khám bệnh
                     </p>
@@ -255,8 +255,8 @@ export function DoctorSupportDetailModal({
                 </section>
 
                 <div className="grid gap-4 xl:grid-cols-2">
-                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                    <div className="border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                    <div className="border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                       <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                         Bác sĩ điều trị
                       </p>
@@ -274,12 +274,12 @@ export function DoctorSupportDetailModal({
                     </div>
                   </section>
 
-                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                    <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                    <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                       <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                         Thông tin bệnh nhân
                       </p>
-                      <span className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+                      <span className="rounded-md border border-gray-400 bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
                         #{toShortId(data.memberId, 8)}
                       </span>
                     </div>
@@ -290,10 +290,10 @@ export function DoctorSupportDetailModal({
                           {data.memberName}
                         </h3>
                         <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                          <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
+                          <span className="rounded-md border border-gray-400 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
                             {getGenderDisplay(data.memberGender)}
                           </span>
-                          <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
+                          <span className="rounded-md border border-gray-400 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
                             {formatDateOfBirth(data.memberDateOfBirth)}
                           </span>
                         </div>
@@ -302,8 +302,8 @@ export function DoctorSupportDetailModal({
                   </section>
                 </div>
 
-                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                     <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                       Hồ sơ sức khỏe
                     </p>
@@ -355,7 +355,7 @@ export function DoctorSupportDetailModal({
                           ].map((stat) => (
                             <div
                               key={stat.label}
-                              className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-white/5 dark:bg-white/5"
+                              className="flex flex-col items-center justify-center rounded-xl border border-gray-400 bg-gray-50 p-3 dark:border-white/5 dark:bg-white/5"
                             >
                               <p className="text-[9px] font-medium tracking-widest text-gray-400 uppercase">
                                 {stat.label}
@@ -379,7 +379,7 @@ export function DoctorSupportDetailModal({
                                 {healthProfile.conditions.map((condition) => (
                                   <div
                                     key={condition.conditionId}
-                                    className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5"
+                                    className="rounded-2xl border border-gray-400 bg-white p-4 dark:border-white/10 dark:bg-white/5"
                                   >
                                     <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                                       {condition.conditionName}
@@ -483,7 +483,7 @@ export function DoctorSupportDetailModal({
 function DetailSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+      <div className="rounded-2xl border border-gray-400 bg-white p-5 dark:border-white/10 dark:bg-white/5">
         <div className="flex items-start gap-4">
           <div className="h-14 w-14 animate-pulse rounded-2xl bg-gray-100 dark:bg-white/10" />
           <div className="flex-1 space-y-3">
@@ -499,7 +499,7 @@ function DetailSkeleton() {
         {[0, 1].map((item) => (
           <div
             key={item}
-            className="rounded-2xl border border-gray-100 bg-white p-5 dark:border-white/10 dark:bg-white/5"
+            className="rounded-2xl border border-gray-400 bg-white p-5 dark:border-white/10 dark:bg-white/5"
           >
             <div className="flex items-center gap-3">
               <div className="h-16 w-16 animate-pulse rounded-2xl bg-gray-100 dark:bg-white/10" />
@@ -517,7 +517,7 @@ function DetailSkeleton() {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+      <div className="rounded-2xl border border-gray-400 bg-white p-5 dark:border-white/10 dark:bg-white/5">
         <div className="h-5 w-40 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
         <div className="mt-3 h-20 animate-pulse rounded-xl bg-gray-100 dark:bg-white/10" />
       </div>

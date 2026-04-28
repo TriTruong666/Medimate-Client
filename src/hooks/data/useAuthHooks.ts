@@ -32,7 +32,7 @@ export function useLogout() {
 
     onSuccess: (data) => {
       if (data.success) {
-        toast.success("Đăng xuất thành công", "Hẹn gặp lại bạn sau!");
+        // toast.success("Đăng xuất thành công", "Hẹn gặp lại bạn sau!");
         // Clear all auth data from cache
         queryClient.setQueryData(["auth", "me"], null);
         queryClient.invalidateQueries({ queryKey: ["auth", "me"] });

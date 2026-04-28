@@ -27,7 +27,7 @@ export function TransactionDrawer() {
   };
 
   const status = normalizePaymentStatus(data?.paymentStatus);
-  const transactionType = data?.transactionType.toLowerCase() as "in" | "out";
+  const transactionType = data?.transactionType?.toLowerCase() as "in" | "out";
 
   if (!transactionId) return null;
 
@@ -158,7 +158,7 @@ export function TransactionDrawer() {
                 <DetailRow
                   label="Phương thức"
                   value={
-                    data.paymentMethod.toLowerCase() === "payos"
+                    data.paymentMethod?.toLowerCase() === "payos"
                       ? "Chuyển khoản"
                       : "N/A"
                   }
@@ -167,7 +167,7 @@ export function TransactionDrawer() {
                   label="Kênh thanh toán"
                   value={data.paymentMethod || "N/A"}
                 />
-                {data.paymentMethod.toLowerCase() === "payos" ? (
+                {data.paymentMethod?.toLowerCase() === "payos" ? (
                   <DetailRow
                     label="Mã đối soát PAYOS"
                     value={data.paymentCode}

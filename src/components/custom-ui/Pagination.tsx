@@ -49,7 +49,7 @@ export function Pagination({
     <div className="dark:border-border-dark flex items-center justify-between border-x border-b border-gray-400 px-4 py-3 dark:border-white/10 dark:bg-white/5">
       {/* Info & Page Size */}
       <div className="flex items-center gap-6">
-        <div className="hidden items-center gap-4 border-r border-gray-100 pr-6 sm:flex dark:border-white/10">
+        <div className="hidden items-center gap-4 border-r border-gray-400 pr-6 sm:flex dark:border-white/10">
           <span className="text-xs text-gray-500 dark:text-white/60">
             Tổng{" "}
             <span className="font-medium text-gray-900 dark:text-white">
@@ -77,7 +77,7 @@ export function Pagination({
           onClick={() => onPageChange?.(page - 1)}
           className={`inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
             page === 1
-              ? "cursor-not-allowed border-gray-200 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
+              ? "cursor-not-allowed border-gray-400 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
               : "border-gray-400 text-gray-600 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:text-gray-300 dark:hover:border-white/20 dark:hover:bg-white/5"
           } `}
         >
@@ -120,7 +120,7 @@ export function Pagination({
           onClick={() => onPageChange?.(page + 1)}
           className={`inline-flex items-center gap-1 rounded-xl border px-4 py-2 text-xs font-semibold transition-all ${
             page === totalPages
-              ? "cursor-not-allowed border-gray-200 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
+              ? "cursor-not-allowed border-gray-400 text-gray-400 opacity-50 dark:border-white/5 dark:text-gray-600"
               : "border-gray-400 text-gray-600 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:text-gray-300 dark:hover:border-white/20 dark:hover:bg-white/5"
           } `}
         >

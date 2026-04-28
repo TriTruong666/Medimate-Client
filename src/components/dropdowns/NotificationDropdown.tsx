@@ -99,7 +99,7 @@ export function NotificationDropdown() {
               </button>
             </div>
 
-            <div className="border-t border-gray-100 dark:border-white/10" />
+            <div className="border-t border-gray-400 dark:border-white/10" />
 
             <div className="thin-scrollbar max-h-100 overflow-y-auto">
               {isLoading ? (
@@ -131,7 +131,7 @@ export function NotificationDropdown() {
               )}
             </div>
 
-            <div className="border-t border-gray-100 dark:border-white/5">
+            <div className="border-t border-gray-400 dark:border-white/5">
               <button
                 type="button"
                 onClick={handleMarkAllRead}
@@ -172,7 +172,7 @@ function NotificationDropdownItem({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`group relative flex gap-3 border-b border-gray-100 px-4 py-3 text-left transition hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5`}
+      className={`group relative flex gap-3 border-b border-gray-400 px-4 py-3 text-left transition hover:bg-gray-50 dark:border-white/5 dark:hover:bg-white/5`}
     >
       {unread && (
         <span className="bg-primary mt-2 h-2 w-2 shrink-0 rounded-full" />
@@ -180,7 +180,7 @@ function NotificationDropdownItem({
 
       <div className="flex flex-1 flex-col">
         <p
-          className={`text-[13px] font-medium transition-colors ${unread ? "text-gray-900 dark:text-white" : "text-gray-600 dark:text-white/60 group-hover:text-gray-900 dark:group-hover:text-white"}`}
+          className={`text-[13px] font-medium transition-colors ${unread ? "text-gray-900 dark:text-white" : "text-gray-600 group-hover:text-gray-900 dark:text-white/60 dark:group-hover:text-white"}`}
         >
           {title}
         </p>

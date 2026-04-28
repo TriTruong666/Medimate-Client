@@ -66,7 +66,9 @@ export function ChatUserDropdown() {
             className="absolute right-0 z-50 mt-3 w-90 overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-2xl dark:border-white/10 dark:bg-black/90 dark:backdrop-blur-xl"
           >
             <div className="flex items-center justify-between px-4 py-3">
-              <p className="text-sm font-medium text-gray-900 dark:text-white">Tin nhắn</p>
+              <p className="text-sm font-medium text-gray-900 dark:text-white">
+                Tin nhắn
+              </p>
               <button
                 type="button"
                 onClick={() => void refetch()}
@@ -75,8 +77,8 @@ export function ChatUserDropdown() {
                 Làm mới
               </button>
             </div>
-            <div className="border-t border-gray-100 dark:border-white/10" />
-            <div className="max-h-100 overflow-y-auto thin-scrollbar">
+            <div className="border-t border-gray-400 dark:border-white/10" />
+            <div className="thin-scrollbar max-h-100 overflow-y-auto">
               {isLoading ? (
                 <div className="flex min-h-44 items-center justify-center">
                   <Spinner size="lg" />
@@ -119,7 +121,9 @@ export function ChatUserDropdown() {
 function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
   const [, openPopup] = useAtom(openPopupAtom);
   const derivedExpiredAt = session.startedAt
-    ? new Date(new Date(session.startedAt).getTime() + 125 * 60 * 1000).toISOString()
+    ? new Date(
+        new Date(session.startedAt).getTime() + 125 * 60 * 1000,
+      ).toISOString()
     : session.expiredAt;
 
   const { isExpired } = useCountdown(derivedExpiredAt);
@@ -139,9 +143,12 @@ function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
   return (
     <div
       onClick={() =>
-        openPopup(session.sessionId || session.consultanSessionId || "", derivedExpiredAt || "")
+        openPopup(
+          session.sessionId || session.consultanSessionId || "",
+          derivedExpiredAt || "",
+        )
       }
-      className={`group relative flex cursor-pointer gap-3 px-4 py-3 transition hover:bg-gray-50 dark:hover:bg-white/5 border-b border-gray-100 dark:border-white/10 last:border-0`}
+      className={`group relative flex cursor-pointer gap-3 border-b border-gray-400 px-4 py-3 transition last:border-0 hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5`}
     >
       <div className="relative h-10 w-10 shrink-0">
         <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-gray-100 to-gray-50 text-sm font-semibold text-gray-900 dark:from-white/20 dark:to-white/5 dark:text-white">
@@ -161,7 +168,7 @@ function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
       </div>
       <div className="flex flex-1 flex-col overflow-hidden text-left">
         <div className="flex items-center justify-between">
-          <p className="text-[13px] font-medium text-gray-900 group-hover:text-primary transition-colors dark:text-white/90 dark:group-hover:text-white">
+          <p className="group-hover:text-primary text-[13px] font-medium text-gray-900 transition-colors dark:text-white/90 dark:group-hover:text-white">
             {session.partnerName || session.memberName}
           </p>
           {session.unreadCount ? (
@@ -172,9 +179,13 @@ function ChatUserItem({ session }: { session: ChatSessionSummaryResponse }) {
         </div>
 
         {/* Lịch hẹn */}
-        <div className="flex items-center gap-2 mt-0.5 text-[10px] text-gray-500 dark:text-gray-400 font-medium">
+        <div className="mt-0.5 flex items-center gap-2 text-[10px] font-medium text-gray-500 dark:text-gray-400">
           {(session.appointmentDate || session.startedAt) && (
-            <span>{formatDateTime(session.startedAt || session.appointmentDate || "")}</span>
+            <span>
+              {formatDateTime(
+                session.startedAt || session.appointmentDate || "",
+              )}
+            </span>
           )}
         </div>
         <p className="mt-0.5 line-clamp-1 text-xs text-gray-500 dark:text-white/40">

@@ -14,6 +14,7 @@ export type User = {
 };
 
 export type Doctor = {
+  doctorId: string;
   fullName: string;
   specialty: string;
   currentHospitalName: string;

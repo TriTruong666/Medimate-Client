@@ -2,79 +2,129 @@ import type { BasePaginatedResponse, BaseResponse } from "@/types/APIResponse";
 import { axiosNETClient } from "./client";
 import { cleanQueryParams } from "@/common/query.params";
 
-export type PendingPayout = {
+export type PayoutItemDto = {
   payoutId: string;
-  doctorId: string;
-  doctorName: string;
-  bankName: string;
-  accountNumber: string;
-  accountHolder: string;
-  amount: number;
-  calculatedAt: string;
-  status: string;
-};
+  clinicId: string | null;
+  clinicName: string;
+  appointmentId: string | null;
+  appointmentDate: string | null;
+  appointmentTime: string | null;
+  patientName: string | null;
+  doctorName: string | null;
 
-export type PaidPayout = {
-  payoutId: string;
-  doctorId: string;
-  doctorName: string;
-  bankName: string;
-  accountNumber: string;
-  accountHolder: string;
+  paymentStatus: string | null;
+  payerName: string | null;
+  payerPhoneNumber: string | null;
+  payerBankName: string | null;
+  payerBankAccountNumber: string | null;
+  payerBankAccountHolder: string | null;
+  consultationId: string | null;
+
   amount: number;
+  status: "Hold" | "ReadyToPay" | "Paid" | "Cancelled";
   calculatedAt: string;
   paidAt: string | null;
   transferImageUrl: string | null;
-  bankTransactionCode: string | null;
+  reportFileUrl: string | null;
 };
 
-export type GetPayoutsParams = {
+export type PayoutSummaryDto = {
+  clinicId: string;
+  clinicName: string;
+  totalPendingAmount: number;
+  pendingPayoutCount: number;
+  totalPaidAmount: number;
+};
+
+export type PayoutFilterDto = {
+  clinicId?: string;
+  status?: string;
   pageNumber?: number;
   pageSize?: number;
 };
 
-export type ApprovePayoutPayload = {
-  bankTransactionCode: string;
+export type ProcessPayoutDto = {
   transferImage?: File | null;
+  reportFile?: File | null;
+  note?: string;
 };
 
-export async function getPendingPayouts(
-  params: GetPayoutsParams,
-): Promise<BasePaginatedResponse<PendingPayout[]>> {
-  const res = await axiosNETClient.get("/api/v1/transactions/payouts/pending", {
-    params: cleanQueryParams<GetPayoutsParams>({ ...params, pageSize: 10 }),
+export async function getPayouts(
+  params: PayoutFilterDto,
+): Promise<BasePaginatedResponse<PayoutItemDto[]>> {
+  const res = await axiosNETClient.get("/api/v1/payouts", {
+    params: cleanQueryParams<PayoutFilterDto>(params),
   });
   return res.data;
 }
 
-export async function getPaidPayouts(
-  params: GetPayoutsParams,
-): Promise<BasePaginatedResponse<PaidPayout[]>> {
-  const res = await axiosNETClient.get("/api/v1/transactions/payouts/paid", {
-    params: cleanQueryParams<GetPayoutsParams>({ ...params, pageSize: 10 }),
-  });
+export async function getPayoutSummary(): Promise<
+  BaseResponse<PayoutSummaryDto[]>
+> {
+  const res = await axiosNETClient.get("/api/v1/payouts/summary");
   return res.data;
 }
 
-export async function approvePayout(
-  payoutId: string,
-  payload: ApprovePayoutPayload,
+export async function processPayout(
+  clinicId: string,
+  payload: ProcessPayoutDto,
 ): Promise<BaseResponse<any>> {
   const formData = new FormData();
-  formData.append("BankTransactionCode", payload.bankTransactionCode);
-  
+
   if (payload.transferImage) {
     formData.append("TransferImage", payload.transferImage);
   }
+  if (payload.reportFile) {
+    formData.append("ReportFile", payload.reportFile);
+  }
+  if (payload.note) {
+    formData.append("Note", payload.note);
+  }
 
   const res = await axiosNETClient.post(
-    `/api/v1/transactions/payouts/${payoutId}/approve`,
+    `/api/v1/payouts/clinics/${clinicId}/process`,
     formData,
     {
       headers: {
         "Content-Type": "multipart/form-data",
       },
     },
+  );
+  return res.data;
+}
+
+// ─── Refund Management ────────────────────────────────────────────────────────
+
+export type RefundableAppointmentDto = {
+  appointmentId: string;
+  doctorId: string;
+  clinicId: string | null;
+  memberId: string;
+  memberName: string | null;
+  availabilityId: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  status: string;
+  paymentStatus: string;
+  cancelReason: string | null;
+  createdAt: string;
+};
+
+export async function getRefundableAppointments(): Promise<BaseResponse<RefundableAppointmentDto[]>> {
+  const res = await axiosNETClient.get("/api/v1/appointments/refundable");
+  return res.data;
+}
+
+export async function completeRefund(
+  appointmentId: string,
+  transferImage?: File | null,
+): Promise<BaseResponse<RefundableAppointmentDto>> {
+  const formData = new FormData();
+  if (transferImage) formData.append("transferImage", transferImage);
+  const res = await axiosNETClient.put(
+    `/api/v1/appointments/${appointmentId}/complete-refund`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
   );
   return res.data;
 }

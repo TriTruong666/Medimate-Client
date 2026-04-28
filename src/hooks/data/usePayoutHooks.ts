@@ -1,49 +1,50 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/useToast";
 import {
-  getPendingPayouts,
-  getPaidPayouts,
-  approvePayout,
-  type GetPayoutsParams,
-  type ApprovePayoutPayload,
+  getPayouts,
+  getPayoutSummary,
+  processPayout,
+  getRefundableAppointments,
+  completeRefund,
+  type PayoutFilterDto,
+  type ProcessPayoutDto,
 } from "@/apis/payout.service";
 
 export const PAYOUT_KEYS = {
   all: ["payouts"] as const,
-  pendingList: (params: GetPayoutsParams) =>
-    [...PAYOUT_KEYS.all, "pending", params] as const,
-  paidList: (params: GetPayoutsParams) =>
-    [...PAYOUT_KEYS.all, "paid", params] as const,
+  lists: () => [...PAYOUT_KEYS.all, "list"] as const,
+  list: (params: PayoutFilterDto) => [...PAYOUT_KEYS.lists(), params] as const,
+  summaries: () => [...PAYOUT_KEYS.all, "summary"] as const,
+  refunds: () => ["appointments", "refunds"] as const,
 };
 
-export function usePendingPayouts(params: GetPayoutsParams) {
+export function usePayouts(params: PayoutFilterDto) {
   return useQuery({
-    queryKey: PAYOUT_KEYS.pendingList(params),
-    queryFn: () => getPendingPayouts(params),
+    queryKey: PAYOUT_KEYS.list(params),
+    queryFn: () => getPayouts(params),
   });
 }
 
-export function usePaidPayouts(params: GetPayoutsParams) {
+export function usePayoutSummary() {
   return useQuery({
-    queryKey: PAYOUT_KEYS.paidList(params),
-    queryFn: () => getPaidPayouts(params),
+    queryKey: PAYOUT_KEYS.summaries(),
+    queryFn: () => getPayoutSummary(),
   });
 }
 
-export function useApprovePayoutMutation() {
+export function useProcessPayoutMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({
-      payoutId,
+      clinicId,
       payload,
     }: {
-      payoutId: string;
-      payload: ApprovePayoutPayload;
-    }) => approvePayout(payoutId, payload),
+      clinicId: string;
+      payload: ProcessPayoutDto;
+    }) => processPayout(clinicId, payload),
     onSuccess: () => {
-      toast.success("Thành công", "Duyệt phiếu thanh toán thành công!");
-      // Invalidate both pending and paid lists
+      toast.success("Thành công", "Đã xác nhận thanh toán công nợ phòng khám!");
       queryClient.invalidateQueries({ queryKey: PAYOUT_KEYS.all });
     },
     onError: (error: any) => {
@@ -51,6 +52,28 @@ export function useApprovePayoutMutation() {
         "Thất bại",
         error?.response?.data?.message || "Đã xảy ra lỗi khi duyệt thanh toán",
       );
+    },
+  });
+}
+
+export function useRefundableAppointments() {
+  return useQuery({
+    queryKey: PAYOUT_KEYS.refunds(),
+    queryFn: getRefundableAppointments,
+  });
+}
+
+export function useCompleteRefund() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ appointmentId, transferImage }: { appointmentId: string; transferImage?: File | null }) =>
+      completeRefund(appointmentId, transferImage),
+    onSuccess: () => {
+      toast.success("Thành công", "Đã xác nhận hoàn tiền cho người dùng!");
+      queryClient.invalidateQueries({ queryKey: PAYOUT_KEYS.refunds() });
+    },
+    onError: (error: any) => {
+      toast.error("Thất bại", error?.response?.data?.message || "Lỗi khi xử lý hoàn tiền");
     },
   });
 }
