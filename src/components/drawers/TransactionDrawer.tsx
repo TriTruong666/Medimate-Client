@@ -27,7 +27,7 @@ export function TransactionDrawer() {
   };
 
   const status = normalizePaymentStatus(data?.paymentStatus);
-  const transactionType = data?.transactionType?.toLowerCase() as "in" | "out";
+  const transactionType = data?.transactionType?.toLowerCase();
 
   if (!transactionId) return null;
 
@@ -70,12 +70,12 @@ export function TransactionDrawer() {
               <div className="flex items-center justify-between">
                 <span
                   className={`font-mono text-3xl font-semibold tracking-tight ${
-                    transactionType === "in"
+                    transactionType?.startsWith("in")
                       ? "text-emerald-600 dark:text-emerald-400"
                       : "text-red-500 dark:text-red-400"
                   }`}
                 >
-                  {transactionType === "in" ? "+" : "-"}
+                  {transactionType?.startsWith("in") ? "+" : "-"}
                   {formatPrice(data.amount || 0)}
                 </span>
                 <StatusBadge status={status} />
@@ -96,7 +96,7 @@ export function TransactionDrawer() {
                 icon={<HiOutlineMail size={18} />}
                 label="Gửi Email"
               />
-              {transactionType === "in" ? (
+              {transactionType?.startsWith("in") ? (
                 <QuickAction
                   icon={<HiOutlineReceiptRefund size={18} />}
                   label="Hoàn tiền"
@@ -132,10 +132,16 @@ export function TransactionDrawer() {
                   label="Phân loại"
                   value={
                     <Badge
-                      type={transactionType === "in" ? "success" : "error"}
+                      type={transactionType?.startsWith("in") ? "success" : "error"}
                       value={
-                        transactionType === "in"
-                          ? "Tiền nhận vào"
+                        transactionType === "in_session"
+                          ? "Thanh toán tư vấn"
+                          : transactionType === "in_package"
+                          ? "Thanh toán gói"
+                          : transactionType === "out_refund_session"
+                          ? "Hoàn tiền tư vấn"
+                          : transactionType === "out_clinic_payout"
+                          ? "Thanh toán phòng khám"
                           : "Tiền chi ra"
                       }
                     />
@@ -193,18 +199,18 @@ export function TransactionDrawer() {
               <div className="flex flex-col gap-3">
                 <DetailRow
                   label={
-                    transactionType === "in" ? "Khách hàng" : "Nhà cung cấp"
+                    transactionType?.startsWith("in") ? "Khách hàng" : "Nhà cung cấp"
                   }
                   value={
-                    transactionType === "in"
+                    transactionType?.startsWith("in")
                       ? data.senderName || "N/A"
                       : data.receiverName || "N/A"
                   }
                 />
                 <DetailRow
-                  label={transactionType === "in" ? "Người nhận" : "Người gửi"}
+                  label={transactionType?.startsWith("in") ? "Người nhận" : "Người gửi"}
                   value={
-                    transactionType === "in"
+                    transactionType?.startsWith("in")
                       ? data.receiverName || "N/A"
                       : data.senderName || "N/A"
                   }
