@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import {
   useJoinConsultationSession,
   useEndConsultationSession,
+  useRequestEndConsultationSession,
+  useRetryRecordingSession,
 } from "@/hooks/data/useSessionHooks";
 import { getVideoCallToken } from "@/apis/session.service";
 import { useVideoCallContext } from "@/contexts/VideoCallContext";
@@ -16,6 +18,9 @@ import {
   FiVideoOff,
   FiPhoneOff,
   FiMinimize2,
+  FiAlertCircle,
+  FiSend,
+  FiRefreshCw
 } from "react-icons/fi";
 import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/custom-ui/Spinner";
@@ -31,6 +36,8 @@ export default function DoctorVideoCallPage() {
 
   const { mutateAsync: joinSession } = useJoinConsultationSession();
   const { mutateAsync: completeSession } = useEndConsultationSession();
+  const { mutateAsync: requestEndSession, isPending: isRequestingEnd } = useRequestEndConsultationSession();
+  const { mutateAsync: retryRecording, isPending: isRetryingRecording } = useRetryRecordingSession();
 
   const appId = import.meta.env.VITE_AGORA_APP_ID;
 
@@ -103,6 +110,22 @@ export default function DoctorVideoCallPage() {
   }, [setMinimize]);
 
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
+  const [recordingStatus, setRecordingStatus] = useState<"pending" | "recording" | "error">("pending");
+
+  const handleRequestEnd = async () => {
+    if (sessionId) {
+      await requestEndSession(sessionId);
+    }
+  };
+
+  const handleRetryRecording = async () => {
+    if (sessionId) {
+      setRecordingStatus("pending");
+      await retryRecording(sessionId);
+      // Giả định nếu request thành công thì báo là đang record (chưa nhận signalR thực tế ở đây)
+      setRecordingStatus("recording");
+    }
+  };
 
   const handleLeaveCall = async () => {
     setShowConfirmLeave(true);
@@ -175,6 +198,30 @@ export default function DoctorVideoCallPage() {
             {isConnected ? "Đã kết nối an toàn" : "Đang khởi tạo kết nối..."}
           </p>
         </div>
+        
+        {/* Recording Status */}
+        {remoteUsers.length > 0 && (
+          <div className="flex items-center gap-2">
+            {recordingStatus === "error" ? (
+              <div className="flex items-center gap-2 rounded-lg bg-rose-500/20 px-3 py-1 border border-rose-500/50 text-rose-400">
+                <FiAlertCircle className="animate-pulse" />
+                <span className="text-xs font-medium">Lỗi Ghi Hình</span>
+                <button 
+                  onClick={handleRetryRecording} 
+                  disabled={isRetryingRecording}
+                  className="ml-2 hover:text-rose-300"
+                >
+                  <FiRefreshCw className={isRetryingRecording ? "animate-spin" : ""} />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1 border border-emerald-500/50 text-emerald-400">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="text-xs font-medium">Đang Ghi Hình (Cloud)</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {agoraError && (
@@ -261,6 +308,16 @@ export default function DoctorVideoCallPage() {
           title="Thu nhỏ cửa sổ"
         >
           <FiMinimize2 className="text-xl" />
+        </button>
+
+        {/* Request End Call */}
+        <button
+          onClick={handleRequestEnd}
+          disabled={isRequestingEnd}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-500/20 text-orange-500 transition-all duration-300 hover:bg-orange-500/30"
+          title="Yêu cầu kết thúc phiên"
+        >
+          <FiSend className="text-xl" />
         </button>
 
         {/* Leave Call */}
