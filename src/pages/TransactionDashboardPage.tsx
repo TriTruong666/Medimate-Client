@@ -214,9 +214,7 @@ function TransactionTable({
       }}
     >
       {data.map((row, i) => {
-        const rowType: "in" | "out" = row.transactionType.toLowerCase() as
-          | "in"
-          | "out";
+        const rowType = row.transactionType.toLowerCase();
         const rowStatus = normalizeTransactionStatus(row.status);
 
         return (
@@ -256,7 +254,7 @@ function TransactionTable({
 
             {/* Actions */}
             <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
-              {rowType === "out" && rowStatus === "pending" ? (
+              {rowType.startsWith("out") && rowStatus === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => openPaymentModal(demoPaymentData)}
@@ -336,12 +334,15 @@ function StatusBadge({ status }: { status: "pending" | "paid" | "cancelled" }) {
 function TransactionTypeBadge({
   transaction_type,
 }: {
-  transaction_type: "in" | "out";
+  transaction_type: string;
 }) {
-  const map = {
-    in: <Badge type="success" value="Tiền nhận vào" />,
+  const map: Record<string, React.ReactElement> = {
+    in_session: <Badge type="success" value="Thanh toán tư vấn" />,
+    in_package: <Badge type="success" value="Thanh toán gói" />,
+    out_refund_session: <Badge type="warning" value="Hoàn tiền tư vấn" />,
+    out_clinic_payout: <Badge type="warning" value="Thanh toán phòng khám" />,
     out: <Badge type="warning" value="Tiền chi ra" />,
   };
 
-  return map[transaction_type];
+  return map[transaction_type] || <Badge type="info" value={transaction_type} />;
 }
