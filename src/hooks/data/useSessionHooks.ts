@@ -73,3 +73,37 @@ export function useEndConsultationSession() {
     },
   });
 }
+
+export function useRequestEndConsultationSession() {
+  return useMutation({
+    mutationFn: (sessionId: string) =>
+      SessionService.requestEndConsultationSession(sessionId),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Đã gửi yêu cầu", "Yêu cầu kết thúc phiên khám đã được gửi tới bệnh nhân.");
+      } else {
+        toast.error("Lỗi", translateErrorMessage(data.error?.code, data.message));
+      }
+    },
+    onError: (error: unknown) => {
+      toast.error("Gửi yêu cầu thất bại", getApiErrorMessage(error));
+    },
+  });
+}
+
+export function useRetryRecordingSession() {
+  return useMutation({
+    mutationFn: (sessionId: string) =>
+      SessionService.retryRecordingSession(sessionId),
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Bắt đầu ghi hình", "Hệ thống đang thử kết nối ghi hình lại.");
+      } else {
+        toast.error("Lỗi", translateErrorMessage(data.error?.code, data.message));
+      }
+    },
+    onError: (error: unknown) => {
+      toast.error("Thử lại ghi hình thất bại", getApiErrorMessage(error));
+    },
+  });
+}
