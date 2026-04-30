@@ -20,6 +20,7 @@ import { useDoctorAvailabilityExceptions } from "@/hooks/data/useDoctorAvailabil
 import { toast } from "@/hooks/useToast";
 import { formatDate } from "@/common/format";
 import { useNavigate } from "react-router-dom";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
 import type {
   AppointmentStatus,
   AppointmentType,
@@ -271,6 +272,15 @@ export default function DoctorSupportPage({
       default:
         return true;
     }
+  }).sort((a, b) => {
+    const dateA = a.dateKey?.split("T")[0] || "";
+    const dateB = b.dateKey?.split("T")[0] || "";
+    if (dateA !== dateB) {
+      return dateB.localeCompare(dateA);
+    }
+    const timeA = a.time || "";
+    const timeB = b.time || "";
+    return timeA.localeCompare(timeB);
   });
 
   const hasAppointments = filteredAppointments.length > 0;
@@ -317,22 +327,20 @@ export default function DoctorSupportPage({
           <div className="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5">
             <button
               onClick={() => setViewLayout("card")}
-              className={`${
-                viewLayout === "card"
-                  ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
-                  : "text-gray-500 hover:bg-white/10 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-              } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+              className={`${viewLayout === "card"
+                ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
+                : "text-gray-500 hover:bg-white/10 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
             >
               <LuGrid3X3 className="text-sm" />
               Thẻ
             </button>
             <button
               onClick={() => setViewLayout("calendar")}
-              className={`${
-                viewLayout === "calendar"
-                  ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
-                  : "text-gray-500 hover:bg-white/10 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
-              } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
+              className={`${viewLayout === "calendar"
+                ? "bg-primary text-white shadow-[0_4px_12px_rgba(var(--primary),0.3)]"
+                : "text-gray-500 hover:bg-white/10 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+                } flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition`}
             >
               <LuCalendarDays className="text-sm" />
               Lịch
@@ -474,12 +482,14 @@ function AppointmentCard({
   const sessionId = sessionData?.consultanSessionId;
   const canJoin = isCallReady && !!sessionId;
 
+  const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
+
   function handleApprove() {
-    updateStatus({ id: data.id, status: "Approved" });
+    setConfirmAction("approve");
   }
 
   function handleReject() {
-    updateStatus({ id: data.id, status: "Rejected" });
+    setConfirmAction("reject");
   }
 
   function handleJoinCall() {
@@ -503,21 +513,19 @@ function AppointmentCard({
       }}
       variants={cardItem}
       whileHover={{ y: -4 }}
-      className={`group relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white p-5 shadow-sm backdrop-blur transition-all duration-300 hover:z-50 dark:bg-white/5 ${
-        isNow
-          ? "border-primary/50 dark:border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
-          : "border-gray-300 hover:border-gray-400 hover:bg-white dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
-      }`}
+      className={`group relative flex h-full cursor-pointer flex-col rounded-2xl border bg-white p-5 shadow-sm backdrop-blur transition-all duration-300 hover:z-50 dark:bg-white/5 ${isNow
+        ? "border-primary/50 dark:border-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.15)]"
+        : "border-gray-300 hover:border-gray-400 hover:bg-white dark:border-white/10 dark:hover:border-white/20 dark:hover:bg-white/10"
+        }`}
     >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
           <div
-            className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold ${
-              isNow
-                ? "bg-primary text-white"
-                : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
-            }`}
+            className={`flex h-10 w-10 items-center justify-center rounded-full text-lg font-bold ${isNow
+              ? "bg-primary text-white"
+              : "bg-linear-to-br from-indigo-500/20 to-purple-500/20 text-indigo-400"
+              }`}
           >
             {isNow && (
               <div className="bg-primary/30 absolute h-10 w-10 animate-ping rounded-full" />
@@ -541,9 +549,8 @@ function AppointmentCard({
       {/* Body */}
       <div className="flex-1 space-y-3">
         <div
-          className={`flex items-center gap-2 text-xs font-medium ${
-            isNow ? "text-primary" : "text-gray-600 dark:text-gray-300"
-          }`}
+          className={`flex items-center gap-2 text-xs font-medium ${isNow ? "text-primary" : "text-gray-600 dark:text-gray-300"
+            }`}
         >
           <FiClock
             className={isNow ? "text-primary animate-pulse" : "text-gray-400"}
@@ -554,7 +561,7 @@ function AppointmentCard({
         </div>
         <div className="line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Triệu chứng:{" "}
+            Ghi chú:{" "}
           </span>
           {data.symptoms}
         </div>
@@ -609,11 +616,10 @@ function AppointmentCard({
                   event.stopPropagation();
                   handleJoinCall();
                 }}
-                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
-                  canJoin
-                    ? "bg-primary/10 text-primary hover:bg-primary/20"
-                    : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
-                } disabled:opacity-50`}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${canJoin
+                  ? "bg-primary/10 text-primary hover:bg-primary/20"
+                  : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
+                  } disabled:opacity-50`}
               >
                 {sessionLoading ? <Spinner size="sm" /> : <FiVideo />}
               </button>
@@ -621,6 +627,27 @@ function AppointmentCard({
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        open={confirmAction !== null}
+        title={confirmAction === "approve" ? "Duyệt lịch hẹn" : "Từ chối lịch hẹn"}
+        message={
+          confirmAction === "approve"
+            ? "Bạn có chắc chắn muốn duyệt lịch hẹn này? Thông báo sẽ được gửi đến bệnh nhân."
+            : "Bạn có chắc chắn muốn từ chối lịch hẹn này? Số tiền đã thanh toán sẽ được hoàn lại cho bệnh nhân."
+        }
+        confirmText={confirmAction === "approve" ? "Duyệt" : "Từ chối"}
+        confirmButtonType={confirmAction === "approve" ? "success" : "danger"}
+        onConfirm={() => {
+          if (confirmAction === "approve") {
+            updateStatus({ id: data.id, status: "Approved" }, { onSuccess: () => setConfirmAction(null) });
+          } else {
+            updateStatus({ id: data.id, status: "Rejected" }, { onSuccess: () => setConfirmAction(null) });
+          }
+        }}
+        onCancel={() => setConfirmAction(null)}
+        isLoading={isPending}
+      />
     </motion.div>
   );
 }
@@ -764,9 +791,8 @@ function MonthlyCalendarView({
         {daysOfWeek.map((day, i) => (
           <div
             key={i}
-            className={`p-3 text-center text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${
-              i < 6 ? "dark:border-border-dark border-r border-gray-300" : ""
-            }`}
+            className={`p-3 text-center text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${i < 6 ? "dark:border-border-dark border-r border-gray-300" : ""
+              }`}
           >
             {day}
           </div>
@@ -778,9 +804,8 @@ function MonthlyCalendarView({
         {emptyPreDays.map((_, i) => (
           <div
             key={`empty-${i}`}
-            className={`dark:border-border-dark min-h-30 border-b border-gray-300 bg-gray-50/30 dark:bg-transparent ${
-              i % 7 < 6 ? "border-r" : ""
-            }`}
+            className={`dark:border-border-dark min-h-30 border-b border-gray-300 bg-gray-50/30 dark:bg-transparent ${i % 7 < 6 ? "border-r" : ""
+              }`}
           />
         ))}
         {days.map(
@@ -805,18 +830,16 @@ function MonthlyCalendarView({
             return (
               <div
                 key={i}
-                className={`group dark:border-border-dark relative flex min-h-30 flex-col gap-1 border-b border-gray-300 p-2 transition hover:bg-gray-100/50 dark:hover:bg-white/5 ${
-                  hasApprovedDayOff
-                    ? "bg-rose-50/60 dark:bg-rose-500/8"
-                    : "bg-transparent"
-                } ${gridIndex % 7 < 6 ? "dark:border-border-dark border-r border-gray-300" : ""}`}
+                className={`group dark:border-border-dark relative flex min-h-30 flex-col gap-1 border-b border-gray-300 p-2 transition hover:bg-gray-100/50 dark:hover:bg-white/5 ${hasApprovedDayOff
+                  ? "bg-rose-50/60 dark:bg-rose-500/8"
+                  : "bg-transparent"
+                  } ${gridIndex % 7 < 6 ? "dark:border-border-dark border-r border-gray-300" : ""}`}
               >
                 <span
-                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${
-                    isToday
-                      ? "bg-primary text-white"
-                      : "text-gray-500 dark:text-gray-400"
-                  }`}
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${isToday
+                    ? "bg-primary text-white"
+                    : "text-gray-500 dark:text-gray-400"
+                    }`}
                 >
                   {day}
                 </span>
@@ -992,16 +1015,16 @@ function CalendarAppointmentItem({
   const sessionId = sessionData?.consultanSessionId;
   const canJoin = isCallReady && !!sessionId;
 
+  const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
+
   function handleApprove(e: React.MouseEvent) {
     e.stopPropagation();
-    updateStatus({ id: apt.id, status: "Approved" });
-    setIsOpen(false);
+    setConfirmAction("approve");
   }
 
   function handleReject(e: React.MouseEvent) {
     e.stopPropagation();
-    updateStatus({ id: apt.id, status: "Rejected" });
-    setIsOpen(false);
+    setConfirmAction("reject");
   }
 
   function handleJoinCall(e: React.MouseEvent) {
@@ -1033,15 +1056,13 @@ function CalendarAppointmentItem({
     <div className="relative" ref={dropdownRef}>
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex cursor-pointer items-center justify-between rounded-md p-1.5 text-[10px] leading-tight transition-all ${
-          isOpen ? "ring-1 ring-white/20" : ""
-        } ${
-          isNow
+        className={`flex cursor-pointer items-center justify-between rounded-md p-1.5 text-[10px] leading-tight transition-all ${isOpen ? "ring-1 ring-white/20" : ""
+          } ${isNow
             ? "bg-primary/10 border-primary/40 text-primary dark:bg-primary/20 dark:text-primary-light border shadow-sm"
             : apt.type === "online"
               ? "border border-transparent bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
               : "border border-transparent bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
-        }`}
+          }`}
         title={apt.patientName}
       >
         <div className="relative z-10 w-full min-w-0 pr-1">
@@ -1074,11 +1095,10 @@ function CalendarAppointmentItem({
                 <button
                   onClick={handleJoinCall}
                   disabled={!canJoin}
-                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition ${
-                    canJoin
-                      ? "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-                      : "cursor-not-allowed text-gray-400 opacity-50"
-                  } disabled:opacity-50`}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition ${canJoin
+                    ? "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                    : "cursor-not-allowed text-gray-400 opacity-50"
+                    } disabled:opacity-50`}
                 >
                   <FiVideo />{" "}
                   {sessionLoading ? "Đang tải Session..." : "Tham gia ngay"}
@@ -1107,6 +1127,27 @@ function CalendarAppointmentItem({
           )}
         </AnimatePresence>
       )}
+
+      <ConfirmModal
+        open={confirmAction !== null}
+        title={confirmAction === "approve" ? "Duyệt lịch hẹn" : "Từ chối lịch hẹn"}
+        message={
+          confirmAction === "approve"
+            ? "Bạn có chắc chắn muốn duyệt lịch hẹn này? Thông báo sẽ được gửi đến bệnh nhân."
+            : "Bạn có chắc chắn muốn từ chối lịch hẹn này? Số tiền đã thanh toán sẽ được hoàn lại cho bệnh nhân."
+        }
+        confirmText={confirmAction === "approve" ? "Duyệt" : "Từ chối"}
+        confirmButtonType={confirmAction === "approve" ? "success" : "danger"}
+        onConfirm={() => {
+          if (confirmAction === "approve") {
+            updateStatus({ id: apt.id, status: "Approved" }, { onSuccess: () => { setConfirmAction(null); setIsOpen(false); } });
+          } else {
+            updateStatus({ id: apt.id, status: "Rejected" }, { onSuccess: () => { setConfirmAction(null); setIsOpen(false); } });
+          }
+        }}
+        onCancel={() => setConfirmAction(null)}
+        isLoading={isPending}
+      />
     </div>
   );
 }

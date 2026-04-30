@@ -19,11 +19,13 @@ import {
 } from "react-icons/fi";
 import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/custom-ui/Spinner";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
+import { useState } from "react";
 
 export default function DoctorVideoCallPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
-  
+
   const hasJoinedBeRef = useRef(false);
   const isIntentionalLeaveRef = useRef(false);
 
@@ -100,7 +102,13 @@ export default function DoctorVideoCallPage() {
     };
   }, [setMinimize]);
 
+  const [showConfirmLeave, setShowConfirmLeave] = useState(false);
+
   const handleLeaveCall = async () => {
+    setShowConfirmLeave(true);
+  };
+
+  const confirmLeaveCall = async () => {
     try {
       isIntentionalLeaveRef.current = true;
       // Dùng leaveChannel() để rời Agora channel và dọn track
@@ -178,17 +186,15 @@ export default function DoctorVideoCallPage() {
       {/* Main Video Area */}
       <div className="relative flex-1 overflow-hidden bg-[#111]">
         {remoteUsers.length > 0 ? (
-          <div className={`flex h-full items-center justify-center ${
-            remoteUsers.length > 1 ? 'flex-wrap gap-4 p-4' : ''
-          }`}>
+          <div className={`flex h-full items-center justify-center ${remoteUsers.length > 1 ? 'flex-wrap gap-4 p-4' : ''
+            }`}>
             {remoteUsers.map((user) => (
               <div
                 key={user.uid}
-                className={`relative overflow-hidden rounded-2xl ${
-                  remoteUsers.length === 1
+                className={`relative overflow-hidden rounded-2xl ${remoteUsers.length === 1
                     ? "h-full w-full max-h-[70vh] mx-auto"
                     : "h-[45%] w-full border border-white/5 shadow-2xl sm:w-[48%]"
-                }`}
+                  }`}
               >
                 <VideoPlayer
                   videoTrack={user.videoTrack}
@@ -236,11 +242,10 @@ export default function DoctorVideoCallPage() {
         {/* Toggle Audio */}
         <button
           onClick={toggleAudio}
-          className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 ${
-            isAudioEnabled
+          className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 ${isAudioEnabled
               ? "bg-white/10 text-white hover:bg-white/20"
               : "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30"
-          }`}
+            }`}
         >
           {isAudioEnabled ? (
             <FiMic className="text-xl" />
@@ -270,11 +275,10 @@ export default function DoctorVideoCallPage() {
         {/* Toggle Video */}
         <button
           onClick={toggleVideo}
-          className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 ${
-            isVideoEnabled
+          className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 ${isVideoEnabled
               ? "bg-white/10 text-white hover:bg-white/20"
               : "bg-rose-500/20 text-rose-500 hover:bg-rose-500/30"
-          }`}
+            }`}
         >
           {isVideoEnabled ? (
             <FiVideo className="text-xl" />
@@ -283,6 +287,19 @@ export default function DoctorVideoCallPage() {
           )}
         </button>
       </div>
+
+      <ConfirmModal
+        open={showConfirmLeave}
+        title="Rời khỏi phòng khám trực tuyến"
+        message="Bạn có chắc chắn muốn rời khỏi cuộc gọi video này không? Bệnh nhân vẫn có thể đợi trong phòng."
+        confirmText="Rời cuộc gọi"
+        confirmButtonType="danger"
+        onConfirm={() => {
+          setShowConfirmLeave(false);
+          void confirmLeaveCall();
+        }}
+        onCancel={() => setShowConfirmLeave(false)}
+      />
     </div>
   );
 }
