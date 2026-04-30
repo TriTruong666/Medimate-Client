@@ -67,3 +67,17 @@ export async function endConsultationSession(
   const res = await axiosNETClient.post(`/api/v1/sessions/${sessionId}/end`, {});
   return res.data;
 }
+
+export async function requestEndConsultationSession(
+  sessionId: string,
+): Promise<BaseResponse<any>> {
+  const res = await axiosNETClient.post(`/api/v1/sessions/${sessionId}/request-end`, {});
+  return res.data;
+}
+
+export async function retryRecordingSession(
+  sessionId: string,
+): Promise<BaseResponse<any>> {
+  const res = await axiosNETClient.post(`/api/v1/sessions/${sessionId}/retry-recording`, {});
+  return res.data;
+}
