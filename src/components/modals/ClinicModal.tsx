@@ -40,7 +40,14 @@ export function ClinicModal({ isOpen, onClose, initialData }: Props) {
         bankAccountHolder: initialData.bankAccountHolder,
       });
     } else {
-      setForm({ name: "", address: "", email: "", bankName: "", bankAccountNumber: "", bankAccountHolder: "" });
+      setForm({
+        name: "",
+        address: "",
+        email: "",
+        bankName: "",
+        bankAccountNumber: "",
+        bankAccountHolder: "",
+      });
       setLicenseFile(null);
       setLogoFile(null);
     }
@@ -52,18 +59,34 @@ export function ClinicModal({ isOpen, onClose, initialData }: Props) {
       if (initialData) {
         await updateMutation.mutateAsync({
           clinicId: initialData.clinicId,
-          body: { ...form, licenseFile: licenseFile ?? undefined, logoFile: logoFile ?? undefined },
+          body: {
+            ...form,
+            licenseFile: licenseFile ?? undefined,
+            logoFile: logoFile ?? undefined,
+          },
         });
       } else {
-        if (!licenseFile) { alert("Vui lòng chọn file giấy phép"); return; }
-        await createMutation.mutateAsync({ ...form, licenseFile, logoFile: logoFile ?? undefined });
+        if (!licenseFile) {
+          alert("Vui lòng chọn file giấy phép");
+          return;
+        }
+        await createMutation.mutateAsync({
+          ...form,
+          licenseFile,
+          logoFile: logoFile ?? undefined,
+        });
       }
       onClose();
     } catch {}
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
-  const field = (key: keyof typeof form, label: string, placeholder: string, type = "text") => (
+  const field = (
+    key: keyof typeof form,
+    label: string,
+    placeholder: string,
+    type = "text",
+  ) => (
     <Input
       label={label}
       type={type}
@@ -87,46 +110,87 @@ export function ClinicModal({ isOpen, onClose, initialData }: Props) {
             className="z-10 flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/90 dark:backdrop-blur-xl"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-gray-200 bg-white/5 p-6 dark:border-white/10">
+            <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10">
               <h2 className="text-base font-semibold text-gray-900 dark:text-white">
                 {initialData ? "Cập nhật Phòng khám" : "Thêm Phòng khám mới"}
               </h2>
-              <button onClick={onClose} className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white">
+              <button
+                onClick={onClose}
+                className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
+              >
                 <HiOutlineX className="h-5 w-5" />
               </button>
             </div>
 
             {/* Content */}
             <div className="max-h-[75vh] overflow-y-auto p-6">
-              <form id="clinic-form" onSubmit={handleSubmit} className="space-y-4">
+              <form
+                id="clinic-form"
+                onSubmit={handleSubmit}
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-2 gap-4">
-                  {field("name", "Tên phòng khám", "VD: Phòng khám Đa khoa ABC")}
+                  {field(
+                    "name",
+                    "Tên phòng khám",
+                    "VD: Phòng khám Đa khoa ABC",
+                  )}
                   {field("email", "Email", "email@phongkham.vn", "email")}
                 </div>
-                {field("address", "Địa chỉ", "Số nhà, đường, quận/huyện, tỉnh/thành")}
+                {field(
+                  "address",
+                  "Địa chỉ",
+                  "Số nhà, đường, quận/huyện, tỉnh/thành",
+                )}
 
                 {/* Giấy phép & Logo */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
                     <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
-                      Giấy phép hành nghề <span className="text-red-500">*</span>
+                      Giấy phép hành nghề{" "}
+                      <span className="text-red-500">*</span>
                     </p>
-                    <input type="file" accept="image/*,.pdf" onChange={(e) => setLicenseFile(e.target.files?.[0] ?? null)} className={FILE_INPUT_CLASS} required={!initialData} />
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) =>
+                        setLicenseFile(e.target.files?.[0] ?? null)
+                      }
+                      className={FILE_INPUT_CLASS}
+                      required={!initialData}
+                    />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">Logo phòng khám</p>
-                    <input type="file" accept="image/*" onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)} className={FILE_INPUT_CLASS} />
+                    <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+                      Logo phòng khám
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setLogoFile(e.target.files?.[0] ?? null)}
+                      className={FILE_INPUT_CLASS}
+                    />
                   </div>
                 </div>
 
                 {/* Banking */}
-                <div className="rounded-xl border border-gray-200 p-4 dark:border-white/10">
-                  <p className="mb-3 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Thông tin ngân hàng</p>
+                <div className="rounded-xl border border-gray-400 p-4 dark:border-white/10">
+                  <p className="mb-3 text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                    Thông tin ngân hàng
+                  </p>
                   <div className="space-y-3">
                     {field("bankName", "Tên ngân hàng", "VD: Vietcombank")}
                     <div className="grid grid-cols-2 gap-4">
-                      {field("bankAccountNumber", "Số tài khoản", "VD: 0123456789")}
-                      {field("bankAccountHolder", "Chủ tài khoản", "VD: NGUYEN VAN A")}
+                      {field(
+                        "bankAccountNumber",
+                        "Số tài khoản",
+                        "VD: 0123456789",
+                      )}
+                      {field(
+                        "bankAccountHolder",
+                        "Chủ tài khoản",
+                        "VD: NGUYEN VAN A",
+                      )}
                     </div>
                   </div>
                 </div>
@@ -134,12 +198,25 @@ export function ClinicModal({ isOpen, onClose, initialData }: Props) {
             </div>
 
             {/* Footer */}
-            <div className="flex justify-end gap-3 border-t border-gray-200 bg-white/5 p-6 dark:border-white/10">
-              <button type="button" onClick={onClose} className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10">
+            <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
+              >
                 Hủy
               </button>
-              <button form="clinic-form" type="submit" disabled={isPending} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50">
-                {isPending ? "Đang lưu..." : initialData ? "Cập nhật" : "Tạo phòng khám"}
+              <button
+                form="clinic-form"
+                type="submit"
+                disabled={isPending}
+                className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+              >
+                {isPending
+                  ? "Đang lưu..."
+                  : initialData
+                    ? "Cập nhật"
+                    : "Tạo phòng khám"}
               </button>
             </div>
           </motion.div>

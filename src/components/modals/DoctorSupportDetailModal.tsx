@@ -1,12 +1,13 @@
 import { Badge } from "@/components/custom-ui/Badge";
 import { formatDate, formatTime } from "@/common/format";
 import { getGenderDisplay } from "@/common/mappers";
-import { useAppointmentDetail } from "@/hooks/data/useAppointmentHooks";
+import { useAppointmentDetail, useUpdateAppointmentStatus } from "@/hooks/data/useAppointmentHooks";
 import { useMemberHealthProfile } from "@/hooks/data/useHealthHooks";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect } from "react";
-import { FiCalendar, FiClock } from "react-icons/fi";
+import { useEffect, useState } from "react";
+import { FiCalendar, FiCheck, FiCreditCard, FiX } from "react-icons/fi";
 import { HiOutlineX } from "react-icons/hi";
+import { ConfirmModal } from "@/components/modals/ConfirmModal";
 
 type DoctorSupportDetailModalProps = {
   open: boolean;
@@ -83,13 +84,13 @@ function Avatar({ name, src }: { name?: string | null; src?: string | null }) {
       <img
         src={src}
         alt={name || "avatar"}
-        className="h-10 w-10 rounded-full border border-gray-100 object-cover shadow-sm dark:border-white/10"
+        className="h-10 w-10 rounded-full border border-gray-400 object-cover shadow-sm dark:border-white/10"
       />
     );
   }
 
   return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-gray-50 text-sm font-semibold text-gray-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-400 bg-gray-50 text-sm font-semibold text-gray-700 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
       {getInitials(name)}
     </div>
   );
@@ -107,6 +108,13 @@ export function DoctorSupportDetailModal({
 
   const { data: healthProfile, isLoading: isLoadingHealth } =
     useMemberHealthProfile(data?.memberId);
+
+  const { mutate: updateStatus, isPending: isUpdating } = useUpdateAppointmentStatus();
+
+  const isPaid = data?.paymentStatus === "Paid";
+  const canApprove = data?.status === "Pending" && isPaid;
+
+  const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
 
   useEffect(() => {
     function handleEscape(event: KeyboardEvent) {
@@ -176,8 +184,8 @@ export function DoctorSupportDetailModal({
             ) : data ? (
               <div className="space-y-4">
                 {/* Lịch hẹn */}
-                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                     <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                       Lịch hẹn khám bệnh
                     </p>
@@ -204,6 +212,35 @@ export function DoctorSupportDetailModal({
                       </div>
                     </div>
 
+                    {/* Payment info row */}
+                    <div className="mt-4 grid grid-cols-2 gap-3">
+                      <div className="flex flex-col gap-1 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-white/5 dark:bg-white/5">
+                        <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Thanh toán</span>
+                        <span className={`mt-0.5 text-sm font-semibold ${
+                          isPaid ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
+                        }`}>
+                          {isPaid ? "Đã thanh toán" : "Chưa thanh toán"}
+                        </span>
+                      </div>
+                      <div className="flex flex-col gap-1 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-white/5 dark:bg-white/5">
+                        <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Phí khám</span>
+                        <span className="mt-0.5 text-sm font-semibold text-gray-900 dark:text-white">
+                          {data.amount != null
+                            ? `${data.amount.toLocaleString("vi-VN")} ₫`
+                            : "Chưa rõ"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {data.clinicName && (
+                      <div className="mt-3 flex items-center gap-2 rounded-xl border border-gray-100 bg-gray-50 px-3 py-2 dark:border-white/5 dark:bg-white/5">
+                        <FiCreditCard className="h-4 w-4 shrink-0 text-gray-400" />
+                        <span className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                          Phòng khám: <span className="font-semibold text-gray-900 dark:text-white">{data.clinicName}</span>
+                        </span>
+                      </div>
+                    )}
+                    
                     {data.cancelReason?.trim() ? (
                       <div className="mt-5 rounded-2xl border border-yellow-200/60 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/20">
                         <p className="text-[10px] font-bold tracking-widest text-yellow-800 uppercase dark:text-yellow-400">
@@ -218,8 +255,8 @@ export function DoctorSupportDetailModal({
                 </section>
 
                 <div className="grid gap-4 xl:grid-cols-2">
-                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                    <div className="border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                    <div className="border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                       <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                         Bác sĩ điều trị
                       </p>
@@ -237,12 +274,12 @@ export function DoctorSupportDetailModal({
                     </div>
                   </section>
 
-                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                    <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                  <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                    <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                       <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                         Thông tin bệnh nhân
                       </p>
-                      <span className="rounded-md border border-gray-200 bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+                      <span className="rounded-md border border-gray-400 bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
                         #{toShortId(data.memberId, 8)}
                       </span>
                     </div>
@@ -253,10 +290,10 @@ export function DoctorSupportDetailModal({
                           {data.memberName}
                         </h3>
                         <div className="mt-1 flex flex-wrap gap-1.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
-                          <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
+                          <span className="rounded-md border border-gray-400 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
                             {getGenderDisplay(data.memberGender)}
                           </span>
-                          <span className="rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
+                          <span className="rounded-md border border-gray-400 bg-gray-50 px-2 py-0.5 dark:border-white/10 dark:bg-white/5">
                             {formatDateOfBirth(data.memberDateOfBirth)}
                           </span>
                         </div>
@@ -265,8 +302,8 @@ export function DoctorSupportDetailModal({
                   </section>
                 </div>
 
-                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
-                  <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
                     <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                       Hồ sơ sức khỏe
                     </p>
@@ -318,7 +355,7 @@ export function DoctorSupportDetailModal({
                           ].map((stat) => (
                             <div
                               key={stat.label}
-                              className="flex flex-col items-center justify-center rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-white/5 dark:bg-white/5"
+                              className="flex flex-col items-center justify-center rounded-xl border border-gray-400 bg-gray-50 p-3 dark:border-white/5 dark:bg-white/5"
                             >
                               <p className="text-[9px] font-medium tracking-widest text-gray-400 uppercase">
                                 {stat.label}
@@ -342,7 +379,7 @@ export function DoctorSupportDetailModal({
                                 {healthProfile.conditions.map((condition) => (
                                   <div
                                     key={condition.conditionId}
-                                    className="rounded-2xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5"
+                                    className="rounded-2xl border border-gray-400 bg-white p-4 dark:border-white/10 dark:bg-white/5"
                                   >
                                     <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
                                       {condition.conditionName}
@@ -389,6 +426,26 @@ export function DoctorSupportDetailModal({
 
           {/* Footer */}
           <div className="flex justify-end gap-3 border-t border-gray-400 bg-gray-50/50 p-4 dark:border-white/10 dark:bg-white/5">
+            {canApprove && (
+              <>
+                <button
+                  onClick={() => setConfirmAction("reject")}
+                  disabled={isUpdating}
+                  className="flex items-center gap-2 rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 disabled:opacity-50 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
+                >
+                  <FiX className="h-3.5 w-3.5" />
+                  Từ chối
+                </button>
+                <button
+                  onClick={() => setConfirmAction("approve")}
+                  disabled={isUpdating}
+                  className="flex items-center gap-2 rounded-lg bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-lg transition hover:bg-emerald-600 disabled:opacity-50"
+                >
+                  <FiCheck className="h-3.5 w-3.5" />
+                  {isUpdating ? "Đang duyệt..." : "Duyệt lịch hẹn"}
+                </button>
+              </>
+            )}
             <button
               onClick={onClose}
               className="rounded-lg px-6 py-2 text-xs font-semibold text-gray-600 transition hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-white/10"
@@ -398,6 +455,27 @@ export function DoctorSupportDetailModal({
           </div>
         </motion.div>
       </div>
+
+      <ConfirmModal
+        open={confirmAction !== null}
+        title={confirmAction === "approve" ? "Duyệt lịch hẹn" : "Từ chối lịch hẹn"}
+        message={
+          confirmAction === "approve"
+            ? "Bạn có chắc chắn muốn duyệt lịch hẹn này? Thông báo sẽ được gửi đến bệnh nhân."
+            : "Bạn có chắc chắn muốn từ chối lịch hẹn này? Số tiền đã thanh toán sẽ được hoàn lại cho bệnh nhân."
+        }
+        confirmText={confirmAction === "approve" ? "Duyệt" : "Từ chối"}
+        confirmButtonType={confirmAction === "approve" ? "success" : "danger"}
+        onConfirm={() => {
+          if (confirmAction === "approve") {
+            updateStatus({ id: appointmentId!, status: "Approved" }, { onSuccess: () => { setConfirmAction(null); onClose(); } });
+          } else {
+            updateStatus({ id: appointmentId!, status: "Rejected" }, { onSuccess: () => { setConfirmAction(null); onClose(); } });
+          }
+        }}
+        onCancel={() => setConfirmAction(null)}
+        isLoading={isUpdating}
+      />
     </AnimatePresence>
   );
 }
@@ -405,7 +483,7 @@ export function DoctorSupportDetailModal({
 function DetailSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+      <div className="rounded-2xl border border-gray-400 bg-white p-5 dark:border-white/10 dark:bg-white/5">
         <div className="flex items-start gap-4">
           <div className="h-14 w-14 animate-pulse rounded-2xl bg-gray-100 dark:bg-white/10" />
           <div className="flex-1 space-y-3">
@@ -421,7 +499,7 @@ function DetailSkeleton() {
         {[0, 1].map((item) => (
           <div
             key={item}
-            className="rounded-2xl border border-gray-100 bg-white p-5 dark:border-white/10 dark:bg-white/5"
+            className="rounded-2xl border border-gray-400 bg-white p-5 dark:border-white/10 dark:bg-white/5"
           >
             <div className="flex items-center gap-3">
               <div className="h-16 w-16 animate-pulse rounded-2xl bg-gray-100 dark:bg-white/10" />
@@ -439,7 +517,7 @@ function DetailSkeleton() {
         ))}
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white p-5 dark:border-white/10 dark:bg-white/5">
+      <div className="rounded-2xl border border-gray-400 bg-white p-5 dark:border-white/10 dark:bg-white/5">
         <div className="h-5 w-40 animate-pulse rounded bg-gray-100 dark:bg-white/10" />
         <div className="mt-3 h-20 animate-pulse rounded-xl bg-gray-100 dark:bg-white/10" />
       </div>

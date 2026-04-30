@@ -40,6 +40,9 @@ interface Appointment {
   date: string;
   time: string;
   status: AppointmentStatus;
+  paymentStatus: string;  // "Pending" | "Paid"
+  amount?: number;
+  clinicName?: string;
   symptoms: string;
 }
 
@@ -148,6 +151,9 @@ function mapAppointment(raw: DoctorAppointment): Appointment {
     date: formatDate(raw.appointmentDate),
     time: formatAppointmentTime(raw.appointmentTime),
     status: raw.status,
+    paymentStatus: raw.paymentStatus ?? "Pending",
+    amount: raw.amount,
+    clinicName: raw.clinicName,
     symptoms: raw.cancelReason?.trim() || "Chưa có ghi chú cho lịch hẹn này.",
   };
 }
@@ -556,9 +562,10 @@ function AppointmentCard({
 
       {/* Footer */}
       <div className="mt-5 flex items-center justify-between">
-        <StatusBadge status={data.status} />
+        <StatusBadge status={data.status} paymentStatus={data.paymentStatus} />
         <div className="flex items-center gap-1 opacity-60 transition group-hover:opacity-100">
-          {data.status === "Pending" && (
+          {/* Chỉ hiện Approve/Reject khi Pending và đã thanh toán */}
+          {data.status === "Pending" && data.paymentStatus === "Paid" && (
             <>
               <Tooltip content="Duyệt lịch hẹn">
                 <button
@@ -623,12 +630,12 @@ function AppointmentCard({
 /* -------------------------------------------------------------------------- */
 function CalendarSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-400 dark:border-border-dark">
+    <div className="dark:border-border-dark overflow-hidden rounded-xl border border-gray-400">
       <div className="dark:border-border-dark dark:bg-border-dark/30 grid grid-cols-7 border-b border-gray-300 bg-gray-100/80">
         {[...Array(7)].map((_, i) => (
           <div
             key={i}
-            className={`h-10 border-gray-300 dark:border-border-dark ${i < 6 ? "border-r" : ""}`}
+            className={`dark:border-border-dark h-10 border-gray-300 ${i < 6 ? "border-r" : ""}`}
           />
         ))}
       </div>
@@ -636,7 +643,7 @@ function CalendarSkeleton() {
         {[...Array(35)].map((_, i) => (
           <div
             key={i}
-            className={`h-30 border-b border-gray-300 p-2 dark:border-border-dark ${i % 7 < 6 ? "border-r" : ""}`}
+            className={`dark:border-border-dark h-30 border-b border-gray-300 p-2 ${i % 7 < 6 ? "border-r" : ""}`}
           >
             <div className="h-6 w-6 animate-pulse rounded-full bg-gray-200 dark:bg-white/10" />
             <div className="mt-2 space-y-2">
@@ -910,7 +917,7 @@ function MonthlyCalendarView({
               onClick={(event) => event.stopPropagation()}
               className="w-full max-w-xl rounded-2xl border border-gray-300 bg-white p-4 shadow-2xl dark:border-white/10 dark:bg-[#17181d]"
             >
-              <div className="mb-3 flex items-center justify-between border-b border-gray-100 pb-3 dark:border-white/10">
+              <div className="mb-3 flex items-center justify-between border-b border-gray-400 pb-3 dark:border-white/10">
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
                     Lịch hẹn trong ngày
@@ -1055,7 +1062,7 @@ function CalendarAppointmentItem({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -5 }}
               transition={{ duration: 0.15 }}
-              className="dark:border-border-dark absolute top-full left-0 z-999 mt-1 w-36 rounded-lg border border-gray-100 bg-white p-1 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:bg-[#1a1c23]"
+              className="dark:border-border-dark absolute top-full left-0 z-999 mt-1 w-36 rounded-lg border border-gray-400 bg-white p-1 text-sm shadow-[0_4px_20px_rgba(0,0,0,0.15)] dark:bg-[#1a1c23]"
             >
               <button
                 onClick={handleOpenDetail}
@@ -1077,7 +1084,8 @@ function CalendarAppointmentItem({
                   {sessionLoading ? "Đang tải Session..." : "Tham gia ngay"}
                 </button>
               )}
-              {apt.status === "Pending" && (
+              {/* Chỉ hiện Approve/Reject khi Pending + đã thanh toán */}
+              {apt.status === "Pending" && apt.paymentStatus === "Paid" && (
                 <>
                   <button
                     onClick={handleApprove}
@@ -1106,16 +1114,23 @@ function CalendarAppointmentItem({
 /* -------------------------------------------------------------------------- */
 /*                               HELPERS / BADGES                               */
 /* -------------------------------------------------------------------------- */
-function StatusBadge({ status }: { status: AppointmentStatus }) {
-  const map: Record<AppointmentStatus, React.ReactNode> = {
-    Pending: <Badge type="info" value="Chưa duyệt" />,
+function StatusBadge({ status, paymentStatus }: { status: AppointmentStatus; paymentStatus?: string }) {
+  // Pending chia làm 2 sub-state dựa theo paymentStatus
+  if (status === "Pending") {
+    if (paymentStatus === "Paid") {
+      return <Badge type="warning" value="Chờ duyệt" />;
+    }
+    return <Badge type="info" value="Chờ thanh toán" />;
+  }
+
+  const map: Partial<Record<AppointmentStatus, React.ReactNode>> = {
     InProgress: <Badge type="warning" value="Đang khám" />,
     Completed: <Badge type="success" value="Hoàn thành" />,
     Cancelled: <Badge type="error" value="Đã hủy" />,
     Approved: <Badge type="success" value="Đã duyệt" />,
     Rejected: <Badge type="error" value="Đã từ chối" />,
   };
-  return map[status];
+  return map[status] ?? null;
 }
 
 function AppointmentTypeBadge({ type }: { type: AppointmentType }) {

@@ -441,7 +441,7 @@ function ChatMessage({ role, content }: ChatMessageProps) {
         className={`max-w-[85%] rounded-2xl px-5 py-3.5 shadow-sm md:max-w-[75%] ${
           isUser
             ? "bg-primary shadow-primary/20 font-medium text-white"
-            : "border border-gray-200 bg-white text-gray-900 dark:border-white/10 dark:bg-white/5 dark:text-white/90"
+            : "border border-gray-400 bg-white text-gray-900 dark:border-white/10 dark:bg-white/5 dark:text-white/90"
         } `}
       >
         {isUser ? (

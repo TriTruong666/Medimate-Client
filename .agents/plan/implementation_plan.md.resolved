@@ -1,0 +1,215 @@
+# Cập nhật UI Bác sĩ (Web) theo Backend Flow
+
+## Tổng quan vấn đề
+
+Theo luồng backend đã được cập nhật, một lịch hẹn có **2 chiều trạng thái** hoạt động song song:
+- `Appointments.Status`: `Pending` → `Approved` → `Completed`
+- `Appointments.PaymentStatus`: `Pending` → `Paid`
+
+**Vấn đề cốt lõi**: UI web phía bác sĩ hiện tại không có trường `paymentStatus`, dẫn đến:
+1. Không phân biệt được "Chờ thanh toán" vs "Chờ bác sĩ duyệt" (cả hai đều là `Status = Pending`)
+2. Nút **Duyệt/Từ chối** hiện ra với cả lịch hẹn chưa được thanh toán → Bác sĩ có thể vô tình duyệt lịch chưa có tiền
+
+---
+
+## Phân tích Gap hiện tại
+
+| Điều | Backend trả về | Frontend type hiện tại | Vấn đề |
+|---|---|---|---|
+| `paymentStatus` | `AppointmentDto` có `PaymentStatus` | `DoctorAppointment` thiếu trường này | ❌ Không hiển thị được |
+| `amount` | `AppointmentDto` có `Amount` | `DoctorAppointment` thiếu | ❌ Không biết phí khám |
+| `paymentStatus` (detail) | `AppointmentDetailDto` có `PaymentStatus`, `Amount` | `DoctorAppointmentDetail` thiếu | ❌ Modal chi tiết không đầy đủ |
+| `clinicName` | `AppointmentDto` có `ClinicName` | Thiếu | ❌ Không hiện phòng khám |
+| Nút Duyệt/Từ chối | Chỉ duyệt khi `PaymentStatus = Paid` | Luôn hiện khi `status = Pending` | ❌ Logic sai |
+
+---
+
+## Thay đổi cần thực hiện
+
+---
+
+### 1. Types
+
+#### [MODIFY] [Appointment.ts](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/types/Appointment.ts)
+- Thêm `paymentStatus`, `amount`, `clinicName` vào `DoctorAppointment`
+- Thêm `paymentStatus`, `amount`, `clinicName`, `clinicId` vào `DoctorAppointmentDetail`
+
+---
+
+### 2. API Layer
+
+#### [MODIFY] [appointment.service.ts](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/apis/appointment.service.ts)
+- Không thay đổi endpoints (backend đã trả về đúng fields)
+- Chỉ cần type sẽ tự cập nhật
+
+---
+
+### 3. DoctorSupportPage.tsx
+
+#### [MODIFY] [DoctorSupportPage.tsx](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/pages/doctor/DoctorSupportPage.tsx)
+
+**a. Interface `Appointment` nội bộ** — thêm `paymentStatus` và `amount`:
+```ts
+interface Appointment {
+  // ...
+  paymentStatus: string;  // "Pending" | "Paid"
+  amount?: number;
+  clinicName?: string;
+}
+```
+
+**b. Hàm `mapAppointment`** — map thêm 2 trường mới.
+
+**c. `StatusBadge`** — phân biệt 2 trạng thái Pending:
+```
+Pending + paymentStatus = "Pending"  → Badge "Chờ thanh toán" (màu xám/xanh nhạt)
+Pending + paymentStatus = "Paid"     → Badge "Chờ duyệt"      (màu vàng/warning)
+Approved                             → Badge "Đã duyệt"       (màu xanh lá)
+InProgress                           → Badge "Đang khám"      (màu tím/primary)
+Completed                            → Badge "Hoàn thành"     (màu xanh đậm)
+Cancelled/Rejected                   → Badge đỏ
+```
+
+**d. `AppointmentCard`** — logic Approve/Reject chỉ khi đã thanh toán:
+```tsx
+// CHỈ hiện nút Duyệt/Từ chối khi Pending + Paid
+{data.status === "Pending" && data.paymentStatus === "Paid" && (
+  // Approve / Reject buttons
+)}
+```
+
+**e. `AppointmentCard`** — Hiển thị thêm badge "Đã thanh toán" / chip phí khám.
+
+**f. `CalendarAppointmentItem`** — Áp dụng logic tương tự cho dropdown.
+
+**g. Filter `pending`** — giữ nguyên (lọc tất cả Pending, không phân biệt paymentStatus).
+
+---
+
+### 4. DoctorSupportDetailModal.tsx
+
+#### [MODIFY] [DoctorSupportDetailModal.tsx](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/components/modals/DoctorSupportDetailModal.tsx)
+
+- Thêm **section Thông tin Thanh toán** hiển thị:
+  - Phí khám (`amount`)
+  - Trạng thái thanh toán (`paymentStatus`) dưới dạng badge
+  - Tên phòng khám (`clinicName`)
+- Thêm nút **Duyệt** và **Từ chối** vào footer của modal (chỉ khi `status === Pending && paymentStatus === Paid`)
+- Khi duyệt/từ chối thành công, modal tự đóng và refetch danh sách
+
+---
+
+## Kết quả mong đợi
+
+Sau khi hoàn thành, bác sĩ sẽ thấy:
+
+1. **Lịch hẹn chưa thanh toán**: Hiện badge "Chờ TT" màu xám, KHÔNG có nút Duyệt
+2. **Lịch hẹn đã thanh toán, chờ duyệt**: Hiện badge "Chờ duyệt" màu vàng + nút Duyệt/Từ chối
+3. **Lịch hẹn đã duyệt**: Badge "Đã duyệt" màu xanh lá + nút Video Call
+4. **Modal chi tiết**: Hiển thị đầy đủ phí khám, trạng thái thanh toán, phòng khám + các action button phù hợp theo trạng thái
+
+---
+
+## PHẦN II — Cập nhật Logic Tạo Đơn thuốc
+
+### Phân tích hiện trạng
+
+**Bug Backend đã phát hiện (dòng 100-105 trong `PrescriptionByDoctorService.cs`)**:
+
+Backend đã xây dựng `messageContent` đầy đủ gồm thông tin bệnh nhân, danh sách thuốc, lời dặn... nhưng khi lưu vào `ChatDoctorMessages`, trường `Content` lại hardcode là `"Đơn thuốc đã được gửi"` thay vì dùng biến `messageContent` đã xây dựng.
+
+```csharp
+// BUG: dòng 101
+Content = "Đơn thuốc đã được gửi",  // ← SAI, phải là messageContent
+```
+
+**Frontend gaps**:
+- Không có field `isLocked` / `status` trong `PrescriptionByDoctorDto` → không biết đơn đã khóa hay chưa
+- `PrescriptionModal` cho phép edit đơn bất kỳ lúc nào (không có guard `isLocked`)
+- Backend trả về `DigitalPrescriptionId` nhưng frontend normalize thành `id`, `prescriptionId`, `doctorPrescriptionId` → cần đồng bộ
+
+---
+
+### Thay đổi cần thực hiện — Phần II
+
+---
+
+### 5. Backend — Bug Fix
+
+#### [MODIFY] [PrescriptionByDoctorService.cs](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/MediMate-Capstone/MediMateService/Services/Implementations/PrescriptionByDoctorService.cs)
+
+Fix bug: thay `Content = "Đơn thuốc đã được gửi"` bằng `Content = messageContent` (biến đã được xây dựng ở trên).
+
+```diff
+-  Content = "Đơn thuốc đã được gửi",
++  Content = messageContent,
+```
+
+---
+
+### 6. Types Frontend — Đồng bộ với backend
+
+#### [MODIFY] [Prescription.ts](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/types/Prescription.ts)
+
+Thêm `isLocked` (bool) và `memberDateOfBirth` vào `PrescriptionByDoctorDto` để UI có thể hiển thị badge khóa:
+
+```ts
+export interface PrescriptionByDoctorDto {
+  // ... existing fields
+  isLocked?: boolean;   // Thêm mới: đơn đã gửi/khóa chưa
+  memberDateOfBirth?: string; // Cho hiển thị thông tin bệnh nhân
+}
+```
+
+> [!NOTE]
+> `isLocked` hiện tại backend chưa trả về field này. Tạm thời frontend sẽ dùng logic: nếu `status === "Completed"` hoặc `status === "Cancelled"` thì coi như đã khóa. Backend có thể bổ sung field này sau.
+
+---
+
+### 7. PrescriptionModal.tsx — Guard chống edit đơn đã gửi
+
+#### [MODIFY] [PrescriptionModal.tsx](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/components/modals/PrescriptionModal.tsx)
+
+- Thêm prop `isLocked?: boolean`
+- Khi `isLocked = true`, toàn bộ form hiển thị dạng **read-only** với banner thông báo "Đơn thuốc đã được gửi và không thể chỉnh sửa"
+- Nút submit đổi thành "Đóng" khi đang xem đơn khóa
+
+---
+
+### 8. PrescriptionSessionModal.tsx — Hiển thị badge khóa
+
+#### [MODIFY] [PrescriptionSessionModal.tsx](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/components/modals/PrescriptionSessionModal.tsx)
+
+- Thay badge `type="info" value={item.status}` bằng logic:
+  - `Active` → badge vàng "Đang soạn"
+  - `Completed` → badge xanh "Đã gửi" + icon khóa 🔒
+  - `Cancelled` → badge đỏ "Đã hủy"
+- Nút "Xem đơn thuốc" vẫn luôn cho phép xem, nhưng khi đơn đã `Completed` thì mở ở chế độ read-only
+
+---
+
+### 9. PrescriptionDetailModal.tsx — Thêm nút "Hoàn tất & Gửi cho bệnh nhân"
+
+#### [MODIFY] [PrescriptionDetailModal.tsx](file:///c:/Users/MSI%20KATANA%2015/Desktop/Homework/Medimate-Client/src/components/modals/PrescriptionDetailModal.tsx)
+
+- Thêm nút **"Hoàn tất & Gửi cho bệnh nhân"** ở footer (chỉ hiện khi `status = Active`)
+- Khi bấm: gọi API `updatePrescription(id, { status: "Completed" })` → đơn bị khóa
+- Sau khi gửi thành công: backend tự động gửi tin nhắn chi tiết vào chat session (đã được fix ở bước 5)
+- Toast thông báo: "Đã gửi đơn thuốc cho bệnh nhân thành công!"
+- Refetch danh sách đơn thuốc trong `PrescriptionSessionModal`
+
+---
+
+## Verification
+
+### Phần I — Lịch hẹn
+- Tạo lịch hẹn → UI card hiện "Chờ TT" (không có nút Duyệt)
+- Thanh toán → refetch và hiện "Chờ duyệt" + nút Duyệt
+- Bác sĩ duyệt → status "Đã duyệt"
+
+### Phần II — Đơn thuốc
+- Bác sĩ tạo đơn thuốc trong session đang InProgress
+- Bấm "Hoàn tất & Gửi" → status đơn chuyển thành `Completed`
+- Kiểm tra khung chat của session → có tin nhắn đơn thuốc đầy đủ nội dung (không còn bị hardcode)
+- Đơn thuốc hiển thị badge "Đã gửi 🔒" và không thể edit
+

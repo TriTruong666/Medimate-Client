@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  FiMessageCircle,
-} from "react-icons/fi";
+import { FiMessageCircle } from "react-icons/fi";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
 import { cardContainer, cardItem } from "@/motions/cardMotion";
@@ -31,20 +29,22 @@ export default function DoctorReportPage() {
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
+          <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Phản hồi về Bác sĩ
           </h1>
         </div>
       </div>
 
       {isLoading && (
-          <div className="flex justify-center p-8 text-gray-900 dark:text-white">
-            Đang tải phản hồi...
-          </div>
+        <div className="flex justify-center p-8 text-gray-900 dark:text-white">
+          Đang tải phản hồi...
+        </div>
       )}
 
       {isError && (
-        <div className="flex justify-center p-8 text-red-500">{(error as Error).message}</div>
+        <div className="flex justify-center p-8 text-red-500">
+          {(error as Error).message}
+        </div>
       )}
 
       {/* Feed Layout */}
@@ -56,7 +56,9 @@ export default function DoctorReportPage() {
           className="flex flex-col gap-6 pb-10"
         >
           {reports.length === 0 ? (
-            <div className="flex justify-center p-8 text-gray-400">Không có phản hồi nào.</div>
+            <div className="flex justify-center p-8 text-gray-400">
+              Không có phản hồi nào.
+            </div>
           ) : (
             reports.map((report) => (
               <ReportCard key={report.ratingId} data={report} />
@@ -84,7 +86,7 @@ function ReportCard({ data }: { data: Rating }) {
   return (
     <motion.div
       variants={cardItem}
-      className="relative rounded-2xl border border-gray-400 bg-white p-6 shadow-sm transition-all hover:border-primary/50 hover:shadow-md dark:border-white/10 dark:bg-white/5"
+      className="hover:border-primary/50 relative rounded-2xl border border-gray-400 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-white/5"
     >
       {/* Header: User & Meta */}
       <div className="mb-4 flex items-start justify-between gap-4">
@@ -99,7 +101,7 @@ function ReportCard({ data }: { data: Rating }) {
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400">
               Đánh giá bác sĩ{" "}
-              <span className="font-semibold text-primary">
+              <span className="text-primary font-semibold">
                 {data.doctorName}
               </span>
             </p>
@@ -139,13 +141,13 @@ function ReportCard({ data }: { data: Rating }) {
               Hình ảnh bằng chứng
             </p>
             <div className="no-scrollbar flex gap-2 overflow-x-auto pb-2">
-              <div className="relative h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-400 transition hover:border-primary/50 dark:border-white/10">
+              <div className="hover:border-primary/50 relative h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-xl border border-gray-400 transition dark:border-white/10">
                 <img
                   src={data.imageUrl}
                   alt="Bằng chứng"
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 transition-colors bg-black/0 hover:bg-black/20" />
+                <div className="absolute inset-0 bg-black/0 transition-colors hover:bg-black/20" />
               </div>
             </div>
           </div>

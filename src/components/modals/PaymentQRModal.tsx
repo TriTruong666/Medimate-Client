@@ -1,6 +1,10 @@
 import { useAtom } from "jotai";
 import { useState } from "react";
-import { HiOutlineX, HiOutlineClipboardCopy, HiOutlineInformationCircle } from "react-icons/hi";
+import {
+  HiOutlineX,
+  HiOutlineClipboardCopy,
+  HiOutlineInformationCircle,
+} from "react-icons/hi";
 import { IoMdCheckmark } from "react-icons/io";
 import { closeModalAtom } from "../../stores/modalStore";
 import { formatPrice } from "../../common/format";
@@ -68,12 +72,18 @@ export function PaymentQRModal({
 
       <div className="flex-1 space-y-4 overflow-y-auto px-6 py-5">
         <div className="rounded-xl border border-gray-300 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
-          <p className="text-xs font-bold text-gray-500 uppercase dark:text-white/50">Người nhận</p>
-          <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{doctorName}</p>
+          <p className="text-xs font-bold text-gray-500 uppercase dark:text-white/50">
+            Người nhận
+          </p>
+          <p className="mt-1 text-sm font-bold text-gray-900 dark:text-white">
+            {doctorName}
+          </p>
         </div>
 
         <div className="rounded-xl border border-emerald-500/30 bg-emerald-50 p-4 dark:bg-emerald-500/10">
-          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-300">Tổng thanh toán</p>
+          <p className="text-xs font-bold text-emerald-600 dark:text-emerald-300">
+            Tổng thanh toán
+          </p>
           <p className="mt-1 text-lg font-bold text-emerald-700 dark:text-emerald-400">
             {formatPrice(amount)}
           </p>
@@ -81,19 +91,31 @@ export function PaymentQRModal({
 
         <div className="space-y-4 rounded-xl border border-gray-300 bg-gray-50 p-4 dark:border-white/10 dark:bg-white/5">
           <div>
-            <p className="text-xs font-bold text-gray-400 dark:text-white/50 uppercase">Ngân hàng</p>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">{bankName}</p>
+            <p className="text-xs font-bold text-gray-400 uppercase dark:text-white/50">
+              Ngân hàng
+            </p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">
+              {bankName}
+            </p>
           </div>
 
           <div>
-            <p className="text-xs font-bold text-gray-400 dark:text-white/50 uppercase">Chủ tài khoản</p>
-            <p className="text-sm font-bold text-gray-900 dark:text-white">{accountName}</p>
+            <p className="text-xs font-bold text-gray-400 uppercase dark:text-white/50">
+              Chủ tài khoản
+            </p>
+            <p className="text-sm font-bold text-gray-900 dark:text-white">
+              {accountName}
+            </p>
           </div>
 
           <div className="flex items-center justify-between gap-4">
             <div>
-              <p className="text-xs font-bold text-gray-400 dark:text-white/50 uppercase">Số tài khoản</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{bankAccount}</p>
+              <p className="text-xs font-bold text-gray-400 uppercase dark:text-white/50">
+                Số tài khoản
+              </p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                {bankAccount}
+              </p>
             </div>
 
             <button
@@ -111,7 +133,9 @@ export function PaymentQRModal({
 
           <div className="flex items-center justify-between gap-4">
             <div className="max-w-[70%]">
-              <p className="text-xs font-bold text-gray-400 dark:text-white/50 uppercase">Nội dung chuyển khoản</p>
+              <p className="text-xs font-bold text-gray-400 uppercase dark:text-white/50">
+                Nội dung chuyển khoản
+              </p>
               <p className="text-sm font-bold break-all text-amber-600 dark:text-amber-400">
                 {transferContent}
               </p>
@@ -133,7 +157,7 @@ export function PaymentQRModal({
         </div>
 
         <div className="flex flex-col items-center justify-center rounded-xl border border-gray-400 bg-gray-50 p-6 dark:border-white/10 dark:bg-neutral-800">
-          <div className="rounded-xl bg-white p-4 shadow-xl border border-gray-200">
+          <div className="rounded-xl border border-gray-400 bg-white p-4 shadow-xl">
             <img
               src={qrImageUrl}
               alt="QR Code"

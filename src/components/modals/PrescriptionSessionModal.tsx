@@ -1,9 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useMemo, useState } from "react";
-import { HiOutlineEye, HiOutlinePlus, HiOutlineX, HiOutlineInformationCircle } from "react-icons/hi";
+import {
+  HiOutlineEye,
+  HiOutlinePlus,
+  HiOutlineX,
+  HiOutlineInformationCircle,
+} from "react-icons/hi";
 import { FiFileText, FiCalendar, FiActivity } from "react-icons/fi";
 import { Badge } from "@/components/custom-ui/Badge";
-import IconAction from "@/components/custom-ui/IconAction";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { PrescriptionModal } from "@/components/modals/PrescriptionModal";
@@ -36,14 +40,19 @@ export function PrescriptionSessionModal({
 }: Props) {
   const sessionId = session?.consultanSessionId || "";
   const memberId = session?.memberId || "";
-  const canCreate = session?.status === "InProgress" || session?.status === "Processing";
+  const canCreate =
+    session?.status === "InProgress" || session?.status === "Processing";
 
-  const { data, isLoading, isError, error, refetch } = usePrescriptionsBySession(sessionId);
+  const { data, isLoading, isError, error, refetch } =
+    usePrescriptionsBySession(sessionId);
   const list = useMemo(() => data || [], [data]);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingPrescription, setEditingPrescription] = useState<PrescriptionByDoctorDto | null>(null);
-  const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<string | null>(null);
+  const [editingPrescription, setEditingPrescription] =
+    useState<PrescriptionByDoctorDto | null>(null);
+  const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<
+    string | null
+  >(null);
 
   function closeCreateModal() {
     setIsCreateOpen(false);
@@ -72,7 +81,9 @@ export function PrescriptionSessionModal({
             {/* Header */}
             <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/50 p-5 dark:border-white/10 dark:bg-white/5">
               <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Đơn thuốc phiên tư vấn</h2>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Đơn thuốc phiên tư vấn
+                </h2>
                 <p className="mt-0.5 truncate text-xs font-medium text-gray-500 dark:text-gray-400">
                   Bệnh nhân: {session.memberName || "Chưa xác định"}
                 </p>
@@ -89,12 +100,30 @@ export function PrescriptionSessionModal({
             <div className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-5">
               <div className="space-y-6">
                 {/* Tổng quan session */}
-                <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
-                  <div className="grid grid-cols-2 divide-x divide-gray-100 border-b border-gray-100 dark:divide-white/5 dark:border-white/5 sm:grid-cols-4">
-                    <SummaryItem icon={FiFileText} label="Session ID" value={shortId(sessionId, 10)} />
-                    <SummaryItem icon={FiFileText} label="Appointment" value={shortId(session.appointmentId, 10)} />
-                    <SummaryItem icon={FiActivity} label="Trạng thái" value={session.status || "--"} />
-                    <SummaryItem icon={FiCalendar} label="Bắt đầu" value={session.startedAt ? formatDate(session.startedAt) : "--"} />
+                <section className="overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm dark:border-white/10 dark:bg-white/5">
+                  <div className="grid grid-cols-2 divide-x divide-gray-400 border-b border-gray-400 sm:grid-cols-4 dark:divide-white/5 dark:border-white/5">
+                    <SummaryItem
+                      icon={FiFileText}
+                      label="Session ID"
+                      value={shortId(sessionId, 10)}
+                    />
+                    <SummaryItem
+                      icon={FiFileText}
+                      label="Appointment"
+                      value={shortId(session.appointmentId, 10)}
+                    />
+                    <SummaryItem
+                      icon={FiActivity}
+                      label="Trạng thái"
+                      value={session.status || "--"}
+                    />
+                    <SummaryItem
+                      icon={FiCalendar}
+                      label="Bắt đầu"
+                      value={
+                        session.startedAt ? formatDate(session.startedAt) : "--"
+                      }
+                    />
                   </div>
                 </section>
 
@@ -105,7 +134,9 @@ export function PrescriptionSessionModal({
                       <FiFileText className="h-5 w-5 text-gray-500" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Danh sách đơn thuốc</h3>
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                        Danh sách đơn thuốc
+                      </h3>
                       <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
                         {list.length} đơn thuốc đã được tạo trong phiên này
                       </p>
@@ -127,14 +158,18 @@ export function PrescriptionSessionModal({
                   <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50/50 p-4 dark:border-amber-900/30 dark:bg-amber-900/10">
                     <HiOutlineInformationCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                     <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                      Chỉ có thể tạo đơn thuốc khi phiên tư vấn đang ở trạng thái <span className="font-bold underline">InProgress</span> hoặc <span className="font-bold underline">Processing</span>.
+                      Chỉ có thể tạo đơn thuốc khi phiên tư vấn đang ở trạng
+                      thái{" "}
+                      <span className="font-bold underline">InProgress</span>{" "}
+                      hoặc{" "}
+                      <span className="font-bold underline">Processing</span>.
                     </p>
                   </div>
                 )}
 
                 {/* List đơn thuốc */}
                 {isLoading ? (
-                  <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-gray-100 bg-gray-50/30 dark:border-white/5 dark:bg-white/5">
+                  <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-gray-400 bg-gray-50/30 dark:border-white/5 dark:bg-white/5">
                     <Spinner size="lg" />
                   </div>
                 ) : isError ? (
@@ -151,7 +186,7 @@ export function PrescriptionSessionModal({
                     </button>
                   </div>
                 ) : list.length === 0 ? (
-                  <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-200 bg-gray-50/30 p-8 text-center dark:border-white/10 dark:bg-white/5">
+                  <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-dashed border-gray-400 bg-gray-50/30 p-8 text-center dark:border-white/10 dark:bg-white/5">
                     <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 dark:bg-white/5">
                       <FiFileText className="h-6 w-6 text-gray-400" />
                     </div>
@@ -159,7 +194,8 @@ export function PrescriptionSessionModal({
                       Chưa có đơn thuốc nào
                     </p>
                     <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
-                      Nhấn vào nút "Tạo đơn mới" để bắt đầu kê đơn cho bệnh nhân.
+                      Nhấn vào nút "Tạo đơn mới" để bắt đầu kê đơn cho bệnh
+                      nhân.
                     </p>
                   </div>
                 ) : (
@@ -169,17 +205,26 @@ export function PrescriptionSessionModal({
 
                       return (
                         <div
-                          key={prescriptionId || `${item.memberId}-${item.createdDate}`}
-                          className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all hover:border-gray-400 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
+                          key={
+                            prescriptionId ||
+                            `${item.memberId}-${item.createdDate}`
+                          }
+                          className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white transition-all hover:border-gray-400 hover:shadow-lg dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
                         >
-                          <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/30 p-4 dark:border-white/5 dark:bg-black/20">
+                          <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/30 p-4 dark:border-white/5 dark:bg-black/20">
                             <div className="flex items-center gap-2">
-                              <FiFileText className="h-4 w-4 text-primary" />
+                              <FiFileText className="text-primary h-4 w-4" />
                               <span className="text-[11px] font-bold tracking-widest text-gray-500 uppercase dark:text-gray-400">
                                 Đơn thuốc #{shortId(prescriptionId, 6)}
                               </span>
                             </div>
-                            <Badge type="info" value={item.status || "Active"} />
+                            {item.status === "Completed" || item.isLocked ? (
+                              <Badge type="success" value="Đã gửi 🔒" />
+                            ) : item.status === "Cancelled" ? (
+                              <Badge type="error" value="Đã hủy" />
+                            ) : (
+                              <Badge type="warning" value="Đang soạn" />
+                            )}
                           </div>
 
                           <div className="flex-1 p-4">
@@ -198,7 +243,7 @@ export function PrescriptionSessionModal({
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-end border-t border-gray-100 bg-gray-50/30 p-3 dark:border-white/5 dark:bg-black/20">
+                          <div className="flex items-center justify-end border-t border-gray-400 bg-gray-50/30 p-3 dark:border-white/5 dark:bg-black/20">
                             <Tooltip content="Xem chi tiết đơn">
                               <button
                                 onClick={() => {
@@ -206,7 +251,7 @@ export function PrescriptionSessionModal({
                                   setSelectedPrescriptionId(prescriptionId);
                                 }}
                                 disabled={!prescriptionId}
-                                className="flex h-9 items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 text-xs font-bold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:text-black dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+                                className="flex h-9 items-center justify-center gap-2 rounded-xl border border-gray-400 bg-white px-4 text-xs font-bold text-gray-700 shadow-sm transition-all hover:bg-gray-50 hover:text-black dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
                               >
                                 <HiOutlineEye className="h-4 w-4" />
                                 Xem đơn thuốc
@@ -244,7 +289,11 @@ export function PrescriptionSessionModal({
               const createdId = result.prescription
                 ? getPrescriptionId(result.prescription)
                 : "";
-              if (result.mode === "create" && result.openDetailAfterCreate && createdId) {
+              if (
+                result.mode === "create" &&
+                result.openDetailAfterCreate &&
+                createdId
+              ) {
                 setSelectedPrescriptionId(createdId);
               }
             }}
@@ -262,10 +311,18 @@ export function PrescriptionSessionModal({
   );
 }
 
-function SummaryItem({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+function SummaryItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="flex flex-col gap-1.5 p-4 text-center sm:text-left">
-      <div className="flex items-center gap-2 sm:justify-start justify-center">
+      <div className="flex items-center justify-center gap-2 sm:justify-start">
         <Icon className="h-3.5 w-3.5 text-gray-400" />
         <span className="text-[10px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
           {label}

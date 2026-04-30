@@ -12,20 +12,36 @@ import { PATHS } from "@/config/paths";
 const breadcrumbItems = [
   { label: "Dashboard", path: PATHS.DASHBOARD.ROOT },
   { label: "Giao dịch", path: PATHS.DASHBOARD.TRANSACTION.ROOT },
-  { label: "Hoàn tiền User" },
+  { label: "Hoàn tiền" },
 ];
 
 const columns = [
   { key: "member", label: "Người dùng", width: "w-[22%]" },
   { key: "appointment", label: "Lịch hẹn", width: "w-[18%]" },
-  { key: "status", label: "Trạng thái đặt", width: "w-[15%]", align: "center" as const },
-  { key: "payment", label: "Trạng thái TT", width: "w-[15%]", align: "center" as const },
+  {
+    key: "status",
+    label: "Trạng thái đặt",
+    width: "w-[15%]",
+    align: "center" as const,
+  },
+  {
+    key: "payment",
+    label: "Trạng thái TT",
+    width: "w-[15%]",
+    align: "center" as const,
+  },
   { key: "reason", label: "Lý do hủy", width: "w-[20%]" },
-  { key: "actions", label: "Thao tác", width: "w-[10%]", align: "center" as const },
+  {
+    key: "actions",
+    label: "Thao tác",
+    width: "w-[10%]",
+    align: "center" as const,
+  },
 ];
 
 export default function UserRefundPage() {
-  const { data, isLoading, isError, error, refetch } = useRefundableAppointments();
+  const { data, isLoading, isError, error, refetch } =
+    useRefundableAppointments();
   const [selected, setSelected] = useState<string | null>(null);
 
   const rows = data?.data ?? [];
@@ -36,12 +52,9 @@ export default function UserRefundPage() {
       <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
-            Hoàn tiền cho User
+          <h1 className="mt-2 flex items-center gap-3 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
+            Hoàn tiền
           </h1>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Danh sách các lịch hẹn đã hủy, cần xác nhận hoàn tiền cho người dùng.
-          </p>
         </div>
       </div>
 
@@ -60,12 +73,12 @@ export default function UserRefundPage() {
             key={row.appointmentId}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <span className="font-semibold text-gray-900 dark:text-white">
                 {row.memberName || "N/A"}
               </span>
             </td>
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <div className="flex flex-col">
                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                   {new Date(row.appointmentDate).toLocaleDateString("vi-VN")}
@@ -75,19 +88,19 @@ export default function UserRefundPage() {
                 </span>
               </div>
             </td>
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <Badge type="error" value={row.status} />
             </td>
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <Badge type="warning" value={row.paymentStatus} />
             </td>
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-xs text-gray-500 italic">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-xs text-gray-500 italic">
               {row.cancelReason || "—"}
             </td>
             <td className="p-4 text-center">
               <button
                 onClick={() => setSelected(row.appointmentId)}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/20"
+                className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition"
               >
                 <FiCheckCircle /> Xác nhận hoàn
               </button>
@@ -129,19 +142,22 @@ function CompleteRefundModal({
           Xác nhận hoàn tiền
         </h2>
         <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-          Upload ảnh chụp lệnh chuyển khoản để xác nhận đã hoàn tiền cho người dùng.
+          Upload ảnh chụp lệnh chuyển khoản để xác nhận đã hoàn tiền cho người
+          dùng.
         </p>
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
             <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-300">
               Ảnh chụp UNC{" "}
-              <span className="text-xs font-normal text-gray-400">(Tùy chọn)</span>
+              <span className="text-xs font-normal text-gray-400">
+                (Tùy chọn)
+              </span>
             </label>
             <input
               type="file"
               accept="image/*"
               ref={imageRef}
-              className="block w-full text-sm text-gray-500 file:mr-4 file:rounded-lg file:border-0 file:bg-primary/10 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-primary hover:file:bg-primary/20 dark:text-gray-400"
+              className="file:bg-primary/10 file:text-primary hover:file:bg-primary/20 block w-full text-sm text-gray-500 file:mr-4 file:rounded-lg file:border-0 file:px-4 file:py-2.5 file:text-sm file:font-semibold dark:text-gray-400"
             />
           </div>
           <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
@@ -156,7 +172,7 @@ function CompleteRefundModal({
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-primary/90 disabled:opacity-50"
+              className="bg-primary hover:bg-primary/90 rounded-xl px-5 py-2.5 text-sm font-semibold text-white shadow-md transition-all disabled:opacity-50"
             >
               {isPending ? "Đang xử lý..." : "Xác nhận đã hoàn tiền"}
             </button>

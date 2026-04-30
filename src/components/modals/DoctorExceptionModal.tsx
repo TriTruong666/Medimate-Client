@@ -255,33 +255,47 @@ export function DoctorExceptionModal({
                   </h3>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="flex flex-col gap-1.5">
-                      <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">Ngày nghỉ (DD/MM/YYYY)</p>
+                      <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+                        Ngày nghỉ (DD/MM/YYYY)
+                      </p>
                       <DateInputMask
                         value={form.date}
-                        onChange={(val: string) => setForm((prev) => ({ ...prev, date: val }))}
-                        className="w-full rounded-xl border border-gray-400 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-primary/30 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                        onChange={(val: string) =>
+                          setForm((prev) => ({ ...prev, date: val }))
+                        }
+                        className="focus:border-primary/30 w-full rounded-xl border border-gray-400 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all outline-none placeholder:text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-white"
                       />
                     </div>
                     <Input
                       label="Lý do nghỉ"
                       placeholder="Nhập lý do..."
                       value={form.reason}
-                      onChange={(val) => setForm((prev) => ({ ...prev, reason: val }))}
+                      onChange={(val) =>
+                        setForm((prev) => ({ ...prev, reason: val }))
+                      }
                     />
                     <div className="flex flex-col gap-1.5">
-                       <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">Giờ bắt đầu</p>
+                      <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+                        Giờ bắt đầu
+                      </p>
                       <TimeInput24h
                         value={form.startTime}
-                        onChange={(val: string) => setForm((prev) => ({ ...prev, startTime: val }))}
-                        className="w-full rounded-xl border border-gray-400 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-primary/30 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                        onChange={(val: string) =>
+                          setForm((prev) => ({ ...prev, startTime: val }))
+                        }
+                        className="focus:border-primary/30 w-full rounded-xl border border-gray-400 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all outline-none placeholder:text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-white"
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                       <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">Giờ kết thúc</p>
+                      <p className="text-[13px] font-medium text-gray-700 dark:text-gray-200">
+                        Giờ kết thúc
+                      </p>
                       <TimeInput24h
                         value={form.endTime}
-                        onChange={(val: string) => setForm((prev) => ({ ...prev, endTime: val }))}
-                        className="w-full rounded-xl border border-gray-400 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 outline-none transition-all placeholder:text-gray-400 focus:border-primary/30 dark:border-white/10 dark:bg-white/5 dark:text-white"
+                        onChange={(val: string) =>
+                          setForm((prev) => ({ ...prev, endTime: val }))
+                        }
+                        className="focus:border-primary/30 w-full rounded-xl border border-gray-400 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition-all outline-none placeholder:text-gray-400 dark:border-white/10 dark:bg-white/5 dark:text-white"
                       />
                     </div>
                   </div>
@@ -289,9 +303,11 @@ export function DoctorExceptionModal({
                     <button
                       onClick={() => void handleCreate()}
                       disabled={createMutation.isPending}
-                      className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                      className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
                     >
-                      {createMutation.isPending ? "Đang xử lý..." : "Gửi lịch nghỉ chờ duyệt"}
+                      {createMutation.isPending
+                        ? "Đang xử lý..."
+                        : "Gửi lịch nghỉ chờ duyệt"}
                     </button>
                   </div>
                 </section>
@@ -306,7 +322,7 @@ export function DoctorExceptionModal({
                     </h3>
                     <button
                       onClick={() => void refetch()}
-                      className="text-xs font-semibold text-primary hover:underline"
+                      className="text-primary text-xs font-semibold hover:underline"
                     >
                       Làm mới
                     </button>
@@ -317,7 +333,7 @@ export function DoctorExceptionModal({
                     </div>
                   ) : (
                     <div className="grid gap-6 md:grid-cols-2">
-                       <ExceptionList
+                      <ExceptionList
                         title="Chờ duyệt"
                         items={pendingItems}
                         onDelete={handleDelete}
@@ -383,7 +399,7 @@ function ExceptionList({
               key={item.exceptionId}
               className="group flex flex-col justify-between overflow-hidden rounded-xl border border-gray-400 bg-white text-sm shadow-sm transition-all hover:border-gray-900/10 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20"
             >
-              <div className="flex items-start justify-between border-b border-gray-100 bg-gray-50/50 p-3 dark:border-white/5 dark:bg-black/20">
+              <div className="flex items-start justify-between border-b border-gray-400 bg-gray-50/50 p-3 dark:border-white/5 dark:bg-black/20">
                 <div className="flex items-center gap-2">
                   <div
                     className={`h-1.5 w-1.5 rounded-full ${item.isAvailableOverride ? "bg-green-500" : "bg-primary"}`}

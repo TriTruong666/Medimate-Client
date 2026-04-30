@@ -146,7 +146,7 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
             <button
               onClick={() => fetchNextPage()}
               disabled={isFetchingNextPage}
-              className="text-xs font-bold text-gray-500 transition-all hover:text-gray-900 dark:text-gray-400 dark:hover:text-white disabled:opacity-50"
+              className="text-xs font-bold text-gray-500 transition-all hover:text-gray-900 disabled:opacity-50 dark:text-gray-400 dark:hover:text-white"
             >
               {isFetchingNextPage ? "Đang tải..." : "Tải thêm"}
             </button>
@@ -157,10 +157,12 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
           {isLoading ? (
             <div className="flex h-32 flex-col items-center justify-center gap-2">
               <div className="border-primary h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
-              <p className="text-xs text-gray-500 font-medium">Đang tải tài liệu...</p>
+              <p className="text-xs font-medium text-gray-500">
+                Đang tải tài liệu...
+              </p>
             </div>
           ) : allLoadedDocs.length === 0 ? (
-            <div className="flex h-32 flex-col items-center justify-center text-gray-400 font-medium">
+            <div className="flex h-32 flex-col items-center justify-center font-medium text-gray-400">
               <FiFileText className="mb-2 text-3xl" />
               <p className="text-sm">Không thấy tài liệu chờ xử lý</p>
             </div>
@@ -178,7 +180,7 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
                       : "border-gray-300 bg-gray-50 hover:bg-white dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/5"
                   }`}
                 >
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white shadow-sm border border-gray-200 text-gray-900 dark:bg-white/10 dark:text-white dark:border-transparent">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-400 bg-white text-gray-900 shadow-sm dark:border-transparent dark:bg-white/10 dark:text-white">
                     {doc.type === "pdf" ? (
                       <AiOutlineFilePdf className="text-xl text-red-500" />
                     ) : (
@@ -221,7 +223,7 @@ export function ProcessDocumentModal({ onConfirm }: ProcessDocumentModalProps) {
           <button
             onClick={handleConfirm}
             disabled={selectedIds.length === 0 || isProcessing || !user}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+            className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
           >
             {isProcessing ? "Đang gửi..." : "Bắt đầu xử lý"}
           </button>

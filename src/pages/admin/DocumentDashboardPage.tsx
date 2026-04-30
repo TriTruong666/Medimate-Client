@@ -158,7 +158,7 @@ export default function DocumentDashboardPage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Quản lý tài liệu
           </h1>
         </div>
@@ -209,7 +209,7 @@ export default function DocumentDashboardPage() {
           placeholder="Tìm kiếm tài liệu..."
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
-          className="h-10 w-full rounded-lg border border-gray-400 bg-white px-4 text-[13px] text-gray-900 outline-hidden transition duration-300 focus:border-primary/50 focus:ring-2 focus:ring-primary/10 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-white/20"
+          className="focus:border-primary/50 focus:ring-primary/10 h-10 w-full rounded-lg border border-gray-400 bg-white px-4 text-[13px] text-gray-900 outline-hidden transition duration-300 focus:ring-2 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-white/20"
         />
       </div>
 
@@ -283,7 +283,7 @@ export default function DocumentDashboardPage() {
                   <button
                     onClick={handleLoadMore}
                     disabled={isLoading}
-                    className="flex min-w-40 items-center justify-center gap-2 rounded-xl border border-gray-400 bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10 disabled:opacity-50"
+                    className="flex min-w-40 items-center justify-center gap-2 rounded-xl border border-gray-400 bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   >
                     {isLoading ? (
                       <>
@@ -359,7 +359,7 @@ function DocumentCard({ data }: DocumentCardProps) {
     <motion.div
       variants={cardItem}
       whileHover={{ y: -4 }}
-      className="group relative flex h-full flex-col rounded-2xl border border-gray-400 bg-white/80 p-4 backdrop-blur transition-all duration-300 hover:border-primary/50 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10"
+      className="group hover:border-primary/50 relative flex h-full flex-col rounded-2xl border border-gray-400 bg-white/80 p-4 backdrop-blur transition-all duration-300 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20 dark:hover:bg-white/10"
     >
       {/* Header */}
       <div className="flex items-start gap-3">
@@ -379,7 +379,7 @@ function DocumentCard({ data }: DocumentCardProps) {
 
       {/* Meta */}
       <div className="flex items-center justify-between text-xs">
-        <span className="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 font-medium text-gray-600 dark:border-white/10 dark:bg-white/10 dark:text-gray-300">
+        <span className="rounded-lg border border-gray-400 bg-gray-50 px-2 py-0.5 font-medium text-gray-600 dark:border-white/10 dark:bg-white/10 dark:text-gray-300">
           {(data.type || "N/A").toUpperCase()}
         </span>
 
@@ -418,7 +418,10 @@ function DocumentTable({
   isLoading,
   isError,
   onRetry,
-}: Omit<DocumentTableProps, "onPageSizeChange"> & { isError?: boolean; onRetry?: () => void }) {
+}: Omit<DocumentTableProps, "onPageSizeChange"> & {
+  isError?: boolean;
+  onRetry?: () => void;
+}) {
   const [, openDeleteModal] = useAtom(openDeleteModalAtom);
   return (
     <DataTableShell
@@ -494,17 +497,17 @@ function FileIcon({
   type,
 }: {
   type:
-  | "pdf"
-  | "json"
-  | "text"
-  | "docx"
-  | "doc"
-  | "txt"
-  | "csv"
-  | "xls"
-  | "xlsx"
-  | "html"
-  | "md";
+    | "pdf"
+    | "json"
+    | "text"
+    | "docx"
+    | "doc"
+    | "txt"
+    | "csv"
+    | "xls"
+    | "xlsx"
+    | "html"
+    | "md";
 }) {
   const map: Record<string, { icon: React.ReactNode; className: string }> = {
     pdf: {
@@ -626,7 +629,7 @@ function DocumentCardSkeleton() {
 //   }, [data, page]);
 
 //   return (
-//     <div className="overflow-hidden rounded-xl border border-gray-100 dark:border-border-dark">
+//     <div className="overflow-hidden rounded-xl border border-gray-400 dark:border-border-dark">
 //       <DocumentTable data={paginatedData} />
 
 //       <Pagination

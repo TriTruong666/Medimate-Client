@@ -4,7 +4,7 @@ interface InputProps extends Omit<
   React.InputHTMLAttributes<HTMLInputElement>,
   "onChange"
 > {
-  label: string;
+  label?: string;
   error?: string;
   className?: string;
   onChange?: (val: string) => void;

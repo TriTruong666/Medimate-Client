@@ -84,7 +84,9 @@ const ClinicPayoutPage = lazy(() => import("@/pages/admin/ClinicPayoutPage"));
 const UserRefundPage = lazy(() => import("@/pages/admin/UserRefundPage"));
 const ClinicPage = lazy(() => import("@/pages/admin/ClinicPage"));
 const ClinicDetailPage = lazy(() => import("@/pages/admin/ClinicDetailPage"));
-const ClinicContractPage = lazy(() => import("@/pages/admin/ClinicContractPage"));
+const ClinicContractPage = lazy(
+  () => import("@/pages/admin/ClinicContractPage"),
+);
 
 const ProfileSettingDashboardPage = lazy(() =>
   import("../pages/SettingDashboardPage").then((m) => ({
@@ -324,7 +326,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
       {
         path: PATHS.DASHBOARD.TRANSACTION.USER_REFUND,
         element: <UserRefundPage />,
-        label: "Hoàn tiền User",
+        label: "Hoàn tiền",
         roles: ["Admin"],
       },
     ],
@@ -335,7 +337,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Tài liệu",
     icon: FiFileText,
     showInSidebar: true,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
     element: <DocumentDashboardPage />,
   },
   {
@@ -387,21 +389,21 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "RAG Core",
     icon: IoSync,
     showInSidebar: true,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.RAG_NEW,
     element: <KnowledgeAddCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.RAG_DETAIL,
     element: <KnowledgeDetailCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["DoctorManager"],
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.CHATBOT,
@@ -410,7 +412,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Chatbot",
     icon: AiOutlineRobot,
     showInSidebar: true,
-    roles: ["Admin"],
+    roles: ["Admin", "DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.CLINIC,
@@ -437,16 +439,6 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     showInSidebar: true,
     roles: ["Admin", "DoctorManager"],
   },
-  {
-    path: PATHS.DASHBOARD.DOCTOR_REPORT,
-    element: <DoctorReportPage />,
-    layout: "dashboard",
-    label: "Báo cáo bác sĩ",
-    icon: VscFeedback,
-    showInSidebar: true,
-    roles: ["Admin"],
-  },
-
   // Settings Routes
   {
     path: PATHS.DASHBOARD.SETTINGS.ROOT,
