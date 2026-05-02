@@ -6,7 +6,8 @@ export type Package = {
   durationDays: number;
   memberLimit: number;
   ocrLimit: number;
-  consultantLimit: number;
+  allowVideoRecordingAccess: boolean;
+  healthAlertEnabled: boolean;
   description: string;
   activeSubscriberCount: number;
   status: "active" | "inactive";
@@ -19,6 +20,7 @@ export type UpdatePackageRequest = {
   durationDays: number;
   memberLimit: number;
   ocrLimit: number;
-  consultantLimit: number;
+  allowVideoRecordingAccess: boolean;
+  healthAlertEnabled: boolean;
   description: string;
 };

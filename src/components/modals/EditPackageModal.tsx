@@ -99,13 +99,30 @@ export function EditPackageModal({
                   error={errors.ocrLimit}
                   onChange={(next) => onChange("ocrLimit", Number(next))}
                 />
-                <InputField
-                  label="Giới hạn tư vấn"
-                  type="number"
-                  value={value.consultantLimit}
-                  error={errors.consultantLimit}
-                  onChange={(next) => onChange("consultantLimit", Number(next))}
-                />
+                <div className="flex flex-col gap-3 md:col-span-2 pt-2 border-t border-gray-200 dark:border-white/10 mt-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={value.allowVideoRecordingAccess}
+                      onChange={(e) => onChange("allowVideoRecordingAccess", e.target.checked)}
+                      className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Cho phép Bệnh nhân xem lại video ghi hình phiên khám
+                    </span>
+                  </label>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={value.healthAlertEnabled}
+                      onChange={(e) => onChange("healthAlertEnabled", e.target.checked)}
+                      className="w-4 h-4 text-primary rounded border-gray-300 focus:ring-primary cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Bật tính năng AI giải thích tương tác thuốc khi thêm thuốc vào đơn
+                    </span>
+                  </label>
+                </div>
                 <div className="md:col-span-2 space-y-1.5">
                   <label className="block text-[12px] font-medium text-gray-500 dark:text-gray-400">
                     Mô tả
