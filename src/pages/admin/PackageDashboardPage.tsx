@@ -35,7 +35,8 @@ type ComparisonRow = {
   durationDays: number;
   memberLimit: number;
   ocrLimit: number;
-  consultantLimit: number;
+  allowVideoRecordingAccess: boolean;
+  healthAlertEnabled: boolean;
   description: string;
 };
 
@@ -49,7 +50,8 @@ function mapPackageToComparisonRow(pkg: Package): ComparisonRow {
     durationDays: pkg.durationDays,
     memberLimit: pkg.memberLimit,
     ocrLimit: pkg.ocrLimit,
-    consultantLimit: pkg.consultantLimit,
+    allowVideoRecordingAccess: pkg.allowVideoRecordingAccess,
+    healthAlertEnabled: pkg.healthAlertEnabled,
     description: pkg.description,
   };
 }
@@ -62,7 +64,8 @@ function mapPackageToUpdateRequest(pkg: Package): UpdatePackageRequest {
     durationDays: pkg.durationDays,
     memberLimit: pkg.memberLimit,
     ocrLimit: pkg.ocrLimit,
-    consultantLimit: pkg.consultantLimit,
+    allowVideoRecordingAccess: pkg.allowVideoRecordingAccess,
+    healthAlertEnabled: pkg.healthAlertEnabled,
     description: pkg.description,
   };
 }
@@ -74,7 +77,8 @@ const DEFAULT_PACKAGE_FORM: UpdatePackageRequest = {
   durationDays: 30,
   memberLimit: 1,
   ocrLimit: 0,
-  consultantLimit: 0,
+  allowVideoRecordingAccess: false,
+  healthAlertEnabled: false,
   description: "",
 };
 
@@ -91,8 +95,6 @@ function validateEditPackageForm(
   if (form.memberLimit <= 0)
     errors.memberLimit = "Số thành viên phải lớn hơn 0.";
   if (form.ocrLimit < 0) errors.ocrLimit = "Giới hạn OCR không được âm.";
-  if (form.consultantLimit < 0)
-    errors.consultantLimit = "Giới hạn tư vấn không được âm.";
 
   return errors;
 }
@@ -352,11 +354,12 @@ function PackageComparisonTable({
         row.ocrLimit > 0 ? `${row.ocrLimit} lượt` : "Không hỗ trợ",
     },
     {
-      label: "Tư vấn chuyên gia",
-      render: (row: ComparisonRow) =>
-        row.consultantLimit > 0
-          ? `${row.consultantLimit} lượt`
-          : "Không hỗ trợ",
+      label: "Xem lại video phiên khám",
+      render: (row: ComparisonRow) => row.allowVideoRecordingAccess,
+    },
+    {
+      label: "Cảnh báo tương tác thuốc (AI)",
+      render: (row: ComparisonRow) => row.healthAlertEnabled,
     },
     {
       label: "Mô tả",
