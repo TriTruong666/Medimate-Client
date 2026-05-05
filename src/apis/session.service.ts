@@ -76,9 +76,21 @@ export async function requestEndConsultationSession(
   return res.data;
 }
 
-export async function retryRecordingSession(
+
+export async function uploadRecording(
   sessionId: string,
-): Promise<BaseResponse<any>> {
-  const res = await axiosNETClient.post(`/api/v1/sessions/${sessionId}/retry-recording`, {});
+  file: File | Blob
+): Promise<BaseResponse<string>> {
+  const formData = new FormData();
+  formData.append("file", file, `recording_${sessionId}.webm`);
+
+  const res = await axiosNETClient.post(
+    `/api/v1/sessions/${sessionId}/upload-recording`,
+    formData,
+    {
+      headers: { "Content-Type": "multipart/form-data" },
+      timeout: 120000, // Tăng timeout cho file lớn
+    }
+  );
   return res.data;
 }
