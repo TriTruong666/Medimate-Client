@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
@@ -6,9 +6,8 @@ import {
   useJoinConsultationSession,
   useEndConsultationSession,
   useRequestEndConsultationSession,
-  useRetryRecordingSession,
 } from "@/hooks/data/useSessionHooks";
-import { getVideoCallToken } from "@/apis/session.service";
+import { getVideoCallToken, uploadRecording } from "@/apis/session.service";
 import { useVideoCallContext } from "@/contexts/VideoCallContext";
 import { globalSignalRConnection } from "@/hooks/useSignalR";
 import { VideoPlayer } from "@/components/agora/VideoPlayer";
@@ -20,13 +19,14 @@ import {
   FiPhoneOff,
   FiMinimize2,
   FiAlertCircle,
-  FiSend,
-  FiRefreshCw
+  FiMonitor,
+  FiStopCircle,
+  FiCheckSquare,
+  FiClock,
 } from "react-icons/fi";
 import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
-import { useState } from "react";
 
 export default function DoctorVideoCallPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
@@ -38,9 +38,17 @@ export default function DoctorVideoCallPage() {
   const { mutateAsync: joinSession } = useJoinConsultationSession();
   const { mutateAsync: completeSession } = useEndConsultationSession();
   const { mutateAsync: requestEndSession, isPending: isRequestingEnd } = useRequestEndConsultationSession();
-  const { mutateAsync: retryRecording, isPending: isRetryingRecording } = useRetryRecordingSession();
 
   const appId = import.meta.env.VITE_AGORA_APP_ID;
+
+  // States cho việc ghi hình thủ công tại trình duyệt
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<BlobPart[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isUploadingRecording, setIsUploadingRecording] = useState(false);
+  // Thời điểm session sẽ kết thúc (để tính timer 5 phút)
+  const [sessionEndTime, setSessionEndTime] = useState<Date | null>(null);
+  const [timeoutWarningShown, setTimeoutWarningShown] = useState(false);
 
   // 1. Fetch Token first
   const {
@@ -111,22 +119,24 @@ export default function DoctorVideoCallPage() {
   }, [setMinimize]);
 
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
-  const [recordingStatus, setRecordingStatus] = useState<"pending" | "recording" | "error">("pending");
+  const [showConfirmRequestEnd, setShowConfirmRequestEnd] = useState(false);
 
-  const handleRequestEnd = async () => {
+  const handleRequestEnd = () => {
     if (sessionId) {
-      await requestEndSession(sessionId);
+      setShowConfirmRequestEnd(true);
     }
   };
 
-  const handleRetryRecording = async () => {
-    if (sessionId) {
-      setRecordingStatus("pending");
-      await retryRecording(sessionId);
-      // Giả định nếu request thành công thì báo là đang record (chưa nhận signalR thực tế ở đây)
-      setRecordingStatus("recording");
+  const confirmRequestEnd = async () => {
+    try {
+      await requestEndSession(sessionId!);
+      toast.success("Đã gửi yêu cầu", "Yêu cầu kết thúc phiên khám đã được gửi tới bệnh nhân.");
+    } catch (e: any) {
+      toast.error("Lỗi", e.message || "Không thể gửi yêu cầu kết thúc");
     }
   };
+
+
 
   const handleLeaveCall = async () => {
     setShowConfirmLeave(true);
@@ -135,7 +145,7 @@ export default function DoctorVideoCallPage() {
   const confirmLeaveCall = async () => {
     try {
       isIntentionalLeaveRef.current = true;
-      // Dùng leaveChannel() để rời Agora channel và dọn track
+      // Rời phòng KHÔNG dừng video - bác sĩ vẫn có thể quay tiếp dù đã thoát
       await leaveChannel();
       toast.success("Đã ngắt kết nối", "Bạn đã ngắt kết nối cuộc gọi video.");
       navigate("/dashboard/doctor-support", { replace: true });
@@ -145,22 +155,106 @@ export default function DoctorVideoCallPage() {
     }
   };
 
+  // Dừng ghi hình + chờ upload xong (dùng cho auto-stop khi session kết thúc)
+  const stopAndUploadRecording = useCallback((): Promise<void> => {
+    return new Promise((resolve) => {
+      const recorder = mediaRecorderRef.current;
+      if (!recorder || recorder.state === "inactive") {
+        resolve();
+        return;
+      }
+
+      // Override onstop để chờ upload hoàn tất trước khi resolve
+      const originalOnStop = recorder.onstop;
+      recorder.onstop = async (ev) => {
+        if (originalOnStop) (originalOnStop as any)(ev);
+        resolve();
+      };
+
+      recorder.stop();
+      recorder.stream.getTracks().forEach((t) => t.stop());
+    });
+  }, []);
+
+  const startScreenRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: { displaySurface: "browser" } as any,
+        audio: true,
+      });
+
+      const recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
+      recordedChunksRef.current = [];
+
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          recordedChunksRef.current.push(e.data);
+        }
+      };
+
+      recorder.onstop = async () => {
+        setIsRecording(false);
+        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+        setIsUploadingRecording(true);
+        toast.info("Đang xử lý...", "Đang tải video phiên khám lên hệ thống...");
+        try {
+          await uploadRecording(sessionId!, blob);
+          toast.success("Thành công", "Đã lưu video phiên khám vào hệ thống!");
+        } catch (err) {
+          toast.error("Lỗi Upload", "Không thể tải video lên Cloudinary.");
+        } finally {
+          setIsUploadingRecording(false);
+        }
+      };
+
+      stream.getVideoTracks()[0].onended = () => {
+        if (recorder.state !== "inactive") {
+          recorder.stop();
+        }
+      };
+
+      recorder.start(1000);
+      mediaRecorderRef.current = recorder;
+      setIsRecording(true);
+      toast.success("Bắt đầu ghi hình", "Hệ thống đang ghi lại màn hình phiên khám (Tab hiện tại).");
+    } catch (e) {
+      toast.error("Ghi hình thất bại", "Bạn cần cấp quyền chia sẻ tab trình duyệt để ghi hình.");
+    }
+  };
+
+  const stopScreenRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach((t) => t.stop());
+    }
+  };
+
   // ── Auto-End Call when Session Ended via SignalR ──
   useEffect(() => {
     const connection = globalSignalRConnection;
     if (!connection || !sessionId) return;
 
-    const handleNotification = (notif: any) => {
-      // Vì referenceId là UUID nên đưa về lowercase để so sánh cho an toàn
-      if (notif?.referenceId?.toLowerCase() === sessionId.toLowerCase()) {
-        if (notif?.type === "SESSION_ENDED" || notif?.type === "SESSION_TIMEOUT") {
-          toast.info("Phiên tư vấn kết thúc", "Hệ thống hoặc đối tác đã kết thúc phiên khám.");
-          
-          isIntentionalLeaveRef.current = true;
-          leaveChannel().catch(console.error).finally(() => {
-            navigate("/dashboard/doctor-support", { replace: true });
-          });
+    const handleNotification = async (notif: any) => {
+      if (notif?.referenceId?.toLowerCase() !== sessionId.toLowerCase()) return;
+
+      // Lắng nghe thông báo thời gian kết thúc session để set timer
+      if (notif?.type === "SESSION_STARTED" && notif?.endTime) {
+        setSessionEndTime(new Date(notif.endTime));
+      }
+
+      if (notif?.type === "SESSION_ENDED" || notif?.type === "SESSION_TIMEOUT") {
+        toast.info("Phiên tư vấn kết thúc", "Hệ thống hoặc đối tác đã kết thúc phiên khám.");
+
+        // Tự động dừng + upload video trước khi thoát
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+          toast.info("Đang lưu video...", "Đang xử lý và tải lên video phiên khám...");
+          await stopAndUploadRecording();
         }
+
+        isIntentionalLeaveRef.current = true;
+        leaveChannel().catch(console.error).finally(() => {
+          navigate("/dashboard/doctor-support", { replace: true });
+        });
       }
     };
 
@@ -169,7 +263,31 @@ export default function DoctorVideoCallPage() {
     return () => {
       connection.off("ReceiveNotification", handleNotification);
     };
-  }, [sessionId, leaveChannel, navigate]);
+  }, [sessionId, leaveChannel, navigate, stopAndUploadRecording]);
+
+  // ── Timer: Tự động dừng ghi hình 5 phút trước khi hết giờ ──
+  useEffect(() => {
+    if (!sessionEndTime || !isRecording) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const msLeft = sessionEndTime.getTime() - now.getTime();
+      const fiveMinutes = 5 * 60 * 1000;
+
+      if (msLeft <= fiveMinutes && msLeft > 0 && !timeoutWarningShown) {
+        setTimeoutWarningShown(true);
+        clearInterval(interval);
+        toast.warn(
+          "Sắp hết giờ",
+          "Còn dưới 5 phút! Hệ thống tự động dừng và lưu video phiên khám."
+        );
+        // Dừng + upload tự động
+        void stopAndUploadRecording();
+      }
+    }, 30_000); // Kiểm tra mỗi 30 giây
+
+    return () => clearInterval(interval);
+  }, [sessionEndTime, isRecording, timeoutWarningShown, stopAndUploadRecording]);
 
   const handleMinimize = () => {
     setMinimize(true);
@@ -226,27 +344,23 @@ export default function DoctorVideoCallPage() {
           </p>
         </div>
         
-        {/* Recording Status */}
-        {remoteUsers.length > 0 && (
-          <div className="flex items-center gap-2">
-            {recordingStatus === "error" ? (
-              <div className="flex items-center gap-2 rounded-lg bg-rose-500/20 px-3 py-1 border border-rose-500/50 text-rose-400">
-                <FiAlertCircle className="animate-pulse" />
-                <span className="text-xs font-medium">Lỗi Ghi Hình</span>
-                <button 
-                  onClick={handleRetryRecording} 
-                  disabled={isRetryingRecording}
-                  className="ml-2 hover:text-rose-300"
-                >
-                  <FiRefreshCw className={isRetryingRecording ? "animate-spin" : ""} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1 border border-emerald-500/50 text-emerald-400">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                <span className="text-xs font-medium">Đang Ghi Hình (Cloud)</span>
-              </div>
-            )}
+      {/* Recording Status Badge */}
+        {isRecording && (
+          <div className="flex items-center gap-2 rounded-lg bg-rose-500/20 px-3 py-1 border border-rose-500/50 text-rose-400 animate-pulse">
+            <div className="h-2 w-2 rounded-full bg-rose-500"></div>
+            <span className="text-xs font-medium">Đang Ghi Hình</span>
+          </div>
+        )}
+        {isUploadingRecording && (
+          <div className="flex items-center gap-2 rounded-lg bg-amber-500/20 px-3 py-1 border border-amber-500/50 text-amber-400">
+            <Spinner size="sm" />
+            <span className="text-xs font-medium">Đang Lưu Video...</span>
+          </div>
+        )}
+        {timeoutWarningShown && !isUploadingRecording && !isRecording && (
+          <div className="flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1 border border-emerald-500/50 text-emerald-400">
+            <FiClock className="text-sm" />
+            <span className="text-xs font-medium">Video đã được lưu</span>
           </div>
         )}
       </div>
@@ -341,10 +455,32 @@ export default function DoctorVideoCallPage() {
         <button
           onClick={handleRequestEnd}
           disabled={isRequestingEnd}
-          className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-500/20 text-orange-500 transition-all duration-300 hover:bg-orange-500/30"
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-500 transition-all duration-300 hover:bg-emerald-500/30"
           title="Yêu cầu kết thúc phiên"
         >
-          <FiSend className="text-xl" />
+          <FiCheckSquare className="text-xl" />
+        </button>
+
+        {/* Record Video */}
+        <button
+          onClick={isRecording ? stopScreenRecording : startScreenRecording}
+          disabled={isUploadingRecording}
+          className={`flex h-14 w-14 items-center justify-center rounded-full transition-all duration-300 ${
+            isRecording
+              ? "bg-rose-500 text-white animate-pulse shadow-lg shadow-rose-500/50"
+              : isUploadingRecording
+                ? "bg-gray-500/20 text-gray-400 opacity-50 cursor-not-allowed"
+                : "bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500/30"
+          }`}
+          title={isRecording ? "Dừng ghi hình" : isUploadingRecording ? "Đang upload video..." : "Ghi hình phiên khám (Share Tab)"}
+        >
+          {isUploadingRecording ? (
+            <Spinner size="sm" />
+          ) : isRecording ? (
+            <FiStopCircle className="text-xl" />
+          ) : (
+            <FiMonitor className="text-xl" />
+          )}
         </button>
 
         {/* Leave Call */}
@@ -383,6 +519,19 @@ export default function DoctorVideoCallPage() {
           void confirmLeaveCall();
         }}
         onCancel={() => setShowConfirmLeave(false)}
+      />
+      <ConfirmModal
+        open={showConfirmRequestEnd}
+        title="Yêu cầu kết thúc phiên khám"
+        message="Bạn có chắc chắn muốn kết thúc phiên khám này? Hệ thống sẽ gửi yêu cầu xác nhận đến bệnh nhân."
+        confirmText="Gửi yêu cầu"
+        confirmButtonType="success"
+        onConfirm={() => {
+          setShowConfirmRequestEnd(false);
+          void confirmRequestEnd();
+        }}
+        onCancel={() => setShowConfirmRequestEnd(false)}
+        isLoading={isRequestingEnd}
       />
     </div>
   );

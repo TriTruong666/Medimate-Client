@@ -17,6 +17,7 @@ export interface PrescriptionByDoctorDto {
   memberId: string;
   memberName?: string;
   memberDateOfBirth?: string;
+  memberGender?: string;
   consultanSessionId: string;
   diagnosis: string;
   advice?: string;
