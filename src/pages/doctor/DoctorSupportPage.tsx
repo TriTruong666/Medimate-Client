@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { LuGrid3X3, LuCalendarDays, LuPlus } from "react-icons/lu";
-import { FiClock, FiVideo, FiMapPin, FiCheck, FiX } from "react-icons/fi";
+import { FiClock, FiVideo, FiMapPin, FiCheck, FiX, FiFileText } from "react-icons/fi";
 import { cardContainer, cardItem } from "@/motions/cardMotion";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
@@ -210,7 +210,7 @@ function AppointmentState({
   );
 }
 
-type FilterTab = "all" | "pending" | "approved" | "inprogress" | "history";
+type FilterTab = "all" | "pending" | "approved" | "inprogress" | "completed" | "cancelled" | "history";
 
 export default function DoctorSupportPage({
   filter = "all",
@@ -264,9 +264,13 @@ export default function DoctorSupportPage({
       case "pending":
         return apt.status === "Pending";
       case "approved":
-        return apt.status === "Approved";
+        return ["Approved", "InProgress"].includes(apt.status);
       case "inprogress":
         return apt.status === "InProgress";
+      case "completed":
+        return apt.status === "Completed";
+      case "cancelled":
+        return ["Cancelled", "Rejected"].includes(apt.status);
       case "history":
         return ["Completed", "Cancelled", "Rejected"].includes(apt.status);
       default:
@@ -474,11 +478,13 @@ function AppointmentCard({
   const isNow = data.status === "InProgress";
   const isCallReady =
     data.status === "InProgress" || data.status === "Approved";
+  const shouldFetchSession =
+    data.status === "InProgress" || data.status === "Approved" || data.status === "Completed";
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
 
   const { data: sessionData, isLoading: sessionLoading } =
-    useAppointmentSession(data.id, isCallReady);
+    useAppointmentSession(data.id, shouldFetchSession);
   const sessionId = sessionData?.consultanSessionId;
   const canJoin = isCallReady && !!sessionId;
 
@@ -494,6 +500,14 @@ function AppointmentCard({
 
   function handleJoinCall() {
     if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+  }
+
+  function handleReviewSession() {
+    if (sessionData?.recordingUrl) {
+      window.open(sessionData.recordingUrl, "_blank");
+    } else {
+      toast.error("Chưa có video", "Video phiên khám chưa được tải lên hoặc đang xử lý.");
+    }
   }
 
   function handleOpenDetail() {
@@ -618,6 +632,31 @@ function AppointmentCard({
                 }}
                 className={`flex h-8 w-8 items-center justify-center rounded-full transition ${canJoin
                   ? "bg-primary/10 text-primary hover:bg-primary/20"
+                  : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
+                  } disabled:opacity-50`}
+              >
+                {sessionLoading ? <Spinner size="sm" /> : <FiVideo />}
+              </button>
+            </Tooltip>
+          )}
+          {data.status === "Completed" && (
+            <Tooltip
+              content={
+                sessionLoading
+                  ? "Đang tải Session..."
+                  : sessionData?.recordingUrl
+                    ? "Xem lại Video phiên khám"
+                    : "Đang xử lý Video..."
+              }
+            >
+              <button
+                disabled={sessionLoading}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleReviewSession();
+                }}
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${sessionData?.recordingUrl
+                  ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
                   : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
                   } disabled:opacity-50`}
               >
@@ -1007,11 +1046,12 @@ function CalendarAppointmentItem({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const isNow = apt.status === "InProgress";
   const isCallReady = apt.status === "InProgress" || apt.status === "Approved";
+  const shouldFetchSession = apt.status === "InProgress" || apt.status === "Approved" || apt.status === "Completed";
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
 
   const { data: sessionData, isLoading: sessionLoading } =
-    useAppointmentSession(apt.id, isCallReady);
+    useAppointmentSession(apt.id, shouldFetchSession);
   const sessionId = sessionData?.consultanSessionId;
   const canJoin = isCallReady && !!sessionId;
 
@@ -1030,6 +1070,16 @@ function CalendarAppointmentItem({
   function handleJoinCall(e: React.MouseEvent) {
     e.stopPropagation();
     if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+    setIsOpen(false);
+  }
+
+  function handleReviewSession(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (sessionData?.recordingUrl) {
+      window.open(sessionData.recordingUrl, "_blank");
+    } else {
+      toast.error("Chưa có video", "Video phiên khám chưa được tải lên hoặc đang xử lý.");
+    }
     setIsOpen(false);
   }
 
@@ -1102,6 +1152,19 @@ function CalendarAppointmentItem({
                 >
                   <FiVideo />{" "}
                   {sessionLoading ? "Đang tải Session..." : "Tham gia ngay"}
+                </button>
+              )}
+              {apt.status === "Completed" && (
+                <button
+                  onClick={handleReviewSession}
+                  disabled={sessionLoading}
+                  className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs transition ${sessionData?.recordingUrl
+                    ? "text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-500/10"
+                    : "cursor-not-allowed text-gray-400 opacity-50"
+                    } disabled:opacity-50`}
+                >
+                  <FiVideo />{" "}
+                  {sessionLoading ? "Đang tải Session..." : "Xem video phiên khám"}
                 </button>
               )}
               {/* Chỉ hiện Approve/Reject khi Pending + đã thanh toán */}

@@ -4,6 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 import { toast } from "./useToast";
 
+export let globalSignalRConnection: signalR.HubConnection | null = null;
+
 // --- Hàm tạo âm thanh thông báo cực mượt (Soft Ding) ---
 const playNotificationSound = () => {
   try {
@@ -94,6 +96,7 @@ export function useSignalR() {
         .build();
 
       connectionRef.current = newConnection;
+      globalSignalRConnection = newConnection;
 
       // ── Event Handlers ────────────────────────────────────────────────────────
 
@@ -206,6 +209,7 @@ export function useSignalR() {
       if (!isAuthenticated && conn && conn.state !== signalR.HubConnectionState.Disconnected) {
         conn.stop().catch(() => {});
         connectionRef.current = null;
+        globalSignalRConnection = null;
       }
     };
   }, [isAuthenticated, queryClient]);
