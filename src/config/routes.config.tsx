@@ -250,18 +250,18 @@ export const ROUTES_CONFIG: RouteConfig[] = [
         path: PATHS.DASHBOARD.DOCTOR_SUPPORT.IN_PROGRESS,
         element: (
           <DoctorSupportPage
-            filter="inprogress"
-            title="Công việc đến giờ hẹn"
+            filter="completed"
+            title="Công việc hoàn thành"
           />
         ),
-        label: "Đến giờ hẹn",
+        label: "Hoàn thành",
       },
       {
         path: PATHS.DASHBOARD.DOCTOR_SUPPORT.HISTORY,
         element: (
-          <DoctorSupportPage filter="history" title="Lịch sử công việc" />
+          <DoctorSupportPage filter="cancelled" title="Công việc đã hủy" />
         ),
-        label: "Lịch sử",
+        label: "Đã hủy",
       },
     ],
   },

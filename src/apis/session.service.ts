@@ -22,6 +22,7 @@ export interface SessionData {
   guardianJoined?: boolean;
   note?: string | null;
   doctorNote?: string | null;
+  recordingUrl?: string | null;
 }
 
 export interface VideoCallTokenData {
