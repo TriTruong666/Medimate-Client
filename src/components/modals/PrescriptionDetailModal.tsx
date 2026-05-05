@@ -31,6 +31,25 @@ export function PrescriptionDetailModal({
   const updateMutation = useUpdatePrescription();
   const [showConfirmSend, setShowConfirmSend] = useState(false);
 
+  // Tính tuổi từ ngày sinh
+  function calcAge(dob?: string): string {
+    if (!dob) return "--";
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age > 0 ? `${age}` : "--";
+  }
+
+  function formatGender(gender?: string): string {
+    if (!gender) return "--";
+    const g = gender.toLowerCase();
+    if (g === "male" || g === "nam") return "Nam";
+    if (g === "female" || g === "nữ") return "Nữ";
+    return gender;
+  }
+
   const isLocked = data?.status === "Completed" || data?.status === "Cancelled" || data?.isLocked;
 
   async function handleCompleteAndSend() {
@@ -333,10 +352,12 @@ export function PrescriptionDetailModal({
                             </span>
                           </p>
                           <p className="flex-1">
-                            Tuổi: <span className="font-bold">--</span>
+                            Tuổi:{" "}
+                            <span className="font-bold">{calcAge(data.memberDateOfBirth)}</span>
                           </p>
                           <p className="flex-1">
-                            Giới tính: <span className="font-bold">--</span>
+                            Giới tính:{" "}
+                            <span className="font-bold">{formatGender(data.memberGender)}</span>
                           </p>
                         </div>
                         <p>

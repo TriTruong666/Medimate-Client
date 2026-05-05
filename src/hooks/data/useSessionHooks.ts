@@ -91,19 +91,3 @@ export function useRequestEndConsultationSession() {
   });
 }
 
-export function useRetryRecordingSession() {
-  return useMutation({
-    mutationFn: (sessionId: string) =>
-      SessionService.retryRecordingSession(sessionId),
-    onSuccess: (data) => {
-      if (data.success) {
-        toast.success("Bắt đầu ghi hình", "Hệ thống đang thử kết nối ghi hình lại.");
-      } else {
-        toast.error("Lỗi", translateErrorMessage(data.error?.code, data.message));
-      }
-    },
-    onError: (error: unknown) => {
-      toast.error("Thử lại ghi hình thất bại", getApiErrorMessage(error));
-    },
-  });
-}
