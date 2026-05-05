@@ -10,6 +10,7 @@ import {
 } from "@/hooks/data/useSessionHooks";
 import { getVideoCallToken } from "@/apis/session.service";
 import { useVideoCallContext } from "@/contexts/VideoCallContext";
+import { globalSignalRConnection } from "@/hooks/useSignalR";
 import { VideoPlayer } from "@/components/agora/VideoPlayer";
 import {
   FiMic,
@@ -143,6 +144,32 @@ export default function DoctorVideoCallPage() {
       navigate("/dashboard/doctor-support", { replace: true });
     }
   };
+
+  // ── Auto-End Call when Session Ended via SignalR ──
+  useEffect(() => {
+    const connection = globalSignalRConnection;
+    if (!connection || !sessionId) return;
+
+    const handleNotification = (notif: any) => {
+      // Vì referenceId là UUID nên đưa về lowercase để so sánh cho an toàn
+      if (notif?.referenceId?.toLowerCase() === sessionId.toLowerCase()) {
+        if (notif?.type === "SESSION_ENDED" || notif?.type === "SESSION_TIMEOUT") {
+          toast.info("Phiên tư vấn kết thúc", "Hệ thống hoặc đối tác đã kết thúc phiên khám.");
+          
+          isIntentionalLeaveRef.current = true;
+          leaveChannel().catch(console.error).finally(() => {
+            navigate("/dashboard/doctor-support", { replace: true });
+          });
+        }
+      }
+    };
+
+    connection.on("ReceiveNotification", handleNotification);
+
+    return () => {
+      connection.off("ReceiveNotification", handleNotification);
+    };
+  }, [sessionId, leaveChannel, navigate]);
 
   const handleMinimize = () => {
     setMinimize(true);
