@@ -19,8 +19,6 @@ import { TbBuildingHospital } from "react-icons/tb";
 import { VscFeedback } from "react-icons/vsc";
 import type { Role } from "@/hooks/useAuth";
 import DoctorSupportPage from "@/pages/doctor/DoctorSupportPage";
-import DoctorVideoCallPage from "@/pages/doctor/DoctorVideoCallPage";
-
 import DoctorProfilesPage from "@/pages/doctor-manager/DoctorProfilesPage";
 import DoctorReportPage from "@/pages/admin/DoctorReportPage";
 import CertificateApprovePage from "@/pages/doctor-manager/CertificateApprovePage";
@@ -287,13 +285,7 @@ export const ROUTES_CONFIG: RouteConfig[] = [
       },
     ],
   },
-  {
-    path: PATHS.DASHBOARD.VIDEO_CALL,
-    element: <DoctorVideoCallPage />,
-    layout: "dashboard",
-    roles: ["Doctor", "DoctorManager", "Admin"],
-    showInSidebar: false,
-  },
+
   {
     path: PATHS.DASHBOARD.ACCOUNTS,
     element: <AccountDashboardPage />,

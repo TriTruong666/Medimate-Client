@@ -7,13 +7,14 @@ import IconAction from "../components/custom-ui/IconAction";
 import { openTransactionModalAtom } from "../stores/modalStore";
 import { useAtom, useSetAtom } from "jotai";
 import { useMemo, useState } from "react";
-import { openDrawerAtom, transactionDetailIdAtom } from "../stores/drawerStore";
+import { openDrawerAtom, transactionDetailIdAtom, payoutDetailDataAtom } from "../stores/drawerStore";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import {
   useTransactionList,
   useUserTransactionList,
 } from "@/hooks/data/useTransactionHooks";
+import { usePayouts } from "@/hooks/data/usePayoutHooks";
 import type { PaginationParams } from "@/common/query.params";
 import type { Transaction } from "@/types/Transaction";
 import { useAuth } from "@/hooks/useAuth";
@@ -111,20 +112,40 @@ export default function TransactionDashboardPage() {
     enabled: !isDoctor,
   });
 
-  const userTransactionsQuery = useUserTransactionList(userId, pagination, {
-    enabled: isDoctor && !!userId,
+  const payoutQuery = usePayouts({
+    pageNumber: pagination.pageNumber,
+    pageSize: pagination.pageSize,
   });
 
-  const { data, isLoading, error, isError, refetch } = isDoctor
-    ? userTransactionsQuery
+  const { data: rawData, isLoading, error, isError, refetch } = isDoctor
+    ? payoutQuery
     : allTransactionsQuery;
+
+  const data = isDoctor ? (rawData as any)?.data : rawData;
 
   const total = data?.totalCount ?? 0;
   const page = data?.pageNumber ?? pagination.pageNumber ?? 1;
   const pageSize = data?.pageSize ?? pagination.pageSize ?? 10;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const tableData = useMemo(() => data?.items ?? [], [data?.items]);
+  // Map PayoutItemDto sang Transaction format cho bác sĩ
+  const tableData = useMemo(() => {
+    if (!data?.items) return [];
+    if (isDoctor) {
+      return data.items
+        .filter((item: any) => item.status !== "Cancelled")
+        .map((item: any) => ({
+          transactionId: item.payoutId,
+          transactionCode: `APPOINTMENT-${item.payoutId.split('-')[0].toUpperCase()}`,
+          transactionDate: item.calculatedAt,
+          transactionType: "doctor_payout",
+          totalAmount: item.amount,
+          status: item.status === "ReadyToPay" || item.status === "Hold" ? "pending" : item.status,
+          originalPayoutData: item,
+        })) as any[];
+    }
+    return data.items as Transaction[];
+  }, [data?.items, isDoctor]);
 
   const handlePageChange = (nextPage: number) => {
     if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
@@ -181,9 +202,14 @@ function TransactionTable({
   const [, openPaymentModal] = useAtom(openTransactionModalAtom);
   const openDrawer = useSetAtom(openDrawerAtom);
   const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
+  const setPayoutDetailData = useSetAtom(payoutDetailDataAtom);
 
-  const handleOpenDetailModal = (row: Transaction) => {
-    setTransactionDetailId(row.transactionId);
+  const handleOpenDetailModal = (row: any) => {
+    if (row.originalPayoutData) {
+      setPayoutDetailData(row.originalPayoutData);
+    } else {
+      setTransactionDetailId(row.transactionId);
+    }
     openDrawer("transaction_details");
   };
   const demoPaymentData = {
@@ -341,6 +367,7 @@ function TransactionTypeBadge({
     in_package: <Badge type="success" value="Thanh toán gói" />,
     out_refund_session: <Badge type="warning" value="Hoàn tiền tư vấn" />,
     out_clinic_payout: <Badge type="warning" value="Thanh toán phòng khám" />,
+    doctor_payout: <Badge type="success" value="Thanh toán từ hệ thống" />,
     out: <Badge type="warning" value="Tiền chi ra" />,
   };
 
