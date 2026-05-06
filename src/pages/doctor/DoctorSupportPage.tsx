@@ -13,7 +13,7 @@ import {
   useDoctorAppointments,
   useUpdateAppointmentStatus,
 } from "@/hooks/data/useAppointmentHooks";
-import { useAppointmentSession, useSessionRecording } from "@/hooks/data/useSessionHooks";
+import { useAppointmentSession, useSessionRecording, useJoinConsultationSession } from "@/hooks/data/useSessionHooks";
 import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
 import { useDoctorAvailabilities } from "@/hooks/data/useDoctorAvailabilityHooks";
 import { useDoctorAvailabilityExceptions } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
@@ -484,6 +484,7 @@ function AppointmentCard({
     data.status === "InProgress" || data.status === "Approved" || data.status === "Completed";
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
+  const { mutateAsync: joinSession } = useJoinConsultationSession();
 
   const { data: sessionData, isLoading: sessionLoading } =
     useAppointmentSession(data.id, shouldFetchSession);
@@ -510,8 +511,23 @@ function AppointmentCard({
     setConfirmAction("reject");
   }
 
-  function handleJoinCall() {
-    if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+  const { startCall } = useVideoCallContext();
+
+  async function handleJoinCall() {
+    if (!sessionId) return;
+    try {
+      toast.info("Đang kết nối...", "Đang khởi tạo phòng khám trực tuyến.");
+      await joinSession(sessionId);
+      const res = await getVideoCallToken(sessionId);
+      const token = typeof res?.data === "string" ? res.data : res?.data?.token;
+      if (token) {
+        await startCall(sessionId, import.meta.env.VITE_AGORA_APP_ID, token);
+      } else {
+        toast.error("Lỗi", "Không lấy được Token phòng khám.");
+      }
+    } catch (error) {
+      toast.error("Lỗi kết nối", "Không thể tham gia phòng khám lúc này.");
+    }
   }
 
   function handleReviewSession() {
@@ -1072,6 +1088,7 @@ function CalendarAppointmentItem({
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
   const { startCall } = useVideoCallContext();
+  const { mutateAsync: joinSession } = useJoinConsultationSession();
 
   const { data: sessionData, isLoading: sessionLoading } =
     useAppointmentSession(apt.id, shouldFetchSession);
@@ -1095,6 +1112,7 @@ function CalendarAppointmentItem({
     if (!sessionId) return;
     try {
       toast.info("Đang kết nối...", "Đang khởi tạo phòng khám trực tuyến.");
+      await joinSession(sessionId);
       const res = await getVideoCallToken(sessionId);
       const token = typeof res?.data === "string" ? res.data : res?.data?.token;
       if (token) {
