@@ -176,7 +176,11 @@ export function GlobalVideoCallWidget() {
         dest.stream.getAudioTracks()[0]
       ]);
 
-      const recorder = new MediaRecorder(mixedStream, { mimeType: "video/webm; codecs=vp9" });
+      const recorder = new MediaRecorder(mixedStream, { 
+        mimeType: "video/webm; codecs=vp9",
+        videoBitsPerSecond: 1000000, // 1 Mbps (khoảng 7.5MB/phút) để đảm bảo file nhẹ, dễ up lên Cloudinary
+        audioBitsPerSecond: 128000   // 128 kbps
+      });
       recordedChunksRef.current = [];
 
       recorder.ondataavailable = (e) => {
