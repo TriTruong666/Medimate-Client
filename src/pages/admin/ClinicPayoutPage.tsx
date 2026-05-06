@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   FiCheckCircle,
+  FiDownload,
   FiExternalLink,
   FiFileText,
   FiList,
@@ -222,6 +223,153 @@ function PayoutDetailView({
   const rows = data?.data?.items ?? [];
   const total = data?.data?.totalCount ?? 0;
 
+  const statusLabel: Record<string, string> = {
+    ReadyToPay: "Sẵn sàng TT",
+    Hold: "Tạm giữ",
+    Paid: "Đã TT",
+    Cancelled: "Đã hủy",
+  };
+
+  const exportToPDF = () => {
+    const now = new Date().toLocaleString("vi-VN");
+    const statusText = statusLabel[statusFilter] ?? statusFilter;
+
+    const tableRows = rows
+      .map(
+        (row) => `
+        <tr>
+          <td>
+            <strong>${row.clinicName ?? "N/A"}</strong><br/>
+            <small>BS: ${row.doctorName ?? "N/A"}</small><br/>
+            <small>BN: ${row.patientName ?? "N/A"}</small>
+          </td>
+          <td>
+            ${row.appointmentDate ? new Date(row.appointmentDate).toLocaleDateString("vi-VN") : "N/A"}<br/>
+            <small>${row.appointmentTime?.slice(0, 5) ?? ""}</small>
+          </td>
+          <td class="amount">${row.amount?.toLocaleString("vi-VN") ?? 0} đ</td>
+          <td>
+            <strong>${row.payerBankName ?? "N/A"}</strong><br/>
+            <small>${row.payerBankAccountNumber ?? ""}</small><br/>
+            <small>${row.payerBankAccountHolder ?? ""}</small>
+          </td>
+          <td class="center">
+            <span class="badge badge-${row.status?.toLowerCase()}">${statusLabel[row.status] ?? row.status}</span>
+          </td>
+          <td class="center">
+            ${row.transferImageUrl ? `<a href="${row.transferImageUrl}" target="_blank">📎 UNC</a>` : ""}
+            ${row.reportFileUrl ? `<a href="${row.reportFileUrl}" target="_blank">📄 Báo cáo</a>` : ""}
+          </td>
+        </tr>`,
+      )
+      .join("");
+
+    const totalAmount = rows.reduce((sum, r) => sum + (r.amount ?? 0), 0);
+
+    const html = `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chi tiết Khoản thu - MediMate</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #1a1a2e; background: #fff; padding: 32px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; border-bottom: 3px solid #6c63ff; padding-bottom: 16px; }
+    .logo { font-size: 24px; font-weight: 900; color: #6c63ff; letter-spacing: -1px; }
+    .logo span { color: #ff6584; }
+    .meta { text-align: right; font-size: 11px; color: #666; }
+    .meta strong { display: block; font-size: 15px; color: #1a1a2e; margin-bottom: 4px; }
+    h2 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+    .subtitle { font-size: 12px; color: #666; margin-bottom: 20px; }
+    .summary-bar { display: flex; gap: 24px; margin-bottom: 24px; padding: 14px 20px; background: #f5f3ff; border-radius: 10px; border-left: 4px solid #6c63ff; }
+    .summary-item { display: flex; flex-direction: column; }
+    .summary-item label { font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 0.5px; }
+    .summary-item value { font-size: 15px; font-weight: 700; color: #1a1a2e; }
+    .summary-item value.orange { color: #f97316; }
+    table { width: 100%; border-collapse: collapse; }
+    th { background: #6c63ff; color: #fff; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; padding: 10px 12px; text-align: left; }
+    th.center { text-align: center; }
+    td { padding: 10px 12px; border-bottom: 1px solid #e8e8f4; vertical-align: top; font-size: 11.5px; }
+    tr:hover td { background: #faf8ff; }
+    td.amount { font-weight: 700; color: #f97316; }
+    td.center { text-align: center; }
+    td small { color: #888; display: block; margin-top: 2px; }
+    td a { color: #6c63ff; text-decoration: none; display: block; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 600; text-transform: uppercase; }
+    .badge-readytopay { background: #fef3c7; color: #92400e; }
+    .badge-hold { background: #dbeafe; color: #1e40af; }
+    .badge-paid { background: #dcfce7; color: #166534; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    .footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid #e0e0f0; display: flex; justify-content: space-between; font-size: 10px; color: #999; }
+    @media print {
+      body { padding: 16px; }
+      button { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Medi<span>Mate</span></div>
+    <div class="meta">
+      <strong>Báo cáo Chi tiết Khoản thu</strong>
+      Xuất lúc: ${now}
+    </div>
+  </div>
+
+  <h2>Chi tiết Khoản thu Phòng khám</h2>
+  <p class="subtitle">Trạng thái: <strong>${statusText}</strong> &nbsp;•&nbsp; Trang ${page}/${Math.ceil(total / pageSize) || 1} &nbsp;•&nbsp; ${rows.length} bản ghi</p>
+
+  <div class="summary-bar">
+    <div class="summary-item">
+      <label>Tổng số giao dịch</label>
+      <value>${rows.length}</value>
+    </div>
+    <div class="summary-item">
+      <label>Tổng số tiền</label>
+      <value class="orange">${totalAmount.toLocaleString("vi-VN")} đ</value>
+    </div>
+    <div class="summary-item">
+      <label>Trạng thái lọc</label>
+      <value>${statusText}</value>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:22%">Phòng khám / Người nhận</th>
+        <th style="width:14%">Lịch hẹn</th>
+        <th style="width:13%">Số tiền</th>
+        <th style="width:22%">Ngân hàng nhận</th>
+        <th class="center" style="width:14%">Trạng thái</th>
+        <th class="center" style="width:15%">Hồ sơ</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${tableRows || "<tr><td colspan='6' style='text-align:center;color:#aaa;padding:24px'>Không có dữ liệu</td></tr>"}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <span>MediMate &copy; ${new Date().getFullYear()} &mdash; Tài liệu nội bộ, không phải để phát hành bên ngoài.</span>
+    <span>Xuất bởi Hệ thống Quản lý MediMate</span>
+  </div>
+
+  <script>
+    window.onload = () => { window.print(); };
+  </script>
+</body>
+</html>`;
+
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const win = window.open(url, "_blank");
+    if (!win) {
+      alert("Vui lòng cho phép mở popup để xuất PDF.");
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Hold":
@@ -239,6 +387,28 @@ function PayoutDetailView({
 
   return (
     <div className="flex flex-col">
+      {/* Toolbar: Export PDF */}
+      <div className="mb-4 flex items-center justify-between">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {total > 0 && (
+            <>
+              Hiển thị{" "}
+              <strong className="text-gray-700 dark:text-gray-200">
+                {rows.length}
+              </strong>{" "}
+              / {total} kết quả
+            </>
+          )}
+        </p>
+        <button
+          onClick={exportToPDF}
+          disabled={isLoading || rows.length === 0}
+          className="inline-flex items-center gap-2 rounded-xl border border-violet-300 bg-violet-50 px-4 py-2 text-sm font-semibold text-violet-700 shadow-sm transition hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 dark:border-violet-700/40 dark:bg-violet-900/20 dark:text-violet-300 dark:hover:bg-violet-900/40"
+        >
+          <FiDownload className="h-4 w-4" />
+          Xuất PDF
+        </button>
+      </div>
       <DataTableShell
         columns={columns}
         isLoading={isLoading}

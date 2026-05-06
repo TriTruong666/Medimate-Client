@@ -133,14 +133,14 @@ export default function TransactionDashboardPage() {
     if (!data?.items) return [];
     if (isDoctor) {
       return data.items
-        .filter((item: any) => item.status !== "Cancelled")
+        .filter((item: any) => item.status !== "Cancelled" && item.status !== "Hold") // Doctor không hiển thị Hold
         .map((item: any) => ({
           transactionId: item.payoutId,
           transactionCode: `APPOINTMENT-${item.payoutId.split('-')[0].toUpperCase()}`,
           transactionDate: item.calculatedAt,
           transactionType: "doctor_payout",
           totalAmount: item.amount,
-          status: item.status === "ReadyToPay" || item.status === "Hold" ? "pending" : item.status,
+          status: item.status === "ReadyToPay" ? "pending" : item.status,
           originalPayoutData: item,
         })) as any[];
     }
