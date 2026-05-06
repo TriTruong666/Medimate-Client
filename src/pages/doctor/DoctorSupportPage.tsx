@@ -13,7 +13,7 @@ import {
   useDoctorAppointments,
   useUpdateAppointmentStatus,
 } from "@/hooks/data/useAppointmentHooks";
-import { useAppointmentSession, useSessionRecording } from "@/hooks/data/useSessionHooks";
+import { useAppointmentSession, useSessionRecording, useJoinConsultationSession } from "@/hooks/data/useSessionHooks";
 import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
 import { useDoctorAvailabilities } from "@/hooks/data/useDoctorAvailabilityHooks";
 import { useDoctorAvailabilityExceptions } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
@@ -484,6 +484,7 @@ function AppointmentCard({
     data.status === "InProgress" || data.status === "Approved" || data.status === "Completed";
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
+  const { mutateAsync: joinSession } = useJoinConsultationSession();
 
   const { data: sessionData, isLoading: sessionLoading } =
     useAppointmentSession(data.id, shouldFetchSession);
@@ -516,6 +517,7 @@ function AppointmentCard({
     if (!sessionId) return;
     try {
       toast.info("Đang kết nối...", "Đang khởi tạo phòng khám trực tuyến.");
+      await joinSession(sessionId);
       const res = await getVideoCallToken(sessionId);
       const token = typeof res?.data === "string" ? res.data : res?.data?.token;
       if (token) {
@@ -1086,6 +1088,7 @@ function CalendarAppointmentItem({
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
   const { startCall } = useVideoCallContext();
+  const { mutateAsync: joinSession } = useJoinConsultationSession();
 
   const { data: sessionData, isLoading: sessionLoading } =
     useAppointmentSession(apt.id, shouldFetchSession);
@@ -1109,6 +1112,7 @@ function CalendarAppointmentItem({
     if (!sessionId) return;
     try {
       toast.info("Đang kết nối...", "Đang khởi tạo phòng khám trực tuyến.");
+      await joinSession(sessionId);
       const res = await getVideoCallToken(sessionId);
       const token = typeof res?.data === "string" ? res.data : res?.data?.token;
       if (token) {
