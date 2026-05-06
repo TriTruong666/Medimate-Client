@@ -256,7 +256,7 @@ export default function DoctorSupportPage({
     (item) => item.isActive,
   );
   const approvedExceptions = (exceptionResponse ?? []).filter(
-    (item) => item.isAvailableOverride,
+    (item) => item.status === "Approved",
   );
 
   const filteredAppointments = appointments.filter((apt) => {
