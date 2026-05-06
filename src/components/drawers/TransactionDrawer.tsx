@@ -91,10 +91,10 @@ export function TransactionDrawer() {
                 <span
                   className={`font-mono text-3xl font-semibold tracking-tight ${transactionType?.startsWith("in")
                     ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-red-500 dark:text-red-400"
+                    : "text-emerald-500 dark:text-emerald-400"
                     }`}
                 >
-                  {transactionType?.startsWith("in") ? "+" : "-"}
+                  {transactionType?.startsWith("in") ? "+" : ""}
                   {formatPrice(data.amount || 0)}
                 </span>
                 <StatusBadge status={status} />
