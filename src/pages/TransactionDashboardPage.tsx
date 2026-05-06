@@ -7,7 +7,7 @@ import IconAction from "../components/custom-ui/IconAction";
 import { openTransactionModalAtom } from "../stores/modalStore";
 import { useAtom, useSetAtom } from "jotai";
 import { useMemo, useState } from "react";
-import { openDrawerAtom, transactionDetailIdAtom } from "../stores/drawerStore";
+import { openDrawerAtom, transactionDetailIdAtom, payoutDetailDataAtom } from "../stores/drawerStore";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import {
@@ -132,14 +132,17 @@ export default function TransactionDashboardPage() {
   const tableData = useMemo(() => {
     if (!data?.items) return [];
     if (isDoctor) {
-      return data.items.map((item: any) => ({
-        transactionId: item.payoutId,
-        transactionCode: item.payoutId,
-        transactionDate: item.calculatedAt,
-        transactionType: "doctor_payout",
-        totalAmount: item.amount,
-        status: item.status === "ReadyToPay" || item.status === "Hold" ? "pending" : item.status,
-      })) as Transaction[];
+      return data.items
+        .filter((item: any) => item.status !== "Cancelled")
+        .map((item: any) => ({
+          transactionId: item.payoutId,
+          transactionCode: `APPOINTMENT-${item.payoutId.split('-')[0].toUpperCase()}`,
+          transactionDate: item.calculatedAt,
+          transactionType: "doctor_payout",
+          totalAmount: item.amount,
+          status: item.status === "ReadyToPay" || item.status === "Hold" ? "pending" : item.status,
+          originalPayoutData: item,
+        })) as any[];
     }
     return data.items as Transaction[];
   }, [data?.items, isDoctor]);
@@ -199,9 +202,14 @@ function TransactionTable({
   const [, openPaymentModal] = useAtom(openTransactionModalAtom);
   const openDrawer = useSetAtom(openDrawerAtom);
   const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
+  const setPayoutDetailData = useSetAtom(payoutDetailDataAtom);
 
-  const handleOpenDetailModal = (row: Transaction) => {
-    setTransactionDetailId(row.transactionId);
+  const handleOpenDetailModal = (row: any) => {
+    if (row.originalPayoutData) {
+      setPayoutDetailData(row.originalPayoutData);
+    } else {
+      setTransactionDetailId(row.transactionId);
+    }
     openDrawer("transaction_details");
   };
   const demoPaymentData = {

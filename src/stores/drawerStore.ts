@@ -14,3 +14,6 @@ export const closeDrawerAtom = atom(null, (_, set) => {
 
 // Store data for transaction detail drawer
 export const transactionDetailIdAtom = atom<string | null>(null);
+
+// Store raw data for payout detail drawer (doctor only)
+export const payoutDetailDataAtom = atom<any | null>(null);

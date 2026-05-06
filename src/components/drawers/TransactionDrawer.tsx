@@ -2,34 +2,54 @@ import { useAtom, useSetAtom } from "jotai";
 import {
   closeDrawerAtom,
   transactionDetailIdAtom,
+  payoutDetailDataAtom,
 } from "../../stores/drawerStore";
 import { formatPrice } from "../../common/format";
 import { Badge } from "../custom-ui/Badge";
 import { IoCloseOutline } from "react-icons/io5";
-import {
-  HiOutlinePrinter,
-  HiOutlineDownload,
-  HiOutlineMail,
-  HiOutlineReceiptRefund,
-} from "react-icons/hi";
 import { useTransactionDetail } from "@/hooks/data/useTransactionHooks";
 
 export function TransactionDrawer() {
   const [, closeDrawer] = useAtom(closeDrawerAtom);
   const [transactionId] = useAtom(transactionDetailIdAtom);
+  const [payoutData] = useAtom(payoutDetailDataAtom);
   const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
-  const { data, isLoading, isError, error } =
+  const setPayoutDetailData = useSetAtom(payoutDetailDataAtom);
+  const { data: transactionData, isLoading: isTxLoading, isError: isTxError, error: txError } =
     useTransactionDetail(transactionId);
 
   const handleCloseDrawer = () => {
     setTransactionDetailId(null);
+    setPayoutDetailData(null);
     closeDrawer();
   };
 
-  const status = normalizePaymentStatus(data?.paymentStatus);
+  const isPayout = !!payoutData;
+  const isLoading = isPayout ? false : isTxLoading;
+  const isError = isPayout ? false : isTxError;
+  const error = isPayout ? null : txError;
+
+  const data = isPayout ? {
+    amount: payoutData.amount,
+    transactionCode: `APPOINTMENT-${payoutData.payoutId.split('-')[0].toUpperCase()}`,
+    appointmentDate: payoutData.appointmentDate ? `${payoutData.appointmentDate.split('T')[0]}T${payoutData.appointmentTime}` : payoutData.calculatedAt,
+    content: "Thanh toán công nợ từ hệ thống",
+    paymentMethod: "Chuyển khoản",
+    paymentCode: payoutData.payoutId,
+    paymentStatus: payoutData.status,
+    transactionType: "doctor_payout",
+    clinicName: payoutData.clinicName,
+    patientName: payoutData.patientName,
+    calculatedAt: payoutData.calculatedAt,
+  } : transactionData;
+
+  const status = isPayout
+    ? (data?.paymentStatus === "Paid" ? "paid" : data?.paymentStatus === "Cancelled" ? "cancelled" : "pending")
+    : normalizePaymentStatus(data?.paymentStatus);
+
   const transactionType = data?.transactionType?.toLowerCase();
 
-  if (!transactionId) return null;
+  if (!transactionId && !payoutData) return null;
 
   return (
     <div className="flex h-full w-120 max-w-full flex-col overflow-y-auto border-l border-gray-400 bg-white font-sans text-gray-600 shadow-2xl dark:border-white/10 dark:bg-[#0a0a0a] dark:text-gray-200">
@@ -69,11 +89,10 @@ export function TransactionDrawer() {
               </p>
               <div className="flex items-center justify-between">
                 <span
-                  className={`font-mono text-3xl font-semibold tracking-tight ${
-                    transactionType?.startsWith("in")
-                      ? "text-emerald-600 dark:text-emerald-400"
-                      : "text-red-500 dark:text-red-400"
-                  }`}
+                  className={`font-mono text-3xl font-semibold tracking-tight ${transactionType?.startsWith("in")
+                    ? "text-emerald-600 dark:text-emerald-400"
+                    : "text-red-500 dark:text-red-400"
+                    }`}
                 >
                   {transactionType?.startsWith("in") ? "+" : "-"}
                   {formatPrice(data.amount || 0)}
@@ -83,7 +102,7 @@ export function TransactionDrawer() {
             </div>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-4 gap-2">
+            {/* <div className="grid grid-cols-4 gap-2">
               <QuickAction
                 icon={<HiOutlinePrinter size={18} />}
                 label="In biên lai"
@@ -107,7 +126,7 @@ export function TransactionDrawer() {
                   label="Huỷ GD"
                 />
               )}
-            </div>
+            </div> */}
 
             {/* Details Section */}
             <div className="space-y-4">
@@ -137,12 +156,14 @@ export function TransactionDrawer() {
                         transactionType === "in_session"
                           ? "Thanh toán tư vấn"
                           : transactionType === "in_package"
-                          ? "Thanh toán gói"
-                          : transactionType === "out_refund_session"
-                          ? "Hoàn tiền tư vấn"
-                          : transactionType === "out_clinic_payout"
-                          ? "Thanh toán phòng khám"
-                          : "Tiền chi ra"
+                            ? "Thanh toán gói"
+                            : transactionType === "out_refund_session"
+                              ? "Hoàn tiền tư vấn"
+                              : transactionType === "out_clinic_payout"
+                                ? "Thanh toán phòng khám"
+                                : transactionType === "doctor_payout"
+                                  ? "Thanh toán từ hệ thống"
+                                  : "Tiền chi ra"
                       }
                     />
                   }
@@ -192,7 +213,7 @@ export function TransactionDrawer() {
             </div>
 
             {/* Customer Demo */}
-            <div className="space-y-4">
+            {/* <div className="space-y-4">
               <h3 className="border-b border-gray-300 pb-2 text-[10px] font-bold tracking-widest text-gray-500 uppercase dark:border-white/5 dark:text-gray-400">
                 Thông tin liên quan
               </h3>
@@ -216,7 +237,7 @@ export function TransactionDrawer() {
                   }
                 />
               </div>
-            </div>
+            </div> */}
 
             {/* Additional Notes Demo */}
             {/* <div className="space-y-2">
