@@ -30,7 +30,7 @@ import { useAuth } from "../hooks/useAuth";
 import { SidebarSkeleton } from "../components/RoleBasedGuard";
 import { SignalRInjector } from "../hooks/useSignalR";
 import { VideoCallProvider } from "@/contexts/VideoCallContext";
-import { FloatingVideoPlayer } from "@/components/agora/FloatingVideoPlayer";
+import { GlobalVideoCallWidget } from "@/components/video-call/GlobalVideoCallWidget";
 
 export default function DashboardLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -76,7 +76,7 @@ export default function DashboardLayout() {
             </div>
           </div>
         </div>
-        <FloatingVideoPlayer />
+        <GlobalVideoCallWidget />
       </VideoCallProvider>
     </div>
   );

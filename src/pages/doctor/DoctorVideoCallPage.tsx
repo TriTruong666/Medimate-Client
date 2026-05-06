@@ -32,6 +32,7 @@ export default function DoctorVideoCallPage() {
   const { sessionId } = useParams<{ sessionId: string }>();
   const navigate = useNavigate();
 
+  const videoAreaRef = useRef<HTMLDivElement>(null);
   const hasJoinedBeRef = useRef(false);
   const isIntentionalLeaveRef = useRef(false);
 
@@ -178,10 +179,29 @@ export default function DoctorVideoCallPage() {
 
   const startScreenRecording = async () => {
     try {
+      if (videoAreaRef.current && document.fullscreenElement !== videoAreaRef.current) {
+        await videoAreaRef.current.requestFullscreen();
+      }
+
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { displaySurface: "browser" } as any,
-        audio: true,
+        video: { 
+          displaySurface: "browser",
+          // @ts-ignore
+          preferCurrentTab: true 
+        } as any,
+        audio: {
+          // @ts-ignore
+          echoCancellation: true,
+          noiseSuppression: true
+        } as any,
       });
+
+      const handleFullscreenChange = () => {
+        if (!document.fullscreenElement && mediaRecorderRef.current?.state !== "inactive") {
+          // Trình duyệt thoát Fullscreen
+        }
+      };
+      document.addEventListener("fullscreenchange", handleFullscreenChange);
 
       const recorder = new MediaRecorder(stream, { mimeType: "video/webm; codecs=vp9" });
       recordedChunksRef.current = [];
@@ -194,6 +214,7 @@ export default function DoctorVideoCallPage() {
 
       recorder.onstop = async () => {
         setIsRecording(false);
+        document.removeEventListener("fullscreenchange", handleFullscreenChange);
         const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
         setIsUploadingRecording(true);
         toast.info("Đang xử lý...", "Đang tải video phiên khám lên hệ thống...");
@@ -332,7 +353,7 @@ export default function DoctorVideoCallPage() {
   }
 
   return (
-    <div className="relative flex h-[calc(100vh-100px)] w-full flex-col overflow-hidden rounded-2xl bg-[#0f1014] text-white">
+    <div ref={videoAreaRef} className="relative flex h-full min-h-[calc(100vh-100px)] w-full flex-col overflow-hidden rounded-2xl bg-[#0f1014] text-white">
       {/* Top Header Room */}
       <div className="absolute top-0 right-0 left-0 z-50 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4">
         <div>

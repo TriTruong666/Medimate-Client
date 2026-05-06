@@ -21,6 +21,8 @@ import { toast } from "@/hooks/useToast";
 import { formatDate } from "@/common/format";
 import { useNavigate } from "react-router-dom";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
+import { useVideoCallContext } from "@/contexts/VideoCallContext";
+import { getVideoCallToken } from "@/apis/session.service";
 import type {
   AppointmentStatus,
   AppointmentType,
@@ -1049,6 +1051,7 @@ function CalendarAppointmentItem({
   const shouldFetchSession = apt.status === "InProgress" || apt.status === "Approved" || apt.status === "Completed";
   const { mutate: updateStatus, isPending } = useUpdateAppointmentStatus();
   const navigate = useNavigate();
+  const { startCall } = useVideoCallContext();
 
   const { data: sessionData, isLoading: sessionLoading } =
     useAppointmentSession(apt.id, shouldFetchSession);
@@ -1067,9 +1070,21 @@ function CalendarAppointmentItem({
     setConfirmAction("reject");
   }
 
-  function handleJoinCall(e: React.MouseEvent) {
+  async function handleJoinCall(e: React.MouseEvent) {
     e.stopPropagation();
-    if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+    if (!sessionId) return;
+    try {
+      toast.info("Đang kết nối...", "Đang khởi tạo phòng khám trực tuyến.");
+      const res = await getVideoCallToken(sessionId);
+      const token = typeof res?.data === "string" ? res.data : res?.data?.token;
+      if (token) {
+        await startCall(sessionId, import.meta.env.VITE_AGORA_APP_ID, token);
+      } else {
+        toast.error("Lỗi", "Không lấy được Token phòng khám.");
+      }
+    } catch (error) {
+      toast.error("Lỗi kết nối", "Không thể tham gia phòng khám lúc này.");
+    }
     setIsOpen(false);
   }
 
