@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { LuGrid3X3, LuCalendarDays, LuPlus } from "react-icons/lu";
-import { FiClock, FiVideo, FiMapPin, FiCheck, FiX, FiFileText } from "react-icons/fi";
+import { FiClock, FiVideo, FiMapPin, FiCheck, FiX, FiFileText, FiExternalLink } from "react-icons/fi";
 import { cardContainer, cardItem } from "@/motions/cardMotion";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
 import { Badge } from "@/components/custom-ui/Badge";
@@ -13,7 +13,7 @@ import {
   useDoctorAppointments,
   useUpdateAppointmentStatus,
 } from "@/hooks/data/useAppointmentHooks";
-import { useAppointmentSession } from "@/hooks/data/useSessionHooks";
+import { useAppointmentSession, useSessionRecording } from "@/hooks/data/useSessionHooks";
 import { useDoctorMe } from "@/hooks/data/useDoctorHooks";
 import { useDoctorAvailabilities } from "@/hooks/data/useDoctorAvailabilityHooks";
 import { useDoctorAvailabilityExceptions } from "@/hooks/data/useDoctorAvailabilityExceptionHooks";
@@ -491,6 +491,16 @@ function AppointmentCard({
   const canJoin = isCallReady && !!sessionId;
 
   const [confirmAction, setConfirmAction] = useState<"approve" | "reject" | null>(null);
+  const [videoPlayerUrl, setVideoPlayerUrl] = useState<string | null>(null);
+
+  // Fetch recording URL riêng bằng API /recording
+  const isCompleted = data.status === "Completed";
+  const { data: recordingUrl, isLoading: recordingLoading } = useSessionRecording(
+    sessionId,
+    isCompleted && !!sessionId,
+  );
+
+  const hasRecording = !!recordingUrl;
 
   function handleApprove() {
     setConfirmAction("approve");
@@ -505,8 +515,8 @@ function AppointmentCard({
   }
 
   function handleReviewSession() {
-    if (sessionData?.recordingUrl) {
-      window.open(sessionData.recordingUrl, "_blank");
+    if (recordingUrl) {
+      setVideoPlayerUrl(recordingUrl);
     } else {
       toast.error("Chưa có video", "Video phiên khám chưa được tải lên hoặc đang xử lý.");
     }
@@ -644,25 +654,25 @@ function AppointmentCard({
           {data.status === "Completed" && (
             <Tooltip
               content={
-                sessionLoading
-                  ? "Đang tải Session..."
-                  : sessionData?.recordingUrl
+                sessionLoading || recordingLoading
+                  ? "Đang tải video..."
+                  : hasRecording
                     ? "Xem lại Video phiên khám"
-                    : "Đang xử lý Video..."
+                    : "Chưa có video phiên khám"
               }
             >
               <button
-                disabled={sessionLoading}
+                disabled={sessionLoading || recordingLoading || !hasRecording}
                 onClick={(event) => {
                   event.stopPropagation();
                   handleReviewSession();
                 }}
-                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${sessionData?.recordingUrl
-                  ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
-                  : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${hasRecording
+                    ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+                    : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
                   } disabled:opacity-50`}
               >
-                {sessionLoading ? <Spinner size="sm" /> : <FiVideo />}
+                {sessionLoading || recordingLoading ? <Spinner size="sm" /> : <FiVideo />}
               </button>
             </Tooltip>
           )}
@@ -689,6 +699,16 @@ function AppointmentCard({
         onCancel={() => setConfirmAction(null)}
         isLoading={isPending}
       />
+
+      {/* Video Player Modal in-app */}
+      {videoPlayerUrl && (
+        <VideoPlayerModal
+          url={videoPlayerUrl}
+          patientName={data.patientName}
+          appointmentDate={data.date}
+          onClose={() => setVideoPlayerUrl(null)}
+        />
+      )}
     </motion.div>
   );
 }
@@ -1266,3 +1286,118 @@ function AppointmentTypeBadge({ type }: { type: AppointmentType }) {
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/*                          VIDEO PLAYER MODAL                                  */
+/* -------------------------------------------------------------------------- */
+function VideoPlayerModal({
+  url,
+  patientName,
+  appointmentDate,
+  onClose,
+}: {
+  url: string;
+  patientName: string;
+  appointmentDate: string;
+  onClose: () => void;
+}) {
+  // Detect if URL is a video file or a streaming URL
+  const isDirectVideo = /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose();
+        }}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 10 }}
+          transition={{ duration: 0.2 }}
+          className="flex w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-gray-950 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Modal Header */}
+          <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400">
+                <FiVideo />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">
+                  Video phiên khám — {patientName}
+                </p>
+                <p className="text-xs text-gray-400">{appointmentDate}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Mở tab mới */}
+              <a
+                href={url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-300 transition hover:bg-white/10"
+              >
+                <FiExternalLink className="h-3.5 w-3.5" />
+
+              </a>
+              {/* Download */}
+              <a
+                href={url}
+                download={`phien-kham-${patientName.replace(/\s+/g, "-")}.mp4`}
+                className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-400 transition hover:bg-indigo-500/20"
+              >
+                <FiFileText className="h-3.5 w-3.5" />
+
+              </a>
+              {/* Đóng */}
+              <button
+                onClick={onClose}
+                className="flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/5 text-gray-400 transition hover:bg-white/10 hover:text-white"
+              >
+                <FiX />
+              </button>
+            </div>
+          </div>
+
+          {/* Video Player */}
+          <div className="relative bg-black" style={{ aspectRatio: "16/9" }}>
+            {isDirectVideo ? (
+              <video
+                src={url}
+                controls
+                autoPlay
+                className="h-full w-full"
+                style={{ maxHeight: "70vh" }}
+              >
+                <p className="p-4 text-sm text-gray-400">
+                  Trình duyệt của bạn không hỗ trợ phát video.{" "}
+                  <a href={url} className="text-indigo-400 underline">
+                    Tải video tại đây.
+                  </a>
+                </p>
+              </video>
+            ) : (
+              // Fallback: dùng iframe cho streaming URL (Cloudinary, etc.)
+              <iframe
+                src={url}
+                className="h-full w-full border-0"
+                style={{ minHeight: "400px" }}
+                allow="autoplay; fullscreen; picture-in-picture"
+                allowFullScreen
+                title={`Video phiên khám - ${patientName}`}
+              />
+            )}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+

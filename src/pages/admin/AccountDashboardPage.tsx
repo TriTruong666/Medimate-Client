@@ -133,7 +133,7 @@ function AccountTable({ sortType }: { sortType: SortType }) {
   });
   const { data, isLoading, error, isError, refetch } = useUserList(pagination);
 
-  const users = data?.items ?? [];
+  const users = (data?.items ?? []).filter((u) => u.role !== "Admin");
   const total = data?.totalCount ?? 0;
   const pageNumber = data?.pageNumber ?? pagination.pageNumber ?? 1;
   const pageSize = data?.pageSize ?? pagination.pageSize ?? 10;

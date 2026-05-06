@@ -33,6 +33,24 @@ export function useAppointmentSession(appointmentId: string, enabled: boolean) {
   });
 }
 
+export function useSessionRecording(sessionId: string | undefined, enabled: boolean) {
+  return useQuery({
+    queryKey: ["session-recording", sessionId],
+    queryFn: async () => {
+      if (!sessionId) return null;
+      const res = await SessionService.getSessionRecording(sessionId);
+      if (!res.success) {
+        throw new Error(res.message || "Failed to fetch recording URL");
+      }
+      return res.data ?? null; // URL string hoặc null
+    },
+    enabled: enabled && !!sessionId,
+    retry: false,
+    staleTime: 1000 * 60 * 5, // Cache 5 phút
+  });
+}
+
+
 export function useGetVideoCallToken() {
   return useMutation({
     mutationFn: (sessionId: string) =>
