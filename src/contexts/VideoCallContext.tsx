@@ -9,6 +9,7 @@ interface VideoCallContextValue {
   isActive: boolean; // Có đang trong một cuộc gọi không
   sessionId: string | null; // ID phòng hiện tại
   isMinimized: boolean; // Có đang thu nhỏ không
+  isExpanded: boolean; // Có đang phóng to toàn màn hình không
   
   // Actions
   startCall: (sessionId: string, appId: string, token: string) => Promise<void>;
@@ -16,6 +17,8 @@ interface VideoCallContextValue {
   leaveChannel: () => Promise<void>; // Alias của endCall — rời Agora channel
   toggleMinimize: () => void;
   setMinimize: (val: boolean) => void;
+  toggleExpanded: () => void;
+  setExpanded: (val: boolean) => void;
 
   // Trạng thái từ hook Agora
   isConnected: boolean;
@@ -35,10 +38,12 @@ export function VideoCallProvider({ children }: { children: ReactNode }) {
   const agora = useAgoraVideoCall();
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const startCall = async (sessionId: string, appId: string, token: string) => {
     setActiveSessionId(sessionId);
     setIsMinimized(false);
+    setIsExpanded(false);
     await agora.initAgora({ appId, channelName: sessionId, token });
   };
 
@@ -46,10 +51,14 @@ export function VideoCallProvider({ children }: { children: ReactNode }) {
     await agora.leaveCall();
     setActiveSessionId(null);
     setIsMinimized(false);
+    setIsExpanded(false);
   };
 
   const toggleMinimize = () => setIsMinimized((prev) => !prev);
   const setMinimize = (val: boolean) => setIsMinimized(val);
+  
+  const toggleExpanded = () => setIsExpanded((prev) => !prev);
+  const setExpanded = (val: boolean) => setIsExpanded(val);
 
   return (
     <VideoCallContext.Provider
@@ -57,11 +66,14 @@ export function VideoCallProvider({ children }: { children: ReactNode }) {
         isActive: !!activeSessionId,
         sessionId: activeSessionId,
         isMinimized,
+        isExpanded,
         startCall,
         endCall,
         leaveChannel: endCall, // Alias tường minh để dùng ở VideoCallPage
         toggleMinimize,
         setMinimize,
+        toggleExpanded,
+        setExpanded,
         ...agora,
       }}
     >
