@@ -667,11 +667,10 @@ function AppointmentCard({
                   event.stopPropagation();
                   handleReviewSession();
                 }}
-                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${
-                  hasRecording
+                className={`flex h-8 w-8 items-center justify-center rounded-full transition ${hasRecording
                     ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
                     : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
-                } disabled:opacity-50`}
+                  } disabled:opacity-50`}
               >
                 {sessionLoading || recordingLoading ? <Spinner size="sm" /> : <FiVideo />}
               </button>
@@ -1346,7 +1345,7 @@ function VideoPlayerModal({
                 className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-gray-300 transition hover:bg-white/10"
               >
                 <FiExternalLink className="h-3.5 w-3.5" />
-                Mở tab mới
+
               </a>
               {/* Download */}
               <a
@@ -1355,7 +1354,7 @@ function VideoPlayerModal({
                 className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-3 py-1.5 text-xs font-medium text-indigo-400 transition hover:bg-indigo-500/20"
               >
                 <FiFileText className="h-3.5 w-3.5" />
-                Tải về
+
               </a>
               {/* Đóng */}
               <button
