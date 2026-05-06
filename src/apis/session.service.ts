@@ -94,3 +94,12 @@ export async function uploadRecording(
   );
   return res.data;
 }
+
+export async function getSessionRecording(
+  sessionId: string,
+): Promise<BaseResponse<string>> {
+  const res = await axiosNETClient.get(
+    `/api/v1/sessions/${sessionId}/recording`,
+  );
+  return res.data;
+}
