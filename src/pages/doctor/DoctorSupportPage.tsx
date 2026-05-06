@@ -510,8 +510,22 @@ function AppointmentCard({
     setConfirmAction("reject");
   }
 
-  function handleJoinCall() {
-    if (sessionId) navigate(`/dashboard/video-call/${sessionId}`);
+  const { startCall } = useVideoCallContext();
+
+  async function handleJoinCall() {
+    if (!sessionId) return;
+    try {
+      toast.info("Đang kết nối...", "Đang khởi tạo phòng khám trực tuyến.");
+      const res = await getVideoCallToken(sessionId);
+      const token = typeof res?.data === "string" ? res.data : res?.data?.token;
+      if (token) {
+        await startCall(sessionId, import.meta.env.VITE_AGORA_APP_ID, token);
+      } else {
+        toast.error("Lỗi", "Không lấy được Token phòng khám.");
+      }
+    } catch (error) {
+      toast.error("Lỗi kết nối", "Không thể tham gia phòng khám lúc này.");
+    }
   }
 
   function handleReviewSession() {
