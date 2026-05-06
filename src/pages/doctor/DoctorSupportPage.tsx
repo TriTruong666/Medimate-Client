@@ -260,33 +260,36 @@ export default function DoctorSupportPage({
   );
 
   const filteredAppointments = appointments.filter((apt) => {
+    // Logic lọc giữ nguyên theo yêu cầu của bạn
     switch (filter) {
-      case "all":
-        return true;
-      case "pending":
-        return apt.status === "Pending";
-      case "approved":
-        return ["Approved", "InProgress"].includes(apt.status);
-      case "inprogress":
-        return apt.status === "InProgress";
-      case "completed":
-        return apt.status === "Completed";
-      case "cancelled":
-        return ["Cancelled", "Rejected"].includes(apt.status);
-      case "history":
-        return ["Completed", "Cancelled", "Rejected"].includes(apt.status);
-      default:
-        return true;
+      case "all": return true;
+      case "pending": return apt.status === "Pending";
+      case "approved": return ["Approved", "InProgress"].includes(apt.status);
+      case "inprogress": return apt.status === "InProgress";
+      case "completed": return apt.status === "Completed";
+      case "cancelled": return ["Cancelled", "Rejected"].includes(apt.status);
+      case "history": return ["Completed", "Cancelled", "Rejected"].includes(apt.status);
+      default: return true;
     }
   }).sort((a, b) => {
     const dateA = a.dateKey?.split("T")[0] || "";
     const dateB = b.dateKey?.split("T")[0] || "";
-    if (dateA !== dateB) {
-      return dateB.localeCompare(dateA);
-    }
     const timeA = a.time || "";
     const timeB = b.time || "";
-    return timeA.localeCompare(timeB);
+
+    // Kiểm tra xem đang xem mục "Sắp tới" hay "Lịch sử"
+    const isUpcoming = ["pending", "approved", "inprogress"].includes(filter);
+
+    if (dateA !== dateB) {
+      // Sắp tới: Ngày gần hiện tại nhất lên đầu (Tăng dần: 6/5 -> 7/5)
+      // Lịch sử: Ngày vừa mới qua lên đầu (Giảm dần: 6/5 -> 5/5)
+      return isUpcoming ? dateA.localeCompare(dateB) : dateB.localeCompare(dateA);
+    }
+
+    // Nếu cùng ngày, so sánh Giờ:
+    // Sắp tới: 08:00 trước 20:00 (để bác sĩ thấy ca cần khám sớm nhất)
+    // Lịch sử: 22:00 trước 06:00 (để thấy ca vừa khám xong lên đầu)
+    return isUpcoming ? timeA.localeCompare(timeB) : timeB.localeCompare(timeA);
   });
 
   const hasAppointments = filteredAppointments.length > 0;
@@ -684,8 +687,8 @@ function AppointmentCard({
                   handleReviewSession();
                 }}
                 className={`flex h-8 w-8 items-center justify-center rounded-full transition ${hasRecording
-                    ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
-                    : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
+                  ? "bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
+                  : "bg-gray-50 text-gray-400 opacity-50 dark:bg-white/5"
                   } disabled:opacity-50`}
               >
                 {sessionLoading || recordingLoading ? <Spinner size="sm" /> : <FiVideo />}

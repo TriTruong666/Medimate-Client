@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, useCallback } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
   useEndConsultationSession,
@@ -51,6 +51,7 @@ export function GlobalVideoCallWidget() {
   const isIntentionalLeaveRef = useRef(false);
 
   const { mutateAsync: requestEndSession, isPending: isRequestingEnd } = useRequestEndConsultationSession();
+  const queryClient = useQueryClient();
 
   const appId = import.meta.env.VITE_AGORA_APP_ID;
 
@@ -118,7 +119,9 @@ export function GlobalVideoCallWidget() {
 
       const originalOnStop = recorder.onstop;
       recorder.onstop = async (ev) => {
-        if (originalOnStop) (originalOnStop as any)(ev);
+        if (originalOnStop) {
+          await (originalOnStop as any)(ev);
+        }
         resolve();
       };
 
@@ -248,7 +251,8 @@ export function GlobalVideoCallWidget() {
         }
 
         isIntentionalLeaveRef.current = true;
-        leaveChannel().catch(console.error);
+        await leaveChannel();
+        queryClient.invalidateQueries({ queryKey: ["doctor-appointments"] });
       }
     };
 
