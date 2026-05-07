@@ -9,7 +9,7 @@ import {
   type PayoutFilterDto,
   type ProcessPayoutDto,
 } from "@/apis/payout.service";
-import { completeSubscriptionRefund } from "@/apis/family-subscription.service";
+import { completeSubscriptionRefund, getRefundableSubscriptions } from "@/apis/family-subscription.service";
 
 export const PAYOUT_KEYS = {
   all: ["payouts"] as const,
@@ -17,6 +17,7 @@ export const PAYOUT_KEYS = {
   list: (params: PayoutFilterDto) => [...PAYOUT_KEYS.lists(), params] as const,
   summaries: () => [...PAYOUT_KEYS.all, "summary"] as const,
   refunds: () => ["appointments", "refunds"] as const,
+  subscriptionRefunds: () => ["subscriptions", "refunds"] as const,
 };
 
 export function usePayouts(params: PayoutFilterDto) {
@@ -64,6 +65,13 @@ export function useRefundableAppointments() {
   });
 }
 
+export function useRefundableSubscriptions() {
+  return useQuery({
+    queryKey: PAYOUT_KEYS.subscriptionRefunds(),
+    queryFn: getRefundableSubscriptions,
+  });
+}
+
 export function useCompleteRefund() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -87,6 +95,7 @@ export function useCompleteSubscriptionRefund() {
     onSuccess: () => {
       toast.success("Thành công", "Đã xác nhận hoàn tiền gói thành viên!");
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: PAYOUT_KEYS.subscriptionRefunds() });
     },
     onError: (error: any) => {
       toast.error("Thất bại", error?.response?.data?.message || "Lỗi khi xử lý hoàn tiền gói");

@@ -71,3 +71,23 @@ export async function completeSubscriptionRefund(
   );
   return res.data;
 }
+
+export type RefundableSubscriptionDto = {
+  subscriptionId: string;
+  familyId: string;
+  familyName: string;
+  packageId: string;
+  packageName: string;
+  userId: string;
+  userName: string | null;
+  amount: number;
+  startDate: string;
+  endDate: string;
+  status: string;
+  createdAt: string;
+};
+
+export async function getRefundableSubscriptions(): Promise<BaseResponse<RefundableSubscriptionDto[]>> {
+  const res = await axiosNETClient.get("/api/v1/families/subscriptions/refundable");
+  return res.data;
+}
