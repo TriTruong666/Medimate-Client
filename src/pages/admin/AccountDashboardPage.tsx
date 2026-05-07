@@ -88,7 +88,7 @@ export default function AccountDashboardPage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Quản lý tài khoản
           </h1>
         </div>
@@ -104,9 +104,9 @@ export default function AccountDashboardPage() {
               ]}
             />
           </div>
-          <button className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10">
+          {/* <button className="flex items-center gap-2 rounded-lg border border-gray-400 bg-white px-4 py-2 text-[13px] font-medium text-gray-600 transition-all hover:-translate-y-0.5 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10">
             Xuất <PiExport />
-          </button>
+          </button> */}
 
           <button
             onClick={() => openModal("add_account")}
@@ -129,14 +129,14 @@ export default function AccountDashboardPage() {
 function AccountTable({ sortType }: { sortType: SortType }) {
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
-    pageSize: 5,
+    pageSize: 10,
   });
   const { data, isLoading, error, isError, refetch } = useUserList(pagination);
 
-  const users = data?.items ?? [];
+  const users = (data?.items ?? []).filter((u) => u.role !== "Admin");
   const total = data?.totalCount ?? 0;
   const pageNumber = data?.pageNumber ?? pagination.pageNumber ?? 1;
-  const pageSize = data?.pageSize ?? pagination.pageSize ?? 5;
+  const pageSize = data?.pageSize ?? pagination.pageSize ?? 10;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const [, openLockModal] = useAtom(openLockModalAtom);
@@ -155,19 +155,13 @@ function AccountTable({ sortType }: { sortType: SortType }) {
   }, [users, sortType]);
 
   const handlePageChange = (nextPage: number) => {
-    if (nextPage < 1 || nextPage > totalPages || nextPage === pageNumber) return;
+    if (nextPage < 1 || nextPage > totalPages || nextPage === pageNumber)
+      return;
 
     setPagination((prev) => ({
       ...prev,
       pageNumber: nextPage,
     }));
-  };
-
-  const handlePageSizeChange = (nextPageSize: number) => {
-    setPagination({
-      pageNumber: 1,
-      pageSize: nextPageSize,
-    });
   };
 
   return (
@@ -178,7 +172,8 @@ function AccountTable({ sortType }: { sortType: SortType }) {
         isError={isError}
         isEmpty={sortedUsers.length === 0}
         errorMessage={
-          error?.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
+          error?.message ||
+          "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
         }
         emptyMessage="Không tìm thấy tài khoản nào trong hệ thống."
         onRetry={() => refetch()}
@@ -187,7 +182,6 @@ function AccountTable({ sortType }: { sortType: SortType }) {
           pageSize,
           total,
           onPageChange: handlePageChange,
-          onPageSizeChange: handlePageSizeChange,
         }}
       >
         {sortedUsers.map((row) => (
@@ -196,58 +190,61 @@ function AccountTable({ sortType }: { sortType: SortType }) {
             key={row.userId}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                  <div className="flex items-center gap-3">
-                    <AccountAvatar name={row.fullName} />
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {row.fullName}
-                      </span>
-                      <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
-                        {row.email}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        {formatRelativeTime(row.createdAt)}
-                      </span>
-                    </div>
-                  </div>
-                </td>
-                <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                  <span className="text-sm text-gray-600 dark:text-gray-300">
-                    {row.phoneNumber}
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
+              <div className="flex items-center gap-3">
+                <AccountAvatar name={row.fullName} />
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {row.fullName}
                   </span>
-                </td>
-                <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  <span className="text-[13px] text-gray-600 dark:text-gray-300">
-                    {accountRoleMap[row.role]}
+                  <span className="dark:text-primary/90 text-[12px] font-semibold text-gray-900 italic">
+                    {row.email}
                   </span>
-                </td>
-                <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
-                  <StatusBadge status={row.isOnline ? "online" : row.isActive ? "offline" : "locked"} />
-                </td>
-                {/* Actions */}
-                {row.isActive === true ? (
-                  <td className="p-4 text-center">
-                  <Tooltip content="Vô hiệu hóa tài khoản">
-                    <IconAction
-                      onClick={() => openLockModal("account", row.userId)}
-                      danger
-                      icon={<IoMdLock className="text-red-400"/>}
-                    />
-                  </Tooltip>
-                </td>
-                ) : (
-                  <td className="p-4 text-center">
-                  <Tooltip content="Kích hoạt tài khoản">
-                    <IconAction
-                      onClick={() => openUnlockModal("account", row.userId)}
-                      icon={<IoMdUnlock />}
-                    />
-                  </Tooltip>
-                </td>
-                )}
-                
-              </tr>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {formatRelativeTime(row.createdAt)}
+                  </span>
+                </div>
+              </div>
+            </td>
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
+              <span className="text-sm text-gray-600 dark:text-gray-300">
+                {row.phoneNumber}
+              </span>
+            </td>
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
+              <span className="text-[13px] text-gray-600 dark:text-gray-300">
+                {accountRoleMap[row.role]}
+              </span>
+            </td>
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
+              <StatusBadge
+                status={
+                  row.isOnline ? "online" : row.isActive ? "offline" : "locked"
+                }
+              />
+            </td>
+            {/* Actions */}
+            {row.isActive === true ? (
+              <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
+                <Tooltip content="Vô hiệu hóa tài khoản">
+                  <IconAction
+                    onClick={() => openLockModal("account", row.userId)}
+                    danger
+                    icon={<IoMdLock className="text-red-400" />}
+                  />
+                </Tooltip>
+              </td>
+            ) : (
+              <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
+                <Tooltip content="Kích hoạt tài khoản">
+                  <IconAction
+                    onClick={() => openUnlockModal("account", row.userId)}
+                    icon={<IoMdUnlock />}
+                  />
+                </Tooltip>
+              </td>
+            )}
+          </tr>
         ))}
       </DataTableShell>
     </>
@@ -267,7 +264,7 @@ function StatusBadge({ status }: { status: "online" | "offline" | "locked" }) {
 function AccountAvatar({ name }: { name: string }) {
   return (
     <div className="relative h-10 w-10 shrink-0">
-      <div className="flex h-full w-full items-center justify-center rounded-full bg-linear-to-br from-white/20 to-white/5 text-sm font-semibold text-white">
+      <div className="from-primary/20 to-primary/5 text-primary flex h-full w-full items-center justify-center rounded-full bg-linear-to-br text-sm font-semibold dark:from-white/20 dark:to-white/5 dark:text-white">
         {name.charAt(0)}
       </div>
     </div>

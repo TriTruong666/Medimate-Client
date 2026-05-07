@@ -4,6 +4,7 @@ import { Badge } from "@/components/custom-ui/Badge";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
+import { useClientPagination } from "@/hooks/useClientPagination";
 import { useManagementDoctors } from "@/hooks/data/useManagementHooks";
 import { useState } from "react";
 import type { DoctorAccount } from "@/apis/management.service";
@@ -27,7 +28,13 @@ export default function DoctorProfilesPage() {
   const [selectedRow, setSelectedRow] = useState<DoctorAccount | null>(null);
 
   // Fetch doctors without status filter to show all
-  const { data = [], isLoading, isError, error, refetch } = useManagementDoctors({});
+  const {
+    data = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useManagementDoctors({});
 
   const safeRows = data || [];
 
@@ -37,17 +44,23 @@ export default function DoctorProfilesPage() {
     { label: "Danh sách Bác sĩ" },
   ];
 
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(safeRows, { initialPageSize: 5 });
+
   return (
     <div className="page-layout">
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             Hồ sơ Bác sĩ
           </h1>
-          <p className="mt-1 text-sm text-gray-400">
-            Xem chi tiết thông tin và chứng chỉ của tất cả bác sĩ trên hệ thống
-          </p>
         </div>
       </div>
 
@@ -62,45 +75,62 @@ export default function DoctorProfilesPage() {
           loadingMessage="Đang tải danh sách bác sĩ..."
           emptyTitle="Chưa có dữ liệu"
           emptyMessage="Không tìm thấy bác sĩ nào trong hệ thống."
-          tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
+          tbodyClassName="dark:divide-border-dark divide-y divide-gray-400 bg-white/50 dark:bg-transparent"
           pagination={{
-              page: 1,
-              pageSize: Math.max(safeRows.length, 5),
-              total: safeRows.length,
-              onPageChange: () => {},
-              onPageSizeChange: () => {},
+            page,
+            pageSize,
+            total,
+            onPageChange: handlePageChange,
+            onPageSizeChange: handlePageSizeChange,
           }}
         >
-          {safeRows.map((row: DoctorAccount) => (
+          {pagedData.map((row: DoctorAccount) => (
             <tr
               key={row.doctorId}
-              className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+              className="transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
             >
-              <td className="dark:border-border-dark border-r border-gray-100 p-4">
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {row.fullName || "Tài khoản Bác sĩ"}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Kinh nghiệm: <span className="font-medium">{row.yearsOfExperience}</span> năm
-                  </span>
+              {/* 1. Thông tin bác sĩ */}
+              <td className="border-r border-gray-400 p-4 dark:border-white/10">
+                <div className="flex items-center gap-3">
+                  <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-medium shadow-sm dark:bg-white/10 dark:text-white">
+                    {(row.fullName || "B").charAt(0)}
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {row.fullName || "Tài khoản Bác sĩ"}
+                    </span>
+                    <span className="mt-1 text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                      Kinh nghiệm:{" "}
+                      <span className="font-semibold text-primary">
+                        {row.yearsOfExperience}
+                      </span>{" "}
+                      năm
+                    </span>
+                  </div>
                 </div>
               </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4">
+
+              {/* 2. Chuyên khoa & Đơn vị */}
+              <td className="border-r border-gray-400 p-4 dark:border-white/10">
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                     {row.specialty || "Chưa xác định"}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px] mt-1" title={row.currentHospitalName}>
-                    {row.currentHospitalName || "Không rõ đơn vị"}
+                  <span
+                    className="mt-1.5 max-w-[250px] truncate text-[11px] font-medium text-gray-600 dark:text-gray-400"
+                    title={row.currentHospitalName}
+                  >
+                    {row.currentHospitalName || "Bệnh viện chưa cập nhật"}
                   </span>
                 </div>
               </td>
-              <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+
+              {/* 3. Trạng thái */}
+              <td className="border-r border-gray-400 p-4 text-center dark:border-white/10">
                 {row.status === "Pending" ? (
                   <Badge type="warning" value="Chờ duyệt" />
                 ) : row.status === "Verified" ? (
-                  <Badge type="success" value="Đã xét duyệt" />
+                  <Badge type="success" value="Đã duyệt" />
                 ) : row.status === "Active" ? (
                   <Badge type="success" value="Đang HĐ" />
                 ) : row.status === "Rejected" ? (
@@ -109,12 +139,14 @@ export default function DoctorProfilesPage() {
                   <Badge type="info" value={row.status || "Inactive"} />
                 )}
               </td>
+
+              {/* 4. Thao tác */}
               <td className="p-4 text-center">
-                <Tooltip content="Xem hồ sơ">
+                <Tooltip content="Xem hồ sơ chi tiết">
                   <IconAction
                     icon={<FiEye />}
                     onClick={() => setSelectedRow(row)}
-                    className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary-light"
+                    className="text-primary hover:bg-primary/10 dark:text-primary-light"
                   />
                 </Tooltip>
               </td>

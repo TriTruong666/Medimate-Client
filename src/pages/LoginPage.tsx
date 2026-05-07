@@ -1,8 +1,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLogin } from "@/hooks/data/useAuthHooks";
 import { isRequired, isValidEmail } from "@/common/validation";
-import { toast } from "@/hooks/useToast";
 import { getApiErrorMessage } from "@/common/api.error";
 import { getFCMToken } from "@/lib/fcm";
 
@@ -28,7 +27,6 @@ function validateLoginForm(identifier: string, password: string): LoginErrors {
 }
 
 export default function LoginPage() {
-  const [lastLogin, setLastLogin] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<LoginErrors>({});
@@ -41,7 +39,6 @@ export default function LoginPage() {
     setErrors(nextErrors);
 
     if (Object.keys(nextErrors).length > 0) {
-      toast.error("Dữ liệu chưa hợp lệ", "Vui lòng kiểm tra lại thông tin.");
       return;
     }
 
@@ -53,22 +50,14 @@ export default function LoginPage() {
     }
   };
 
-  useEffect(() => {
-    setLastLogin((localStorage.getItem("last_login") as string) || "");
-  }, []);
+
 
   return (
     <div className="relative w-full max-w-120 p-6 font-sans sm:p-8">
       <div className="mb-8 flex flex-col items-center">
-        {lastLogin ? (
-          <h1 className="pb-2 text-center text-3xl leading-tight font-bold tracking-tight text-white">
-            Hello, {lastLogin}
-          </h1>
-        ) : (
-          <h1 className="pb-2 text-center text-3xl leading-tight font-bold tracking-tight text-white">
-            Chào mừng bạn tới Medimate
-          </h1>
-        )}
+        <h1 className="pb-2 text-center text-3xl leading-tight font-bold tracking-tight text-white">
+          Chào mừng bạn tới Medimate
+        </h1>
 
         <p className="text-center text-base leading-normal font-normal text-gray-400">
           Vui lòng đăng nhập để truy cập vào dashboard của bạn.

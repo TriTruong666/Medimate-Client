@@ -1,44 +1,53 @@
 import { useAtom } from "jotai";
-import { HiOutlineX, HiOutlineCloudUpload, HiOutlineTrash } from "react-icons/hi";
-import { AiOutlineFilePdf, AiOutlineFileZip } from "react-icons/ai";
+import {
+  HiOutlineX,
+  HiOutlineCloudUpload,
+  HiOutlineTrash,
+} from "react-icons/hi";
+import { AiOutlineFilePdf } from "react-icons/ai";
 import { FiFileText } from "react-icons/fi";
 import { closeModalAtom } from "../../stores/modalStore";
+import { useState, useRef } from "react";
+import { useBulkUploadRAGDocuments } from "@/hooks/data/useRAGDocumentHooks";
 
-type UploadItemProps = {
-  icon: React.ReactNode;
-  name: string;
-  percent: number;
-  color: "green" | "purple";
-};
+function formatFileSize(bytes: number) {
+  if (bytes === 0) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
 
-function UploadItem({ icon, name, percent, color }: UploadItemProps) {
-  const colorMap = {
-    green: "bg-emerald-500",
-    purple: "bg-purple-500",
-  };
+function getFileIcon(fileName: string) {
+  if (fileName.endsWith(".pdf")) return <AiOutlineFilePdf className="text-xl" />;
+  return <FiFileText className="text-xl" />;
+}
 
+function UploadItem({
+  file,
+  onRemove,
+}: {
+  file: File;
+  onRemove: () => void;
+}) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 p-3 transition hover:bg-white/6">
-      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10 text-gray-300">
-        {icon}
+    <div className="flex items-center gap-3 rounded-xl border border-gray-300 bg-white p-3 transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/3 dark:hover:bg-white/6">
+      <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/15 text-blue-500">
+        {getFileIcon(file.name)}
       </div>
 
-      <div className="flex-1">
-        <div className="mb-1 flex justify-between text-sm">
-          <span className="truncate font-medium text-white">{name}</span>
-          <span className="text-primary text-xs font-medium">{percent}%</span>
-        </div>
-
-        <div className="h-1.5 rounded-full bg-white/10">
-          <div
-            className={`h-1.5 rounded-full ${colorMap[color]} transition-all`}
-            style={{ width: `${percent}%` }}
-          />
-        </div>
+      <div className="flex-1 min-w-0">
+        <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+          {file.name}
+        </p>
+        <p className="text-xs text-gray-400">{formatFileSize(file.size)}</p>
       </div>
 
-      <button className="rounded-lg p-1 text-gray-400 transition hover:text-white">
-        <HiOutlineX />
+      <button
+        onClick={onRemove}
+        className="rounded-lg p-1 text-gray-400 transition hover:text-red-500"
+      >
+        <HiOutlineTrash />
       </button>
     </div>
   );
@@ -46,91 +55,116 @@ function UploadItem({ icon, name, percent, color }: UploadItemProps) {
 
 export function UploadDocumentModal() {
   const [, closeModal] = useAtom(closeModalAtom);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadMutation = useBulkUploadRAGDocuments();
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const files = Array.from(e.target.files);
+      setSelectedFiles((prev) => [...prev, ...files]);
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpload = async () => {
+    if (selectedFiles.length === 0) return;
+
+    const formData = new FormData();
+    selectedFiles.forEach((file) => {
+      formData.append("files", file); // Phải là 'files' vì backend nhận list[UploadFile] = File(...)
+    });
+
+    uploadMutation.mutate(formData, {
+      onSuccess: (data) => {
+        if (data.success) {
+          closeModal();
+        }
+      },
+    });
+  };
 
   return (
-    <div className="flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/80 backdrop-blur-lg">
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/2 p-6 backdrop-blur-md">
-        <h2 className="text-base font-semibold tracking-tight text-white">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 shadow-sm dark:border-white/10">
+        <h2 className="text-base font-semibold tracking-tight text-gray-900 dark:text-white">
           Tải lên tài liệu
         </h2>
 
         <button
           onClick={closeModal}
-          className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+          className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
         >
           <HiOutlineX className="h-5 w-5" />
         </button>
       </div>
 
       <div className="space-y-6 p-6">
-        <div className="group flex h-40 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-white/15 bg-white/2 transition hover:bg-white/5">
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          multiple
+          className="hidden"
+          accept=".pdf,.docx,.doc,.txt,.json,.md"
+        />
+
+        <div
+          onClick={() => fileInputRef.current?.click()}
+          className="group flex h-40 cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-gray-400 bg-gray-50/50 transition hover:bg-gray-100 dark:border-white/15 dark:bg-white/2 dark:hover:bg-white/5"
+        >
           <div className="flex flex-col items-center">
-            <div className="bg-primary/15 text-primary mb-3 rounded-full p-3 transition-transform group-hover:scale-110">
+            <div className="bg-primary/10 text-primary mb-3 rounded-full p-3 transition-transform group-hover:scale-110">
               <HiOutlineCloudUpload className="text-3xl" />
             </div>
 
-            <p className="text-sm text-gray-300">
-              <span className="text-primary font-medium">Nhấn để tải lên</span>{" "}
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="text-primary font-bold">Nhấn để tải lên</span>{" "}
               hoặc kéo thả
             </p>
-            <p className="mt-1 text-xs text-gray-400">
-              PDF, DOCX, DOC, TXT, JSON
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              PDF, DOCX, DOC, TXT, JSON, MD
             </p>
           </div>
         </div>
 
-        <div className="space-y-3">
-          <h3 className="text-xs font-semibold tracking-wide text-gray-400 uppercase">
-            Uploading (3)
-          </h3>
+        {selectedFiles.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold tracking-widest text-gray-500 uppercase dark:text-white/40">
+              Tài liệu đã chọn ({selectedFiles.length})
+            </h3>
 
-          <UploadItem
-            icon={<AiOutlineFilePdf />}
-            name="Product_Specs_v1.pdf"
-            percent={85}
-            color="green"
-          />
-
-          <UploadItem
-            icon={<AiOutlineFileZip />}
-            name="Brand_Assets.zip"
-            percent={40}
-            color="purple"
-          />
-
-          <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/3 p-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/15 text-blue-400">
-              <FiFileText className="text-xl" />
+            <div className="max-h-60 space-y-3 overflow-y-auto pr-1 custom-scrollbar">
+              {selectedFiles.map((file, index) => (
+                <UploadItem
+                  key={index}
+                  file={file}
+                  onRemove={() => removeFile(index)}
+                />
+              ))}
             </div>
-
-            <div className="flex-1">
-              <p className="text-sm font-medium text-white">
-                Meeting_Notes.docx
-              </p>
-              <p className="text-xs text-gray-400">1.2 MB</p>
-            </div>
-
-            <span className="rounded-md bg-white/10 px-2 py-1 text-xs font-medium text-gray-300">
-              Queued
-            </span>
-
-            <button className="rounded-lg p-1 text-gray-400 transition hover:text-red-400">
-              <HiOutlineTrash />
-            </button>
           </div>
-        </div>
+        )}
       </div>
 
-      <div className="flex justify-end gap-3 border-t border-white/10 bg-white/2 p-6 backdrop-blur-md">
+      <div className="flex justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10">
         <button
           onClick={closeModal}
-          className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+          className="rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10"
         >
           Thoát
         </button>
 
-        <button className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition">
-          Tải lên
+        <button
+          onClick={handleUpload}
+          disabled={selectedFiles.length === 0 || uploadMutation.isPending}
+          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
+        >
+          {uploadMutation.isPending ? "Đang tải lên..." : "Tải lên"}
         </button>
       </div>
     </div>

@@ -7,6 +7,7 @@ import {
 } from "react-icons/hi";
 import { FiSettings } from "react-icons/fi";
 import medimateLogo from "../assets/medimate-logo.png";
+import medimateLogoLight from "../assets/medimate-logo-light.png";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useMemo, useState, useRef } from "react";
 import Lenis from "lenis";
@@ -27,6 +28,9 @@ import DrawerContainer from "../components/DrawerContainer";
 
 import { useAuth } from "../hooks/useAuth";
 import { SidebarSkeleton } from "../components/RoleBasedGuard";
+import { SignalRInjector } from "../hooks/useSignalR";
+import { VideoCallProvider } from "@/contexts/VideoCallContext";
+import { GlobalVideoCallWidget } from "@/components/video-call/GlobalVideoCallWidget";
 
 export default function DashboardLayout() {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -49,27 +53,31 @@ export default function DashboardLayout() {
   }, []);
 
   return (
-    <div className="relative bg-[#050505] font-sans text-gray-800 transition-colors duration-300 dark:text-gray-100">
+    <div className="relative bg-white font-sans text-gray-800 transition-colors duration-300 dark:bg-[#050505] dark:text-gray-100">
       <WelcomeLoading />
       <ModalContainer />
       <ToastContainer />
       <DrawerContainer />
       <ChatContainer />
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <div className="relative flex h-full flex-1 flex-col overflow-hidden">
-          <Navbar />
-          <div
-            id="dashboard-scroll-container"
-            ref={scrollRef}
-            className="flex-1 overflow-hidden"
-          >
-            <div ref={contentRef}>
-              <Outlet />
+      <SignalRInjector />
+      <VideoCallProvider>
+        <div className="flex h-screen overflow-hidden">
+          <Sidebar />
+          <div className="relative flex h-full flex-1 flex-col overflow-hidden">
+            <Navbar />
+            <div
+              id="dashboard-scroll-container"
+              ref={scrollRef}
+              className="flex-1 overflow-hidden"
+            >
+              <div ref={contentRef}>
+                <Outlet />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+        <GlobalVideoCallWidget />
+      </VideoCallProvider>
     </div>
   );
 }
@@ -115,18 +123,18 @@ function Navbar() {
   }, [charIndex, isDeleting, index, placeholderTexts]);
 
   return (
-    <header className="dark:border-border-dark sticky top-0 z-10 flex items-center justify-between border-b border-transparent p-4 md:p-6">
+    <header className="dark:border-border-dark sticky top-0 z-10 flex items-center justify-between border-b border-gray-300 p-4 md:p-6">
       <div className="flex flex-1 items-center gap-4">
         <div className="group relative w-112.5 max-md:block">
           <HiSearch
             size={18}
-            className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-white"
+            className="absolute top-1/2 left-4 z-10 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-gray-900 dark:group-focus-within:text-white"
           />
 
           <input
             type="text"
             placeholder={placeholder}
-            className="h-11 w-full rounded-xl border border-white/10 bg-white/5 pr-4 pl-11 text-sm text-gray-200 backdrop-blur-md transition-all placeholder:text-gray-500 hover:bg-white/10 focus:border-white/20 focus:bg-white/10 focus:ring-2 focus:ring-white/10 focus:outline-none"
+            className="focus:border-primary/50 focus:ring-primary/10 h-11 w-full rounded-xl border border-gray-400 bg-white pr-4 pl-11 text-sm text-gray-900 transition-all placeholder:text-gray-400 hover:bg-gray-50 focus:bg-white focus:ring-2 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-gray-200 dark:placeholder:text-gray-500 dark:hover:bg-white/10 dark:focus:border-white/20 dark:focus:bg-white/10 dark:focus:ring-white/10"
           />
         </div>
       </div>
@@ -150,16 +158,21 @@ function Sidebar() {
   });
 
   return (
-    <aside className="fixed z-20 hidden max-h-screen w-64 flex-col justify-between overflow-y-hidden border-r border-white/5 bg-[#050505] md:relative md:flex">
+    <aside className="fixed z-20 hidden max-h-screen w-64 flex-col justify-between overflow-y-hidden border-r border-gray-300 bg-white md:relative md:flex dark:border-white/5 dark:bg-[#050505]">
       <div className="flex flex-col overflow-auto [&::-webkit-scrollbar]:w-1!">
         {/* Logo */}
         <div className="flex items-center gap-3 px-6 py-5 select-none">
           <img
-            src={medimateLogo}
-            className="flex h-9 w-9 items-center justify-center rounded-lg"
+            src={medimateLogoLight}
+            className="h-9 w-9 rounded-lg dark:hidden"
             alt="Logo"
           />
-          <span className="text-lg font-semibold tracking-tight text-white">
+          <img
+            src={medimateLogo}
+            className="hidden h-9 w-9 rounded-lg dark:block"
+            alt="Logo"
+          />
+          <span className="text-lg font-semibold tracking-tight text-gray-900 dark:text-white">
             Medimate
           </span>
         </div>
@@ -187,23 +200,24 @@ function Sidebar() {
       </div>
 
       {/* Bottom */}
-      <div className="space-y-1 border-t border-white/5 px-3 py-4">
+      <div className="space-y-1 border-t border-gray-300 px-3 py-4 dark:border-white/5">
         <SidebarItem
           to="/dashboard/settings"
           icon={<FiSettings />}
           label="Cài đặt"
         />
-        <SidebarItem
+        {/* <SidebarItem
           to="/dashboard/help"
           icon={<HiOutlineQuestionMarkCircle />}
           label="Trợ giúp"
-        />
+        /> */}
       </div>
     </aside>
   );
 }
 
 function CollapsibleNavItem({ item }: { item: RouteConfig }) {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const Icon = item.icon;
 
@@ -211,7 +225,7 @@ function CollapsibleNavItem({ item }: { item: RouteConfig }) {
     <div className="">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
+        className="flex w-full items-center justify-between rounded-xl px-4 py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
       >
         <div className="flex items-center gap-3">
           {Icon && <Icon className="text-lg" />}
@@ -242,13 +256,18 @@ function CollapsibleNavItem({ item }: { item: RouteConfig }) {
               transition={{ duration: 0.2 }}
               className="mt-2 ml-6 space-y-1"
             >
-              {item.children?.map((child) => (
-                <SubItem
-                  key={child.path}
-                  to={child.path}
-                  label={child.label || ""}
-                />
-              ))}
+              {item.children
+                ?.filter((child) => {
+                  if (!child.roles) return true;
+                  return user ? child.roles.includes(user.role) : false;
+                })
+                .map((child) => (
+                  <SubItem
+                    key={child.path}
+                    to={child.path}
+                    label={child.label || ""}
+                  />
+                ))}
             </motion.div>
           </motion.div>
         )}
@@ -276,8 +295,8 @@ export function SidebarItem({
       end={exact}
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all ${isActive
-          ? "bg-white/10 text-white shadow-inner"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
+          ? "bg-primary/10 text-primary shadow-inner dark:bg-white/10 dark:text-white"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >
@@ -299,8 +318,8 @@ export function SubItem({ label, to }: SubItemProps) {
       end
       className={({ isActive }) =>
         `block rounded-lg px-3 py-2 text-xs font-medium transition-all ${isActive
-          ? "bg-white/10 text-white"
-          : "text-gray-400 hover:bg-white/5 hover:text-white"
+          ? "bg-primary/10 text-primary dark:bg-white/10 dark:text-white"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
         }`
       }
     >

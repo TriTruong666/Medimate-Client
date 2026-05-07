@@ -25,7 +25,7 @@ export function WelcomeLoading() {
           initial={{ opacity: 1, filter: "blur(0px)" }}
           exit={{ opacity: 0, filter: "blur(10px)", scale: 1.05 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed z-9999 flex h-screen w-screen items-center justify-center bg-black select-none"
+          className="fixed z-9999 flex h-screen w-screen items-center justify-center bg-white select-none dark:bg-black"
         >
           <div className="medimate-brand-container">
             <motion.div

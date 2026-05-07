@@ -52,29 +52,29 @@ export function CertificateDetailReviewModal({
   const canSubmitReject = rejectReason.trim().length > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 transition-all duration-300">
       <div
-        className="w-full max-w-5xl overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl"
+        className="w-full max-w-5xl overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-2xl transition-all duration-300 dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl"
         onClick={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-5">
-          <h3 className="text-base font-semibold text-white">Chi tiết hồ sơ chứng chỉ</h3>
+        <div className="flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 shadow-sm dark:border-white/10">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">Chi tiết hồ sơ chứng chỉ</h2>
           <button
             onClick={onClose}
             disabled={isSubmitting}
-            className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+            className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
           >
             <HiOutlineX className="h-5 w-5" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 p-5 lg:grid-cols-[1fr_360px]">
+        <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[1fr_360px]">
           <div className="space-y-4">
-            <div className="rounded-xl border border-white/10 bg-black/40 p-4">
-              <div className="mb-3 text-sm font-medium text-white">Preview file gốc ({row.fileUrls.length})</div>
+            <div className="rounded-xl border border-gray-300 bg-gray-50 p-4 dark:border-white/10 dark:bg-black/40">
+              <div className="mb-3 text-sm font-semibold text-gray-900 dark:text-white">Preview file gốc ({row.fileUrls.length})</div>
 
               {activeFileUrl ? (
-                <div className="overflow-hidden rounded-xl border border-white/10 bg-black/60">
+                <div className="overflow-hidden rounded-xl border border-gray-300 bg-gray-100 dark:border-white/10 dark:bg-black/60">
                   {isImage(activeFileUrl) ? (
                     <img
                       src={activeFileUrl}
@@ -107,8 +107,8 @@ export function CertificateDetailReviewModal({
                       onClick={() => setActiveFileIndex(index)}
                       className={`rounded-lg border px-3 py-1.5 text-xs transition ${
                         index === activeFileIndex
-                          ? "border-primary bg-primary/15 text-primary"
-                          : "border-white/10 bg-black/50 text-gray-300 hover:border-white/30"
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-gray-300 bg-white text-gray-600 hover:border-primary/40 dark:border-white/10 dark:bg-black/50 dark:text-gray-300 dark:hover:border-white/30"
                       }`}
                     >
                       File {index + 1} {isPdf(url) ? "(PDF)" : isImage(url) ? "(Image)" : "(Other)"}
@@ -141,23 +141,23 @@ export function CertificateDetailReviewModal({
             </div>
 
             {row.rejectReason ? (
-              <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 text-sm text-red-200">
-                <span className="font-medium">Lý do từ chối trước đó:</span> {row.rejectReason}
+              <div className="rounded-xl border border-red-500/20 bg-red-50 p-3 text-sm text-red-600 dark:bg-red-500/5 dark:text-red-200">
+                <span className="font-bold">Lý do từ chối trước đó:</span> {row.rejectReason}
               </div>
             ) : null}
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-white">Lý do từ chối</label>
+            <div className="space-y-1.5 flex flex-col">
+              <label className="text-[12px] font-medium text-gray-500 dark:text-gray-400">Lý do từ chối</label>
               <textarea
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 disabled={isSubmitting}
                 placeholder="Nhập lý do từ chối (bắt buộc nếu Reject)"
-                className="h-24 w-full resize-none rounded-xl border border-white/10 bg-black/50 px-3 py-2 text-sm text-white outline-none transition focus:border-white/30"
+                className="input-primary h-24 w-full resize-none"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-4">
+            <div className="flex items-center justify-end gap-3 border-t border-gray-400 pt-4 dark:border-white/10">
               <button
                 onClick={() => {
                   if (!canSubmitReject) {
@@ -167,17 +167,17 @@ export function CertificateDetailReviewModal({
                   onReject(row, rejectReason.trim());
                 }}
                 disabled={!canSubmitReject || isSubmitting}
-                className="rounded-lg bg-red-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
-                {isSubmitting ? "Đang xử lý..." : "Reject"}
+                {isSubmitting ? "Đang xử lý..." : "Từ chối"}
               </button>
 
               <button
                 onClick={() => onApprove(row)}
                 disabled={isSubmitting}
-                className="rounded-lg bg-emerald-500/90 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40"
               >
-                {isSubmitting ? "Đang xử lý..." : "Approve"}
+                {isSubmitting ? "Đang xử lý..." : "Duyệt"}
               </button>
             </div>
           </div>
@@ -189,9 +189,9 @@ export function CertificateDetailReviewModal({
 
 function InfoField({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-white/10 bg-black/40 p-3">
-      <div className="text-xs text-gray-400">{label}</div>
-      <div className="mt-1 text-sm font-medium text-white">{value}</div>
+    <div className="rounded-xl border border-gray-300 bg-gray-50 p-3 dark:border-white/10 dark:bg-black/40">
+      <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{label}</div>
+      <div className="mt-1 text-sm font-bold text-gray-900 dark:text-white">{value}</div>
     </div>
   );
 }

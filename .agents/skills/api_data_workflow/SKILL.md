@@ -1,11 +1,11 @@
 ---
 name: api_data_workflow
-description: "Master Guide for full API-to-UI integration in Picare OMS, covering Types, Services, Hooks, UI State Handling, and Validation Strategy."
+description: "Master Guide for full API-to-UI integration in Medimate, covering Types, Services, Hooks, UI State Handling, and Validation Strategy. Use Vietnamese to communicate."
 ---
 
-# Picare API-to-UI Integration Workflow
+# Medimate API-to-UI Integration Workflow
 
-This guide defines the complete standard for integrating backend data into the Picare OMS frontend. To maintain a premium, high-end experience, every new feature must follow these 4 steps exactly and utilize standardized components.
+This guide defines the complete standard for integrating backend data into the Medimate frontend. To maintain a premium, high-end experience, every new feature must follow these 4 steps exactly and utilize standardized components.
 
 ---
 
@@ -15,7 +15,9 @@ All data structures must be explicitly typed. Match backend naming conventions e
 ---
 
 ## 🔗 Step 2: Create API Service (`src/apis/*.service.ts`)
-Use the decentralized `axiosClient`. Functions must return `Promise<BaseResponse<T>>`.
+Use the decentralized `axiosClient`. 
+- Standard: `Promise<BaseResponse<T>>`.
+- Paginated: `Promise<BasePaginatedResponse<T[]>>`.
 
 ---
 
@@ -66,6 +68,38 @@ Centered icon + error message + **Standard `Button`** for retry.
 
 ### 3. Empty State (Minimalist)
 Minimalist icon + text + **Standard `Button`** for primary action.
+
+---
+
+## ♾️ Step 6: Pagination & "Load More" Pattern
+For lists requiring pagination, follow the "Append" strategy for a seamless experience.
+
+### 1. Hook Usage
+Update the hook to accept `params: { page, limit }`.
+
+### 2. Component Implementation
+Use `useState` to maintain a combined list and current page.
+```tsx
+const [page, setPage] = useState(1);
+const [allData, setAllData] = useState<Item[]>([]);
+
+const { data: items, fullResponse, isFetching } = useItems({ page, limit: 20 });
+
+// Handle appending
+useEffect(() => {
+  if (items) {
+    if (page === 1) setAllData(items);
+    else setAllData(prev => [...prev, ...items]);
+  }
+}, [items, page]);
+
+// "Load More" Button
+{hasMore && (
+  <button onClick={() => setPage(p => p + 1)} disabled={isFetching}>
+    {isFetching ? <Spinner /> : "Tải thêm"}
+  </button>
+)}
+```
 
 ---
 

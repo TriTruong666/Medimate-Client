@@ -1,10 +1,12 @@
-import { HiOutlineDotsVertical } from "react-icons/hi";
+import {
+  HiOutlineDotsVertical,
+  HiOutlineDocumentText,
+  HiOutlinePhotograph,
+} from "react-icons/hi";
 import { motion } from "framer-motion";
 import Breadcrumb from "../../components/custom-ui/Breadcrumb";
 import { cardContainer, cardItem } from "../../motions/cardMotion";
 import { RiImageAddLine, RiRefreshLine } from "react-icons/ri";
-import { openPdfModalAtom } from "../../stores/modalStore";
-import { useAtom } from "jotai";
 import * as AssetHooks from "@/hooks/data/useAssetHooks";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { useEffect, useMemo, useState } from "react";
@@ -21,9 +23,12 @@ type BaseAsset = {
   preview: string;
   fileUrl: string;
   type: AssetType;
+  status?: string;
+  ownerName?: string;
 };
 
-const DEFAULT_ERROR_MESSAGE = "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.";
+const DEFAULT_ERROR_MESSAGE =
+  "Không thể kết nối đến máy chủ. Vui lòng thử lại sau.";
 
 const ASSET_UI: Record<AssetType, { badge: string; overlay: boolean }> = {
   image: {
@@ -79,73 +84,141 @@ function AssetGrid({ assets }: { assets: BaseAsset[] }) {
   );
 }
 
+function AssetPreview({
+  src,
+  type,
+  name,
+}: {
+  src?: string;
+  type: AssetType;
+  name: string;
+}) {
+  const [error, setError] = useState(false);
+  const isPdf = type === "pdf";
+
+  if (!src || error) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center bg-linear-to-br from-gray-50 to-gray-100 dark:from-white/5 dark:to-white/10">
+        {isPdf ? (
+          <HiOutlineDocumentText className="text-4xl text-red-400/80 dark:text-red-500/50" />
+        ) : (
+          <HiOutlinePhotograph className="text-primary/40 dark:text-primary/20 text-4xl" />
+        )}
+        <span className="mt-2 px-4 text-center text-[10px] font-medium tracking-wider text-gray-400 uppercase dark:text-gray-500">
+          No Preview Available
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      loading="lazy"
+      decoding="async"
+      onError={() => setError(true)}
+      className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+    />
+  );
+}
+
 function AssetCard({ asset }: { asset: BaseAsset }) {
-  const [, openModal] = useAtom(openPdfModalAtom);
   const ui = ASSET_UI[asset.type];
-  const isPdfAsset = asset.type === "pdf";
-  const titleClassName =
-    "max-w-[80%] cursor-pointer truncate text-sm font-medium text-white";
 
   return (
     <motion.div
       variants={cardItem}
-      className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md transition hover:border-white/20 hover:bg-white/10"
+      onClick={() => window.open(asset.fileUrl, "_blank")}
+      className="group hover:border-primary/50 relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-white/10"
     >
-      {/* Preview */}
-      <div className="relative aspect-square overflow-hidden">
-        <img
-          src={asset.preview}
-          alt={asset.name}
-          loading="lazy"
-          decoding="async"
-          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-        />
+      {/* Preview Section */}
+      <div className="relative aspect-[4/3] overflow-hidden border-b border-gray-400 dark:border-white/5">
+        <AssetPreview src={asset.preview} type={asset.type} name={asset.name} />
 
-        {ui.overlay && (
-          <>
-            <div className="absolute inset-0 bg-black/40 opacity-0 transition group-hover:opacity-100" />
-
+        {/* Top Badges Overlay */}
+        <div className="absolute top-2.5 right-2.5 left-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
             {ui.badge && (
-              <div className="absolute top-3 left-3 rounded-md bg-red-500/90 px-2 py-1 text-[10px] font-semibold text-white shadow">
+              <span className="rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-md dark:bg-white/10">
                 {ui.badge}
-              </div>
+              </span>
             )}
-          </>
-        )}
-      </div>
+          </div>
 
-      {/* Info */}
-      <div className="space-y-2 p-4">
-        <div className="flex items-start justify-between">
-          {isPdfAsset ? (
-            <button
-              onClick={() => openModal(asset.fileUrl)}
-              className={titleClassName}
-            >
-              {asset.name}
-            </button>
-          ) : (
-            <a
-              href={asset.fileUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={titleClassName}
-            >
-              {asset.name}
-            </a>
-          )}
-
-          <button className="opacity-0 transition group-hover:opacity-100">
-            <HiOutlineDotsVertical className="text-lg text-white/60 hover:text-white" />
-          </button>
+          {asset.status && <AssetStatusBadge status={asset.status} />}
         </div>
 
-        <div className="flex items-center justify-between text-xs text-white/50">
-          <span>{asset.size}</span>
-          <span>{asset.date}</span>
+        <div className="absolute inset-0 bg-linear-to-t from-black/20 via-transparent to-transparent opacity-0 transition duration-300 group-hover:opacity-100" />
+      </div>
+
+      {/* Info Container */}
+      <div className="flex flex-1 flex-col justify-between p-4">
+        <div className="space-y-1.5">
+          <div className="flex items-start justify-between gap-3">
+            <h4 className="line-clamp-2 min-w-0 text-[13.5px] leading-tight font-bold tracking-tight text-gray-900 dark:text-white">
+              {asset.name}
+            </h4>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              className="shrink-0 rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              <HiOutlineDotsVertical className="text-base" />
+            </button>
+          </div>
+          {asset.ownerName && (
+            <div className="flex items-center gap-1.5">
+              <div className="bg-primary/60 h-1 w-1 rounded-full" />
+              <span className="text-primary/80 dark:text-primary/90 truncate text-[11px] font-bold">
+                {asset.ownerName}
+              </span>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-4 flex items-center justify-between border-t border-gray-400 pt-3 dark:border-white/5">
+          <span className="text-[11px] font-semibold tracking-tight text-gray-500 uppercase dark:text-gray-400">
+            {asset.size !== "N/A" ? asset.size : asset.date}
+          </span>
+          <span className="group-hover:text-primary rounded-full bg-gray-50 px-2.5 py-1 text-[10px] font-bold text-gray-400 transition-colors dark:bg-white/5 dark:text-gray-500">
+            Xem
+          </span>
         </div>
       </div>
     </motion.div>
+  );
+}
+
+function AssetStatusBadge({ status }: { status: string }) {
+  const normalized = status.toLowerCase();
+  const isApproved = normalized === "approved";
+  const isPending = normalized === "pending";
+  const isRejected = normalized === "rejected";
+
+  const label = isApproved
+    ? "Đã duyệt"
+    : isPending
+      ? "Chờ duyệt"
+      : isRejected
+        ? "Từ chối"
+        : status;
+
+  return (
+    <span
+      className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+        isApproved
+          ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
+          : isPending
+            ? "bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400"
+            : isRejected
+              ? "bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400"
+              : "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400"
+      }`}
+    >
+      {label}
+    </span>
   );
 }
 
@@ -171,14 +244,18 @@ function AssetLibraryState({
           {loading ? (
             <Spinner size="lg" />
           ) : (
-            title && <h3 className="mt-4 text-lg text-white">{title}</h3>
+            title && (
+              <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
+                {title}
+              </h3>
+            )
           )}
           <p className="mt-4 max-w-75 text-center text-sm font-medium text-gray-500 dark:text-gray-400">
             {message}
           </p>
           {onAction && actionLabel && (
             <button
-              className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+              className="mt-6 rounded-xl border border-gray-400 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
               onClick={onAction}
               type="button"
             >
@@ -222,9 +299,7 @@ function AssetLibrary({
   onBackToTop?: () => void;
 }) {
   if (isLoading) {
-    return (
-      <AssetLibraryState loading message="Đang tải dữ liệu..." />
-    );
+    return <AssetLibraryState loading message="Đang tải dữ liệu..." />;
   }
 
   if (isError) {
@@ -254,7 +329,7 @@ function AssetLibrary({
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             {title}
           </h1>
         </div>
@@ -269,7 +344,7 @@ function AssetLibrary({
             <div className="flex items-center gap-3">
               {hasMoreAssets && (
                 <button
-                  className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-white/10 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-xl border border-gray-400 bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 active:scale-95 disabled:opacity-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   onClick={onLoadMore}
                   type="button"
                   disabled={isLoadingMore}
@@ -281,7 +356,7 @@ function AssetLibrary({
 
               {showBackToTop && (
                 <button
-                  className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-[13px] font-medium text-gray-300 transition-all hover:-translate-y-0.5 hover:bg-white/10"
+                  className="rounded-xl border border-gray-400 bg-white px-6 py-3 text-sm font-semibold text-gray-900 transition-all hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   onClick={onBackToTop}
                   type="button"
                 >
@@ -322,23 +397,27 @@ export function AssetsPrescriptionDashboardPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const [allImages, setAllImages] = useState<BaseAsset[]>([]);
 
-  const { data, isLoading, isError, isFetching, error, refetch } = AssetHooks.usePrescriptionImagesList({
-    pageNumber,
-    pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
-    isDescending: true,
-  });
+  const { data, isLoading, isError, isFetching, error, refetch } =
+    AssetHooks.usePrescriptionImagesList({
+      pageNumber,
+      pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+      isDescending: true,
+    });
 
   const currentPageItems: BaseAsset[] = useMemo(
     () =>
-      (data?.items ?? []).map((item) => ({
-        id: item.imageId,
-        name: `Prescription-${item.imageId.slice(0, 6)}.png`,
-        size: "N/A",
-        date: new Date(item.uploadedAt).toLocaleDateString("vi-VN"),
-        preview: item.thumbnailUrl || item.imageUrl,
-        fileUrl: item.imageUrl,
-        type: "image" as const,
-      })),
+      (data?.items ?? []).map((item) => {
+        const id = item.imageId || (item as any).id || Math.random().toString();
+        return {
+          id,
+          name: `Prescription-${id.slice(0, 6)}.png`,
+          size: "N/A",
+          date: new Date(item.uploadedAt).toLocaleDateString("vi-VN"),
+          preview: item.thumbnailUrl || item.imageUrl,
+          fileUrl: item.imageUrl,
+          type: "image" as const,
+        };
+      }),
     [data],
   );
   const totalPages = data?.totalPages;
@@ -348,7 +427,8 @@ export function AssetsPrescriptionDashboardPage() {
       : undefined;
   const hasMoreAssets =
     hasMoreByTotalPages ??
-    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE && currentPageItems.length > 0);
+    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE &&
+      currentPageItems.length > 0);
 
   useEffect(() => {
     if (pageNumber === 1) {
@@ -392,7 +472,7 @@ export function AssetsCertificateDashboardPage() {
   const [pageNumber, setPageNumber] = useState(1);
   const [allCertificates, setAllCertificates] = useState<BaseAsset[]>([]);
 
-  const { data, isLoading, isFetching, isError, error, refetch } = 
+  const { data, isLoading, isFetching, isError, error, refetch } =
     AssetHooks.useDoctorCertificatesList({
       pageNumber,
       pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
@@ -401,15 +481,25 @@ export function AssetsCertificateDashboardPage() {
 
   const currentPageItems: BaseAsset[] = useMemo(
     () =>
-      (data?.items ?? []).map((item) => ({
-        id: item.certificateId,
-        name: `Certificate-${item.certificateId.slice(0, 6)}.pdf`,
-        size: "N/A",
-        date: new Date(item.uploadedAt).toLocaleDateString("vi-VN"),
-        preview: item.thumbnailUrl || item.imageUrl,
-        fileUrl: item.imageUrl,
-        type: "pdf" as const,
-      })),
+      (data?.items ?? []).map((item: any) => {
+        const id =
+          item.documentId ||
+          item.certificateId ||
+          item.id ||
+          Math.random().toString();
+        const date = item.createdAt || item.uploadedAt;
+        return {
+          id,
+          name: item.documentName || `Certificate-${id.slice(0, 6)}.pdf`,
+          size: "N/A",
+          date: date ? new Date(date).toLocaleDateString("vi-VN") : "N/A",
+          preview: item.thumbnailUrl || item.imageUrl || item.fileUrl,
+          fileUrl: item.fileUrl || item.imageUrl,
+          type: "pdf" as const,
+          status: item.status,
+          ownerName: item.doctorName || item.reviewBy || "Không có",
+        };
+      }),
     [data],
   );
   const totalPages = data?.totalPages;
@@ -419,7 +509,8 @@ export function AssetsCertificateDashboardPage() {
       : undefined;
   const hasMoreAssets =
     hasMoreByTotalPages ??
-    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE && currentPageItems.length > 0);
+    (currentPageItems.length === PAGINATION.DEFAULT_PAGE_SIZE &&
+      currentPageItems.length > 0);
 
   useEffect(() => {
     if (pageNumber === 1) {

@@ -28,9 +28,9 @@ export function Badge({ value, type }: BadgeProps) {
       bg: "bg-emerald-500/10",
     },
     info: {
-      border: "border-white/20",
-      messageColor: "text-white",
-      bg: "bg-gray-500/10",
+      border: "border-gray-400 dark:border-white/20",
+      messageColor: "text-gray-900 dark:text-white",
+      bg: "bg-gray-100 dark:bg-gray-500/10",
     },
   }[type];
 
@@ -61,9 +61,9 @@ export function IconBadge({ icon, type }: BadgeIconProps) {
       iconColor: "text-emerald-400",
     },
     info: {
-      border: "border-white/20",
-      iconBg: "bg-white/10",
-      iconColor: "text-white",
+      border: "border-gray-400 dark:border-white/20",
+      iconBg: "bg-gray-100 dark:bg-white/10",
+      iconColor: "text-gray-900 dark:text-white",
     },
   }[type];
 

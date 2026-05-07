@@ -11,13 +11,17 @@ export type ChangeMyPasswordRequest = {
 
 export async function getUsers(params: PaginationParams): Promise<BasePaginatedResponse<User[]>> {
   const res = await axiosNETClient.get("/api/v1/users", {
-    params: cleanQueryParams<PaginationParams>(params),
+    params: cleanQueryParams<PaginationParams>({ ...params, pageSize: 10 }),
   });
   return res.data;
 }
 
+export type CreateDoctorRequest = CreateUserRequest & {
+  currentHospitalName?: string;
+};
+
 export async function createDoctor(
-  request: CreateUserRequest,
+  request: CreateDoctorRequest,
 ): Promise<BasePaginatedResponse<Doctor[]>> {
   const res = await axiosNETClient.post("/api/v1/admin/doctors", request);
   return res.data;

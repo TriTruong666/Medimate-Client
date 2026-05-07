@@ -20,6 +20,7 @@ export type ModalKey =
   | "delete"
   | "transaction"
   | "confirm_update_profile"
+  | "process_rag"
   | null;
 
 export const modalAtom = atom<ModalKey>(null);
@@ -39,6 +40,9 @@ export const unlockTypeAtom = atom<UnlockType>(null);
 export const cancelTypeAtom = atom<CancelType>(null);
 
 export const deleteTypeAtom = atom<DeleteType>(null);
+export const deleteIdAtom = atom<string | null>(null);
+
+export const collectionIdAtom = atom<string | null>(null);
 
 export const openModalAtom = atom(null, (_, set, key: ModalKey) => {
   set(modalAtom, key);
@@ -52,6 +56,7 @@ export const closeModalAtom = atom(null, (_, set) => {
   set(unlockTypeAtom, null);
   set(cancelTypeAtom, null);
   set(deleteTypeAtom, null);
+  set(deleteIdAtom, null);
   set(paymentAtom, null);
   set(confirmSubmitDataAtom, null);
 });
@@ -78,10 +83,14 @@ export const openCancelModalAtom = atom(null, (_, set, type: CancelType) => {
   set(modalAtom, "cancel");
 });
 
-export const openDeleteModalAtom = atom(null, (_, set, type: DeleteType) => {
-  set(deleteTypeAtom, type);
-  set(modalAtom, "delete");
-});
+export const openDeleteModalAtom = atom(
+  null,
+  (_, set, type: DeleteType, id: string) => {
+    set(deleteIdAtom, id);
+    set(deleteTypeAtom, type);
+    set(modalAtom, "delete");
+  },
+);
 
 export const openTransactionModalAtom = atom(
   null,
@@ -95,3 +104,16 @@ export const openConfirmUpdateProfileModalAtom = atom(null, (_, set, data: FormD
   set(confirmSubmitDataAtom, data);
   set(modalAtom, "confirm_update_profile");
 });
+
+export const openIndexModalAtom = atom(null, (_, set, collectionId: string) => {
+  set(collectionIdAtom, collectionId);
+  set(modalAtom, "index");
+});
+
+export const openProcessRAGModalAtom = atom(
+  null,
+  (_, set, collectionId: string) => {
+    set(collectionIdAtom, collectionId);
+    set(modalAtom, "process_rag");
+  },
+);

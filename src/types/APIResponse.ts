@@ -5,6 +5,7 @@ export interface BaseResponse<T> {
   error?: {
     code?: string | number;
     message?: string;
+    field?: string;
   };
   data?: T | null;
 }
@@ -16,6 +17,7 @@ export interface BasePaginatedResponse<T> {
   error?: {
     code?: string | number;
     message?: string;
+    field?: string;
   };
   data?: {
     items: T | null;
@@ -26,15 +28,26 @@ export interface BasePaginatedResponse<T> {
   } | null;
 }
 
-export type DemoUser = {
-  userId: string;
-  phoneNumber: string;
-  fullName: string;
-  email: string;
-  dateOfBirth: string | null;
-  gender: "male" | "female" | null;
-  avatarUrl: string | null;
-  isActive: boolean;
-  role: "User" | "Admin";
-  createdAt: string;
-};
+export interface RAGPaginationMetadata {
+  current_page: number;
+  total_pages: number;
+  limit: number;
+  total_records: number;
+}
+
+export interface RAGApiPaginatedResponse<T> {
+  success: boolean;
+  code: number;
+  message: string;
+  data: {
+    items: T[];
+    pagination: RAGPaginationMetadata;
+  };
+}
+
+export interface RAGApiResponse<T> {
+  success: boolean;
+  code: number;
+  message: string;
+  data: T;
+}

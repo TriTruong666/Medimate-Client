@@ -44,8 +44,8 @@ export function DataTableShell({
   emptyMessage = "Không tìm thấy dữ liệu nào.",
   onRetry,
   pagination,
-  tableClassName = "dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-t border-gray-100 text-left",
-  tbodyClassName = "dark:divide-border-dark divide-y divide-gray-100",
+  tableClassName = "dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-y border-gray-400 text-left",
+  tbodyClassName = "dark:divide-border-dark divide-y divide-gray-400",
 }: DataTableShellProps) {
   const colCount = columns.length;
 
@@ -59,7 +59,7 @@ export function DataTableShell({
                 key={col.key}
                 className={`border-b p-4 text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400 ${col.width ?? ""} ${col.align === "center" ? "text-center!" : ""} ${col.align === "right" ? "text-right!" : "text-left"} ${
                   i < columns.length - 1
-                    ? "dark:border-border-dark border-r border-gray-100"
+                    ? "dark:border-border-dark border-r border-gray-400"
                     : ""
                 } `}
               >
@@ -85,14 +85,16 @@ export function DataTableShell({
             <tr>
               <td colSpan={colCount}>
                 <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                  <h3 className="mt-4 text-lg text-white">Đã xảy ra lỗi</h3>
+                  <h3 className="mt-4 text-lg text-gray-900 dark:text-white">
+                    Đã xảy ra lỗi
+                  </h3>
                   <p className="mt-1 max-w-75 text-center text-sm text-gray-400">
                     {errorMessage}
                   </p>
                   {onRetry && (
                     <button
                       onClick={onRetry}
-                      className="mt-6 rounded-lg bg-white/5 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+                      className="mt-6 rounded-lg bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-200 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                     >
                       Thử lại
                     </button>
@@ -104,7 +106,9 @@ export function DataTableShell({
             <tr>
               <td colSpan={colCount}>
                 <div className="flex min-h-100 w-full flex-col items-center justify-center py-10">
-                  <h3 className="mt-4 text-lg text-white">{emptyTitle}</h3>
+                  <h3 className="mt-4 text-lg text-gray-900 dark:text-white">
+                    {emptyTitle}
+                  </h3>
                   <p className="mt-1 text-sm text-gray-400">{emptyMessage}</p>
                 </div>
               </td>

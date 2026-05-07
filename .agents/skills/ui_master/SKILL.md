@@ -1,36 +1,49 @@
 ---
-name: picare_ui_master
-description: "The consolidated master guide for building high-end, minimalist dark theme interfaces in the Picare OMS dashboard. Includes page registration, dashboard layouts, and specialized component designs."
+name: medimate_ui_master
+description: "The consolidated master guide for building high-end, minimalist dark theme interfaces in the Medimate dashboard. Includes page registration, dashboard layouts, component usage from src/components, and specialized designs. Use Vietnamese to communicate."
 ---
 
-# Picare UI Master Documentation
+# Medimate UI Master Documentation
 
-This document is the single source of truth for the **UI/UX** of the Picare OMS ecosystem. It focuses on design principles, layout patterns, and specialized UI components.
+This document is the single source of truth for the **UI/UX** of the Medimate ecosystem. It consolidates all design principles, layout patterns, and specialized UI components.
+
+> [!IMPORTANT]
+> **Component Reusability**: Always maximize the use of existing components in `src/components`. Never reinvent basic UI elements like `Spinner`, `Badge`, `IconAction`, `Tooltip`, `Breadcrumb`, `Pagination`, or `GlassSelect`.
 
 ---
 
-## 🌑 1. Core Aesthetic & Design Standards
+## 🌓 1. Core Aesthetic & Multi-theme Support
 
-Maintain a "Simple & Black" aesthetic. Our goal is a premium, high-end dark SaaS feel.
+Maintain a premium, high-end feel in both themes. Use `dark:` variants strictly to ensure parity.
 
-### 🎨 Design Palette & Tokens
-- **Backgrounds**: Main (`#18181b`), Surface (`#202022`), Glass (`bg-white/5` with `backdrop-blur`).
-- **Borders**: Thin and subtle (`border-white/10`).
-- **Primary Color**: `#de3c3c` (Red) for primary actions.
-- **Accent Purple**: `#E1A3F1` for branding and decorative elements.
+### 🌑 Dark Mode (Default)
+- **Backgrounds**: Main (`#050505`), Surface (`#202022`), Glass (`bg-white/5` with `backdrop-blur`).
+- **Borders**: Thin and subtle (`border-white/10` or `border-white/5`).
+- **Text**: Heading (`text-white`), Secondary (`text-gray-400`).
+
+### ☀️ Light Mode
+- **Backgrounds**: Main (`bg-white`), Surface (`bg-gray-50`).
+- **Borders**: More pronounced to define structure. Main Container (`border-gray-400`), Dividers/Cells (`border-gray-300`).
+- **Text**: Heading (`text-gray-900`), Secondary (`text-gray-600`), Helper (`text-gray-500`).
+- **Interaction**: Use `hover:bg-gray-50` for rows and items.
+
+### 🎨 Shared Design Tokens
+- **Primary Color**: `#EC4899` (Primary Pink) for highlights.
+- **Action Color**: `#de3c3c` (Red) for critical buttons.
 - **Typography**: Display/Headings (`OverusedGrotesk`), Body (`Manrope`).
-
-### 📐 Principles of Minimalism
-- **No Decorative Clutter**: Do NOT add icons next to every label. Only use icons for primary navigation or critical buttons.
-- **Badge Usage**: Avoid colorful status badges. Use subtle text colors or dot indicators.
-- **Tabular Numerals**: Always use `tabular-nums` for any numbers to prevent layout jitter during data updates.
+- **Micro-interactions**: Use `hover:scale-[1.02]` or `transition-all`. Theme toggle uses **Circular Reveal Animation** (View Transitions API).
 
 ---
 
 ## 🚦 2. Page Structure & Registration
 
-### Page Layout Template
-Every page should follow this structural hierarchy to ensure consistent spacing and animations.
+Follow these steps strictly when adding a new page to ensure consistent routing, breadcrumbs, and layout.
+
+### A. Define the Path Constants
+All paths MUST be centralized in `src/config/paths.ts` under the `DASHBOARD` object (e.g., `MY_NEW_PAGE: "/dashboard/my-page"`).
+
+### B. Page Layout Template (`src/pages/*.tsx`)
+Every page should follow this structural hierarchy. Use `@/components/custom-ui/Breadcrumb` for navigation.
 
 ```tsx
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
@@ -38,12 +51,12 @@ import { motion } from "framer-motion";
 
 export default function PageLayoutTemplate() {
   return (
-    <div className="page-layout p-6">
+    <div className="page-layout">
       {/* 1. Header with Breadcrumb */}
       <div className="mb-6 flex flex-col">
         <Breadcrumb items={[{ label: "Home", path: "/" }, { label: "Current" }]} />
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
-          Page Title
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 dark:text-white md:text-4xl">
+          Tiêu đề trang
         </h1>
       </div>
 
@@ -51,7 +64,6 @@ export default function PageLayoutTemplate() {
       <motion.div 
         initial={{ opacity: 0, y: 10 }} 
         animate={{ opacity: 1, y: 0 }} 
-        className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md"
       >
         {/* Components go here */}
       </motion.div>
@@ -60,49 +72,126 @@ export default function PageLayoutTemplate() {
 }
 ```
 
+### C. Register Lazy Import & ROUTES_CONFIG
+In `src/config/routes.config.tsx`:
+1. Use `lazy(() => import("@/pages/..."))` for code splitting.
+2. Add a route object to `ROUTES_CONFIG` matching the constant from `PATHS.DASHBOARD.X`.
+
 ---
 
-## 📊 3. Dashboard Layout Patterns
+## 📊 3. Dashboard Data Handling Patterns (React Query)
+
+When implementing data-driven UIs (Tables, Grids) powered by React Query, you must rigorously account for 4 UI states: **Loading**, **Error**, **Empty Data**, and **Successful Data Display**.
 
 ### A. Table vs. Card Toggle
-Provide a switcher for list-heavy pages.
-- **Icons**: `LuTable2` (Table) and `LuGrid3X3` (Cards).
-- **Styling**: Use a pill-shaped container `bg-white/5` for buttons.
+For list-heavy pages, provide a switcher in the header between Table (`LuTable2`) and Card (`LuGrid3X3`) views. Manage it via `const [tableLayout, setTableLayout] = useState<"table" | "card">("table");`.
 
-### B. Table Visual States
-When data is loading or missing, keep the `<thead>` visible and render states inside the `<tbody>`.
-- **Loading UI**: Use `<Spinner size="lg" />` centered in a full-width row.
-- **Empty UI**: A centered "Danh sách trống" message with a descriptive icon if necessary.
-- **Design Rule**: Use `colSpan` to ensure the loading/empty states span the entire row.
+### B. Table Component Layout
+Tables must follow a consistent layout for a clean "Simple & Black" look.
+- **Container**: Wrap in `div.overflow-x-auto`.
+- **Table**: `dark:border-border-dark w-full min-w-225 table-fixed border-collapse border-x border-y border-gray-400 text-left`. Always include `border-y` for bottom sealing.
+- **Cells (`td`)**: Use `dark:border-border-dark border-r border-gray-300 p-4` for all columns, including the last one, to create a solid grid.
+- **Header**: `dark:bg-border-dark/30 bg-gray-50/50` with uppercase, small text for `<th>`. Headers must also have `border-r border-gray-300`.
+- **Loading State**: Render `<tr><td colSpan={N}><Spinner size="lg" />...</td></tr>` inside `<tbody>`.
+- **Pagination**: Every table MUST be accompanied by the `@/components/custom-ui/Pagination` component. The pagination must be **connected** directly to the bottom of the table using `border-x border-b border-gray-400` (no top border) to share the table's border system.
+
+### C. Grid/Card Layout Strategy (Skeletons & Minimalist Blocks)
+For dashboard grids, use **Skeleton Cards** (pulse effects) for loading and **Minimalist Blocks** (transparent/no background) for error/empty states.
+
+```tsx
+{isLoading ? (
+  /* PREMIUM LOADING (SKELETONS) */
+  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    {[...Array(8)].map((_, i) => (
+      <div key={i} className="h-48 rounded-2xl animate-pulse bg-white/5 opacity-50" />
+    ))}
+  </div>
+) : isError ? (
+  /* NEW ERROR STATE PATTERN */
+  <div className="flex min-h-[400px] flex-col items-center justify-center py-10">
+    <p className="max-w-md text-center text-sm font-medium text-red-400">
+      Đã xảy ra lỗi khi tải dữ liệu từ hệ thống
+    </p>
+    <button
+      onClick={() => refetch()}
+      className="mt-6 rounded-lg border border-white/5 bg-white/5 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-white/10"
+    >
+      Thử lại
+    </button>
+  </div>
+) : data && data.length > 0 ? (
+  /* DATA RENDER */
+  <div className="grid...">...</div>
+) : (
+  /* NEW EMPTY STATE PATTERN (WITH CTA, NO ICON) */
+  <div className="flex min-h-[400px] flex-col items-center justify-center py-10 text-center">
+    <h3 className="text-lg font-semibold text-white">
+      Danh sách trống
+    </h3>
+    <p className="mt-2 text-sm text-white/50">
+      Chưa có dữ liệu nào được tìm thấy trong hệ thống
+    </p>
+    <button
+      onClick={handleAction}
+      className="mt-6 flex items-center gap-2 rounded-lg bg-red-500 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-red-600"
+    >
+      <FiPlus className="text-lg" />
+      Thêm ngay
+    </button>
+  </div>
+)}
+```
 
 ---
 
 ## 🧩 4. Specialized Component Patterns
 
-### A. Modals (High-End Dark)
-- **Container**: `bg-neutral-900/80 backdrop-blur-lg` with `border-white/10`.
-- **Header/Footer**: Use a subtle bottom/top border and light background `bg-white/2`.
-- **Animations**: Modals should fade and scale into view using `AnimatePresence`.
+### A. Modals (High-End Dark & Light)
+Modals are managed via `src/stores/modalStore.ts` using Jotai.
+- **Container**: `flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-neutral-900/80 dark:backdrop-blur-xl`.
+- **Header**:
+  - **Styles**: `flex items-center justify-between border-b border-gray-400 bg-white/5 p-6 dark:border-white/10`.
+  - **Title**: `text-base font-semibold text-gray-900 dark:text-white`.
+  - **Close Button**: `rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white`.
+- **Footer**: 
+  - **Styles**: `flex items-center justify-end gap-3 border-t border-gray-400 bg-white/5 p-6 dark:border-white/10`.
+  - **Secondary Button**: `rounded-lg px-4 py-2 text-sm text-gray-500 transition hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/10`.
+  - **Primary Button**: `bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:bg-gray-200 disabled:text-gray-400 dark:disabled:bg-white/10 dark:disabled:text-white/40`.
+- **Patterns**:
+  - **Selection Card (Phase Pattern)**:
+    - **Base**: `rounded-xl border border-gray-400 bg-white p-6 transition-all duration-200 dark:border-white/10 dark:bg-white/5`.
+    - **Active**: `border-primary bg-primary/10 shadow-lg shadow-primary/20`.
+    - **Hover**: `hover:bg-gray-50 dark:hover:bg-white/10`.
+    - **Text**: Title (`text-gray-900 dark:text-white`), Description (`text-gray-500 dark:text-gray-400`).
+  - **Confirm/Sync Modal**: Highlight warnings with `border-yellow-500/20 bg-yellow-500/5`. Use `isModalLockedAtom` to prevent closing during async tasks.
 
 ### B. Analytics & Charts
-- **Color Set**: Purple (#8b5cf6), Green (#22c55e), Red-Orange (#f97316), Pink (#EC4899).
-- **Chart Styling**: 
-    - No grid lines or very faint ones (`rgba(255,255,255,0.05)`).
-    - Use `Doughnut` charts with `cutout: "70%"` and centered labels.
-- **Stat Box**: Transparent glass container with a hover effect `hover:bg-white/10`.
+- **Dependencies**: `react-chartjs-2` + `framer-motion`.
+- **Colors**: Use exact Hex values (Green `#22c55e`, Orange `#f97316`, Pink `#EC4899`, Purple `#8b5cf6`).
+- **Charts**: Hide grids (`display: false`). Use `cutout: "70%"` for Doughnut charts and center the absolute label.
+- **Metric Card**: Keep them simple and structured.
+  - **Styles**: `rounded-xl border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10`.
+  - **Typography**: Use `tabular-nums` for the main value (`text-3xl font-semibold text-gray-900 dark:text-white`).
+  - **Information Balance**: Heading on top (`text-sm text-gray-500`), main value in middle, helper text at bottom.
 
 ### C. Terminal / Command Console
-Used for background tasks and logs.
+Used for background tasks (e.g. Syncing).
 - **Aesthetic**: `bg-black/60 shadow-2xl backdrop-blur-sm`.
-- **Header**: Faux window controls (red, yellow, green circles).
-- **Typography**: Strictly `font-mono text-[11px]`.
-- **Micro-interaction**: Use an animated pulse cursor `_`.
+- **Header**: Faux window controls (red, yellow, green circles) + task name.
+- **Body**: `font-mono text-[11px]`. Prepend `>` to lines. Slice logs array so it doesn't overflow infinitely. Add `text-primary inline-block animate-pulse` for the `_` cursor.
+
+### D. Item Card Pattern
+A structured layout for grid lists (e.g. Products, Users).
+- **Layout**: `flex flex-col rounded-2xl border border-gray-400 bg-white p-4 transition-colors hover:bg-gray-50 dark:border-white/5 dark:bg-white/5 dark:hover:bg-white/10`. Interaction via `whileHover={{ y: -4 }}`.
+- **Separator**: Use `h-px bg-gray-200 dark:bg-white/5` between sections.
+- **Footer**: A flex row containing a **Status Indicator** (left) and **Action Icons** (right) using `Tooltip` + `IconAction`. Hide actions until `group-hover:opacity-100`.
 
 ---
 
-## ⚖️ Golden Rules for Styling
-1. **Never use generic blue/green**: Always use the project's Zinc/Red/Purple system.
-2. **Subtle Transitions**: Use `transition-all duration-300` for all hover states.
-3. **Glassmorphism**: Combine `bg-white/5` with `backdrop-blur-md` for surfaces.
+## ⚖️ 5. Golden Rules for Styling
+
+1. **Leverage `src/components`**: Always check `src/components` for pre-built UI components (`Input`, `Select`, `Tooltip`, `Badge`, `IconAction`, `Spinner`, etc.) before deciding to build custom elements.
+2. **Never use generic blue/green**: Always use the project's Red/Purple/Zinc dark system.
+3. **Subtle Transitions**: Use `transition-all duration-300` for all hover states.
 4. **Spacing**: Maintain generous white space (airy design) to avoid an "overcrowded" feel.
 5. **Rounded Corners**: Stick to `rounded-lg` for inputs/buttons and `rounded-2xl` for large containers.

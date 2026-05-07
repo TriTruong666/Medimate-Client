@@ -8,20 +8,22 @@ import {
   FiSettings,
   FiFileText,
   FiUserCheck,
+  FiCalendar,
 } from "react-icons/fi";
 import { RiVipDiamondLine, RiImageAiLine } from "react-icons/ri";
 import { IoBriefcaseOutline, IoSync } from "react-icons/io5";
 import { AiOutlineRobot } from "react-icons/ai";
 import { GrTransaction } from "react-icons/gr";
 import { LiaFileContractSolid } from "react-icons/lia";
+import { TbBuildingHospital } from "react-icons/tb";
 import { VscFeedback } from "react-icons/vsc";
 import type { Role } from "@/hooks/useAuth";
 import DoctorSupportPage from "@/pages/doctor/DoctorSupportPage";
-import DoctorContractPage from "@/pages/admin/DoctorContractPage";
 import DoctorProfilesPage from "@/pages/doctor-manager/DoctorProfilesPage";
 import DoctorReportPage from "@/pages/admin/DoctorReportPage";
 import CertificateApprovePage from "@/pages/doctor-manager/CertificateApprovePage";
 import AccountApprovePage from "@/pages/doctor-manager/AccountApprovePage";
+import DoctorExceptionApprovePage from "@/pages/doctor-manager/DoctorExceptionApprovePage";
 
 // Types for Route Configuration
 export interface RouteConfig {
@@ -51,6 +53,9 @@ const KnowledgeBasePage = lazy(
 const KnowledgeAddCollectionPage = lazy(
   () => import("../pages/admin/KnowledgeAddCollectionPage"),
 );
+const KnowledgeDetailCollectionPage = lazy(
+  () => import("../pages/admin/KnowledgeDetailCollectionPage"),
+);
 const ChatbotPage = lazy(() => import("../pages/ChatbotPage"));
 const TransactionDashboardPage = lazy(
   () => import("../pages/TransactionDashboardPage"),
@@ -73,6 +78,13 @@ const PackageDashboardPage = lazy(() =>
 const PackageOwnerDashboardPage = lazy(
   () => import("@/pages/admin/PackageOwnerDashboardPage"),
 );
+const ClinicPayoutPage = lazy(() => import("@/pages/admin/ClinicPayoutPage"));
+const UserRefundPage = lazy(() => import("@/pages/admin/UserRefundPage"));
+const ClinicPage = lazy(() => import("@/pages/admin/ClinicPage"));
+const ClinicDetailPage = lazy(() => import("@/pages/admin/ClinicDetailPage"));
+const ClinicContractPage = lazy(
+  () => import("@/pages/admin/ClinicContractPage"),
+);
 
 const ProfileSettingDashboardPage = lazy(() =>
   import("../pages/SettingDashboardPage").then((m) => ({
@@ -84,16 +96,6 @@ const SecuritySettingDashboardPage = lazy(() =>
     default: m.SecuritySettingDashboardPage,
   })),
 );
-const NotificationSettingDashboardPage = lazy(() =>
-  import("../pages/SettingDashboardPage").then((m) => ({
-    default: m.NotificationSettingDashboardPage,
-  })),
-);
-const MessageSettingDashboardPage = lazy(() =>
-  import("../pages/SettingDashboardPage").then((m) => ({
-    default: m.MessageSettingDashboardPage,
-  })),
-);
 const SystemSettingDashboardPage = lazy(() =>
   import("../pages/SettingDashboardPage").then((m) => ({
     default: m.SystemSettingDashboardPage,
@@ -103,6 +105,17 @@ const APIKeysSettingDashboardPage = lazy(() =>
   import("../pages/SettingDashboardPage").then((m) => ({
     default: m.APIKeysSettingDashboardPage,
   })),
+);
+const SystemConfigSettingDashboardPage = lazy(() =>
+  import("../pages/SettingDashboardPage").then((m) => ({
+    default: m.SystemConfigSettingDashboardPage,
+  })),
+);
+const PrescriptionRootPage = lazy(
+  () => import("../pages/doctor/PrescriptionRootPage"),
+);
+const PrescriptionInProgressPage = lazy(
+  () => import("@/pages/doctor/PrescriptionInProgressPage"),
 );
 
 export const ROUTES_CONFIG: RouteConfig[] = [
@@ -169,6 +182,32 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     ],
   },
   {
+    path: PATHS.DASHBOARD.APPROVE_EXCEPTION.ROOT,
+    layout: "dashboard",
+    label: "Duyệt lịch nghỉ",
+    icon: FiCalendar,
+    showInSidebar: true,
+    roles: ["DoctorManager"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.APPROVE_EXCEPTION.ROOT,
+        element: <DoctorExceptionApprovePage />,
+        label: "Chưa duyệt",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.APPROVE_EXCEPTION.PAST_UNAPPROVED,
+        element: <DoctorExceptionApprovePage />,
+        label: "Không duyệt",
+      },
+      {
+        path: PATHS.DASHBOARD.APPROVE_EXCEPTION.APPROVED,
+        element: <DoctorExceptionApprovePage />,
+        label: "Đã duyệt",
+      },
+    ],
+  },
+  {
     path: PATHS.DASHBOARD.DOCTOR_PROFILES,
     element: <DoctorProfilesPage />,
     layout: "dashboard",
@@ -182,10 +221,71 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     layout: "dashboard",
     label: "Công việc",
     icon: IoBriefcaseOutline,
-    element: <DoctorSupportPage />,
     showInSidebar: true,
     roles: ["Doctor"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.ROOT,
+        element: <DoctorSupportPage filter="all" title="Tất cả công việc" />,
+        label: "Tất cả công việc",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.PENDING,
+        element: (
+          <DoctorSupportPage filter="pending" title="Công việc cần duyệt" />
+        ),
+        label: "Cần duyệt",
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.APPROVED,
+        element: (
+          <DoctorSupportPage filter="approved" title="Công việc sắp diễn ra" />
+        ),
+        label: "Sắp diễn ra",
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.IN_PROGRESS,
+        element: (
+          <DoctorSupportPage
+            filter="completed"
+            title="Công việc hoàn thành"
+          />
+        ),
+        label: "Hoàn thành",
+      },
+      {
+        path: PATHS.DASHBOARD.DOCTOR_SUPPORT.HISTORY,
+        element: (
+          <DoctorSupportPage filter="cancelled" title="Công việc đã hủy" />
+        ),
+        label: "Đã hủy",
+      },
+    ],
   },
+  {
+    path: PATHS.DASHBOARD.PRESCRIPTIONS.ROOT,
+    layout: "dashboard",
+    label: "Phiên và Đơn thuốc",
+    icon: FiFileText,
+    showInSidebar: true,
+    roles: ["Doctor"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.PRESCRIPTIONS.ROOT,
+        element: <PrescriptionRootPage />,
+        label: "Phiên tư vấn",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.PRESCRIPTIONS.IN_PROGRESS,
+        element: <PrescriptionInProgressPage />,
+        label: "Đang khám",
+        showInSidebar: false,
+      },
+    ],
+  },
+
   {
     path: PATHS.DASHBOARD.ACCOUNTS,
     element: <AccountDashboardPage />,
@@ -196,13 +296,32 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     roles: ["Admin"],
   },
   {
-    path: PATHS.DASHBOARD.TRANSACTION,
-    element: <TransactionDashboardPage />,
+    path: PATHS.DASHBOARD.TRANSACTION.ROOT,
     layout: "dashboard",
     label: "Giao dịch",
     icon: GrTransaction,
     showInSidebar: true,
     roles: ["Admin", "User", "Doctor"],
+    children: [
+      {
+        path: PATHS.DASHBOARD.TRANSACTION.ROOT,
+        element: <TransactionDashboardPage />,
+        label: "Lịch sử giao dịch",
+        index: true,
+      },
+      {
+        path: PATHS.DASHBOARD.TRANSACTION.PAYOUTS,
+        element: <ClinicPayoutPage />,
+        label: "Thanh toán Phòng khám",
+        roles: ["Admin"],
+      },
+      {
+        path: PATHS.DASHBOARD.TRANSACTION.USER_REFUND,
+        element: <UserRefundPage />,
+        label: "Hoàn tiền",
+        roles: ["Admin"],
+      },
+    ],
   },
   {
     path: PATHS.DASHBOARD.DOCUMENTS,
@@ -210,25 +329,8 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Tài liệu",
     icon: FiFileText,
     showInSidebar: true,
-    roles: ["Admin"],
-    children: [
-      {
-        path: PATHS.DASHBOARD.DOCUMENTS,
-        element: <DocumentDashboardPage />,
-        label: "Tất cả",
-        index: true,
-      },
-      {
-        path: `${PATHS.DASHBOARD.DOCUMENTS}/uploaded`,
-        element: <DocumentDashboardPage />,
-        label: "Vừa tải lên",
-      },
-      {
-        path: `${PATHS.DASHBOARD.DOCUMENTS}/indexed`,
-        element: <DocumentDashboardPage />,
-        label: "Đã nạp",
-      },
-    ],
+    roles: ["DoctorManager", "Admin"],
+    element: <DocumentDashboardPage />,
   },
   {
     path: PATHS.DASHBOARD.PACKAGES.ROOT,
@@ -279,14 +381,21 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "RAG Core",
     icon: IoSync,
     showInSidebar: true,
-    roles: ["Admin"],
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.RAG_NEW,
     element: <KnowledgeAddCollectionPage />,
     layout: "dashboard",
     showInSidebar: false,
-    roles: ["Admin"],
+    roles: ["DoctorManager", "Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.RAG_DETAIL,
+    element: <KnowledgeDetailCollectionPage />,
+    layout: "dashboard",
+    showInSidebar: false,
+    roles: ["DoctorManager", "Admin"],
   },
   {
     path: PATHS.DASHBOARD.CHATBOT,
@@ -295,27 +404,33 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Chatbot",
     icon: AiOutlineRobot,
     showInSidebar: true,
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin", "DoctorManager"],
   },
   {
-    path: PATHS.DASHBOARD.DOCTOR_CONTRACT,
-    element: <DoctorContractPage />,
+    path: PATHS.DASHBOARD.CLINIC,
+    element: <ClinicPage />,
     layout: "dashboard",
-    label: "Hợp đồng",
+    label: "Phòng khám",
+    icon: TbBuildingHospital,
+    showInSidebar: true,
+    roles: ["Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.CLINIC_DETAIL,
+    element: <ClinicDetailPage />,
+    layout: "dashboard",
+    showInSidebar: false,
+    roles: ["Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.CLINIC_CONTRACT,
+    element: <ClinicContractPage />,
+    layout: "dashboard",
+    label: "Hợp đồng PK",
     icon: LiaFileContractSolid,
     showInSidebar: true,
-    roles: ["Admin"],
+    roles: ["Admin", "DoctorManager"],
   },
-  {
-    path: PATHS.DASHBOARD.DOCTOR_REPORT,
-    element: <DoctorReportPage />,
-    layout: "dashboard",
-    label: "Báo cáo bác sĩ",
-    icon: VscFeedback,
-    showInSidebar: true,
-    roles: ["Admin"],
-  },
-
   // Settings Routes
   {
     path: PATHS.DASHBOARD.SETTINGS.ROOT,
@@ -324,37 +439,31 @@ export const ROUTES_CONFIG: RouteConfig[] = [
     label: "Cài đặt hồ sơ",
     icon: FiSettings,
     showInSidebar: false,
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin", "User", "Doctor", "DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.SECURITY,
     element: <SecuritySettingDashboardPage />,
     layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
-  },
-  {
-    path: PATHS.DASHBOARD.SETTINGS.NOTIFICATION,
-    element: <NotificationSettingDashboardPage />,
-    layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
-  },
-  {
-    path: PATHS.DASHBOARD.SETTINGS.MESSAGE,
-    element: <MessageSettingDashboardPage />,
-    layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin", "User", "Doctor", "DoctorManager"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.SYSTEM,
     element: <SystemSettingDashboardPage />,
     layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin"],
   },
   {
     path: PATHS.DASHBOARD.SETTINGS.KEYS,
     element: <APIKeysSettingDashboardPage />,
     layout: "settings",
-    roles: ["Admin", "User", "Doctor"],
+    roles: ["Admin"],
+  },
+  {
+    path: PATHS.DASHBOARD.SETTINGS.CONFIG,
+    element: <SystemConfigSettingDashboardPage />,
+    layout: "settings",
+    roles: ["Admin"],
   },
 ];
 

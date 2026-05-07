@@ -7,15 +7,18 @@ import IconAction from "../components/custom-ui/IconAction";
 import { openTransactionModalAtom } from "../stores/modalStore";
 import { useAtom, useSetAtom } from "jotai";
 import { useMemo, useState } from "react";
-import {
-  openDrawerAtom,
-  transactionDetailIdAtom,
-} from "../stores/drawerStore";
+import { openDrawerAtom, transactionDetailIdAtom, payoutDetailDataAtom } from "../stores/drawerStore";
 import { Tooltip } from "@/components/custom-ui/Tooltip";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
-import { useTransactionList } from "@/hooks/data/useTransactionHooks";
+import {
+  useTransactionList,
+  useUserTransactionList,
+} from "@/hooks/data/useTransactionHooks";
+import { usePayouts } from "@/hooks/data/usePayoutHooks";
 import type { PaginationParams } from "@/common/query.params";
 import type { Transaction } from "@/types/Transaction";
+import { useAuth } from "@/hooks/useAuth";
+import { PATHS } from "@/config/paths";
 
 type ColumnKey =
   | "id"
@@ -52,7 +55,7 @@ const breadcrumbItems = [
   },
   {
     label: "Giao dịch",
-    path: "/dashboard/transaction",
+    path: PATHS.DASHBOARD.TRANSACTION.ROOT,
   },
   {
     label: "Tất cả",
@@ -96,19 +99,53 @@ const columns: TableColumn[] = [
   },
 ];
 export default function TransactionDashboardPage() {
+  const { user } = useAuth();
+  const isDoctor = user?.role === "Doctor";
+  const userId = user?.userId ?? "";
+
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
-    pageSize: 5,
+    pageSize: 10,
   });
-  const { data, isLoading, error, isError, refetch } =
-    useTransactionList(pagination);
+
+  const allTransactionsQuery = useTransactionList(pagination, {
+    enabled: !isDoctor,
+  });
+
+  const payoutQuery = usePayouts({
+    pageNumber: pagination.pageNumber,
+    pageSize: pagination.pageSize,
+  });
+
+  const { data: rawData, isLoading, error, isError, refetch } = isDoctor
+    ? payoutQuery
+    : allTransactionsQuery;
+
+  const data = isDoctor ? (rawData as any)?.data : rawData;
 
   const total = data?.totalCount ?? 0;
   const page = data?.pageNumber ?? pagination.pageNumber ?? 1;
-  const pageSize = data?.pageSize ?? pagination.pageSize ?? 5;
+  const pageSize = data?.pageSize ?? pagination.pageSize ?? 10;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
-  const tableData = useMemo(() => data?.items ?? [], [data?.items]);
+  // Map PayoutItemDto sang Transaction format cho bác sĩ
+  const tableData = useMemo(() => {
+    if (!data?.items) return [];
+    if (isDoctor) {
+      return data.items
+        .filter((item: any) => item.status !== "Cancelled" && item.status !== "Hold") // Doctor không hiển thị Hold
+        .map((item: any) => ({
+          transactionId: item.payoutId,
+          transactionCode: `APPOINTMENT-${item.payoutId.split('-')[0].toUpperCase()}`,
+          transactionDate: item.calculatedAt,
+          transactionType: "doctor_payout",
+          totalAmount: item.amount,
+          status: item.status === "ReadyToPay" ? "pending" : item.status,
+          originalPayoutData: item,
+        })) as any[];
+    }
+    return data.items as Transaction[];
+  }, [data?.items, isDoctor]);
 
   const handlePageChange = (nextPage: number) => {
     if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
@@ -119,20 +156,13 @@ export default function TransactionDashboardPage() {
     }));
   };
 
-  const handlePageSizeChange = (nextPageSize: number) => {
-    setPagination({
-      pageNumber: 1,
-      pageSize: nextPageSize,
-    });
-  };
-
   return (
     <div className="page-layout">
       {/* Header */}
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Quản lý giao dịch
           </h1>
         </div>
@@ -144,14 +174,14 @@ export default function TransactionDashboardPage() {
           isLoading={isLoading}
           isError={isError}
           errorMessage={
-            error?.message || "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
+            error?.message ||
+            "Không thể kết nối đến máy chủ. Vui lòng thử lại sau."
           }
           onRetry={() => refetch()}
           page={page}
           pageSize={pageSize}
           total={total}
           onPageChange={handlePageChange}
-          onPageSizeChange={handlePageSizeChange}
         />
       </div>
     </div>
@@ -168,14 +198,18 @@ function TransactionTable({
   pageSize,
   total,
   onPageChange,
-  onPageSizeChange,
-}: TransactionTableProps) {
+}: Omit<TransactionTableProps, "onPageSizeChange">) {
   const [, openPaymentModal] = useAtom(openTransactionModalAtom);
   const openDrawer = useSetAtom(openDrawerAtom);
   const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
+  const setPayoutDetailData = useSetAtom(payoutDetailDataAtom);
 
-  const handleOpenDetailModal = (row: Transaction) => {
-    setTransactionDetailId(row.transactionId);
+  const handleOpenDetailModal = (row: any) => {
+    if (row.originalPayoutData) {
+      setPayoutDetailData(row.originalPayoutData);
+    } else {
+      setTransactionDetailId(row.transactionId);
+    }
     openDrawer("transaction_details");
   };
   const demoPaymentData = {
@@ -203,55 +237,54 @@ function TransactionTable({
         pageSize,
         total,
         onPageChange,
-        onPageSizeChange,
       }}
     >
       {data.map((row, i) => {
-          const rowType: "in" | "out" = row.transactionType.toLowerCase() as "in" | "out";
-          const rowStatus = normalizeTransactionStatus(row.status);
+        const rowType = row.transactionType.toLowerCase();
+        const rowStatus = normalizeTransactionStatus(row.status);
 
-          return (
+        return (
           <tr
             key={`${row.transactionId}-${i}`}
             className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
           >
             {/* ID */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
                 {row.transactionCode || row.transactionId || "N/A"}
               </span>
             </td>
 
             {/* Created At */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <span className="text-sm text-gray-600 dark:text-gray-300">
                 {formatTransactionDate(row.transactionDate)}
               </span>
             </td>
 
             {/* Transaction Type */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <TransactionTypeBadge transaction_type={rowType} />
             </td>
 
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <span className="font-mono text-sm text-gray-600 uppercase dark:text-gray-300">
                 {formatPrice(row.totalAmount ?? 0)}
               </span>
             </td>
 
             {/* Status */}
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
               <StatusBadge status={rowStatus} />
             </td>
 
             {/* Actions */}
-            <td className="p-4 text-center">
-              {rowType === "out" && rowStatus === "pending" ? (
+            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
+              {rowType.startsWith("out") && rowStatus === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => openPaymentModal(demoPaymentData)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition-all duration-200 hover:border-white/20 hover:bg-white/10 active:scale-95"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-400 bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition-all duration-200 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   >
                     <HiOutlineCreditCard size={14} />
                     Thanh toán
@@ -259,12 +292,14 @@ function TransactionTable({
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  <Tooltip content="In hoá đơn">
+                  {/* <Tooltip content="In hoá đơn">
                     <IconAction icon={<HiOutlinePrinter />} />
-                  </Tooltip>
+                  </Tooltip> */}
                   <Tooltip content="Chi tiết">
                     <IconAction
-                      icon={<IoIosInformationCircleOutline />}
+                      icon={
+                        <IoIosInformationCircleOutline className="text-gray-600 dark:text-gray-300" />
+                      }
                       onClick={() => handleOpenDetailModal(row)}
                     />
                   </Tooltip>
@@ -272,8 +307,8 @@ function TransactionTable({
               )}
             </td>
           </tr>
-          );
-        })}
+        );
+      })}
     </DataTableShell>
   );
 }
@@ -325,12 +360,16 @@ function StatusBadge({ status }: { status: "pending" | "paid" | "cancelled" }) {
 function TransactionTypeBadge({
   transaction_type,
 }: {
-  transaction_type: "in" | "out";
+  transaction_type: string;
 }) {
-  const map = {
-    in: <Badge type="success" value="Tiền nhận vào" />,
+  const map: Record<string, React.ReactElement> = {
+    in_session: <Badge type="success" value="Thanh toán tư vấn" />,
+    in_package: <Badge type="success" value="Thanh toán gói" />,
+    out_refund_session: <Badge type="warning" value="Hoàn tiền tư vấn" />,
+    out_clinic_payout: <Badge type="warning" value="Thanh toán phòng khám" />,
+    doctor_payout: <Badge type="success" value="Thanh toán từ hệ thống" />,
     out: <Badge type="warning" value="Tiền chi ra" />,
   };
 
-  return map[transaction_type];
+  return map[transaction_type] || <Badge type="info" value={transaction_type} />;
 }

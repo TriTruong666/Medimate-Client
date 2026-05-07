@@ -1,14 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { type ReactNode, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../components/custom-ui/Breadcrumb";
 import { HiOutlineArrowRight, HiOutlinePlus } from "react-icons/hi";
-import { FiBook, FiMessageCircle } from "react-icons/fi";
-import { RiSave2Line } from "react-icons/ri";
+import { FiPlus, FiShield } from "react-icons/fi";
+
 import { motion } from "framer-motion";
 import { cardContainer, cardItem } from "../../motions/cardMotion";
 import GlassSelect from "../../components/custom-ui/Select";
-import { useState } from "react";
-import { FiPlus } from "react-icons/fi";
 import Toggle from "@/components/custom-ui/Toggle";
+import {
+  useRAGCollections,
+  useUpdateRAGCollection,
+} from "@/hooks/data/useRAGCollectionHooks";
+import { formatDate } from "@/common/format";
 
 export default function KnowledgeBasePage() {
   const [type, setType] = useState("");
@@ -26,12 +31,19 @@ export default function KnowledgeBasePage() {
       label: "Collections",
     },
   ];
+
+  const { data: collectionsRes, isLoading } = useRAGCollections({
+    page: 1,
+    limit: 100,
+  });
+
+  const collections = collectionsRes?.data?.items || [];
   return (
     <div className="page-layout">
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Kho dữ liệu RAG Core
           </h1>
         </div>
@@ -59,72 +71,68 @@ export default function KnowledgeBasePage() {
         animate="show"
         className="my-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
       >
-        <DataSourceCard
-          icon={<RiSave2Line className="text-xl" />}
-          title="Tài liệu luật"
-          description="Kho lưu trữ tuân thủ và hợp đồng"
-          status={{ label: "Hoạt động", color: "green" }}
-          documents="452 tài liệu"
-        />
+        {isLoading ? (
+          Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="h-72 w-full animate-pulse rounded-2xl bg-gray-100 dark:bg-white/5"
+            />
+          ))
+        ) : (
+          <>
+            {collections.map((collection) => (
+              <DataSourceCard
+                key={collection.id}
+                icon={<FiShield className="text-xl" />}
+                title={collection.name}
+                description={collection.description}
+                status={{
+                  label: collection.is_active ? "Hoạt động" : "Ngưng",
+                  color: collection.is_active ? "green" : "gray",
+                }}
+                footerLeft={
+                  <span className="text-xs text-gray-500 italic dark:text-gray-400">
+                    Tạo: {formatDate(collection.created_at)}
+                  </span>
+                }
+                collectionId={collection.id}
+                isActive={collection.is_active}
+              />
+            ))}
 
-        <DataSourceCard
-          icon={<FiBook className="text-xl" />}
-          title="Technical Manuals"
-          description="Sơ đồ mạch và hướng dẫn phần cứng"
-          status={{ label: "Đang nạp 75%", color: "blue", progress: 75 }}
-          documents="1,204 tài liệu"
-          footerLeft={
-            <span className="text-xs text-gray-500 italic dark:text-gray-400">
-              Đang nạp...
-            </span>
-          }
-        />
-
-        <DataSourceCard
-          icon={<FiMessageCircle className="text-xl" />}
-          title="Hỗ trợ"
-          description="Nhật ký trò chuyện và phiếu yêu cầu trước đây"
-          status={{ label: "Ngưng hoạt động", color: "gray" }}
-          documents="8,421 tài liệu"
-          footerLeft={
-            <span className="text-xs text-gray-500 dark:text-gray-400">
-              Paused 2 days ago
-            </span>
-          }
-        />
-
-        {/* Create New */}
-        <a
-          href="/dashboard/rag/new"
-          className="group hover:border-primary/50 hover:bg-primary/5 dark:border-border-dark flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-200 p-8 transition"
-        >
-          <div className="group-hover:bg-primary/10 group-hover:text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition dark:bg-white/5">
-            <HiOutlinePlus className="text-3xl" />
-          </div>
-          <p className="text-sm font-semibold text-gray-900 dark:text-white">
-            Thêm mới
-          </p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Thêm collection mới vào RAG Core
-          </p>
-        </a>
+            {/* Create New */}
+            <a
+              href="/dashboard/rag/new"
+              className="group hover:border-primary/50 hover:bg-primary/5 flex min-h-72 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-gray-400 bg-gray-50/30 p-8 transition-all duration-300 dark:border-white/10 dark:bg-transparent"
+            >
+              <div className="group-hover:bg-primary/10 group-hover:text-primary mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gray-200 text-gray-400 transition-all duration-300 dark:bg-white/5">
+                <HiOutlinePlus className="text-3xl" />
+              </div>
+              <p className="text-sm font-bold text-gray-900 dark:text-white">
+                Thêm mới
+              </p>
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Thêm collection mới vào RAG Core
+              </p>
+            </a>
+          </>
+        )}
       </motion.div>
     </div>
   );
 }
 
 type DataSourceCardProps = {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   description: string;
   status: {
     label: string;
     color: "green" | "blue" | "gray";
-    progress?: number;
   };
-  documents: string;
-  active?: boolean;
-  footerLeft?: React.ReactNode;
+  collectionId: string;
+  isActive: boolean;
+  footerLeft?: ReactNode;
 };
 
 function DataSourceCard({
@@ -132,9 +140,19 @@ function DataSourceCard({
   title,
   description,
   status,
-  documents,
+  collectionId,
+  isActive,
   footerLeft,
 }: DataSourceCardProps) {
+  const navigate = useNavigate();
+  const { mutate: updateCollection, isPending } = useUpdateRAGCollection();
+
+  const handleToggleActive = (checked: boolean) => {
+    updateCollection({
+      collectionId,
+      data: { is_active: checked },
+    });
+  };
   const statusColor = {
     green:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
@@ -145,18 +163,25 @@ function DataSourceCard({
   return (
     <motion.div
       variants={cardItem}
-      className="group dark:border-border-dark relative flex h-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white/80 backdrop-blur transition-all hover:border-white/20 hover:bg-white/10 dark:bg-white/5"
+      onClick={() => navigate(`/dashboard/rag/${collectionId}`)}
+      className="group hover:border-primary/50 relative flex h-full cursor-pointer flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-sm transition-all duration-300 hover:shadow-md dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md dark:hover:border-white/20 dark:hover:bg-white/10"
     >
       {/* Body */}
       <div className="relative space-y-5 p-6">
         {/* Header */}
         <div className="flex items-start justify-between">
-          <div className="bg-primary/10 text-primary ring-primary/20 flex h-11 w-11 items-center justify-center rounded-xl ring-1">
+          <div className="bg-primary/10 text-primary ring-primary/20 flex h-11 w-11 items-center justify-center rounded-xl ring-1 transition-transform duration-300 group-hover:scale-110">
             {icon}
           </div>
 
           {/* Toggle */}
-          <Toggle />
+          <div onClick={(e) => e.stopPropagation()}>
+            <Toggle
+              checked={isActive}
+              onChange={handleToggleActive}
+              disabled={isPending}
+            />
+          </div>
         </div>
 
         {/* Title */}
@@ -179,35 +204,19 @@ function DataSourceCard({
               {status.label}
             </span>
           </div>
-
-          {status.progress !== undefined && (
-            <div className="dark:bg-border-dark h-1.5 w-full rounded-full bg-gray-200">
-              <div
-                className="bg-primary h-1.5 rounded-full transition-all"
-                style={{ width: `${status.progress}%` }}
-              />
-            </div>
-          )}
-
-          <div className="flex items-center justify-between">
-            <span className="text-gray-500 dark:text-gray-400">Số lượng</span>
-            <span className="font-medium text-gray-900 dark:text-white">
-              {documents}
-            </span>
-          </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="dark:border-border-dark relative mt-auto flex items-center justify-between border-t border-gray-100 bg-gray-50/60 px-6 py-4 dark:bg-white/5">
+      <div className="relative mt-auto flex items-center justify-between border-t border-gray-400 bg-gray-50/80 px-6 py-4 dark:border-white/5 dark:bg-white/5">
         <div className="text-xs text-gray-500 dark:text-gray-400">
           {footerLeft}
         </div>
 
-        <button className="text-primary flex items-center gap-1 text-sm font-medium transition hover:gap-2">
+        <div className="text-primary flex items-center gap-1 text-[12px] font-medium transition group-hover:gap-2">
           Chi tiết
           <HiOutlineArrowRight className="text-base" />
-        </button>
+        </div>
       </div>
     </motion.div>
   );

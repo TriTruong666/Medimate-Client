@@ -20,12 +20,12 @@ export default function Breadcrumb({ items }: BreadcrumbProps) {
             {item.path && !isLast ? (
               <Link
                 to={item.path}
-                className="transition-colors hover:text-white"
+                className="transition-colors hover:text-gray-900 dark:hover:text-white"
               >
                 {item.label}
               </Link>
             ) : (
-              <span className="text-white">{item.label}</span>
+              <span className="text-gray-900 dark:text-white">{item.label}</span>
             )}
 
             {!isLast && <span className="opacity-40">/</span>}

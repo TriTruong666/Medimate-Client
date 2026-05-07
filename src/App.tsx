@@ -7,6 +7,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthProvider } from "./hooks/useAuth";
 import { listenToForegroundMessages } from "@/lib/fcm";
 import { toast } from "@/hooks/useToast";
+import GlobalSSEHandler from "./components/GlobalSSEHandler";
+import { SignalRInjector } from "./hooks/useSignalR";
 
 export default function App() {
   useEffect(() => {
@@ -15,7 +17,7 @@ export default function App() {
     void listenToForegroundMessages((payload) => {
       const title = payload.notification?.title || "Thông báo mới";
       const message = payload.notification?.body || "Bạn vừa nhận thông báo.";
-      toast.success(title, message);
+      toast.success(title, message, { duration: 8000 });
     }).then((cleanup) => {
       unsubscribe = cleanup;
     });
@@ -30,6 +32,10 @@ export default function App() {
   return (
     <QueryProvider>
       <AuthProvider>
+        {/* SignalR: Kết nối realtime noti + appointment + chat */}
+        <SignalRInjector />
+        <GlobalSSEHandler />
+        <GlobalSSEHandler clientId="all" />
         <BrowserRouter>
           <Routes>
             {/* Dashboard & Private pages */}

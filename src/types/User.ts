@@ -1,5 +1,6 @@
 export type User = {
   userId: string;
+  familyId?: string;
   phoneNumber: string;
   fullName: string;
   email: string;
@@ -13,6 +14,7 @@ export type User = {
 };
 
 export type Doctor = {
+  doctorId: string;
   fullName: string;
   specialty: string;
   currentHospitalName: string;

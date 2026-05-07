@@ -1,10 +1,9 @@
-import { FiMoreVertical, FiPlus, FiUsers } from "react-icons/fi";
-import { AnimatePresence, motion } from "framer-motion";
-import { useMemo, useRef, useState } from "react";
+import { FiPlus, FiUsers, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
 import { HiCheck } from "react-icons/hi";
 import { HiXMark } from "react-icons/hi2";
 import Breadcrumb from "@/components/custom-ui/Breadcrumb";
-import { useClickOutside } from "@/hooks/useDropdown";
 import { formatPrice } from "@/common/format";
 import {
   useCreatePackage,
@@ -12,13 +11,15 @@ import {
   usePackages,
   useUpdatePackage,
 } from "@/hooks/data/usePackageHooks";
-import { Spinner } from "@/components/custom-ui/Spinner";
 import {
   DeletePackageModal,
   EditPackageModal,
   type EditPackageFormErrors,
 } from "@/components/modals";
 import type { Package, UpdatePackageRequest } from "@/types/Package";
+import { Badge } from "@/components/custom-ui/Badge";
+import { Tooltip } from "@/components/custom-ui/Tooltip";
+import IconAction from "@/components/custom-ui/IconAction";
 
 type TableColumn = {
   key: ColumnKey;
@@ -27,11 +28,6 @@ type TableColumn = {
 
 type ColumnKey = string;
 
-type DropdownItemProps = {
-  label: string;
-  danger?: boolean;
-};
-
 type ComparisonRow = {
   packageName: string;
   price: number;
@@ -39,7 +35,8 @@ type ComparisonRow = {
   durationDays: number;
   memberLimit: number;
   ocrLimit: number;
-  consultantLimit: number;
+  allowVideoRecordingAccess: boolean;
+  healthAlertEnabled: boolean;
   description: string;
 };
 
@@ -53,7 +50,8 @@ function mapPackageToComparisonRow(pkg: Package): ComparisonRow {
     durationDays: pkg.durationDays,
     memberLimit: pkg.memberLimit,
     ocrLimit: pkg.ocrLimit,
-    consultantLimit: pkg.consultantLimit,
+    allowVideoRecordingAccess: pkg.allowVideoRecordingAccess,
+    healthAlertEnabled: pkg.healthAlertEnabled,
     description: pkg.description,
   };
 }
@@ -66,7 +64,8 @@ function mapPackageToUpdateRequest(pkg: Package): UpdatePackageRequest {
     durationDays: pkg.durationDays,
     memberLimit: pkg.memberLimit,
     ocrLimit: pkg.ocrLimit,
-    consultantLimit: pkg.consultantLimit,
+    allowVideoRecordingAccess: pkg.allowVideoRecordingAccess,
+    healthAlertEnabled: pkg.healthAlertEnabled,
     description: pkg.description,
   };
 }
@@ -78,7 +77,8 @@ const DEFAULT_PACKAGE_FORM: UpdatePackageRequest = {
   durationDays: 30,
   memberLimit: 1,
   ocrLimit: 0,
-  consultantLimit: 0,
+  allowVideoRecordingAccess: false,
+  healthAlertEnabled: false,
   description: "",
 };
 
@@ -92,10 +92,9 @@ function validateEditPackageForm(
   if (form.price < 0) errors.price = "Giá không được âm.";
   if (form.durationDays <= 0)
     errors.durationDays = "Thời hạn phải lớn hơn 0 ngày.";
-  if (form.memberLimit <= 0) errors.memberLimit = "Số thành viên phải lớn hơn 0.";
+  if (form.memberLimit <= 0)
+    errors.memberLimit = "Số thành viên phải lớn hơn 0.";
   if (form.ocrLimit < 0) errors.ocrLimit = "Giới hạn OCR không được âm.";
-  if (form.consultantLimit < 0)
-    errors.consultantLimit = "Giới hạn tư vấn không được âm.";
 
   return errors;
 }
@@ -114,12 +113,13 @@ const breadcrumbItems = [
   },
 ];
 export function PackageDashboardPage() {
-  const { data, isLoading, isError, error } = usePackages();
+  const { data, isLoading, isError, error, refetch } = usePackages();
   const { mutateAsync: createPackage, isPending: isCreatingPackage } =
     useCreatePackage();
   const { mutateAsync: deletePackage, isPending: isDeletingPackage } =
     useDeletePackage();
-  const { mutateAsync: updatePackage, isPending: isUpdatingPackage } = useUpdatePackage();
+  const { mutateAsync: updatePackage, isPending: isUpdatingPackage } =
+    useUpdatePackage();
   const [modalMode, setModalMode] = useState<"create" | "edit" | null>(null);
   const [editingPackage, setEditingPackage] = useState<Package | null>(null);
   const [deletingPackage, setDeletingPackage] = useState<Package | null>(null);
@@ -209,56 +209,97 @@ export function PackageDashboardPage() {
     }
   };
 
-  if (isLoading) {
-    return <div className="page-layout">
-      <div className="my-8 space-y-8">
-        <Spinner />
-      </div>
-    </div>;
-  }
-  if (isError) {
-    return <div className="page-layout">
-      <div className="my-8 space-y-8">
-        <p className="text-red-500">{error?.message}</p>
-      </div>
-    </div>;
-  }
   return (
     <div className="page-layout">
       {/* Header */}
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900 md:text-4xl dark:text-white">
             Quản lý gói
           </h1>
         </div>
-        <button
-          type="button"
-          onClick={handleOpenCreatePopup}
-          className="bg-primary text-primary-foreground inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition hover:opacity-90"
-        >
-          <FiPlus />
-          Thêm gói
-        </button>
-      </div>
-      {/* Content */}
-      <div className="my-8 space-y-8">
-        {packageList.length > 0 ? (
-          <PackageGrid
-            data={packageList}
-            onEdit={handleOpenEditPopup}
-            onDelete={handleOpenDeletePopup}
-          />
-        ) : (
-          <p className="text-gray-500">Không tìm thấy dữ liệu</p>
+        {!isLoading && !isError && (
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleOpenCreatePopup}
+              className="btn-primary"
+            >
+              <FiPlus />
+              Thêm gói
+            </button>
+          </div>
         )}
       </div>
-      {packageList.length > 0 && (
-        <div className="my-12 space-y-8">
-          <PackageComparisonTable columns={columns} rows={packageRows} />
-        </div>
-      )}
+
+      {/* Content */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="my-8 space-y-8"
+      >
+        {isLoading ? (
+          /* PREMIUM LOADING (SKELETONS) */
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {[...Array(6)].map((_, i) => (
+              <div
+                key={i}
+                className="h-48 animate-pulse rounded-2xl border border-gray-400 bg-white dark:border-white/10 dark:bg-white/5"
+              />
+            ))}
+          </div>
+        ) : isError ? (
+          /* NEW ERROR STATE PATTERN */
+          <div className="flex min-h-[400px] flex-col items-center justify-center py-10">
+            <div className="mb-4 rounded-full bg-red-100 p-4 text-red-500 dark:bg-red-500/10">
+              <FiPlus className="rotate-45 text-3xl" />
+            </div>
+            <p className="max-w-md text-center text-sm font-medium text-gray-900 dark:text-white">
+              {error?.message || "Đã xảy ra lỗi khi tải dữ liệu từ hệ thống"}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-6 rounded-lg border border-gray-400 bg-white px-6 py-2.5 text-xs font-medium text-gray-700 transition-all hover:bg-gray-50 dark:border-white/5 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : packageList.length > 0 ? (
+          /* DATA RENDER */
+          <>
+            <PackageGrid
+              data={packageList}
+              onEdit={handleOpenEditPopup}
+              onDelete={handleOpenDeletePopup}
+            />
+
+            <div className="my-12 space-y-8">
+              <PackageComparisonTable columns={columns} rows={packageRows} />
+            </div>
+          </>
+        ) : (
+          /* NEW EMPTY STATE PATTERN (WITH CTA, NO ICON) */
+          <div className="flex min-h-[400px] flex-col items-center justify-center py-10 text-center">
+            <div className="mb-4 rounded-full bg-gray-100 p-4 text-gray-400 dark:bg-white/5">
+              <FiPlus className="text-3xl" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Danh sách trống
+            </h3>
+            <p className="mt-2 text-sm text-gray-500 dark:text-white/50">
+              Chưa có dữ liệu nào được tìm thấy trong hệ thống
+            </p>
+            <button
+              onClick={handleOpenCreatePopup}
+              className="mt-6 flex items-center gap-2 rounded-lg bg-red-500 px-6 py-2.5 text-xs font-medium text-white transition-all hover:-translate-y-0.5 hover:opacity-90"
+            >
+              <FiPlus className="text-lg" />
+              Thêm gói ngay
+            </button>
+          </div>
+        )}
+      </motion.div>
 
       {modalMode && modalForm && (
         <EditPackageModal
@@ -275,6 +316,7 @@ export function PackageDashboardPage() {
 
       {deletingPackage && (
         <DeletePackageModal
+          isOpen={!!deletingPackage}
           packageName={deletingPackage.packageName}
           isPending={isDeletingPackage}
           onClose={handleCloseDeletePopup}
@@ -296,7 +338,7 @@ function PackageComparisonTable({
     {
       label: "Giá gói",
       render: (row: ComparisonRow) =>
-        row.price === 0 ? "Miễn phí" : `${formatPrice(row.price)} ${row.currency}`,
+        row.price === 0 ? "Miễn phí" : formatPrice(row.price),
     },
     {
       label: "Thời hạn sử dụng",
@@ -312,9 +354,12 @@ function PackageComparisonTable({
         row.ocrLimit > 0 ? `${row.ocrLimit} lượt` : "Không hỗ trợ",
     },
     {
-      label: "Tư vấn chuyên gia",
-      render: (row: ComparisonRow) =>
-        row.consultantLimit > 0 ? `${row.consultantLimit} lượt` : "Không hỗ trợ",
+      label: "Xem lại video phiên khám",
+      render: (row: ComparisonRow) => row.allowVideoRecordingAccess,
+    },
+    {
+      label: "Cảnh báo tương tác thuốc (AI)",
+      render: (row: ComparisonRow) => row.healthAlertEnabled,
     },
     {
       label: "Mô tả",
@@ -323,19 +368,19 @@ function PackageComparisonTable({
   ];
 
   return (
-    <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
-      <table className="min-w-full text-sm">
+    <div className="overflow-x-auto rounded-2xl border border-gray-400 bg-white/80 backdrop-blur-md dark:border-white/10 dark:bg-white/5">
+      <table className="min-w-full text-sm tabular-nums">
         {/* Header */}
-        <thead className="bg-gray-50 dark:bg-white/10">
+        <thead className="bg-gray-50/50 dark:bg-white/5">
           <tr>
-            <th className="px-6 py-4 text-left font-semibold text-gray-600 dark:text-gray-300">
-              So sánh gói
+            <th className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-left text-[11px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+              Tính năng / Gói
             </th>
 
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`px-6 py-4 text-center font-semibold text-gray-700 dark:text-white`}
+                className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-center text-sm font-semibold text-gray-900 dark:text-white"
               >
                 {col.label}
               </th>
@@ -344,14 +389,14 @@ function PackageComparisonTable({
         </thead>
 
         {/* Body */}
-        <tbody className="divide-y divide-gray-100 dark:divide-white/10">
+        <tbody className="divide-y divide-gray-400 dark:divide-white/10">
           {featureRows.map((feature, rowIndex) => (
             <tr
               key={rowIndex}
-              className="hover:bg-gray-50 dark:hover:bg-white/5"
+              className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
             >
               {/* Feature label */}
-              <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+              <td className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-gray-700 dark:text-gray-300">
                 {feature.label}
               </td>
 
@@ -359,7 +404,10 @@ function PackageComparisonTable({
               {columns.map((_, colIndex) => {
                 const comparedPackageData = rows[colIndex];
                 return (
-                  <td key={colIndex} className={`px-6 py-4 text-center`}>
+                  <td
+                    key={colIndex}
+                    className="dark:border-border-dark border-r border-gray-400 px-6 py-4 text-center last:border-r-0"
+                  >
                     <TableCell
                       value={
                         comparedPackageData
@@ -383,31 +431,31 @@ function TableCell({ value }: { value: TableCellValue }) {
     return value ? (
       <HiCheck className="mx-auto text-lg text-emerald-500" />
     ) : (
-      <HiXMark className="mx-auto text-lg text-gray-300 dark:text-red-600" />
+      <HiXMark className="mx-auto text-lg text-gray-300 dark:text-red-500/50" />
     );
   }
 
   if (value === "Không giới hạn") {
-    return <span className="text-primary dark:text-primary">{value}</span>;
+    return (
+      <span className="text-primary/80 dark:text-primary/90 font-semibold">
+        {value}
+      </span>
+    );
   }
 
   if (value === "Không hỗ trợ") {
     return (
-      <span className="inline-flex items-center justify-center gap-1 text-rose-600 dark:text-rose-400">
+      <span className="inline-flex items-center justify-center gap-1 text-gray-400 dark:text-white/20">
         <HiXMark className="text-lg" />
       </span>
     );
   }
 
   if (value === "Miễn phí") {
-    return (
-      <span className="rounded-md bg-emerald-50 px-2 py-1 font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-        {value}
-      </span>
-    );
+    return <Badge value="Miễn phí" type="success" />;
   }
 
-  return <span className="text-gray-700 dark:text-gray-200">{value}</span>;
+  return <span className="text-gray-900 dark:text-gray-300">{value}</span>;
 }
 
 function PackageGrid({
@@ -442,139 +490,88 @@ function PackageCard({
   onEdit: (pkg: Package) => void;
   onDelete: (pkg: Package) => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
   const hasActiveSubscribers = pkg.activeSubscriberCount > 0;
 
-  useClickOutside(ref, () => setOpen(false));
   return (
     <motion.div
-      ref={ref}
-      className="group hover:border-primary dark:hover:bg-primary/10 relative flex h-full flex-col rounded-2xl border border-gray-100 bg-white p-5 transition-all duration-300 dark:border-white/10 dark:bg-white/5"
+      whileHover={{ y: -4 }}
+      className="card-primary group relative overflow-hidden"
     >
-      {/* Top */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3">
-          <div>
-            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-              {pkg.packageName}
-            </h4>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Cập nhật gần đây
+      {/* Glow Effect on Hover */}
+      <div className="from-primary/5 absolute inset-0 bg-linear-to-br via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+      {/* Top Section */}
+      <div className="relative flex items-start justify-between">
+        <div className="flex flex-col gap-1">
+          <h4 className="text-base font-bold tracking-tight text-gray-900 dark:text-white">
+            {pkg.packageName}
+          </h4>
+          <div className="flex items-center gap-2">
+            <p className="text-[13px] font-semibold text-gray-900 tabular-nums dark:text-white">
+              {pkg.price === 0 ? "Miễn phí" : formatPrice(pkg.price)}
             </p>
+            {pkg.price !== 0 && (
+              <span className="text-[11px] text-gray-500 dark:text-gray-400">
+                / {pkg.durationDays} ngày
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Dropdown */}
-        <div className="relative">
-          <button
-            onClick={() => setOpen(!open)}
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/10 dark:hover:text-white"
+        <div className="flex items-center gap-1">
+          <Tooltip content="Chỉnh sửa">
+            <IconAction
+              onClick={() => onEdit(pkg)}
+              icon={<FiEdit2 className="h-4 w-4" />}
+            />
+          </Tooltip>
+          <Tooltip
+            content={
+              hasActiveSubscribers
+                ? "Không thể xoá gói đang có người dùng"
+                : "Xoá gói"
+            }
           >
-            <FiMoreVertical />
-          </button>
-
-          <AnimatePresence>
-            {open && (
-              <motion.div
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.18, ease: "easeOut" }}
-                className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-white/10 bg-[#050505] backdrop-blur-xl"
-              >
-                <DropdownItem
-                  label="Sửa gói"
-                  onClick={() => {
-                    setOpen(false);
-                    onEdit(pkg);
-                  }}
-                />
-
-                <div className="h-px bg-white/10" />
-                <DropdownItem
-                  label="Xoá gói"
-                  danger
-                  disabled={hasActiveSubscribers}
-                  onClick={() => {
-                    if (hasActiveSubscribers) return;
-                    setOpen(false);
-                    onDelete(pkg);
-                  }}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
+            <div className={hasActiveSubscribers ? "cursor-not-allowed" : ""}>
+              <IconAction
+                onClick={() => !hasActiveSubscribers && onDelete(pkg)}
+                danger
+                disabled={hasActiveSubscribers}
+                icon={<FiTrash2 className="h-4 w-4" />}
+              />
+            </div>
+          </Tooltip>
         </div>
       </div>
 
+      {/* Description */}
+      <p className="mt-3 line-clamp-2 min-h-[32px] text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+        {pkg.description || "Không có mô tả cho gói dịch vụ này."}
+      </p>
+
       {/* Divider */}
-      <div className="my-4 h-px bg-gray-100 dark:bg-white/10" />
+      <div className="my-4 h-px bg-gray-200 dark:bg-white/5" />
 
-      {/* Content */}
-      <div className="flex items-end justify-between">
-        <div>
-          <p className="text-xl font-semibold text-gray-900 dark:text-white">
-            {pkg.price === 0 ? (
-              <span className="rounded-md bg-emerald-50 px-2 py-1 text-base font-semibold text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
-                Miễn phí
-              </span>
-            ) : (
-              formatPrice(pkg.price)
-            )}
-            {pkg.price !== 0 && (
-              <span className="ml-1 text-xs font-normal text-gray-500 dark:text-gray-400">
-                / tháng
-              </span>
-            )}
-          </p>
-
-          <div className="mt-1 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-            <FiUsers />
-            <span>{pkg.activeSubscriberCount} người dùng đang hoạt động</span>
-          </div>
+      {/* Stats Section */}
+      <div className="relative mt-auto flex items-center justify-between">
+        <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-white/40">
+          <FiUsers className="h-3.5 w-3.5" />
+          <span className="tabular-nums">
+            {pkg.activeSubscriberCount} đang dùng
+          </span>
         </div>
 
-        <StatusBadge status="active" />
+        <PackageStatusBadge isActive={true} />
       </div>
     </motion.div>
   );
 }
 
-function StatusBadge({ status }: { status: "active" | "inactive" }) {
-  const active = status === "active";
-
+function PackageStatusBadge({ isActive }: { isActive: boolean }) {
   return (
-    <span
-      className={`rounded-lg px-2 py-1 text-xs font-medium ${
-        active
-          ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-          : "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400"
-      }`}
-    >
-      {active ? "Đang hoạt động" : "Tạm ngưng"}
-    </span>
-  );
-}
-
-function DropdownItem({
-  label,
-  danger = false,
-  disabled = false,
-  onClick,
-}: DropdownItemProps & { disabled?: boolean; onClick?: () => void }) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      className={`w-full px-4 py-2 text-left text-sm transition-colors ${
-        danger
-          ? "text-red-400 hover:bg-red-500/10"
-          : "text-gray-300 hover:bg-white/5 hover:text-white"
-      } disabled:cursor-not-allowed disabled:opacity-50`}
-    >
-      {label}
-    </button>
+    <Badge
+      value={isActive ? "Đang hoạt động" : "Tạm ngưng"}
+      type={isActive ? "success" : "info"}
+    />
   );
 }

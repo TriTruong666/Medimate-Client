@@ -6,6 +6,7 @@ import IconAction from "@/components/custom-ui/IconAction";
 import { DataTableShell } from "@/components/custom-ui/DataTableShell";
 import { PATHS } from "@/config/paths";
 import { useLocation } from "react-router-dom";
+import { useClientPagination } from "@/hooks/useClientPagination";
 import {
   useManagementDoctors,
   useReviewDoctorAccount,
@@ -56,7 +57,7 @@ export default function AccountApprovePage() {
       <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
         <div>
           <Breadcrumb items={breadcrumbItems} />
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white md:text-4xl">
             {pageTitle}
           </h1>
         </div>
@@ -93,6 +94,15 @@ function AccountTable({ activeStatus }: { activeStatus: DoctorAccountStatus }) {
     } catch {}
   };
 
+  const {
+    page,
+    pageSize,
+    total,
+    pagedData,
+    handlePageChange,
+    handlePageSizeChange,
+  } = useClientPagination(safeRows, { initialPageSize: 5 });
+
   return (
     <>
       <DataTableShell
@@ -105,41 +115,58 @@ function AccountTable({ activeStatus }: { activeStatus: DoctorAccountStatus }) {
         loadingMessage="Đang tải danh sách tài khoản..."
         emptyTitle="Chưa có dữ liệu"
         emptyMessage="Không tìm thấy tài khoản nào trong trạng thái này."
-        tbodyClassName="dark:divide-border-dark divide-y divide-gray-100 bg-white/50 dark:bg-transparent"
+        tbodyClassName="dark:divide-border-dark divide-y divide-gray-400 bg-white/50 dark:bg-transparent"
         pagination={{
-            page: 1,
-            pageSize: Math.max(safeRows.length, 5),
-            total: safeRows.length,
-            onPageChange: () => {},
-            onPageSizeChange: () => {},
+            page,
+            pageSize,
+            total,
+            onPageChange: handlePageChange,
+            onPageSizeChange: handlePageSizeChange,
         }}
       >
-        {safeRows.map((row: DoctorAccount) => (
+        {pagedData.map((row: DoctorAccount) => (
           <tr
             key={row.doctorId}
-            className="transition-colors hover:bg-gray-50/50 dark:hover:bg-white/5"
+            className="transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
           >
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
+            {/* 1. Thông tin bác sĩ */}
+            <td className="border-r border-gray-400 p-4 dark:border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="bg-primary/10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-medium shadow-sm dark:bg-white/10 dark:text-white">
+                  {(row.fullName || "B").charAt(0)}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {row.fullName || "Tài khoản Bác sĩ"}
+                  </span>
+                  <span className="mt-1 text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                    Kinh nghiệm:{" "}
+                    <span className="font-semibold text-primary">
+                      {row.yearsOfExperience}
+                    </span>{" "}
+                    năm
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            {/* 2. Chuyên khoa & Đơn vị */}
+            <td className="border-r border-gray-400 p-4 dark:border-white/10">
               <div className="flex flex-col">
-                <span className="text-sm font-semibold text-gray-900 dark:text-white">
-                  {row.fullName || "Tài khoản Bác sĩ"}
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {row.specialty || "Chưa xác định chuyên khoa"}
                 </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Kinh nghiệm: <span className="font-medium">{row.yearsOfExperience}</span> năm
+                <span
+                  className="mt-1.5 max-w-[250px] truncate text-[11px] font-medium text-gray-600 dark:text-gray-400"
+                  title={row.currentHospitalName}
+                >
+                  {row.currentHospitalName || "Bệnh viện chưa cập nhật"}
                 </span>
               </div>
             </td>
-            <td className="dark:border-border-dark border-r border-gray-100 p-4">
-              <div className="flex flex-col">
-                <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                  {row.specialty || "Chưa xác định"}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px] mt-1" title={row.currentHospitalName}>
-                  {row.currentHospitalName || "Không rõ đơn vị"}
-                </span>
-              </div>
-            </td>
-            <td className="dark:border-border-dark border-r border-gray-100 p-4 text-center">
+
+            {/* 3. Trạng thái */}
+            <td className="border-r border-gray-400 p-4 text-center dark:border-white/10">
               {row.status === "Pending" ? (
                 <Badge type="warning" value="Chờ duyệt" />
               ) : row.status === "Verified" ? (
@@ -148,12 +175,14 @@ function AccountTable({ activeStatus }: { activeStatus: DoctorAccountStatus }) {
                 <Badge type="error" value="Bị từ chối" />
               )}
             </td>
+
+            {/* 4. Thao tác */}
             <td className="p-4 text-center">
-              <Tooltip content="Xem chi tiết tài khoản">
+              <Tooltip content="Xem chi tiết & duyệt tài khoản">
                 <IconAction
                   icon={<FiEye />}
                   onClick={() => setSelectedRow(row)}
-                  className="text-primary hover:text-primary dark:text-primary dark:hover:text-primary-light"
+                  className="text-primary hover:bg-primary/10 dark:text-primary-light"
                 />
               </Tooltip>
             </td>

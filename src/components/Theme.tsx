@@ -1,7 +1,8 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HiSun, HiMoon } from "react-icons/hi";
 import { motion, AnimatePresence } from "framer-motion";
+
 export function DarkModePillSwitch() {
   const [dark, setDark] = useState(false);
 
@@ -17,7 +18,7 @@ export function DarkModePillSwitch() {
   return (
     <button
       onClick={toggle}
-      className="relative h-9 w-16 rounded-full border border-white/10 bg-white/5 backdrop-blur-md transition"
+      className="relative h-9 w-16 rounded-full border border-gray-300 bg-white transition-all dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md"
     >
       {/* Thumb */}
       <span
@@ -37,6 +38,7 @@ export function DarkModePillSwitch() {
 
 export function DarkModeIconSwitch() {
   const [dark, setDark] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -50,26 +52,67 @@ export function DarkModeIconSwitch() {
     }
   }, []);
 
-  const toggleTheme = () => {
+  const toggleTheme = (e: React.MouseEvent<HTMLButtonElement>) => {
     const root = document.documentElement;
+    const isDark = root.classList.contains("dark");
+    const nextDark = !isDark;
 
-    if (root.classList.contains("dark")) {
-      root.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      setDark(false);
-    } else {
-      root.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-      setDark(true);
+    // Lấy tọa độ tâm của nút bấm để làm gốc vòng tròn
+    const rect = btnRef.current?.getBoundingClientRect();
+    const x = rect ? Math.round(rect.left + rect.width / 2) : e.clientX;
+    const y = rect ? Math.round(rect.top + rect.height / 2) : e.clientY;
+
+    // Tính bán kính đủ để phủ hết màn hình từ điểm click
+    const maxRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y),
+    );
+
+    const applyTheme = () => {
+      if (nextDark) {
+        root.classList.add("dark");
+        localStorage.setItem("theme", "dark");
+      } else {
+        root.classList.remove("dark");
+        localStorage.setItem("theme", "light");
+      }
+      setDark(nextDark);
+    };
+
+    // Fallback cho browser không hỗ trợ View Transitions API
+    if (!document.startViewTransition) {
+      applyTheme();
+      return;
     }
+
+    const transition = document.startViewTransition(applyTheme);
+
+    transition.ready.then(() => {
+      // Luôn animate layer MỚI mở rộng từ điểm click ra toàn màn hình
+      // z-index trong CSS đảm bảo new layer luôn nằm trên old layer
+      document.documentElement.animate(
+        {
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${maxRadius}px at ${x}px ${y}px)`,
+          ],
+        },
+        {
+          duration: 700,
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        },
+      );
+    });
   };
 
   return (
     <button
+      ref={btnRef}
       onClick={toggleTheme}
-      className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 backdrop-blur-md transition hover:bg-white/10"
+      className="relative flex h-10 w-10 items-center justify-center rounded-xl border border-gray-300 bg-white transition hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:backdrop-blur-md dark:hover:bg-white/10"
     >
-      {/* Glow */}
+      {/* Glow dark mode */}
       <AnimatePresence>
         {dark && (
           <motion.span

@@ -11,6 +11,7 @@ import {
   UnlockModal,
   UploadDocumentModal,
   ConfirmUpdateProfileModal,
+  ProcessDocumentModal,
 } from "./modals";
 import { closeModalAtom, modalAtom, paymentAtom } from "../stores/modalStore";
 import { AnimatePresence, motion } from "framer-motion";
@@ -58,6 +59,7 @@ export default function ModalContainer() {
             {modalKey === "transaction" && paymentData && (
               <PaymentQRModal {...paymentData} />
             )}
+            {modalKey === "process_rag" && <ProcessDocumentModal />}
           </motion.div>
         </motion.div>
       )}
