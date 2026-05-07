@@ -9,6 +9,7 @@ import {
   type PayoutFilterDto,
   type ProcessPayoutDto,
 } from "@/apis/payout.service";
+import { completeSubscriptionRefund } from "@/apis/family-subscription.service";
 
 export const PAYOUT_KEYS = {
   all: ["payouts"] as const,
@@ -74,6 +75,21 @@ export function useCompleteRefund() {
     },
     onError: (error: any) => {
       toast.error("Thất bại", error?.response?.data?.message || "Lỗi khi xử lý hoàn tiền");
+    },
+  });
+}
+
+export function useCompleteSubscriptionRefund() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ subscriptionId, transferImage }: { subscriptionId: string; transferImage?: File | null }) =>
+      completeSubscriptionRefund(subscriptionId, transferImage),
+    onSuccess: () => {
+      toast.success("Thành công", "Đã xác nhận hoàn tiền gói thành viên!");
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    },
+    onError: (error: any) => {
+      toast.error("Thất bại", error?.response?.data?.message || "Lỗi khi xử lý hoàn tiền gói");
     },
   });
 }

@@ -91,10 +91,10 @@ export function TransactionDrawer() {
                 <span
                   className={`font-mono text-3xl font-semibold tracking-tight ${transactionType?.startsWith("in")
                     ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-emerald-500 dark:text-emerald-400"
+                    : "text-red-500 dark:text-red-400"
                     }`}
                 >
-                  {transactionType?.startsWith("in") ? "+" : ""}
+                  {transactionType?.startsWith("in") ? "+" : "-"}
                   {formatPrice(data.amount || 0)}
                 </span>
                 <StatusBadge status={status} />
@@ -159,9 +159,11 @@ export function TransactionDrawer() {
                             ? "Thanh toán gói"
                             : transactionType === "out_refund_session"
                               ? "Hoàn tiền tư vấn"
-                              : transactionType === "out_clinic_payout"
-                                ? "Thanh toán phòng khám"
-                                : "Tiền chi ra"
+                              : transactionType === "out_refund_subscription"
+                                ? "Hoàn tiền gói thành viên"
+                                : transactionType === "out_clinic_payout"
+                                  ? "Thanh toán phòng khám"
+                                  : "Tiền chi ra"
                       }
                     />
                   }

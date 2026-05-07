@@ -68,11 +68,10 @@ export default function ClinicPayoutPage() {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`relative flex items-center gap-2 px-2 py-2.5 text-[13px] font-medium transition-colors ${
-              activeTab === tab.id
+            className={`relative flex items-center gap-2 px-2 py-2.5 text-[13px] font-medium transition-colors ${activeTab === tab.id
                 ? "text-primary"
                 : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-            }`}
+              }`}
           >
             {tab.label}
             {activeTab === tab.id && (
@@ -205,7 +204,7 @@ function PayoutDetailView({
     { key: "clinic", label: "Phòng khám / Người nhận", width: "w-[20%]" },
     { key: "appointment", label: "Lịch hẹn", width: "w-[20%]" },
     { key: "amount", label: "Số tiền", width: "w-[15%]" },
-    { key: "bank", label: "Ngân hàng nhận", width: "w-[20%]" },
+    // { key: "bank", label: "Ngân hàng nhận", width: "w-[20%]" },
     {
       key: "status",
       label: "Trạng thái",

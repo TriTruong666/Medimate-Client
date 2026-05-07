@@ -57,3 +57,17 @@ export async function updateSubscriptionStatus(
   );
   return res.data;
 }
+
+export async function completeSubscriptionRefund(
+  subscriptionId: string,
+  transferImage?: File | null,
+): Promise<BaseResponse<boolean>> {
+  const formData = new FormData();
+  if (transferImage) formData.append("TransferImage", transferImage);
+  const res = await axiosNETClient.post(
+    `/api/v1/families/subscriptions/${subscriptionId}/complete-refund`,
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } },
+  );
+  return res.data;
+}
