@@ -4,6 +4,7 @@ import type {
   GetTransactionsParams,
   Transaction,
   TransactionDetail,
+  TransactionStatistics,
 } from "@/types/Transaction";
 import { axiosNETClient } from "./client";
 
@@ -32,3 +33,8 @@ export async function getUserTransactions(
   });
   return res.data;
 }
+
+export async function getTransactionStatistics(): Promise<BaseResponse<TransactionStatistics>> {
+  const res = await axiosNETClient.get("/api/v1/transactions/statistics");
+  return res.data;
+}

@@ -161,9 +161,7 @@ export function TransactionDrawer() {
                               ? "Hoàn tiền tư vấn"
                               : transactionType === "out_clinic_payout"
                                 ? "Thanh toán phòng khám"
-                                : transactionType === "doctor_payout"
-                                  ? "Thanh toán từ hệ thống"
-                                  : "Tiền chi ra"
+                                : "Tiền chi ra"
                       }
                     />
                   }

@@ -147,14 +147,40 @@ export default function TransactionDashboardPage() {
     return data.items as Transaction[];
   }, [data?.items, isDoctor]);
 
+  const [activeTab, setActiveTab] = useState<"all" | "in" | "out">("all");
+
   const handlePageChange = (nextPage: number) => {
     if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
-
-    setPagination((prev) => ({
-      ...prev,
-      pageNumber: nextPage,
-    }));
+    setPagination((prev) => ({ ...prev, pageNumber: nextPage }));
   };
+
+  const tabCounts = useMemo(() => {
+    const inCount = tableData.filter((t) =>
+      t.transactionType?.toLowerCase().startsWith("in"),
+    ).length;
+    const outCount = tableData.filter((t) =>
+      t.transactionType?.toLowerCase().startsWith("out"),
+    ).length;
+    return { all: tableData.length, in: inCount, out: outCount };
+  }, [tableData]);
+
+  const filteredData = useMemo(() => {
+    if (activeTab === "all") return tableData;
+    if (activeTab === "in")
+      return tableData.filter((t) =>
+        t.transactionType?.toLowerCase().startsWith("in"),
+      );
+    // out
+    return tableData.filter((t) =>
+      t.transactionType?.toLowerCase().startsWith("out"),
+    );
+  }, [tableData, activeTab]);
+
+  const tabs: { key: "all" | "in" | "out"; label: string; color: string }[] = [
+    { key: "all", label: "Tất cả", color: "text-gray-500" },
+    { key: "in",  label: "Thu vào", color: "text-emerald-500" },
+    { key: "out", label: "Chi ra",  color: "text-rose-500" },
+  ];
 
   return (
     <div className="page-layout">
@@ -167,10 +193,41 @@ export default function TransactionDashboardPage() {
           </h1>
         </div>
       </div>
+
+      {/* Tab bar */}
+      <div className="mt-6 flex items-center gap-1 rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-white/10 dark:bg-white/5 w-fit">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              activeTab === tab.key
+                ? "bg-white shadow-sm text-gray-900 dark:bg-white/10 dark:text-white"
+                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            }`}
+          >
+            {tab.label}
+            <span
+              className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-bold ${
+                activeTab === tab.key
+                  ? tab.key === "in"
+                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                    : tab.key === "out"
+                    ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
+                    : "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200"
+                  : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500"
+              }`}
+            >
+              {tabCounts[tab.key]}
+            </span>
+          </button>
+        ))}
+      </div>
+
       {/* Content */}
-      <div className="my-8">
+      <div className="my-6">
         <TransactionTable
-          data={tableData}
+          data={filteredData}
           isLoading={isLoading}
           isError={isError}
           errorMessage={
@@ -187,6 +244,7 @@ export default function TransactionDashboardPage() {
     </div>
   );
 }
+
 
 function TransactionTable({
   data,
@@ -363,12 +421,11 @@ function TransactionTypeBadge({
   transaction_type: string;
 }) {
   const map: Record<string, React.ReactElement> = {
-    in_session: <Badge type="success" value="Thanh toán tư vấn" />,
-    in_package: <Badge type="success" value="Thanh toán gói" />,
+    in_session:        <Badge type="success" value="Thanh toán tư vấn" />,
+    in_package:        <Badge type="success" value="Thanh toán gói" />,
     out_refund_session: <Badge type="warning" value="Hoàn tiền tư vấn" />,
-    out_clinic_payout: <Badge type="warning" value="Thanh toán phòng khám" />,
-    doctor_payout: <Badge type="success" value="Thanh toán từ hệ thống" />,
-    out: <Badge type="warning" value="Tiền chi ra" />,
+    out_clinic_payout:  <Badge type="warning" value="Thanh toán phòng khám" />,
+    out:               <Badge type="warning" value="Tiền chi ra" />,
   };
 
   return map[transaction_type] || <Badge type="info" value={transaction_type} />;

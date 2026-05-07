@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -25,7 +26,7 @@ import {
   PointElement,
   Filler,
 } from "chart.js";
-import { Doughnut, Line } from "react-chartjs-2";
+import { Doughnut, Line, Bar } from "react-chartjs-2";
 
 import { getUsers } from "@/apis/user.service";
 import { getDocumentList } from "@/apis/rag_document.service";
@@ -34,7 +35,7 @@ import {
   getPrescriptionImages,
 } from "@/apis/asset.service";
 import { getDoctorContracts } from "@/apis/doctor-contract.service";
-import { getTransactions } from "@/apis/transaction.service";
+import { getTransactions, getTransactionStatistics } from "@/apis/transaction.service";
 import { getRatings } from "@/apis/rating.service";
 
 ChartJS.register(
@@ -84,6 +85,10 @@ export default function SummaryDashboardPage() {
     queryKey: ["admin-summary", "transactions"],
     queryFn: () => getTransactions({ pageNumber: 1, pageSize: 1 }),
   });
+  const { data: txStatsData, isLoading: isStatsLoad } = useQuery({
+    queryKey: ["admin-summary", "tx-statistics"],
+    queryFn: () => getTransactionStatistics(),
+  });
   const { data: ratingsData, isLoading: isRatingsLoad } = useQuery({
     queryKey: ["admin-summary", "ratings"],
     queryFn: () => getRatings({ pageNumber: 1, pageSize: 1 }),
@@ -94,6 +99,13 @@ export default function SummaryDashboardPage() {
   const totalPresc = prescriptionsData?.data?.totalCount ?? 0;
   const totalTransactions = transactionsData?.data?.totalCount ?? 0;
   const totalRatings = ratingsData?.data?.totalCount ?? 0;
+
+  const totalIncoming = txStatsData?.data?.totalIncoming ?? 0;
+  const totalOutgoing = txStatsData?.data?.totalOutgoing ?? 0;
+  const netRevenue = txStatsData?.data?.netRevenue ?? 0;
+
+  const formatCurrency = (val: number) =>
+    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", notation: "compact", maximumFractionDigits: 1 }).format(val);
 
   const userRoleData = {
     labels: ["Khách hàng", "Bác sĩ"],
@@ -118,11 +130,13 @@ export default function SummaryDashboardPage() {
     },
   };
 
+  const [chartType, setChartType] = useState<"line" | "bar">("line");
+
   const lineData = {
     labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
     datasets: [
       {
-        label: "Đang xử lý",
+        label: "Thu vào",
         data: [120, 190, 170, 260, 240, 300, 280],
         borderColor: "#a855f7",
         backgroundColor: "rgba(168, 85, 247, 0.15)",
@@ -131,14 +145,14 @@ export default function SummaryDashboardPage() {
         pointRadius: 0,
       },
       {
-        label: "Hoàn tất",
+        label: "Chi ra",
         data: [80, 140, 130, 200, 190, 220, 210],
         borderColor: "#22c55e",
         tension: 0.4,
         pointRadius: 0,
       },
       {
-        label: "Thất bại",
+        label: "Doanh thu thuần",
         data: [20, 40, 35, 60, 50, 70, 65],
         borderColor: "#f97316",
         tension: 0.4,
@@ -147,14 +161,43 @@ export default function SummaryDashboardPage() {
     ],
   };
 
-  const lineOptions = {
+  const barData = {
+    labels: ["T2", "T3", "T4", "T5", "T6", "T7", "CN"],
+    datasets: [
+      {
+        label: "Thu vào",
+        data: [120, 190, 170, 260, 240, 300, 280],
+        backgroundColor: "rgba(168, 85, 247, 0.65)",
+        borderColor: "#a855f7",
+        borderWidth: 0,
+        borderRadius: 4,
+      },
+      {
+        label: "Chi ra",
+        data: [80, 140, 130, 200, 190, 220, 210],
+        backgroundColor: "rgba(34, 197, 94, 0.65)",
+        borderColor: "#22c55e",
+        borderWidth: 0,
+        borderRadius: 4,
+      },
+      {
+        label: "Doanh thu thuần",
+        data: [20, 40, 35, 60, 50, 70, 65],
+        backgroundColor: "rgba(249, 115, 22, 0.65)",
+        borderColor: "#f97316",
+        borderWidth: 0,
+        borderRadius: 4,
+      },
+    ],
+  };
+
+  const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { display: false },
       tooltip: {
-        mode: "index" as const,
-        intersect: false,
+        enabled: false,
       },
     },
     scales: {
@@ -168,6 +211,7 @@ export default function SummaryDashboardPage() {
       },
     },
   };
+
 
   const currentDate = new Date().toLocaleDateString("vi-VN", {
     weekday: "long",
@@ -414,47 +458,80 @@ export default function SummaryDashboardPage() {
         >
           {/* Chart Header */}
           <div className="mb-8 flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
-            <div className="flex gap-16">
+            <div className="flex gap-10">
+              {/* Thu vào */}
               <div>
                 <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                  Lưu lượng hoạt động
+                  Tổng thu vào
                 </p>
-                {isTransLoad ? (
-                  <div className="h-9 w-20 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
+                {isStatsLoad ? (
+                  <div className="h-9 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
                 ) : (
-                  <h3 className="text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
-                    {totalTransactions.toLocaleString()}
-                    <span className="ml-1 text-base font-normal text-gray-400">
-                      txn
-                    </span>
+                  <h3 className="text-3xl font-semibold tracking-tight tabular-nums text-gray-900 dark:text-white">
+                    {formatCurrency(totalIncoming)}
                   </h3>
                 )}
               </div>
 
+              {/* Chi ra */}
               <div>
                 <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
-                  Số lượng hành động
+                  Tổng chi ra
                 </p>
-                <h3 className="text-3xl font-semibold tracking-tight text-gray-900 tabular-nums dark:text-white">
-                  {activeUsersCount}
-                </h3>
+                {isStatsLoad ? (
+                  <div className="h-9 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
+                ) : (
+                  <h3 className="text-3xl font-semibold tracking-tight tabular-nums text-gray-900 dark:text-white">
+                    {formatCurrency(totalOutgoing)}
+                  </h3>
+                )}
+              </div>
+
+              {/* Doanh thu thuần */}
+              <div>
+                <p className="mb-1 text-xs font-medium tracking-wider text-gray-500 uppercase">
+                  Doanh thu thuần
+                </p>
+                {isStatsLoad ? (
+                  <div className="h-9 w-28 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
+                ) : (
+                  <h3 className={`text-3xl font-semibold tracking-tight tabular-nums ${
+                    netRevenue >= 0 ? "text-gray-900 dark:text-white" : "text-rose-500"
+                  }`}>
+                    {formatCurrency(netRevenue)}
+                  </h3>
+                )}
               </div>
             </div>
 
             {/* Chart type switch */}
             <div className="flex gap-1 rounded-lg bg-gray-100 p-1 dark:bg-white/5">
-              <button className="bg-primary flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-white shadow-sm">
+              <button
+                onClick={() => setChartType("line")}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                  chartType === "line"
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-white/5 dark:hover:text-white"
+                }`}
+              >
                 <MdOutlineShowChart className="text-sm" />
                 Line
               </button>
-              <button className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium text-gray-400 transition hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-white/5 dark:hover:text-white">
+              <button
+                onClick={() => setChartType("bar")}
+                className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition ${
+                  chartType === "bar"
+                    ? "bg-primary text-white shadow-sm"
+                    : "text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-white/5 dark:hover:text-white"
+                }`}
+              >
                 <HiOutlineChartBar className="text-sm" />
                 Bar
               </button>
             </div>
           </div>
 
-          {/* Metrics filter */}
+          {/* Metrics filter / legend */}
           <div className="mb-6 flex flex-wrap items-center gap-x-8 gap-y-4">
             <div className="flex flex-wrap gap-6">
               <button className="relative pb-1 text-xs font-semibold text-gray-900 dark:text-white">
@@ -463,22 +540,26 @@ export default function SummaryDashboardPage() {
               </button>
               <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-gray-900 dark:hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-purple-500" />
-                Đang xử lý
+                Thu vào
               </button>
               <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-gray-900 dark:hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                Hoàn tất
+                Chi ra
               </button>
               <button className="flex items-center gap-2 text-xs font-medium text-gray-400 transition hover:text-gray-900 dark:hover:text-white">
                 <span className="h-1.5 w-1.5 rounded-full bg-orange-500" />
-                Thất bại
+                Doanh thu thuần
               </button>
             </div>
           </div>
 
           {/* Chart */}
           <div className="relative h-64 w-full">
-            <Line data={lineData} options={lineOptions} />
+            {chartType === "bar" ? (
+              <Bar data={barData} options={chartOptions} />
+            ) : (
+              <Line data={lineData} options={chartOptions} />
+            )}
           </div>
         </motion.div>
       </motion.div>
