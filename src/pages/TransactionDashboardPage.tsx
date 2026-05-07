@@ -103,12 +103,17 @@ export default function TransactionDashboardPage() {
   const isDoctor = user?.role === "Doctor";
   const userId = user?.userId ?? "";
 
+  const [activeTab, setActiveTab] = useState<"all" | "in" | "out" | "refund">("all");
+
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
     pageSize: 10,
   });
 
-  const allTransactionsQuery = useTransactionList(pagination, {
+  const allTransactionsQuery = useTransactionList({
+    ...pagination,
+    type: activeTab === "all" ? undefined : activeTab,
+  }, {
     enabled: !isDoctor,
   });
 
@@ -147,39 +152,21 @@ export default function TransactionDashboardPage() {
     return data.items as Transaction[];
   }, [data?.items, isDoctor]);
 
-  const [activeTab, setActiveTab] = useState<"all" | "in" | "out">("all");
-
   const handlePageChange = (nextPage: number) => {
     if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
     setPagination((prev) => ({ ...prev, pageNumber: nextPage }));
   };
 
-  const tabCounts = useMemo(() => {
-    const inCount = tableData.filter((t) =>
-      t.transactionType?.toLowerCase().startsWith("in"),
-    ).length;
-    const outCount = tableData.filter((t) =>
-      t.transactionType?.toLowerCase().startsWith("out"),
-    ).length;
-    return { all: tableData.length, in: inCount, out: outCount };
-  }, [tableData]);
+  const handleTabChange = (tab: "all" | "in" | "out" | "refund") => {
+    setActiveTab(tab);
+    setPagination((prev) => ({ ...prev, pageNumber: 1 }));
+  };
 
-  const filteredData = useMemo(() => {
-    if (activeTab === "all") return tableData;
-    if (activeTab === "in")
-      return tableData.filter((t) =>
-        t.transactionType?.toLowerCase().startsWith("in"),
-      );
-    // out
-    return tableData.filter((t) =>
-      t.transactionType?.toLowerCase().startsWith("out"),
-    );
-  }, [tableData, activeTab]);
-
-  const tabs: { key: "all" | "in" | "out"; label: string; color: string }[] = [
+  const tabs: { key: "all" | "in" | "out" | "refund"; label: string; color: string }[] = [
     { key: "all", label: "Tất cả", color: "text-gray-500" },
     { key: "in", label: "Thu vào", color: "text-emerald-500" },
     { key: "out", label: "Chi ra", color: "text-rose-500" },
+    { key: "refund", label: "Hoàn tiền", color: "text-orange-500" },
   ];
 
   return (
@@ -199,25 +186,13 @@ export default function TransactionDashboardPage() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabChange(tab.key)}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${activeTab === tab.key
               ? "bg-white shadow-sm text-gray-900 dark:bg-white/10 dark:text-white"
               : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
           >
             {tab.label}
-            <span
-              className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-bold ${activeTab === tab.key
-                ? tab.key === "in"
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                  : tab.key === "out"
-                    ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
-                    : "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200"
-                : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500"
-                }`}
-            >
-              {tabCounts[tab.key]}
-            </span>
           </button>
         ))}
       </div>
@@ -225,7 +200,7 @@ export default function TransactionDashboardPage() {
       {/* Content */}
       <div className="my-6">
         <TransactionTable
-          data={filteredData}
+          data={tableData}
           isLoading={isLoading}
           isError={isError}
           errorMessage={
@@ -268,17 +243,17 @@ function TransactionTable({
     }
     openDrawer("transaction_details");
   };
-  const demoPaymentData = {
-    doctorName: "BS. Nguyễn Minh Hoàng",
-    bankName: "Vietcombank",
-    bankAccount: "0123456789",
-    accountName: "NGUYEN MINH HOANG",
-    amount: 13750000,
-    period: "02/2026",
-    transferContent: "PAY-2026-02 DOC-8841",
-    qrImageUrl:
-      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_DEMO",
-  };
+  // const demoPaymentData = {
+  //   doctorName: "BS. Nguyễn Minh Hoàng",
+  //   bankName: "Vietcombank",
+  //   bankAccount: "0123456789",
+  //   accountName: "NGUYEN MINH HOANG",
+  //   amount: 13750000,
+  //   period: "02/2026",
+  //   transferContent: "PAY-2026-02 DOC-8841",
+  //   qrImageUrl:
+  //     "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_DEMO",
+  // };
   return (
     <DataTableShell
       columns={columns}
