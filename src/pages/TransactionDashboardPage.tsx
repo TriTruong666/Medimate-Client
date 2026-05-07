@@ -103,6 +103,8 @@ export default function TransactionDashboardPage() {
   const isDoctor = user?.role === "Doctor";
   const userId = user?.userId ?? "";
 
+  const [activeTab, setActiveTab] = useState<"all" | "in" | "out">("all");
+
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
     pageSize: 10,
@@ -146,8 +148,6 @@ export default function TransactionDashboardPage() {
     }
     return data.items as Transaction[];
   }, [data?.items, isDoctor]);
-
-  const [activeTab, setActiveTab] = useState<"all" | "in" | "out">("all");
 
   const handlePageChange = (nextPage: number) => {
     if (nextPage < 1 || nextPage > totalPages || nextPage === page) return;
@@ -255,11 +255,10 @@ function TransactionTable({
   total,
   onPageChange,
 }: Omit<TransactionTableProps, "onPageSizeChange">) {
-  const [, openPaymentModal] = useAtom(openTransactionModalAtom);
+  const [openPaymentModal] = useAtom(openTransactionModalAtom);
   const openDrawer = useSetAtom(openDrawerAtom);
   const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
   const setPayoutDetailData = useSetAtom(payoutDetailDataAtom);
-  const { mutate: completeSubRefund, isPending: isRefundingSubscription } = useCompleteSubscriptionRefund();
 
   const handleOpenDetailModal = (row: any) => {
     if (row.originalPayoutData) {
@@ -269,17 +268,17 @@ function TransactionTable({
     }
     openDrawer("transaction_details");
   };
-  const demoPaymentData = {
-    doctorName: "BS. Nguyễn Minh Hoàng",
-    bankName: "Vietcombank",
-    bankAccount: "0123456789",
-    accountName: "NGUYEN MINH HOANG",
-    amount: 13750000,
-    period: "02/2026",
-    transferContent: "PAY-2026-02 DOC-8841",
-    qrImageUrl:
-      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_DEMO",
-  };
+  // const demoPaymentData = {
+  //   doctorName: "BS. Nguyễn Minh Hoàng",
+  //   bankName: "Vietcombank",
+  //   bankAccount: "0123456789",
+  //   accountName: "NGUYEN MINH HOANG",
+  //   amount: 13750000,
+  //   period: "02/2026",
+  //   transferContent: "PAY-2026-02 DOC-8841",
+  //   qrImageUrl:
+  //     "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_DEMO",
+  // };
   return (
     <DataTableShell
       columns={columns}
@@ -337,42 +336,18 @@ function TransactionTable({
 
             {/* Actions */}
             <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
-              {rowType === "out_refund_subscription" && rowStatus === "pending" ? (
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    disabled={isRefundingSubscription}
-                    onClick={() => {
-                      if (window.confirm("Xác nhận đã chuyển khoản hoàn tiền gói thành viên này?"))
-                        completeSubRefund({ subscriptionId: row.transactionId });
-                    }}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition-all duration-200 hover:bg-emerald-100 active:scale-95 disabled:opacity-50 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
-                  >
-                    <HiOutlineCreditCard size={14} />
-                    {isRefundingSubscription ? "Đang xử lý..." : "Hoàn tiền"}
-                  </button>
-                </div>
-              ) : rowType.startsWith("out") && rowStatus === "pending" ? (
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => openPaymentModal(demoPaymentData)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-gray-400 bg-white px-3 py-1.5 text-xs font-medium text-gray-900 transition-all duration-200 hover:bg-gray-50 active:scale-95 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
-                  >
-                    <HiOutlineCreditCard size={14} />
-                    Thanh toán
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center gap-2">
-                  <Tooltip content="Chi tiết">
-                    <IconAction
-                      icon={
-                        <IoIosInformationCircleOutline className="text-gray-600 dark:text-gray-300" />
-                      }
-                      onClick={() => handleOpenDetailModal(row)}
-                    />
-                  </Tooltip>
-                </div>
-              )}
+
+              <div className="flex items-center justify-center gap-2">
+                <Tooltip content="Chi tiết">
+                  <IconAction
+                    icon={
+                      <IoIosInformationCircleOutline className="text-gray-600 dark:text-gray-300" />
+                    }
+                    onClick={() => handleOpenDetailModal(row)}
+                  />
+                </Tooltip>
+              </div>
+
             </td>
           </tr>
         );

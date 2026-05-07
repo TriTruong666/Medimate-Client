@@ -16,6 +16,7 @@ import {
   usePayoutSummary,
   useProcessPayoutMutation,
 } from "@/hooks/data/usePayoutHooks";
+import { useClinic } from "@/hooks/data/useClinicHooks";
 import type { PayoutSummaryDto } from "@/apis/payout.service";
 import { PATHS } from "@/config/paths";
 import { formatPrice } from "@/common/format";
@@ -204,7 +205,7 @@ function PayoutDetailView({
     { key: "clinic", label: "Phòng khám / Người nhận", width: "w-[20%]" },
     { key: "appointment", label: "Lịch hẹn", width: "w-[20%]" },
     { key: "amount", label: "Số tiền", width: "w-[15%]" },
-    // { key: "bank", label: "Ngân hàng nhận", width: "w-[20%]" },
+    { key: "bank", label: "Ngân hàng nhận", width: "w-[20%]" },
     {
       key: "status",
       label: "Trạng thái",
@@ -512,6 +513,8 @@ function ProcessPayoutModal({
   summary: PayoutSummaryDto;
   onClose: () => void;
 }) {
+  const { data: clinicDetail, isLoading: isLoadingClinic } = useClinic(summary.clinicId);
+  
   const processMutation = useProcessPayoutMutation();
   const [note, setNote] = useState("");
   const imageRef = useRef<HTMLInputElement>(null);
@@ -557,6 +560,24 @@ function ProcessPayoutModal({
             {summary.totalPendingAmount.toLocaleString()} VND
           </strong>
         </p>
+
+        {/* Thông tin ngân hàng */}
+        <div className="mb-6 rounded-xl bg-gray-50 p-4 border border-gray-200 dark:bg-white/5 dark:border-white/10">
+          <h3 className="mb-2 text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            Thông tin nhận tiền (Phòng khám)
+          </h3>
+          {isLoadingClinic ? (
+            <p className="text-sm text-gray-500">Đang tải thông tin...</p>
+          ) : clinicDetail ? (
+            <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+              <p><span className="font-medium">Ngân hàng:</span> {clinicDetail.bankName || "Chưa cập nhật"}</p>
+              <p><span className="font-medium">Số TK:</span> {clinicDetail.bankAccountNumber || "Chưa cập nhật"}</p>
+              <p><span className="font-medium">Chủ TK:</span> {clinicDetail.bankAccountHolder || "Chưa cập nhật"}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-red-500">Không tải được thông tin ngân hàng.</p>
+          )}
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

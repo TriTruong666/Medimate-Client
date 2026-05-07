@@ -7,6 +7,7 @@ export type Transaction = {
   transactionType: string;
   totalAmount: number;
   status: string;
+  referenceId?: string;
 };
 
 export type TransactionDetail = {
