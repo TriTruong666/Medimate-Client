@@ -14,7 +14,7 @@ import {
   useTransactionList,
   useUserTransactionList,
 } from "@/hooks/data/useTransactionHooks";
-import { usePayouts } from "@/hooks/data/usePayoutHooks";
+import { usePayouts, useCompleteSubscriptionRefund } from "@/hooks/data/usePayoutHooks";
 import type { PaginationParams } from "@/common/query.params";
 import type { Transaction } from "@/types/Transaction";
 import { useAuth } from "@/hooks/useAuth";
@@ -201,19 +201,19 @@ export default function TransactionDashboardPage() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${activeTab === tab.key
-                ? "bg-white shadow-sm text-gray-900 dark:bg-white/10 dark:text-white"
-                : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              ? "bg-white shadow-sm text-gray-900 dark:bg-white/10 dark:text-white"
+              : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
           >
             {tab.label}
             <span
               className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-bold ${activeTab === tab.key
-                  ? tab.key === "in"
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                    : tab.key === "out"
-                      ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
-                      : "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200"
-                  : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500"
+                ? tab.key === "in"
+                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
+                  : tab.key === "out"
+                    ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
+                    : "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200"
+                : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500"
                 }`}
             >
               {tabCounts[tab.key]}
@@ -259,6 +259,7 @@ function TransactionTable({
   const openDrawer = useSetAtom(openDrawerAtom);
   const setTransactionDetailId = useSetAtom(transactionDetailIdAtom);
   const setPayoutDetailData = useSetAtom(payoutDetailDataAtom);
+  const { mutate: completeSubRefund, isPending: isRefundingSubscription } = useCompleteSubscriptionRefund();
 
   const handleOpenDetailModal = (row: any) => {
     if (row.originalPayoutData) {
@@ -336,7 +337,21 @@ function TransactionTable({
 
             {/* Actions */}
             <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
-              {rowType.startsWith("out") && rowStatus === "pending" ? (
+              {rowType === "out_refund_subscription" && rowStatus === "pending" ? (
+                <div className="flex items-center justify-center gap-2">
+                  <button
+                    disabled={isRefundingSubscription}
+                    onClick={() => {
+                      if (window.confirm("Xác nhận đã chuyển khoản hoàn tiền gói thành viên này?"))
+                        completeSubRefund({ subscriptionId: row.transactionId });
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-emerald-400 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition-all duration-200 hover:bg-emerald-100 active:scale-95 disabled:opacity-50 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
+                  >
+                    <HiOutlineCreditCard size={14} />
+                    {isRefundingSubscription ? "Đang xử lý..." : "Hoàn tiền"}
+                  </button>
+                </div>
+              ) : rowType.startsWith("out") && rowStatus === "pending" ? (
                 <div className="flex items-center justify-center gap-2">
                   <button
                     onClick={() => openPaymentModal(demoPaymentData)}
@@ -348,9 +363,6 @@ function TransactionTable({
                 </div>
               ) : (
                 <div className="flex items-center justify-center gap-2">
-                  {/* <Tooltip content="In hoá đơn">
-                    <IconAction icon={<HiOutlinePrinter />} />
-                  </Tooltip> */}
                   <Tooltip content="Chi tiết">
                     <IconAction
                       icon={
