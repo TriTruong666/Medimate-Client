@@ -30,3 +30,9 @@ export type GetTransactionsParams = QueryParams<Transaction> & {
   type?: string;
   status?: string;
 };
+
+export type TransactionStatistics = {
+  totalIncoming: number;
+  totalOutgoing: number;
+  netRevenue: number;
+};
