@@ -211,7 +211,7 @@ export default function TransactionDashboardPage() {
       {/* Content */}
       <div className="my-6">
         <TransactionTable
-          data={filteredData}
+          data={tableData}
           isLoading={isLoading}
           isError={isError}
           errorMessage={
