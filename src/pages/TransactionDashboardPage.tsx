@@ -110,7 +110,10 @@ export default function TransactionDashboardPage() {
     pageSize: 10,
   });
 
-  const allTransactionsQuery = useTransactionList(pagination, {
+  const allTransactionsQuery = useTransactionList({
+    ...pagination,
+    type: activeTab === "all" ? undefined : activeTab,
+  }, {
     enabled: !isDoctor,
   });
 
@@ -154,15 +157,10 @@ export default function TransactionDashboardPage() {
     setPagination((prev) => ({ ...prev, pageNumber: nextPage }));
   };
 
-  const tabCounts = useMemo(() => {
-    const inCount = tableData.filter((t) =>
-      t.transactionType?.toLowerCase().startsWith("in"),
-    ).length;
-    const outCount = tableData.filter((t) =>
-      t.transactionType?.toLowerCase().startsWith("out"),
-    ).length;
-    return { all: tableData.length, in: inCount, out: outCount };
-  }, [tableData]);
+  const handleTabChange = (tab: "all" | "in" | "out") => {
+    setActiveTab(tab);
+    setPagination((prev) => ({ ...prev, pageNumber: 1 }));
+  };
 
   const filteredData = useMemo(() => {
     if (activeTab === "all") return tableData;
@@ -199,25 +197,13 @@ export default function TransactionDashboardPage() {
         {tabs.map((tab) => (
           <button
             key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => handleTabChange(tab.key)}
             className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-all duration-200 ${activeTab === tab.key
               ? "bg-white shadow-sm text-gray-900 dark:bg-white/10 dark:text-white"
               : "text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               }`}
           >
             {tab.label}
-            <span
-              className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-bold ${activeTab === tab.key
-                ? tab.key === "in"
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300"
-                  : tab.key === "out"
-                    ? "bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300"
-                    : "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200"
-                : "bg-gray-100 text-gray-400 dark:bg-white/5 dark:text-gray-500"
-                }`}
-            >
-              {tabCounts[tab.key]}
-            </span>
           </button>
         ))}
       </div>
