@@ -85,3 +85,11 @@ export function useUpdatePrescription() {
     },
   });
 }
+
+export function usePrescriptionsByMemberId(memberId: string | undefined) {
+  return useFetch(
+    ["prescriptions-member", memberId],
+    () => PrescriptionService.getPrescriptionsByMemberId(memberId!),
+    { enabled: !!memberId },
+  );
+}
