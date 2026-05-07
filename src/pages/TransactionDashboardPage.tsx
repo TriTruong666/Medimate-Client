@@ -103,7 +103,7 @@ export default function TransactionDashboardPage() {
   const isDoctor = user?.role === "Doctor";
   const userId = user?.userId ?? "";
 
-  const [activeTab, setActiveTab] = useState<"all" | "in" | "out" | "refund">("all");
+  const [activeTab, setActiveTab] = useState<"all" | "in" | "out">("all");
 
   const [pagination, setPagination] = useState<PaginationParams>({
     pageNumber: 1,
@@ -157,16 +157,15 @@ export default function TransactionDashboardPage() {
     setPagination((prev) => ({ ...prev, pageNumber: nextPage }));
   };
 
-  const handleTabChange = (tab: "all" | "in" | "out" | "refund") => {
+  const handleTabChange = (tab: "all" | "in" | "out") => {
     setActiveTab(tab);
     setPagination((prev) => ({ ...prev, pageNumber: 1 }));
   };
 
-  const tabs: { key: "all" | "in" | "out" | "refund"; label: string; color: string }[] = [
+  const tabs: { key: "all" | "in" | "out"; label: string; color: string }[] = [
     { key: "all", label: "Tất cả", color: "text-gray-500" },
     { key: "in", label: "Thu vào", color: "text-emerald-500" },
     { key: "out", label: "Chi ra", color: "text-rose-500" },
-    { key: "refund", label: "Hoàn tiền", color: "text-orange-500" },
   ];
 
   return (
