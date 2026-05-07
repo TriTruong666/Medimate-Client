@@ -3,6 +3,7 @@ import type {
   CreatePrescriptionRequest,
   PrescriptionByDoctorDto,
   UpdatePrescriptionRequest,
+  MemberPrescriptionDto,
 } from "@/types/Prescription";
 import { axiosNETClient } from "./client";
 
@@ -97,4 +98,11 @@ export async function updatePrescription(
     ...res.data,
     data: res.data?.data ? normalizePrescription(res.data.data) : res.data?.data,
   };
+}
+
+export async function getPrescriptionsByMemberId(
+  memberId: string,
+): Promise<BaseResponse<MemberPrescriptionDto[]>> {
+  const res = await axiosNETClient.get(`${BASE_ROUTE}/member/${memberId}`);
+  return res.data;
 }

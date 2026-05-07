@@ -3,6 +3,7 @@ import { formatDate, formatTime } from "@/common/format";
 import { getGenderDisplay } from "@/common/mappers";
 import { useAppointmentDetail, useUpdateAppointmentStatus } from "@/hooks/data/useAppointmentHooks";
 import { useMemberHealthProfile } from "@/hooks/data/useHealthHooks";
+import { usePrescriptionsByMemberId } from "@/hooks/data/usePrescriptionHooks";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { FiCalendar, FiCheck, FiCreditCard, FiX } from "react-icons/fi";
@@ -108,6 +109,9 @@ export function DoctorSupportDetailModal({
 
   const { data: healthProfile, isLoading: isLoadingHealth } =
     useMemberHealthProfile(data?.memberId);
+
+  const { data: prescriptions, isLoading: isLoadingPrescriptions } =
+    usePrescriptionsByMemberId(data?.memberId);
 
   const { mutate: updateStatus, isPending: isUpdating } = useUpdateAppointmentStatus();
 
@@ -406,6 +410,82 @@ export function DoctorSupportDetailModal({
                       <div className="flex items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 py-8 dark:border-white/10 dark:bg-white/5">
                         <p className="text-xs font-semibold text-gray-400 dark:text-gray-500">
                           Bệnh nhân chưa cập nhật hồ sơ sức khỏe
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Đơn thuốc đang sử dụng */}
+                <section className="flex flex-col overflow-hidden rounded-2xl border border-gray-400 bg-white shadow-xs dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between border-b border-gray-400 bg-gray-50/80 px-5 py-3.5 dark:border-white/5 dark:bg-black/20">
+                    <p className="text-[10px] font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                      Đơn thuốc đang sử dụng
+                    </p>
+                    {prescriptions && prescriptions.length > 0 && (
+                      <span className="rounded-md border border-gray-400 bg-white px-2 py-0.5 text-[10px] font-bold tracking-wider text-gray-600 shadow-sm dark:border-white/10 dark:bg-white/5 dark:text-gray-300">
+                        {prescriptions.length} đơn thuốc
+                      </span>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    {isLoadingPrescriptions ? (
+                      <div className="flex animate-pulse flex-col space-y-3">
+                        <div className="h-4 w-1/3 rounded-lg bg-gray-200 dark:bg-white/10" />
+                        <div className="h-24 w-full rounded-2xl bg-gray-200 dark:bg-white/10" />
+                      </div>
+                    ) : prescriptions && prescriptions.length > 0 ? (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {prescriptions.map((prescription) => (
+                          <div
+                            key={prescription.prescriptionId}
+                            className="rounded-2xl border border-gray-400 bg-white p-4 dark:border-white/10 dark:bg-white/5"
+                          >
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                {prescription.prescriptionCode || "Chưa có mã"}
+                              </h4>
+                              <span
+                                className={`inline-block rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase ${
+                                  prescription.status === "Active"
+                                    ? "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400"
+                                    : "bg-gray-100 text-gray-600 dark:bg-white/10 dark:text-gray-400"
+                                }`}
+                              >
+                                {prescription.status}
+                              </span>
+                            </div>
+                            <p className="mt-1 text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                              Bác sĩ: {prescription.doctorName}
+                            </p>
+                            <p className="mt-0.5 text-[11px] font-medium text-gray-500 dark:text-gray-400">
+                              Ngày kê: {formatDate(prescription.prescriptionDate)}
+                            </p>
+                            
+                            {prescription.medicines && prescription.medicines.length > 0 && (
+                              <div className="mt-3 pt-3 border-t border-gray-100 dark:border-white/10">
+                                <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Thuốc (Top 3)</p>
+                                <ul className="space-y-1">
+                                  {prescription.medicines.slice(0, 3).map((med, idx) => (
+                                    <li key={med.prescriptionMedicineId || idx} className="text-xs text-gray-700 dark:text-gray-300 truncate">
+                                      • <span className="font-semibold">{med.medicineName}</span> {med.dosage} x {med.quantity} {med.unit}
+                                    </li>
+                                  ))}
+                                  {prescription.medicines.length > 3 && (
+                                    <li className="text-xs text-gray-400 italic">
+                                      + {prescription.medicines.length - 3} loại khác...
+                                    </li>
+                                  )}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 py-8 dark:border-white/10 dark:bg-white/5">
+                        <p className="text-xs font-semibold text-gray-400 dark:text-gray-500">
+                          Bệnh nhân chưa có đơn thuốc nào
                         </p>
                       </div>
                     )}
