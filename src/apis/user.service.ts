@@ -64,3 +64,21 @@ export async function changeMyPassword(
   );
   return res.data;
 }
+
+export type UserBankAccountDto = {
+  bankAccountId: string;
+  bankName: string;
+  accountNumber: string;
+  accountHolder: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function getUserBankAccount(
+  userId: string,
+): Promise<BaseResponse<UserBankAccountDto>> {
+  const res = await axiosNETClient.get(
+    `/api/v1/user/bank-account/by-user/${userId}`,
+  );
+  return res.data;
+}

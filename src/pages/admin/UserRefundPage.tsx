@@ -7,6 +7,9 @@ import {
   useRefundableAppointments,
   useCompleteRefund,
 } from "@/hooks/data/usePayoutHooks";
+import { useQuery } from "@tanstack/react-query";
+import { getUserBankAccount } from "@/apis/user.service";
+import type { RefundableAppointmentDto } from "@/apis/payout.service";
 import { PATHS } from "@/config/paths";
 
 const breadcrumbItems = [
@@ -42,7 +45,7 @@ const columns = [
 export default function UserRefundPage() {
   const { data, isLoading, isError, error, refetch } =
     useRefundableAppointments();
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<RefundableAppointmentDto | null>(null);
 
   const rows = data?.data ?? [];
 
@@ -99,7 +102,7 @@ export default function UserRefundPage() {
             </td>
             <td className="p-4 text-center">
               <button
-                onClick={() => setSelected(row.appointmentId)}
+                onClick={() => setSelected(row)}
                 className="bg-primary/10 text-primary hover:bg-primary/20 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition"
               >
                 <FiCheckCircle /> Xác nhận hoàn
@@ -111,7 +114,7 @@ export default function UserRefundPage() {
 
       {selected && (
         <CompleteRefundModal
-          appointmentId={selected}
+          appointment={selected}
           onClose={() => setSelected(null)}
         />
       )}
@@ -120,19 +123,26 @@ export default function UserRefundPage() {
 }
 
 function CompleteRefundModal({
-  appointmentId,
+  appointment,
   onClose,
 }: {
-  appointmentId: string;
+  appointment: RefundableAppointmentDto;
   onClose: () => void;
 }) {
   const { mutate, isPending } = useCompleteRefund();
   const imageRef = useRef<HTMLInputElement>(null);
 
+  const { data: bankRes, isLoading: isLoadingBank } = useQuery({
+    queryKey: ["user", "bank-account", appointment.userId],
+    queryFn: () => getUserBankAccount(appointment.userId),
+    enabled: !!appointment.userId,
+  });
+  const bankAccount = bankRes?.data;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const transferImage = imageRef.current?.files?.[0] ?? null;
-    mutate({ appointmentId, transferImage }, { onSuccess: onClose });
+    mutate({ appointmentId: appointment.appointmentId, transferImage }, { onSuccess: onClose });
   };
 
   return (
@@ -141,10 +151,29 @@ function CompleteRefundModal({
         <h2 className="mb-2 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
           Xác nhận hoàn tiền
         </h2>
-        <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
           Upload ảnh chụp lệnh chuyển khoản để xác nhận đã hoàn tiền cho người
           dùng.
         </p>
+
+        {/* Thông tin ngân hàng */}
+        <div className="mb-6 rounded-xl bg-gray-50 p-4 border border-gray-200 dark:bg-white/5 dark:border-white/10">
+          <h3 className="mb-2 text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            Thông tin nhận tiền (Khách hàng)
+          </h3>
+          {isLoadingBank ? (
+            <p className="text-sm text-gray-500">Đang tải thông tin...</p>
+          ) : bankAccount ? (
+            <div className="space-y-1 text-sm text-gray-700 dark:text-gray-300">
+              <p><span className="font-medium">Ngân hàng:</span> {bankAccount.bankName}</p>
+              <p><span className="font-medium">Số TK:</span> {bankAccount.accountNumber}</p>
+              <p><span className="font-medium">Chủ TK:</span> {bankAccount.accountHolder}</p>
+            </div>
+          ) : (
+            <p className="text-sm text-red-500">Khách hàng chưa cập nhật thông tin ngân hàng.</p>
+          )}
+        </div>
+
         <form onSubmit={handleSubmit}>
           <div className="mb-6">
             <label className="mb-1 block text-sm font-semibold text-gray-700 dark:text-gray-300">

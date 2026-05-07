@@ -101,6 +101,7 @@ export type RefundableAppointmentDto = {
   clinicId: string | null;
   memberId: string;
   memberName: string | null;
+  userId: string;
   availabilityId: string;
   appointmentDate: string;
   appointmentTime: string;
