@@ -21,6 +21,16 @@ export async function getAppointmentDetail(
   return res.data;
 }
 
+export async function getAppointmentsByDate(
+  date: string,
+): Promise<BaseResponse<DoctorAppointment[]>> {
+  const res = await axiosNETClient.get(
+    `/api/v1/appointments/doctors/me`,
+    { params: { date } },
+  );
+  return res.data;
+}
+
 export async function updateAppointmentStatus(
   id: string,
   status: string,

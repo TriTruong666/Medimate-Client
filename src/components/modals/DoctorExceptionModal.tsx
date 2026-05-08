@@ -11,6 +11,7 @@ import React, { useMemo, useState } from "react";
 import { HiOutlineTrash, HiOutlineX } from "react-icons/hi";
 import { toast } from "@/hooks/useToast";
 import { Input } from "@/components/custom-ui/Input";
+import * as AppointmentService from "@/apis/appointment.service";
 
 // --- HELPERS ---
 
@@ -164,6 +165,10 @@ export function DoctorExceptionModal({
     endTime: "12:00",
     reason: "",
   });
+  const [isCheckingAppointments, setIsCheckingAppointments] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [appointmentCount, setAppointmentCount] = useState(0);
+  const [pendingFormData, setPendingFormData] = useState<any>(null);
 
   const exceptions = data ?? [];
   const pendingItems = useMemo(
@@ -194,18 +199,58 @@ export function DoctorExceptionModal({
         return;
       }
 
-      await createMutation.mutateAsync({
+      // Check if there are appointments on this date
+      setIsCheckingAppointments(true);
+      const appointmentsRes = await AppointmentService.getAppointmentsByDate(
+        form.date,
+      );
+      setIsCheckingAppointments(false);
+
+      const formData = {
         date: dateObj.toISOString(),
         startTime: toApiTime(form.startTime),
         endTime: toApiTime(form.endTime),
         reason: form.reason.trim(),
         isAvailableOverride: false,
-      });
+      };
 
+      if (
+        appointmentsRes.success &&
+        appointmentsRes.data &&
+        appointmentsRes.data.length > 0
+      ) {
+        const count = appointmentsRes.data.length;
+        setPendingFormData(formData);
+        setAppointmentCount(count);
+        setIsConfirmOpen(true);
+        return;
+      }
+
+      await createMutation.mutateAsync(formData);
       setForm({ date: "", startTime: "08:00", endTime: "12:00", reason: "" });
+    } catch (err) {
+      setIsCheckingAppointments(false);
+      console.error(err);
+    }
+  }
+
+  async function handleConfirmCreate() {
+    if (!pendingFormData) return;
+    try {
+      await createMutation.mutateAsync(pendingFormData);
+      setForm({ date: "", startTime: "08:00", endTime: "12:00", reason: "" });
+      setIsConfirmOpen(false);
+      setPendingFormData(null);
+      setAppointmentCount(0);
     } catch (err) {
       console.error(err);
     }
+  }
+
+  function handleCancelConfirm() {
+    setIsConfirmOpen(false);
+    setPendingFormData(null);
+    setAppointmentCount(0);
   }
 
   async function handleDelete(item: DoctorAvailabilityException) {
@@ -302,12 +347,14 @@ export function DoctorExceptionModal({
                   <div className="mt-6 flex justify-end">
                     <button
                       onClick={() => void handleCreate()}
-                      disabled={createMutation.isPending}
+                      disabled={createMutation.isPending || isCheckingAppointments}
                       className="bg-primary rounded-lg px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
                     >
-                      {createMutation.isPending
-                        ? "Đang xử lý..."
-                        : "Gửi lịch nghỉ chờ duyệt"}
+                      {isCheckingAppointments
+                        ? "Đang kiểm tra lịch hẹn..."
+                        : createMutation.isPending
+                          ? "Đang xử lý..."
+                          : "Gửi lịch nghỉ chờ duyệt"}
                     </button>
                   </div>
                 </section>
@@ -361,6 +408,69 @@ export function DoctorExceptionModal({
               </button>
             </div>
           </motion.div>
+
+          {/* Confirmation Modal for appointments on exception date */}
+          <AnimatePresence>
+            {isConfirmOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 z-20 flex items-center justify-center"
+              >
+                <div className="absolute inset-0 bg-black/60" onClick={handleCancelConfirm} />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="relative z-30 flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-white/10 bg-neutral-900/90 backdrop-blur-xl"
+                >
+                  <div className="flex items-center justify-between border-b border-white/10 bg-white/5 p-6">
+                    <h2 className="text-base font-semibold text-white">
+                      Xác nhận lịch nghỉ
+                    </h2>
+                    <button
+                      onClick={handleCancelConfirm}
+                      className="rounded-lg p-2 text-gray-400 transition hover:bg-white/10 hover:text-white"
+                    >
+                      <HiOutlineX className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-6 p-6">
+                    <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4">
+                      <span className="mt-0.5 text-lg text-amber-400">⚠️</span>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-amber-50">
+                          Có {appointmentCount} lịch hẹn vào ngày này
+                        </p>
+                        <p className="mt-1 text-xs text-amber-100/80">
+                          Bạn có chắc chắn muốn tạo lịch nghỉ không?
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end gap-3 border-t border-white/10 bg-white/5 p-6">
+                    <button
+                      onClick={handleCancelConfirm}
+                      className="rounded-lg px-4 py-2 text-sm text-gray-300 transition hover:bg-white/10"
+                    >
+                      Huỷ
+                    </button>
+                    <button
+                      onClick={() => void handleConfirmCreate()}
+                      disabled={createMutation.isPending}
+                      className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600 disabled:bg-white/10 disabled:text-white/40"
+                    >
+                      {createMutation.isPending ? "Đang xử lý..." : "Xác nhận"}
+                    </button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
     </AnimatePresence>
