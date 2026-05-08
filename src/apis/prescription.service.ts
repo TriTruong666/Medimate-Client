@@ -8,6 +8,7 @@ import type {
 import { axiosNETClient } from "./client";
 
 const BASE_ROUTE = "/api/v1/doctor-prescriptions";
+const BASE_PRESCIPTION_ROUTE = "/api/v1/prescriptions";
 
 function normalizePrescriptionId(item: Partial<PrescriptionByDoctorDto> & Record<string, unknown>) {
   return (
@@ -43,8 +44,8 @@ function normalizePrescription(
       typeof item.prescriptionId === "string" ? item.prescriptionId : normalizedId,
     doctorPrescriptionId:
       typeof item.doctorPrescriptionId === "string" ? item.doctorPrescriptionId :
-      typeof item.digitalPrescriptionId === "string" ? item.digitalPrescriptionId :
-      undefined,
+        typeof item.digitalPrescriptionId === "string" ? item.digitalPrescriptionId :
+          undefined,
     createdDate,
     updatedDate,
     status:
@@ -83,8 +84,8 @@ export async function getPrescriptionsBySession(
     ...res.data,
     data: Array.isArray(res.data?.data)
       ? res.data.data.map((item: Partial<PrescriptionByDoctorDto> & Record<string, unknown>) =>
-          normalizePrescription(item),
-        )
+        normalizePrescription(item),
+      )
       : res.data?.data,
   };
 }
@@ -103,6 +104,6 @@ export async function updatePrescription(
 export async function getPrescriptionsByMemberId(
   memberId: string,
 ): Promise<BaseResponse<MemberPrescriptionDto[]>> {
-  const res = await axiosNETClient.get(`${BASE_ROUTE}/member/${memberId}`);
+  const res = await axiosNETClient.get(`${BASE_PRESCIPTION_ROUTE}/member/${memberId}`);
   return res.data;
 }
