@@ -336,7 +336,6 @@ function PayoutDetailView({
         <th style="width:14%">Lịch hẹn</th>
         <th style="width:13%">Số tiền</th>
         <th class="center" style="width:14%">Trạng thái</th>
-        <th class="center" style="width:15%">Hồ sơ</th>
       </tr>
     </thead>
     <tbody>
