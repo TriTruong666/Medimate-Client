@@ -70,8 +70,8 @@ export default function ClinicPayoutPage() {
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`relative flex items-center gap-2 px-2 py-2.5 text-[13px] font-medium transition-colors ${activeTab === tab.id
-                ? "text-primary"
-                : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              ? "text-primary"
+              : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
               }`}
           >
             {tab.label}
@@ -205,7 +205,7 @@ function PayoutDetailView({
     { key: "clinic", label: "Phòng khám / Người nhận", width: "w-[20%]" },
     { key: "appointment", label: "Lịch hẹn", width: "w-[20%]" },
     { key: "amount", label: "Số tiền", width: "w-[15%]" },
-    { key: "bank", label: "Ngân hàng nhận", width: "w-[20%]" },
+    // { key: "bank", label: "Ngân hàng nhận", width: "w-[20%]" },
     {
       key: "status",
       label: "Trạng thái",
@@ -248,11 +248,6 @@ function PayoutDetailView({
             <small>${row.appointmentTime?.slice(0, 5) ?? ""}</small>
           </td>
           <td class="amount">${row.amount?.toLocaleString("vi-VN") ?? 0} đ</td>
-          <td>
-            <strong>${row.payerBankName ?? "N/A"}</strong><br/>
-            <small>${row.payerBankAccountNumber ?? ""}</small><br/>
-            <small>${row.payerBankAccountHolder ?? ""}</small>
-          </td>
           <td class="center">
             <span class="badge badge-${row.status?.toLowerCase()}">${statusLabel[row.status] ?? row.status}</span>
           </td>
@@ -340,7 +335,6 @@ function PayoutDetailView({
         <th style="width:22%">Phòng khám / Người nhận</th>
         <th style="width:14%">Lịch hẹn</th>
         <th style="width:13%">Số tiền</th>
-        <th style="width:22%">Ngân hàng nhận</th>
         <th class="center" style="width:14%">Trạng thái</th>
         <th class="center" style="width:15%">Hồ sơ</th>
       </tr>
@@ -514,7 +508,7 @@ function ProcessPayoutModal({
   onClose: () => void;
 }) {
   const { data: clinicDetail, isLoading: isLoadingClinic } = useClinic(summary.clinicId);
-  
+
   const processMutation = useProcessPayoutMutation();
   const [note, setNote] = useState("");
   const imageRef = useRef<HTMLInputElement>(null);
