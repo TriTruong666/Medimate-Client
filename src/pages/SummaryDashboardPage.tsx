@@ -4,7 +4,6 @@ import { motion } from "framer-motion";
 import {
   HiOutlineDocumentText,
   HiOutlineUsers,
-  HiOutlineStar,
   HiOutlineChartBar,
   HiChevronDown,
   HiOutlineBadgeCheck,
@@ -29,6 +28,7 @@ import {
 import { Doughnut, Line, Bar } from "react-chartjs-2";
 
 import { getUsers } from "@/apis/user.service";
+import { getClinics } from "@/apis/clinic.service";
 import { getDocumentList } from "@/apis/rag_document.service";
 import {
   getDoctorCertificates,
@@ -36,7 +36,6 @@ import {
 } from "@/apis/asset.service";
 import { getDoctorContracts } from "@/apis/doctor-contract.service";
 import { getTransactions, getTransactionStatistics } from "@/apis/transaction.service";
-import { getRatings } from "@/apis/rating.service";
 
 ChartJS.register(
   ArcElement,
@@ -73,6 +72,10 @@ export default function SummaryDashboardPage() {
     queryKey: ["admin-summary", "certs"],
     queryFn: () => getDoctorCertificates({ pageNumber: 1, pageSize: 1 }),
   });
+  const { data: clinicsData, isLoading: isClinicsLoad } = useQuery({
+    queryKey: ["admin-summary", "clinics"],
+    queryFn: () => getClinics(),
+  });
   const { data: prescriptionsData, isLoading: isPrescLoad } = useQuery({
     queryKey: ["admin-summary", "prescriptions"],
     queryFn: () => getPrescriptionImages({ pageNumber: 1, pageSize: 1 }),
@@ -89,16 +92,16 @@ export default function SummaryDashboardPage() {
     queryKey: ["admin-summary", "tx-statistics"],
     queryFn: () => getTransactionStatistics(),
   });
-  const { data: ratingsData, isLoading: isRatingsLoad } = useQuery({
-    queryKey: ["admin-summary", "ratings"],
-    queryFn: () => getRatings({ pageNumber: 1, pageSize: 1 }),
-  });
-
   const totalRag = ragData?.data?.pagination?.total_records ?? 0;
   const totalCerts = certsData?.data?.totalCount ?? 0;
+  const totalClinicsCount = clinicsData?.data?.length ?? 0;
+  const activeClinicsCount = clinicsData?.data?.filter((clinic) => clinic.isActive).length ?? 0;
   const totalPresc = prescriptionsData?.data?.totalCount ?? 0;
   const totalTransactions = transactionsData?.data?.totalCount ?? 0;
-  const totalRatings = ratingsData?.data?.totalCount ?? 0;
+  const clinicActivityRatio =
+    totalClinicsCount > 0
+      ? Math.max(35, Math.min(100, (activeClinicsCount / totalClinicsCount) * 100))
+      : 35;
 
   const totalIncoming = txStatsData?.data?.totalIncoming ?? 0;
   const totalOutgoing = txStatsData?.data?.totalOutgoing ?? 0;
@@ -240,7 +243,6 @@ export default function SummaryDashboardPage() {
         animate="show"
         className="my-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
       >
-        {/* Card: Tài khoản */}
         <motion.div
           variants={dashboardItem}
           className="flex flex-col justify-between rounded-lg border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
@@ -265,17 +267,14 @@ export default function SummaryDashboardPage() {
 
           <div className="mt-4 space-y-1 text-xs text-gray-500">
             <p>
-              <span className="text-emerald-400">{activeUsersCount}</span> đang
-              online
+              <span className="text-emerald-400">{activeUsersCount}</span> đang online
             </p>
             <p>
-              Bác sĩ chuyên môn:{" "}
-              <span className="text-gray-400">{totalDoctorsCount}</span>
+              Bác sĩ chuyên môn: <span className="text-gray-400">{totalDoctorsCount}</span>
             </p>
           </div>
         </motion.div>
 
-        {/* Card: Mức độ hài lòng */}
         <motion.div
           variants={dashboardItem}
           className="flex flex-col justify-between rounded-lg border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
@@ -283,37 +282,39 @@ export default function SummaryDashboardPage() {
           <div>
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm text-gray-400">
-                <HiOutlineStar className="text-lg" />
-                <span>Mức độ hài lòng</span>
+                <HiOutlineBadgeCheck className="text-lg" />
+                <span>Phòng khám</span>
               </div>
-              <span className="text-xs text-gray-500">30 ngày</span>
+              <span className="text-xs text-gray-500">Tổng số</span>
             </div>
 
-            <h3 className="text-3xl font-semibold text-gray-900 dark:text-white">
-              4.8<span className="text-base text-gray-500"> / 5</span>
-            </h3>
+            {isClinicsLoad ? (
+              <div className="h-9 w-24 animate-pulse rounded-lg bg-gray-200 dark:bg-white/10" />
+            ) : (
+              <h3 className="text-3xl font-semibold tabular-nums text-gray-900 dark:text-white">
+                {totalClinicsCount.toLocaleString()}
+              </h3>
+            )}
           </div>
 
           <div className="mt-4 space-y-2">
             <div className="h-1 w-full rounded-full bg-gray-200 dark:bg-white/10">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: "92%" }}
+                animate={{ width: `${clinicActivityRatio}%` }}
                 transition={{ duration: 1.2, ease: "easeOut" }}
                 className="h-full rounded-full bg-gray-400 dark:bg-white/40"
               />
             </div>
             <p className="text-xs text-gray-500">
-              Dựa trên{" "}
               <span className="text-gray-400">
-                {isRatingsLoad ? "..." : totalRatings.toLocaleString()}
+                {isClinicsLoad ? "..." : activeClinicsCount.toLocaleString()}
               </span>{" "}
-              phản hồi
+              phòng khám đang hoạt động
             </p>
           </div>
         </motion.div>
 
-        {/* Card: Tài liệu AI */}
         <motion.div
           variants={dashboardItem}
           className="flex flex-col justify-between rounded-lg border border-gray-400 bg-white p-6 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
@@ -347,7 +348,6 @@ export default function SummaryDashboardPage() {
           </div>
         </motion.div>
 
-        {/* Column 4: Bằng cấp & Đơn thuốc (Stacked) */}
         <div className="flex flex-col gap-6">
           <motion.div
             variants={dashboardItem}

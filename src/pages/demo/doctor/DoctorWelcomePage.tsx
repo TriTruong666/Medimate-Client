@@ -483,100 +483,78 @@ function WelcomeDoctorSection({ onStart }: { onStart: () => void }) {
 
 const BLOG_CONTENT = [
   {
-    title: '1. Hoàn thiện "Hồ sơ số" chuyên nghiệp',
+    title: "1. Hoàn thiện hồ sơ Bác sĩ",
     description:
-      "Trước khi bắt đầu nhận ca tư vấn đầu tiên, hãy dành 5 phút để tạo dựng uy tín trong mắt bệnh nhân:",
+      "Trước khi bắt đầu hỗ trợ bệnh nhân trên MediMate, Bác sĩ cần cập nhật đầy đủ thông tin cá nhân và chuyên môn:",
     features: [
       {
         subtitle: "Xác minh danh tính",
         detail:
-          "Tải lên Chứng chỉ hành nghề (CCHN) và bằng cấp liên quan. Hệ thống sẽ phê duyệt trong vòng 24h.",
+          "Tải lên Chứng chỉ hành nghề (CCHN) và các giấy tờ chuyên môn liên quan để hệ thống xác thực.",
       },
       {
         subtitle: "Cập nhật chuyên khoa",
         detail:
-          "Chọn đúng thế mạnh của mình (Nội khoa, Nhi khoa, Tim mạch...) để hệ thống điều phối đúng bệnh nhân cần hỗ trợ.",
+          "Lựa chọn đúng chuyên khoa như Nội khoa, Tim mạch, Nhi khoa... để hệ thống kết nối đúng bệnh nhân cần hỗ trợ.",
       },
       {
-        subtitle: "Lời giới thiệu",
+        subtitle: "Thông tin giới thiệu",
         detail:
-          "Một đoạn giới thiệu ngắn về kinh nghiệm sẽ giúp bệnh nhân yên tâm hơn khi chọn Bác sĩ.",
-      },
-    ],
-  },
-  {
-    title: "2. Làm quen với Dashboard",
-    description:
-      "Giao diện Web Dashboard được tối ưu để Bác sĩ xử lý nhiều ca tư vấn cùng lúc mà không bị nhầm lẫn:",
-    features: [
-      {
-        subtitle: "Sidebar (Thanh bên)",
-        detail:
-          "Nơi chuyển đổi giữa Danh sách bệnh nhân, Lịch sử tư vấn và Báo cáo thu nhập.",
-      },
-      {
-        subtitle: "Trung tâm thông báo",
-        detail:
-          "Tiếng chuông báo hiệu khi có bệnh nhân đang chờ hoặc có tin nhắn mới.",
-      },
-      {
-        subtitle: "Trạng thái Online/Offline",
-        detail:
-          'Hãy bật "Sẵn sàng" khi Bác sĩ có thời gian rảnh để bắt đầu nhận yêu cầu.',
+          "Một đoạn mô tả ngắn về kinh nghiệm và lĩnh vực chuyên môn sẽ giúp bệnh nhân tin tưởng hơn khi tư vấn.",
       },
     ],
   },
   {
-    title: "3. Quy trình tư vấn chuẩn 5 bước",
+    title: "2. Làm quen với hệ thống MediMate",
     description:
-      'Đây là "xương sống" trong công việc hàng ngày của Bác sĩ trên app:',
+      "Dashboard được thiết kế để hỗ trợ Bác sĩ theo dõi bệnh nhân và quản lý các ca tư vấn dễ dàng:",
     features: [
       {
-        subtitle: "Bước 1 - Tiếp nhận",
+        subtitle: "Danh sách bệnh nhân",
         detail:
-          'Khi có yêu cầu chat, Bác sĩ sẽ thấy thông tin sơ bộ của bệnh nhân (Tuổi, giới tính, triệu chứng chính). Nhấn "Chấp nhận" để bắt đầu.',
+          "Hiển thị các bệnh nhân đang được theo dõi cùng trạng thái sức khỏe và lịch sử dùng thuốc.",
       },
       {
-        subtitle: "Bước 2 - Phân tích dữ liệu",
+        subtitle: "Thông báo thông minh",
         detail:
-          "Điểm khác biệt của hệ thống là Bác sĩ có thể xem Nhật ký uống thuốc và Chỉ số sức khỏe (huyết áp, nhịp tim...) của bệnh nhân trong 30 ngày gần nhất.",
+          "Hệ thống gửi thông báo khi có bệnh nhân cần hỗ trợ hoặc có dữ liệu sức khỏe bất thường.",
       },
       {
-        subtitle: "Bước 3 - Trao đổi",
+        subtitle: "Trạng thái hoạt động",
         detail:
-          "Sử dụng khung Chat để tư vấn. Bác sĩ có thể yêu cầu bệnh nhân chụp ảnh đơn thuốc cũ hoặc tình trạng bệnh lý hiện tại.",
-      },
-      {
-        subtitle: "Bước 4 - Kết luận & Dặn dò",
-        detail:
-          "Đưa ra lời khuyên chuyên môn hoặc hướng dẫn hướng điều trị tiếp theo.",
-      },
-      {
-        subtitle: "Bước 5 - Đóng ca tư vấn",
-        detail:
-          'Nhấn nút "Hoàn thành tư vấn" để hệ thống lưu hồ sơ và ghi nhận thù lao.',
+          'Bật trạng thái "Sẵn sàng" để bắt đầu nhận yêu cầu tư vấn từ bệnh nhân.',
       },
     ],
   },
   {
-    title: "4. Hệ thống chi trả & Thu nhập minh bạch",
+    title: "3. Quy trình tư vấn & theo dõi bệnh nhân",
     description:
-      "Chúng tôi hiểu rằng thời gian của Bác sĩ là quý giá. Chính sách chi trả được thiết kế dựa trên hiệu suất:",
+      "MediMate hỗ trợ Bác sĩ theo dõi quá trình sử dụng thuốc và hỗ trợ bệnh nhân từ xa:",
     features: [
       {
-        subtitle: "Thù lao theo ca (Pay-per-case)",
+        subtitle: "Bước 1 - Tiếp nhận yêu cầu",
         detail:
-          "Mỗi ca hỗ trợ thành công (được bệnh nhân xác nhận hoặc hệ thống ghi nhận kết thúc) sẽ được cộng trực tiếp vào số dư.",
+          "Bác sĩ nhận thông tin cơ bản của bệnh nhân như tuổi, triệu chứng và lịch sử dùng thuốc.",
       },
       {
-        subtitle: "Thưởng hiệu quả",
+        subtitle: "Bước 2 - Theo dõi dữ liệu sức khỏe",
         detail:
-          "Các bác sĩ có tỉ lệ phản hồi nhanh và điểm đánh giá (Star Rating) cao sẽ được hệ thống ưu tiên hiển thị ở vị trí đầu.",
+          "Xem nhật ký uống thuốc, chỉ số sức khỏe và mức độ tuân thủ điều trị của bệnh nhân.",
       },
       {
-        subtitle: "Rút tiền linh hoạt",
+        subtitle: "Bước 3 - Tư vấn trực tuyến",
         detail:
-          "Bác sĩ có thể theo dõi biến động số dư theo thời gian thực và thực hiện rút tiền về tài khoản ngân hàng.",
+          "Trao đổi với bệnh nhân qua hệ thống chat để hỗ trợ và giải đáp tình trạng sức khỏe.",
+      },
+      {
+        subtitle: "Bước 4 - Đưa ra hướng dẫn",
+        detail:
+          "Cung cấp lời khuyên chuyên môn, hướng dẫn sử dụng thuốc hoặc đề xuất tái khám khi cần thiết.",
+      },
+      {
+        subtitle: "Bước 5 - Lưu hồ sơ tư vấn",
+        detail:
+          "Toàn bộ lịch sử tư vấn sẽ được lưu trữ để thuận tiện theo dõi lâu dài.",
       },
     ],
   },
