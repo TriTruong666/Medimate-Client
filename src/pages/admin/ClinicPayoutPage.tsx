@@ -190,7 +190,6 @@ function PayoutDetailView({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Reset page to 1 when filter changes
   useEffect(() => {
     setPage(1);
   }, [statusFilter]);
@@ -201,21 +200,15 @@ function PayoutDetailView({
     pageSize,
   });
 
+  // ✅ Chỉ để lại 4 cột
   const columns = [
-    { key: "clinic", label: "Phòng khám / Người nhận", width: "w-[20%]" },
-    { key: "appointment", label: "Lịch hẹn", width: "w-[20%]" },
-    { key: "amount", label: "Số tiền", width: "w-[15%]" },
-    // { key: "bank", label: "Ngân hàng nhận", width: "w-[20%]" },
+    { key: "clinic", label: "Phòng khám / Người nhận", width: "w-[35%]" },
+    { key: "appointment", label: "Lịch hẹn", width: "w-[25%]" },
+    { key: "amount", label: "Số tiền", width: "w-[20%]" },
     {
       key: "status",
-      label: "Trạng thái",
-      width: "w-[15%]",
-      align: "center" as const,
-    },
-    {
-      key: "actions",
-      label: "Hồ sơ",
-      width: "w-[10%]",
+      label: "Trạng thái & Hồ sơ",
+      width: "w-[20%]",
       align: "center" as const,
     },
   ];
@@ -429,67 +422,38 @@ function PayoutDetailView({
           >
             <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <div className="flex flex-col">
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {row.clinicName}
-                </span>
-                <span className="text-xs text-gray-500">
-                  BS: {row.doctorName || "N/A"}
-                </span>
-                <span className="text-xs text-gray-500">
-                  BN: {row.patientName || "N/A"}
-                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">{row.clinicName}</span>
+                <span className="text-xs text-gray-500">BS: {row.doctorName || "N/A"}</span>
+                <span className="text-xs text-gray-500">BN: {row.patientName || "N/A"}</span>
               </div>
             </td>
             <td className="dark:border-border-dark border-r border-gray-400 p-4">
               <div className="flex flex-col">
                 <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                  {row.appointmentDate
-                    ? new Date(row.appointmentDate).toLocaleDateString("vi-VN")
-                    : "N/A"}
+                  {row.appointmentDate ? new Date(row.appointmentDate).toLocaleDateString("vi-VN") : "N/A"}
                 </span>
-                <span className="text-xs text-gray-500">
-                  {row.appointmentTime?.slice(0, 5) || "N/A"}
-                </span>
+                <span className="text-xs text-gray-500">{row.appointmentTime?.slice(0, 5) || "N/A"}</span>
               </div>
             </td>
             <td className="dark:border-border-dark border-r border-gray-400 p-4 font-bold text-orange-500">
               {row.amount?.toLocaleString()} đ
             </td>
-            <td className="dark:border-border-dark border-r border-gray-400 p-4">
-              <div className="flex flex-col">
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {row.payerBankName || "N/A"}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {row.payerBankAccountNumber}
-                </span>
-              </div>
-            </td>
-            <td className="dark:border-border-dark border-r border-gray-400 p-4 text-center">
-              {getStatusBadge(row.status)}
-            </td>
             <td className="p-4 text-center">
               <div className="flex flex-col items-center gap-2">
-                {row.transferImageUrl && (
-                  <a
-                    href={row.transferImageUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-400 px-2 py-1 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
-                  >
-                    Hình ảnh UNC <FiExternalLink />
-                  </a>
-                )}
-                {row.reportFileUrl && (
-                  <a
-                    href={row.reportFileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-lg border border-blue-200 px-2 py-1 text-xs font-semibold text-blue-600 transition hover:bg-blue-50 dark:border-blue-900/30 dark:text-blue-400 dark:hover:bg-blue-900/50"
-                  >
-                    Báo cáo <FiExternalLink />
-                  </a>
-                )}
+                {getStatusBadge(row.status)}
+
+                <div className="mt-1 flex flex-wrap justify-center gap-2">
+                  {row.transferImageUrl && (
+                    <a href={row.transferImageUrl} target="_blank" className="text-[10px] text-primary hover:underline flex items-center gap-1">
+                      <FiExternalLink /> UNC
+                    </a>
+                  )}
+                  {row.reportFileUrl && (
+                    <a href={row.reportFileUrl} target="_blank" className="text-[10px] text-blue-500 hover:underline flex items-center gap-1">
+                      <FiExternalLink /> Báo cáo
+                    </a>
+                  )}
+                </div>
               </div>
             </td>
           </tr>
