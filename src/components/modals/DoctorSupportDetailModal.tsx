@@ -7,6 +7,7 @@ import { usePrescriptionsByMemberId } from "@/hooks/data/usePrescriptionHooks";
 import type { MemberPrescriptionDto } from "@/types/Prescription";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { FiCalendar, FiCheck, FiCreditCard, FiFileText, FiImage, FiX } from "react-icons/fi";
 import { HiOutlineX } from "react-icons/hi";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
@@ -139,7 +140,8 @@ export function DoctorSupportDetailModal({
   if (!open) return null;
 
   return (
-    <AnimatePresence>
+    <>
+      <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
         <div className="absolute inset-0" onClick={onClose} />
 
@@ -561,19 +563,23 @@ export function DoctorSupportDetailModal({
         onCancel={() => setConfirmAction(null)}
         isLoading={isUpdating}
       />
-
-      {/* Prescription Detail Popup */}
-      <AnimatePresence>
-        {selectedPrescription && (
-          <PrescriptionDetailPopup
-            prescription={selectedPrescription}
-            onClose={() => setSelectedPrescription(null)}
-          />
-        )}
-      </AnimatePresence>
     </AnimatePresence>
+
+    {/* Prescription Detail Popup — render via Portal ra document.body để tránh bị clip */}
+    {selectedPrescription && createPortal(
+      <AnimatePresence>
+        <PrescriptionDetailPopup
+          key={selectedPrescription.prescriptionId}
+          prescription={selectedPrescription}
+          onClose={() => setSelectedPrescription(null)}
+        />
+      </AnimatePresence>,
+      document.body
+    )}
+  </>
   );
 }
+
 
 function DetailSkeleton() {
   return (
