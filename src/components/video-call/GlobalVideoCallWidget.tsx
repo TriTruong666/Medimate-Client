@@ -25,7 +25,7 @@ import {
 import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
-import { motion, AnimatePresence, useMotionValue } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useDragControls } from "framer-motion";
 
 export function GlobalVideoCallWidget() {
   const {
@@ -53,6 +53,9 @@ export function GlobalVideoCallWidget() {
   // PIP Drag State
   const x = useMotionValue(typeof window !== "undefined" ? window.innerWidth - 280 - 24 : 0);
   const y = useMotionValue(typeof window !== "undefined" ? window.innerHeight - 189 - 24 : 0);
+  
+  // Main Window Drag State
+  const dragControls = useDragControls();
 
   useEffect(() => {
     if (isMinimized) {
@@ -340,9 +343,10 @@ export function GlobalVideoCallWidget() {
           width: 280,
           zIndex: 9999,
         }}
+        onClick={() => setMinimize(false)}
         className="overflow-hidden rounded-xl bg-gray-900 shadow-2xl ring-2 ring-white/10 cursor-move"
       >
-        <div className="relative aspect-video bg-black cursor-pointer" onClick={() => setMinimize(false)}>
+        <div className="relative aspect-video bg-black">
           {remoteUsers.length > 0 ? (
             <VideoPlayer
               videoTrack={remoteUsers[0].videoTrack}
@@ -377,10 +381,19 @@ export function GlobalVideoCallWidget() {
   }
 
   // Chế độ mở rộng / toàn màn hình
+  const mainVw = typeof window !== "undefined" ? window.innerWidth : 1000;
+  const mainVh = typeof window !== "undefined" ? window.innerHeight : 800;
+
   return (
     <AnimatePresence>
       <motion.div
         ref={videoAreaRef}
+        drag={!isExpanded}
+        dragControls={dragControls}
+        dragListener={false}
+        dragElastic={0}
+        dragMomentum={false}
+        dragConstraints={{ left: -(mainVw - 800 - 24), right: 0, top: -(mainVh - 500 - 24), bottom: 0 }}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
@@ -391,8 +404,13 @@ export function GlobalVideoCallWidget() {
         }`}
       >
         {/* Top Header */}
-        <div className="absolute top-0 right-0 left-0 z-50 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4">
-          <div>
+        <div 
+          className={`absolute top-0 right-0 left-0 z-50 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent p-4 ${!isExpanded ? "cursor-move" : ""}`}
+          onPointerDown={(e) => {
+            if (!isExpanded) dragControls.start(e);
+          }}
+        >
+          <div className="pointer-events-none">
             <h1 className="text-lg font-medium text-white/90">
               Phòng khám trực tuyến
             </h1>
