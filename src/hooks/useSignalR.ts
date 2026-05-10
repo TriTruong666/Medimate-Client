@@ -49,7 +49,7 @@ export function useSignalR() {
     if (!isAuthenticated) {
       const conn = connectionRef.current;
       if (conn && conn.state !== signalR.HubConnectionState.Disconnected) {
-        conn.stop().catch(() => {});
+        conn.stop().catch(() => { });
       }
       connectionRef.current = null;
       if (isMounted) setIsConnected(false);
@@ -134,9 +134,6 @@ export function useSignalR() {
         queryClient.invalidateQueries({ queryKey: ["chat-sessions"] });
         queryClient.invalidateQueries({ queryKey: ["chat-session-details"] });
         queryClient.invalidateQueries({ queryKey: ["session-details"] });
-        if (data?.senderName) {
-          toast.success(`Tin nhắn từ ${data.senderName}`, data.content || "[Hình ảnh đính kèm]");
-        }
       });
 
       newConnection.on("ReceiveMessageUpdate", () => {
@@ -207,7 +204,7 @@ export function useSignalR() {
       isMounted = false;
       const conn = connectionRef.current;
       if (!isAuthenticated && conn && conn.state !== signalR.HubConnectionState.Disconnected) {
-        conn.stop().catch(() => {});
+        conn.stop().catch(() => { });
         connectionRef.current = null;
         globalSignalRConnection = null;
       }
