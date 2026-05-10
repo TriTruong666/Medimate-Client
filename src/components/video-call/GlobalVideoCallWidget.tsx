@@ -25,7 +25,7 @@ import {
 import { toast } from "@/hooks/useToast";
 import { Spinner } from "@/components/custom-ui/Spinner";
 import { ConfirmModal } from "@/components/modals/ConfirmModal";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue } from "framer-motion";
 
 export function GlobalVideoCallWidget() {
   const {
@@ -49,6 +49,17 @@ export function GlobalVideoCallWidget() {
 
   const videoAreaRef = useRef<HTMLDivElement>(null);
   const isIntentionalLeaveRef = useRef(false);
+
+  // PIP Drag State
+  const x = useMotionValue(typeof window !== "undefined" ? window.innerWidth - 280 - 24 : 0);
+  const y = useMotionValue(typeof window !== "undefined" ? window.innerHeight - 189 - 24 : 0);
+
+  useEffect(() => {
+    if (isMinimized) {
+      x.set(typeof window !== "undefined" ? window.innerWidth - 280 - 24 : 0);
+      y.set(typeof window !== "undefined" ? window.innerHeight - 189 - 24 : 0);
+    }
+  }, [isMinimized, x, y]);
 
   const { mutateAsync: requestEndSession, isPending: isRequestingEnd } = useRequestEndConsultationSession();
   const queryClient = useQueryClient();
@@ -302,11 +313,34 @@ export function GlobalVideoCallWidget() {
 
   // Chế độ thu nhỏ (Minimized)
   if (isMinimized) {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const dragConstraints = {
+      left: 0,
+      top: 0,
+      right: vw - 280,
+      bottom: vh - 189, // height of PIP (approx)
+    };
+
     return (
-      <motion.div 
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed bottom-6 right-6 z-[999] overflow-hidden rounded-xl bg-gray-900 shadow-2xl ring-2 ring-white/10 w-[280px]"
+      <motion.div
+        key={`pip-minimized-${sessionId}`}
+        drag
+        dragConstraints={dragConstraints}
+        dragElastic={0}
+        dragMomentum={false}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        style={{
+          x,
+          y,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: 280,
+          zIndex: 9999,
+        }}
+        className="overflow-hidden rounded-xl bg-gray-900 shadow-2xl ring-2 ring-white/10 cursor-move"
       >
         <div className="relative aspect-video bg-black cursor-pointer" onClick={() => setMinimize(false)}>
           {remoteUsers.length > 0 ? (
